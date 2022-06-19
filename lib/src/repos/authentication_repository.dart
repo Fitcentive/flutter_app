@@ -1,29 +1,78 @@
 import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter_app/src/models/auth/auth_tokens.dart';
+import 'package:flutter_app/src/utils/jwt_utils.dart';
+import 'package:http/http.dart' as http;
 
 enum AuthenticationStatus { unknown, authenticated, unauthenticated }
 
 class AuthenticationRepository {
-  final _controller = StreamController<AuthenticationStatus>();
+  static final String BASE_URL = "http://api.vid.app/api/auth";
 
-  Stream<AuthenticationStatus> get status async* {
-    await Future<void>.delayed(const Duration(seconds: 1));
-    yield AuthenticationStatus.unauthenticated;
-    yield* _controller.stream;
+  // todo - do analysis of reactive repository vs classical approach.
+
+  Future<void> logout({required String accessToken, required String refreshToken}) async {
+    var uri = Uri.parse("${BASE_URL}/logout");
+
+    var request = http.MultipartRequest('POST', uri)
+    ..headers["Authorization"] = "Bearer $accessToken"
+    ..fields['client_id'] = 'webapp'
+    ..fields['refresh_token'] = refreshToken;
+
+    final response = await request.send();
+
+    print("****************");
+    print(response.statusCode);
+    print(response.toString());
+    print("****************");
+
+    if (response.statusCode >= 200 && response.statusCode < 400) {
+      return;
+    }
+    else {
+      throw Exception('Failed to get user details');
+    }
+
   }
 
-  Future<void> logIn({
+  Future<AuthTokens> logIn({
     required String username,
     required String password,
   }) async {
-    await Future.delayed(
-      const Duration(milliseconds: 300),
-          () => _controller.add(AuthenticationStatus.authenticated),
+    String url = "${BASE_URL}/login/basic";
+
+    print("*************************************");
+    print(url);
+    print(username);
+    print(password);
+    print("*************************************");
+
+    final response = await http.post(
+        Uri.parse(url),
+        body: {
+          "username": username,
+          "password": password,
+          "client_id": "webapp",
+          "grant_type": "password",
+        }
     );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseMap = jsonDecode(response.body);
+      final parsedTokenResponse = AuthTokens.fromJson(responseMap);
+
+      print(parsedTokenResponse);
+
+      return parsedTokenResponse;
+
+      final parsedAccessToken = JwtUtils.getUserIdFromJwtToken(parsedTokenResponse.accessToken);
+
+      print("That bit is done");
+    } else {
+      print("Received bad response: ${response.statusCode}");
+      throw Exception('Failed to get user details');
+    }
   }
 
-  void logOut() {
-    _controller.add(AuthenticationStatus.unauthenticated);
-  }
-
-  void dispose() => _controller.close();
 }

@@ -52,32 +52,40 @@ class _AppViewState extends State<AppView> {
 
   @override
   Widget build(BuildContext context) {
+    print("Widget build is being run now");
     return MaterialApp(
       navigatorKey: _navigatorKey,
       builder: (context, child) {
         return BlocListener<AuthenticationBloc, AuthenticationState>(
           listener: (context, state) {
-            switch (state.status) {
-              case AuthenticationStatus.authenticated:
-                _navigator.pushAndRemoveUntil<void>(
-                  HomePage.route(),
-                      (route) => false,
-                );
-                break;
-              case AuthenticationStatus.unauthenticated:
-                _navigator.pushAndRemoveUntil<void>(
-                  LoginPage.route(),
-                      (route) => false,
-                );
-                break;
-              default:
-                break;
+            print("Listener callback is being run now");
+            if (state is AuthSuccessState) {
+              print("AUTH SUCCESS STATE FOUND");
+              print(state.authenticatedUser);
+              _navigator.pushAndRemoveUntil<void>(
+                HomePage.route(),
+                    (route) => false,
+              );
+            }
+            else if (state is AuthInitialState) {
+              print("IN AUTHENTICATION STATE");
+              _navigator.pushAndRemoveUntil<void>(
+                LoginPage.route(),
+                    (route) => false,
+              );
+            }
+            else {
+              print("IN THE DEFAULT CASE");
+              print(state);
             }
           },
           child: child,
         );
       },
-      onGenerateRoute: (_) => SplashPage.route(),
+      onGenerateRoute: (_) {
+        print("ON GENERATE ROUTE");
+        return LoginPage.route();
+      },
     );
   }
 }
