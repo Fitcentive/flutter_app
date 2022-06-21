@@ -3,9 +3,10 @@ import 'package:flutter_app/src/repos/authentication_repository.dart';
 import 'package:flutter_app/src/repos/user_repository.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
+import 'package:flutter_app/src/views/create_account/create_account_page.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/login/login_page.dart';
-import 'package:flutter_app/src/views/splash/splash_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
@@ -29,11 +30,18 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepositoryProvider.value(
       value: authenticationRepository,
-      child: BlocProvider(
-        create: (_) => AuthenticationBloc(
-          authenticationRepository: authenticationRepository,
-          userRepository: userRepository,
-        ),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthenticationBloc>(
+              create: (context) => AuthenticationBloc(
+                    authenticationRepository: authenticationRepository,
+                    userRepository: userRepository,
+                  )
+          ),
+          BlocProvider<CreateAccountBloc>(create: (context) =>
+            CreateAccountBloc(userRepository: userRepository)
+          )
+        ],
         child: AppView(),
       ),
     );
@@ -52,38 +60,31 @@ class _AppViewState extends State<AppView> {
 
   @override
   Widget build(BuildContext context) {
-    print("Widget build is being run now");
     return MaterialApp(
+      routes: {
+        '/create-account': (context) => const CreateAccountPage(),
+      },
       navigatorKey: _navigatorKey,
       builder: (context, child) {
         return BlocListener<AuthenticationBloc, AuthenticationState>(
           listener: (context, state) {
-            print("Listener callback is being run now");
             if (state is AuthSuccessState) {
-              print("AUTH SUCCESS STATE FOUND");
               print(state.authenticatedUser);
               _navigator.pushAndRemoveUntil<void>(
                 HomePage.route(),
-                    (route) => false,
+                (route) => false,
               );
-            }
-            else if (state is AuthInitialState) {
-              print("IN AUTHENTICATION STATE");
+            } else if (state is AuthInitialState) {
               _navigator.pushAndRemoveUntil<void>(
                 LoginPage.route(),
-                    (route) => false,
+                (route) => false,
               );
-            }
-            else {
-              print("IN THE DEFAULT CASE");
-              print(state);
             }
           },
           child: child,
         );
       },
       onGenerateRoute: (_) {
-        print("ON GENERATE ROUTE");
         return LoginPage.route();
       },
     );

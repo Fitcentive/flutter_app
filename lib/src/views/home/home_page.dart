@@ -7,6 +7,8 @@ import '../authentication/bloc/authentication_event.dart';
 
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
 
   static Route route() {
     return MaterialPageRoute<void>(builder: (_) => HomePage());
@@ -20,10 +22,6 @@ class HomePage extends StatefulWidget {
 
 
 class HomePageState extends State<HomePage> {
-
-  static Route route() {
-    return MaterialPageRoute<void>(builder: (_) => HomePage());
-  }
 
   late AuthenticationBloc _authenticationBloc;
 
@@ -55,25 +53,14 @@ class HomePageState extends State<HomePage> {
             ElevatedButton(
               child: const Text('Logout'),
               onPressed: () {
-
                 final currentAuthBlocState = _authenticationBloc.state;
                 if (currentAuthBlocState is AuthSuccessState)  {
-                  // context
-                  //     .read<AuthenticationBloc>()
                   _authenticationBloc
                       .add(SignOutEvent(user: currentAuthBlocState.authenticatedUser));
                 }
-
-                // final authBloc = BlocProvider.of<AuthenticationBloc>(context);
-                // final currentAuthBlocState = authBloc.state;
-                // if (currentAuthBlocState is AuthSuccessState) {
-                //   BlocProvider
-                //       .of<AuthenticationBloc>(context)
-                //       .add(SignOutEvent(user: currentAuthBlocState.authenticatedUser));
-                // }
-                // else {
-                //   throw new Exception("sdffdf");
-                // }
+                else {
+                  throw Exception("sdffdf");
+                }
               },
             ),
           ],

@@ -22,11 +22,6 @@ class AuthenticationRepository {
 
     final response = await request.send();
 
-    print("****************");
-    print(response.statusCode);
-    print(response.toString());
-    print("****************");
-
     if (response.statusCode >= 200 && response.statusCode < 400) {
       return;
     }
@@ -42,12 +37,6 @@ class AuthenticationRepository {
   }) async {
     String url = "${BASE_URL}/login/basic";
 
-    print("*************************************");
-    print(url);
-    print(username);
-    print(password);
-    print("*************************************");
-
     final response = await http.post(
         Uri.parse(url),
         body: {
@@ -61,16 +50,8 @@ class AuthenticationRepository {
     if (response.statusCode == 200) {
       Map<String, dynamic> responseMap = jsonDecode(response.body);
       final parsedTokenResponse = AuthTokens.fromJson(responseMap);
-
-      print(parsedTokenResponse);
-
       return parsedTokenResponse;
-
-      final parsedAccessToken = JwtUtils.getUserIdFromJwtToken(parsedTokenResponse.accessToken);
-
-      print("That bit is done");
     } else {
-      print("Received bad response: ${response.statusCode}");
       throw Exception('Failed to get user details');
     }
   }

@@ -5,25 +5,33 @@ import 'package:flutter_app/src/views/authentication/bloc/authentication_state.d
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 
+class LoginForm extends StatefulWidget {
+  @override
+  State createState() {
+    return LoginFormState();
+  }
+}
 
-class LoginForm extends StatelessWidget {
+class LoginFormState extends State<LoginForm> {
+  final TextEditingController _usernameController = TextEditingController(text: '');
+  final TextEditingController _passwordController = TextEditingController(text: '');
+
   @override
   Widget build(BuildContext context) {
-
     context.read<AuthenticationBloc>().add(InitiateAuthenticationFlow());
 
     return BlocListener<AuthenticationBloc, AuthenticationState>(
       listener: (context, state) {
-        print("BlocListener for AUthneticationBloc in LoginFOrm widget");
-
-        if (state is AuthLoginState && state.status.isSubmissionFailure) {
+        if (state is AuthFailureState) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
               const SnackBar(content: Text('Authentication Failure')),
             );
-        }
-        else {
+          context.read<AuthenticationBloc>().add(InitiateAuthenticationFlow());
+          _usernameController.clear();
+          _passwordController.clear();
+        } else {
           print(state);
         }
       },
@@ -32,79 +40,100 @@ class LoginForm extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _UsernameInput(),
+            _usernameInput(),
             const Padding(padding: EdgeInsets.all(12)),
-            _PasswordInput(),
+            _passwordInput(),
             const Padding(padding: EdgeInsets.all(12)),
-            _LoginButton(),
+            _loginButton(),
+            _createAccountButton(),
           ],
         ),
       ),
     );
   }
-}
 
-class _UsernameInput extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  _usernameInput() {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(
       buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
-          key: const Key('loginForm_usernameInput_textField'),
-          onChanged: (username) => context.read<AuthenticationBloc>().add(LoginUsernameChanged(username)),
-          decoration: (state is AuthLoginState) ? InputDecoration(
-            labelText: 'username',
-            errorText: state.username.invalid ? 'invalid username' : null,
-          ) : null,
-        );
+            controller: _usernameController,
+            key: const Key('loginForm_usernameInput_textField'),
+            onChanged: (username) {
+              context.read<AuthenticationBloc>().add(LoginUsernameChanged(username));
+            },
+            decoration: InputDecoration(
+              labelText: 'username',
+              errorText: (state is AuthCredentialsModified) && state.username.invalid ? 'invalid username' : null,
+            ));
       },
     );
   }
-}
 
-class _PasswordInput extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  _passwordInput() {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(
       buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
+          controller: _passwordController,
           key: const Key('loginForm_passwordInput_textField'),
-          onChanged: (password) => context.read<AuthenticationBloc>().add(LoginPasswordChanged(password)),
+          onChanged: (password) {
+            context.read<AuthenticationBloc>().add(LoginPasswordChanged(password));
+          },
           obscureText: true,
-          decoration: (state is AuthLoginState) ? InputDecoration(
+          decoration: InputDecoration(
             labelText: 'password',
-            errorText: state.password.invalid ? 'invalid password' : null,
-          ) : null,
+            errorText: (state is AuthCredentialsModified) && state.password.invalid ? 'invalid password' : null,
+          ),
         );
       },
     );
   }
-}
 
-class _LoginButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  _createAccountButton() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/create-account');
+      },
+      child: const Text(
+        "New user? Create new account",
+        style: TextStyle(color: Color.fromRGBO(48, 134, 192, 1.0)),
+      ),
+    );
+  }
+
+  _loginButton() {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(
       buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         final currentState = state;
-        if (currentState is AuthLoginState) {
-          return ElevatedButton(
-            key: const Key('loginForm_continue_raisedButton'),
-            child: const Text('Login'),
-            onPressed: currentState.status.isValidated
-                ? () {
-                    context.read<AuthenticationBloc>().add(SignInWithEmailEvent(
-                        email: currentState.username.value, password: currentState.password.value));
-                  }
-                : null,
-          );
+        if (currentState is AuthLoadingState) {
+          return const CircularProgressIndicator();
         } else {
-          return CircularProgressIndicator();
+          return ElevatedButton(
+              key: const Key('loginForm_continue_raisedButton'),
+              child: const Text('Login'),
+              style: ButtonStyle(
+                backgroundColor: _getButtonBackgroundColour(state)
+              ),
+              onPressed: () {
+                if (state is AuthCredentialsModified && state.status.isValid) {
+                  return context
+                      .read<AuthenticationBloc>()
+                      .add(SignInWithEmailEvent(email: state.username.value, password: state.password.value));
+                }
+              });
         }
       },
     );
   }
+
+  _getButtonBackgroundColour(AuthenticationState state) {
+    if (state is AuthCredentialsModified && state.status.isValid) {
+      return MaterialStateProperty.all<Color>(Colors.blue);
+    } else {
+      return MaterialStateProperty.all<Color>(Colors.grey);
+    }
+  }
+
 }

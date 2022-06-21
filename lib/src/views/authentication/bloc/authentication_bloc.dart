@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/login/password.dart';
-import 'package:flutter_app/src/models/login/username.dart';
-import 'package:flutter_app/src/models/user.dart';
+import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/repos/authentication_repository.dart';
 import 'package:flutter_app/src/repos/user_repository.dart';
 import 'package:flutter_app/src/utils/jwt_utils.dart';
@@ -34,39 +33,24 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   }
 
   void _initiateAuthenticationFlow(
-    InitiateAuthenticationFlow evebt,
+    InitiateAuthenticationFlow event,
     Emitter<AuthenticationState> emit,
   ) async {
-    emit(AuthLoginState());
+    emit(const AuthCredentialsModified());
   }
 
   void _signInWithEmail(
     SignInWithEmailEvent event,
     Emitter<AuthenticationState> emit,
   ) async {
-    print("Handling signIn event");
-
     try {
+      emit(const AuthLoadingState());
       final authTokens = await authenticationRepository.logIn(username: event.email, password: event.password);
-
-      print("Got auth tokens");
-
-      print(authTokens);
-
       final userId = JwtUtils.getUserIdFromJwtToken(authTokens.accessToken);
-
       final user = await userRepository.getUser(userId!, authTokens.accessToken);
-
-      print("Retrieved user info");
-      print(user);
-
       final authenticatedUser = AuthenticatedUser(user!, authTokens);
-
-
-
       emit(AuthSuccessState(authenticatedUser: authenticatedUser));
-    }
-     catch (e) {
+    } catch (e) {
        emit(AuthFailureState());
      }
   }
@@ -75,10 +59,10 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     LoginUsernameChanged event,
     Emitter<AuthenticationState> emit,
   ) {
-    final username = Username.dirty(event.username);
+    final username = Email.dirty(event.username);
     final currentState = state;
 
-    if (currentState is AuthLoginState) {
+    if (currentState is AuthCredentialsModified) {
       emit(currentState.copyWith(
         username: username,
         status: Formz.validate([currentState.password, username]),
@@ -93,7 +77,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     final password = Password.dirty(event.password);
     final currentState = state;
 
-    if (currentState is AuthLoginState) {
+    if (currentState is AuthCredentialsModified) {
       emit(currentState.copyWith(
         password: password,
         status: Formz.validate([password, currentState.username]),
