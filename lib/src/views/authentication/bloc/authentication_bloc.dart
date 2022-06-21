@@ -36,7 +36,10 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     InitiateAuthenticationFlow event,
     Emitter<AuthenticationState> emit,
   ) async {
-    emit(const AuthCredentialsModified());
+    final username = event.username.isEmpty ? const Email.pure() : Email.dirty(event.username);
+    final password = event.password.isEmpty ? const Password.pure() : Password.dirty(event.password);
+    final status = Formz.validate([username, password]);
+    emit(AuthCredentialsModified(status: status, username: username, password: password));
   }
 
   void _signInWithEmail(
@@ -51,8 +54,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final authenticatedUser = AuthenticatedUser(user!, authTokens);
       emit(AuthSuccessState(authenticatedUser: authenticatedUser));
     } catch (e) {
-       emit(AuthFailureState());
-     }
+      emit(AuthFailureState());
+    }
   }
 
   void _onUsernameChanged(

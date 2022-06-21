@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
-import 'package:flutter_app/src/utils/jwt_utils.dart';
 import 'package:http/http.dart' as http;
 
-enum AuthenticationStatus { unknown, authenticated, unauthenticated }
-
 class AuthenticationRepository {
-  static final String BASE_URL = "http://api.vid.app/api/auth";
-
-  // todo - do analysis of reactive repository vs classical approach.
+  static const String BASE_URL = "http://api.vid.app/api/auth";
 
   Future<void> logout({required String accessToken, required String refreshToken}) async {
     var uri = Uri.parse("${BASE_URL}/logout");
@@ -22,11 +18,12 @@ class AuthenticationRepository {
 
     final response = await request.send();
 
-    if (response.statusCode >= 200 && response.statusCode < 400) {
+    if (response.statusCode == HttpStatus.noContent) {
       return;
     }
     else {
-      throw Exception('Failed to get user details');
+      throw Exception(
+          "logIn: Received bad response with status: ${response.statusCode}");
     }
 
   }
@@ -47,12 +44,13 @@ class AuthenticationRepository {
         }
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == HttpStatus.ok) {
       Map<String, dynamic> responseMap = jsonDecode(response.body);
       final parsedTokenResponse = AuthTokens.fromJson(responseMap);
       return parsedTokenResponse;
     } else {
-      throw Exception('Failed to get user details');
+      throw Exception(
+          "logIn: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

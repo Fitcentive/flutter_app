@@ -42,6 +42,17 @@ class EmailAddressModified extends CreateAccountState {
   List<Object> get props => [status, email];
 }
 
+class EmailAddressAlreadyInUse extends CreateAccountState {
+
+  final String email;
+
+  const EmailAddressAlreadyInUse(this.email);
+
+  @override
+  List<Object> get props => [email];
+
+}
+
 class UnverifiedEmailAddress extends CreateAccountState {
 
   final String email;
@@ -118,6 +129,8 @@ class PasswordModified extends CreateAccountState {
   final Password password;
   final Password passwordConfirmation;
 
+  bool doPasswordMatch() => password == passwordConfirmation;
+
   PasswordModified copyWith({
     FormzStatus? status,
     Password? password,
@@ -134,6 +147,52 @@ class PasswordModified extends CreateAccountState {
 
   @override
   List<Object> get props => [status, email, password, passwordConfirmation];
+}
+
+class PasswordConfirmed extends CreateAccountState {
+  final String email;
+  final String password;
+  final String verificationToken;
+
+  const PasswordConfirmed({required this.email, required this.password, required this.verificationToken});
+
+  @override
+  List<Object> get props => [email, password, verificationToken];
+}
+
+class TermsAndConditionsModified extends CreateAccountState {
+  final String email;
+  final String password;
+  final String verificationToken;
+  final bool termsAndConditions;
+  final bool marketingEmails;
+
+  const TermsAndConditionsModified({
+    required this.email,
+    required this.password,
+    required this.verificationToken,
+    required this.termsAndConditions,
+    required this.marketingEmails
+  });
+
+  bool isValidState() => termsAndConditions;
+
+  TermsAndConditionsModified copyWith({
+    bool? termsAndConditions,
+    bool? marketingEmails,
+  }) {
+    return TermsAndConditionsModified(
+        email: email,
+        password: password,
+        verificationToken: verificationToken,
+        termsAndConditions: termsAndConditions ?? this.termsAndConditions,
+        marketingEmails: marketingEmails ?? this.marketingEmails,
+    );
+  }
+
+  @override
+  List<Object> get props => [email, password, verificationToken, termsAndConditions, marketingEmails];
+
 }
 
 class AccountCreatedSuccessfully extends CreateAccountState {

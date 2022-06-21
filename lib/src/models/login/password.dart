@@ -2,6 +2,7 @@ import 'package:formz/formz.dart';
 
 enum PasswordValidationError { empty }
 
+// todo - enforce password rules
 class Password extends FormzInput<String, PasswordValidationError> {
   const Password.pure() : super.pure('');
   const Password.dirty([String value = '']) : super.dirty(value);

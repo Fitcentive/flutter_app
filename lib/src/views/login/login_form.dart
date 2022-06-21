@@ -17,9 +17,12 @@ class LoginFormState extends State<LoginForm> {
   final TextEditingController _passwordController = TextEditingController(text: '');
 
   @override
-  Widget build(BuildContext context) {
-    context.read<AuthenticationBloc>().add(InitiateAuthenticationFlow());
+  void initState() {
+    context.read<AuthenticationBloc>().add(const InitiateAuthenticationFlow(username: "", password: ""));
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return BlocListener<AuthenticationBloc, AuthenticationState>(
       listener: (context, state) {
         if (state is AuthFailureState) {
@@ -28,11 +31,11 @@ class LoginFormState extends State<LoginForm> {
             ..showSnackBar(
               const SnackBar(content: Text('Authentication Failure')),
             );
-          context.read<AuthenticationBloc>().add(InitiateAuthenticationFlow());
-          _usernameController.clear();
+          context
+              .read<AuthenticationBloc>()
+              .add(InitiateAuthenticationFlow(username: _usernameController.text, password: ""));
+          // _usernameController.clear();
           _passwordController.clear();
-        } else {
-          print(state);
         }
       },
       child: Align(
@@ -45,6 +48,7 @@ class LoginFormState extends State<LoginForm> {
             _passwordInput(),
             const Padding(padding: EdgeInsets.all(12)),
             _loginButton(),
+            const Padding(padding: EdgeInsets.all(6)),
             _createAccountButton(),
           ],
         ),
@@ -113,9 +117,7 @@ class LoginFormState extends State<LoginForm> {
           return ElevatedButton(
               key: const Key('loginForm_continue_raisedButton'),
               child: const Text('Login'),
-              style: ButtonStyle(
-                backgroundColor: _getButtonBackgroundColour(state)
-              ),
+              style: ButtonStyle(backgroundColor: _getButtonBackgroundColour(state)),
               onPressed: () {
                 if (state is AuthCredentialsModified && state.status.isValid) {
                   return context
@@ -135,5 +137,4 @@ class LoginFormState extends State<LoginForm> {
       return MaterialStateProperty.all<Color>(Colors.grey);
     }
   }
-
 }

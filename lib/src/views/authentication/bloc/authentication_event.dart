@@ -8,7 +8,16 @@ abstract class AuthenticationEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class InitiateAuthenticationFlow extends AuthenticationEvent {}
+class InitiateAuthenticationFlow extends AuthenticationEvent {
+
+  final String username;
+  final String password;
+
+  const InitiateAuthenticationFlow({required this.username, required this.password});
+
+  @override
+  List<Object> get props => [username, password];
+}
 
 class LoginUsernameChanged extends AuthenticationEvent {
   const LoginUsernameChanged(this.username);

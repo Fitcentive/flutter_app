@@ -69,7 +69,6 @@ class _AppViewState extends State<AppView> {
         return BlocListener<AuthenticationBloc, AuthenticationState>(
           listener: (context, state) {
             if (state is AuthSuccessState) {
-              print(state.authenticatedUser);
               _navigator.pushAndRemoveUntil<void>(
                 HomePage.route(),
                 (route) => false,

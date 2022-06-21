@@ -7,6 +7,13 @@ abstract class CreateAccountEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class InitiateCreateAccountFlow extends CreateAccountEvent {
+  const InitiateCreateAccountFlow();
+
+  @override
+  List<Object> get props => [];
+}
+
 class EmailAddressChanged extends CreateAccountEvent {
   const EmailAddressChanged(this.email);
 
@@ -17,7 +24,6 @@ class EmailAddressChanged extends CreateAccountEvent {
 }
 
 class EmailAddressEnteredForVerification extends CreateAccountEvent {
-
   final String email;
 
   const EmailAddressEnteredForVerification(this.email);
@@ -46,7 +52,6 @@ class EmailVerificationTokenSubmitted extends CreateAccountEvent {
   List<Object> get props => [email, verificationToken];
 }
 
-
 class PasswordChanged extends CreateAccountEvent {
   final String email;
   final String password;
@@ -58,16 +63,42 @@ class PasswordChanged extends CreateAccountEvent {
   List<Object> get props => [email, password, passwordConfirmation];
 }
 
-class PasswordResetRequested extends CreateAccountEvent {
+class PasswordSubmitted extends CreateAccountEvent {
+  final String email;
+  final String password;
+  final String verificationToken;
 
+  const PasswordSubmitted({required this.email, required this.password, required this.verificationToken});
+
+  @override
+  List<Object> get props => [email, password, verificationToken];
+}
+
+class TermsAndConditionsChanged extends CreateAccountEvent {
+  final String email;
+  final String password;
+  final String verificationToken;
+  final bool termsAndConditions;
+  final bool marketingEmails;
+
+  const TermsAndConditionsChanged(
+      {required this.email,
+      required this.password,
+      required this.verificationToken,
+      required this.termsAndConditions,
+      required this.marketingEmails});
+
+  @override
+  List<Object> get props => [email, password, verificationToken, termsAndConditions, marketingEmails];
+}
+
+class CreateNewAccountRequested extends CreateAccountEvent {
   final String email;
   final String verificationToken;
   final String password;
-  final String passwordConfirmation;
 
-  const PasswordResetRequested(this.email, this.verificationToken, this.password, this.passwordConfirmation);
+  const CreateNewAccountRequested(this.email, this.verificationToken, this.password);
 
   @override
-  List<Object> get props => [email, verificationToken, password, passwordConfirmation];
+  List<Object> get props => [email, verificationToken, password];
 }
-

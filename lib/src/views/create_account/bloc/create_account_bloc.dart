@@ -11,20 +11,48 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
   final UserRepository userRepository;
 
   CreateAccountBloc({required this.userRepository}) : super(const InitialState()) {
+    on<InitiateCreateAccountFlow>(_initiateCreateAccountFlow);
     on<EmailAddressChanged>(_emailAddressChanged);
     on<EmailAddressEnteredForVerification>(_emailAddressEnteredForVerification);
     on<EmailVerificationTokenSubmitted>(_emailVerificationTokenSubmitted);
     on<EmailVerificationTokenChanged>(_emailVerificationTokenChanged);
     on<PasswordChanged>(_passwordChanged);
-    on<PasswordResetRequested>(_passwordResetRequested);
+    on<PasswordSubmitted>(_passwordSubmitted);
+    on<TermsAndConditionsChanged>(_termsAndConditionsChanged);
+    on<CreateNewAccountRequested>(_createNewAccountRequested);
+  }
+
+  void _termsAndConditionsChanged(
+    TermsAndConditionsChanged event,
+    Emitter<CreateAccountState> emit,
+  ) async {
+    emit(TermsAndConditionsModified(
+        email: event.email,
+        password: event.password,
+        verificationToken: event.verificationToken,
+        termsAndConditions: event.termsAndConditions,
+        marketingEmails: event.marketingEmails));
+  }
+
+  void _initiateCreateAccountFlow(
+    InitiateCreateAccountFlow event,
+    Emitter<CreateAccountState> emit,
+  ) async {
+    emit(const InitialState());
   }
 
   void _emailAddressEnteredForVerification(
     EmailAddressEnteredForVerification event,
     Emitter<CreateAccountState> emit,
   ) async {
-    await userRepository.requestNewEmailVerificationToken(event.email);
-    emit(UnverifiedEmailAddress(event.email));
+    final doesUserExist = await userRepository.checkIfUserExistsForEmail(event.email);
+
+    if (doesUserExist) {
+      emit(EmailAddressAlreadyInUse(event.email));
+    } else {
+      await userRepository.requestNewEmailVerificationToken(event.email);
+      emit(UnverifiedEmailAddress(event.email));
+    }
   }
 
   void _emailVerificationTokenSubmitted(
@@ -41,6 +69,10 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
     }
   }
 
+  void _passwordSubmitted(PasswordSubmitted event, Emitter<CreateAccountState> emit) async {
+    emit(PasswordConfirmed(email: event.email, password: event.password, verificationToken: event.verificationToken));
+  }
+
   void _passwordChanged(PasswordChanged event, Emitter<CreateAccountState> emit) async {
     final password = Password.dirty(event.password);
     final passwordConfirmation = Password.dirty(event.passwordConfirmation);
@@ -49,18 +81,12 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
 
     if (currentState is VerifiedEmailAddress) {
       emit(PasswordModified(email: event.email, token: currentState.verificationToken));
-    }
-    else if (currentState is PasswordModified) {
-
+    } else if (currentState is PasswordModified) {
       final doPasswordsMatch = password.value == passwordConfirmation.value;
       final newStatus = Formz.validate([password, passwordConfirmation]);
       final finalStatus = doPasswordsMatch ? newStatus : FormzStatus.invalid;
 
-      emit(currentState.copyWith(
-        status: finalStatus,
-        password: password,
-        passwordConfirmation: passwordConfirmation
-      ));
+      emit(currentState.copyWith(status: finalStatus, password: password, passwordConfirmation: passwordConfirmation));
     }
   }
 
@@ -80,8 +106,8 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
     }
   }
 
-  void _passwordResetRequested(
-    PasswordResetRequested event,
+  void _createNewAccountRequested(
+    CreateNewAccountRequested event,
     Emitter<CreateAccountState> emit,
   ) async {
     await userRepository.createNewUser(event.email, event.verificationToken);
@@ -101,7 +127,7 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
         email: email,
         status: Formz.validate([email]),
       ));
-    } else if (currentState is InitialState) {
+    } else {
       emit(EmailAddressModified(email: email, status: Formz.validate([email])));
     }
   }
