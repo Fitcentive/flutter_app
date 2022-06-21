@@ -82,13 +82,13 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   MaterialColor _getBackgroundColor() {
     final currentState = _createAccountBloc.state;
     if (currentState is EmailAddressModified && currentState.status.isValid) {
-      return Colors.blue;
+      return Colors.teal;
     } else if (currentState is VerificationTokenModified && currentState.status.isValid) {
-      return Colors.blue;
+      return Colors.teal;
     } else if (currentState is PasswordModified && currentState.status.isValid) {
-      return Colors.blue;
+      return Colors.teal;
     } else if (currentState is TermsAndConditionsModified && currentState.isValidState()) {
-      return Colors.blue;
+      return Colors.teal;
     }
     else {
       return Colors.grey;

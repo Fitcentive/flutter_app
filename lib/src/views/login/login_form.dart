@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_state.dart';
+import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 
@@ -15,6 +16,8 @@ class LoginForm extends StatefulWidget {
 class LoginFormState extends State<LoginForm> {
   final TextEditingController _usernameController = TextEditingController(text: '');
   final TextEditingController _passwordController = TextEditingController(text: '');
+
+  bool _isObscure = true;
 
   @override
   void initState() {
@@ -84,8 +87,18 @@ class LoginFormState extends State<LoginForm> {
           onChanged: (password) {
             context.read<AuthenticationBloc>().add(LoginPasswordChanged(password));
           },
-          obscureText: true,
+          obscureText: _isObscure,
           decoration: InputDecoration(
+            suffixIcon: IconButton(
+              icon: Icon(
+                _isObscure ? Icons.visibility : Icons.visibility_off,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isObscure = !_isObscure;
+                });
+              },
+            ),
             labelText: 'password',
             errorText: (state is AuthCredentialsModified) && state.password.invalid ? 'invalid password' : null,
           ),
@@ -101,7 +114,7 @@ class LoginFormState extends State<LoginForm> {
       },
       child: const Text(
         "New user? Create new account",
-        style: TextStyle(color: Color.fromRGBO(48, 134, 192, 1.0)),
+        style: TextStyle(color: ColorConstants.primary500Teal),
       ),
     );
   }
@@ -132,7 +145,7 @@ class LoginFormState extends State<LoginForm> {
 
   _getButtonBackgroundColour(AuthenticationState state) {
     if (state is AuthCredentialsModified && state.status.isValid) {
-      return MaterialStateProperty.all<Color>(Colors.blue);
+      return MaterialStateProperty.all<Color>(Colors.teal);
     } else {
       return MaterialStateProperty.all<Color>(Colors.grey);
     }

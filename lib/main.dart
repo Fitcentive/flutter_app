@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/repos/authentication_repository.dart';
 import 'package:flutter_app/src/repos/user_repository.dart';
+import 'package:flutter_app/theme.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
@@ -61,6 +62,8 @@ class _AppViewState extends State<AppView> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: appTheme,
+      darkTheme: darkTheme,
       routes: {
         '/create-account': (context) => const CreateAccountPage(),
       },
