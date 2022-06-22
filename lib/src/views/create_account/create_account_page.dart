@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
-import 'package:flutter_app/theme.dart';
+import 'package:flutter_app/src/views/create_account/views/enter_new_email_view.dart';
+import 'package:flutter_app/src/views/create_account/views/enter_new_password_view.dart';
+import 'package:flutter_app/src/views/create_account/views/enter_verification_token_view.dart';
+import 'package:flutter_app/src/views/create_account/views/terms_and_conditions_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({Key? key}) : super(key: key);
@@ -25,8 +27,14 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   late CreateAccountBloc _createAccountBloc;
   final PageController _pageController = PageController();
 
-  bool _isObscurePasswordField = true;
-  bool _isObscurePasswordConfirmationField = true;
+  static const int ENTER_NEW_EMAIL_PAGE = 0;
+  static const int ENTER_VERIFICATION_TOKENS_PAGE = 0;
+  static const int ENTER_PASSWORD_PAGE = 0;
+  static const int ENTER_TERMS_PAGE = 0;
+
+  static const MaterialColor BUTTON_AVAILABLE = Colors.teal;
+  static const MaterialColor BUTTON_DISABLED = Colors.grey;
+
 
   @override
   void dispose() {
@@ -93,15 +101,15 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   MaterialColor _getBackgroundColor() {
     final currentState = _createAccountBloc.state;
     if (currentState is EmailAddressModified && currentState.status.isValid) {
-      return Colors.teal;
+      return BUTTON_AVAILABLE;
     } else if (currentState is VerificationTokenModified && currentState.status.isValid) {
-      return Colors.teal;
+      return BUTTON_AVAILABLE;
     } else if (currentState is PasswordModified && currentState.status.isValid) {
-      return Colors.teal;
+      return BUTTON_AVAILABLE;
     } else if (currentState is TermsAndConditionsModified && currentState.isValidState()) {
-      return Colors.teal;
+      return BUTTON_AVAILABLE;
     } else {
-      return Colors.grey;
+      return BUTTON_DISABLED;
     }
   }
 
@@ -140,288 +148,14 @@ class CreateAccountPageState extends State<CreateAccountPage> {
             return PageView(
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
-              children: [
-                _enterNewEmailView(),
-                _enterVerificationTokenView(),
-                _enterNewPasswordView(),
-                _termsAndConditionsView(),
+              children: const [
+                EnterNewEmailView(),
+                EnterVerificationTokenView(),
+                EnterNewPasswordView(),
+                TermsAndConditionsView(),
               ],
             );
           }),
     );
-  }
-
-  Widget _termsAndConditionsView() {
-    return Align(
-      alignment: const Alignment(0, -1 / 3),
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Almost there... Just one more thing",
-              style: appTheme.textTheme.headline6,
-            ),
-            const Padding(padding: EdgeInsets.all(20)),
-            _createCheckBox("I have read and accept to the terms and conditions", "termsAndConditions"),
-            // const Padding(paddingx: EdgeInsets.all(12)),
-            _createCheckBox("I would like to subscribe to marketing emails", "marketingEmails"),
-          ],
-        ),
-      ),
-    );
-  }
-
-  _createCheckBox(String title, String key) {
-    return CheckboxListTile(
-      title: Text(
-          title,
-          style: appTheme.textTheme.subtitle1,
-      ),
-      value: _getCheckboxValue(key),
-      onChanged: (newValue) {
-        _onCheckBoxChanged(key, newValue ?? false);
-      },
-    );
-  }
-
-  _onCheckBoxChanged(String text, bool checkBoxState) {
-    final currentState = _createAccountBloc.state;
-    if (currentState is TermsAndConditionsModified) {
-      if (text == "termsAndConditions") {
-        _createAccountBloc.add(TermsAndConditionsChanged(
-            email: currentState.email,
-            password: currentState.password,
-            verificationToken: currentState.verificationToken,
-            termsAndConditions: checkBoxState,
-            marketingEmails: currentState.marketingEmails));
-      } else {
-        _createAccountBloc.add(TermsAndConditionsChanged(
-            email: currentState.email,
-            password: currentState.password,
-            verificationToken: currentState.verificationToken,
-            termsAndConditions: currentState.termsAndConditions,
-            marketingEmails: checkBoxState));
-      }
-    } else if (currentState is PasswordConfirmed) {
-      if (text == "termsAndConditions") {
-        _createAccountBloc.add(TermsAndConditionsChanged(
-            email: currentState.email,
-            password: currentState.password,
-            verificationToken: currentState.verificationToken,
-            termsAndConditions: checkBoxState,
-            marketingEmails: false));
-      } else {
-        _createAccountBloc.add(TermsAndConditionsChanged(
-            email: currentState.email,
-            password: currentState.password,
-            verificationToken: currentState.verificationToken,
-            termsAndConditions: false,
-            marketingEmails: checkBoxState));
-      }
-    }
-  }
-
-  _getCheckboxValue(String text) {
-    final currentState = _createAccountBloc.state;
-    if (currentState is TermsAndConditionsModified) {
-      return text == "termsAndConditions" ? currentState.termsAndConditions : currentState.marketingEmails;
-    } else {
-      return false;
-    }
-  }
-
-  Widget _enterNewPasswordView() {
-    return Align(
-      alignment: const Alignment(0, -1 / 3),
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Enter a new password",
-              style: appTheme.textTheme.headline6,
-            ),
-            const Padding(padding: EdgeInsets.all(12)),
-            _passwordWidget(),
-            const Padding(padding: EdgeInsets.all(12)),
-            _passwordConfirmationWidget(),
-            const Padding(padding: EdgeInsets.all(12)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _passwordWidget() {
-    return BlocBuilder<CreateAccountBloc, CreateAccountState>(
-      buildWhen: (previous, current) => previous != current,
-      builder: (context, state) {
-        return TextField(
-            key: const Key('createAccountForm_passwordInput_textField'),
-            onChanged: (password) {
-              final currentState = _createAccountBloc.state;
-              if (currentState is VerifiedEmailAddress) {
-                context.read<CreateAccountBloc>().add(PasswordChanged(currentState.email, password, ""));
-              } else if (currentState is PasswordModified) {
-                _createAccountBloc
-                    .add(PasswordChanged(currentState.email, password, currentState.passwordConfirmation.value));
-              }
-            },
-            obscureText: _isObscurePasswordField,
-            decoration: _getPasswordWidgetDecoration("password"));
-      },
-    );
-  }
-
-  Widget _passwordConfirmationWidget() {
-    return BlocBuilder<CreateAccountBloc, CreateAccountState>(
-      buildWhen: (previous, current) => previous != current,
-      builder: (context, state) {
-        return TextField(
-            key: const Key('createAccountForm_passwordInputConfirmation_textField'),
-            onChanged: (password) {
-              final currentState = _createAccountBloc.state;
-              if (currentState is VerifiedEmailAddress) {
-                context.read<CreateAccountBloc>().add(PasswordChanged(currentState.email, "", password));
-              } else if (currentState is PasswordModified) {
-                _createAccountBloc.add(PasswordChanged(currentState.email, currentState.password.value, password));
-              }
-            },
-            obscureText: _isObscurePasswordConfirmationField,
-            decoration: _getPasswordWidgetDecoration("passwordConfirmation"));
-      },
-    );
-  }
-
-  InputDecoration? _getPasswordWidgetDecoration(String key) {
-    final currentState = _createAccountBloc.state;
-    if (currentState is PasswordModified) {
-      return InputDecoration(
-        suffixIcon: IconButton(
-          icon: _getSuffixIcon(key),
-          onPressed: () {
-            setState(() {
-              if (key == "password") {
-                _isObscurePasswordField = !_isObscurePasswordField;
-              }
-              else {
-                _isObscurePasswordConfirmationField = !_isObscurePasswordConfirmationField;
-              }
-            });
-          },
-        ),
-        labelText: 'password',
-        errorText: key == "password"
-            ? (currentState.password.invalid ? 'invalid password' : null)
-            : (currentState.doPasswordMatch()
-                ? (currentState.passwordConfirmation.invalid ? 'invalid password' : null)
-                : 'passwords do not match!'),
-      );
-    } else if (currentState is VerifiedEmailAddress) {
-      return const InputDecoration(labelText: 'password');
-    }
-    return null;
-  }
-
-  _getSuffixIcon(String key) {
-    if (key == "password") {
-      return Icon(_isObscurePasswordField ? Icons.visibility : Icons.visibility_off);
-    }
-    else {
-      return Icon(_isObscurePasswordConfirmationField ? Icons.visibility : Icons.visibility_off);
-    }
-  }
-
-  Widget _enterVerificationTokenView() {
-    return Align(
-      alignment: const Alignment(0, -1 / 3),
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(
-                "Enter the verification token you received via email",
-              style: appTheme.textTheme.headline6,
-            ),
-            const Padding(padding: EdgeInsets.all(12)),
-            BlocBuilder<CreateAccountBloc, CreateAccountState>(
-              buildWhen: (previous, current) => previous != current,
-              builder: (context, state) {
-                return TextField(
-                    textAlign: TextAlign.center,
-                    maxLength: 6,
-                    key: const Key('createAccountForm_usernameInput_textField'),
-                    onChanged: (token) {
-                      final currentState = _createAccountBloc.state;
-
-                      if (currentState is UnverifiedEmailAddress) {
-                        context.read<CreateAccountBloc>().add(EmailVerificationTokenChanged(currentState.email, token));
-                      } else if (currentState is VerificationTokenModified) {
-                        context.read<CreateAccountBloc>().add(EmailVerificationTokenChanged(currentState.email, token));
-                      } else if (currentState is InvalidEmailVerificationToken) {
-                        context.read<CreateAccountBloc>().add(EmailVerificationTokenChanged(currentState.email, token));
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Verification Token',
-                      alignLabelWithHint: true,
-                      errorText: null,
-                    ));
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _enterNewEmailView() {
-    return Align(
-      alignment: const Alignment(0, -1 / 3),
-      child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                  "Enter the email address you wish to use",
-                style: appTheme.textTheme.headline6,
-              ),
-              const Padding(padding: EdgeInsets.all(12)),
-              _usernameInput(),
-              const Padding(padding: EdgeInsets.all(12)),
-            ],
-          )),
-    );
-  }
-
-  _usernameInput() {
-    return BlocBuilder<CreateAccountBloc, CreateAccountState>(
-      buildWhen: (previous, current) => previous != current,
-      builder: (context, state) {
-        return TextField(
-            key: const Key('createAccountForm_usernameInput_textField'),
-            onChanged: (email) => context.read<CreateAccountBloc>().add(EmailAddressChanged(email)),
-            decoration: _getDecoration(state));
-      },
-    );
-  }
-
-  InputDecoration _getDecoration(CreateAccountState state) {
-    if (state is EmailAddressModified) {
-      return InputDecoration(
-        labelText: 'username',
-        errorText: state.email.invalid ? 'invalid email address' : null,
-      );
-    } else {
-      return const InputDecoration(
-        labelText: 'username',
-        errorText: null,
-      );
-    }
   }
 }
