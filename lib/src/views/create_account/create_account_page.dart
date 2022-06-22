@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
+import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({Key? key}) : super(key: key);
@@ -18,9 +20,13 @@ class CreateAccountPage extends StatefulWidget {
   }
 }
 
+// todo - split up widget into separate
 class CreateAccountPageState extends State<CreateAccountPage> {
   late CreateAccountBloc _createAccountBloc;
   final PageController _pageController = PageController();
+
+  bool _isObscurePasswordField = true;
+  bool _isObscurePasswordConfirmationField = true;
 
   @override
   void dispose() {
@@ -42,7 +48,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
           return true;
         },
         child: Scaffold(
-          appBar: AppBar(title: const Text('Create new account')),
+          appBar: AppBar(title: const Text('Sign up')),
           body: _pageViews(),
           floatingActionButton: _nextButton(),
         ));
@@ -73,8 +79,13 @@ class CreateAccountPageState extends State<CreateAccountPage> {
       _createAccountBloc.add(PasswordSubmitted(
           email: currentState.email, password: currentState.password.value, verificationToken: currentState.token));
     } else if (currentState is TermsAndConditionsModified && currentState.isValidState()) {
-      _createAccountBloc.add(
-          CreateNewAccountRequested(currentState.email, currentState.verificationToken, currentState.password));
+      _createAccountBloc.add(CreateNewAccountRequested(
+        email: currentState.email,
+        verificationToken: currentState.verificationToken,
+        password: currentState.password,
+        termsAndConditions: currentState.termsAndConditions,
+        marketingEmails: currentState.marketingEmails,
+      ));
     }
     return null;
   }
@@ -89,8 +100,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
       return Colors.teal;
     } else if (currentState is TermsAndConditionsModified && currentState.isValidState()) {
       return Colors.teal;
-    }
-    else {
+    } else {
       return Colors.grey;
     }
   }
@@ -149,10 +159,13 @@ class CreateAccountPageState extends State<CreateAccountPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Please review the terms and conditions"),
-            const Padding(padding: EdgeInsets.all(12)),
+            Text(
+              "Almost there... Just one more thing",
+              style: appTheme.textTheme.headline6,
+            ),
+            const Padding(padding: EdgeInsets.all(20)),
             _createCheckBox("I have read and accept to the terms and conditions", "termsAndConditions"),
-            const Padding(padding: EdgeInsets.all(12)),
+            // const Padding(paddingx: EdgeInsets.all(12)),
             _createCheckBox("I would like to subscribe to marketing emails", "marketingEmails"),
           ],
         ),
@@ -162,7 +175,10 @@ class CreateAccountPageState extends State<CreateAccountPage> {
 
   _createCheckBox(String title, String key) {
     return CheckboxListTile(
-      title: Text(title),
+      title: Text(
+          title,
+          style: appTheme.textTheme.subtitle1,
+      ),
       value: _getCheckboxValue(key),
       onChanged: (newValue) {
         _onCheckBoxChanged(key, newValue ?? false);
@@ -174,46 +190,35 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     final currentState = _createAccountBloc.state;
     if (currentState is TermsAndConditionsModified) {
       if (text == "termsAndConditions") {
-        _createAccountBloc.add(
-            TermsAndConditionsChanged(
-                email: currentState.email,
-                password: currentState.password,
-                verificationToken: currentState.verificationToken,
-                termsAndConditions: checkBoxState,
-                marketingEmails: currentState.marketingEmails
-            ));
+        _createAccountBloc.add(TermsAndConditionsChanged(
+            email: currentState.email,
+            password: currentState.password,
+            verificationToken: currentState.verificationToken,
+            termsAndConditions: checkBoxState,
+            marketingEmails: currentState.marketingEmails));
+      } else {
+        _createAccountBloc.add(TermsAndConditionsChanged(
+            email: currentState.email,
+            password: currentState.password,
+            verificationToken: currentState.verificationToken,
+            termsAndConditions: currentState.termsAndConditions,
+            marketingEmails: checkBoxState));
       }
-      else {
-        _createAccountBloc.add(
-            TermsAndConditionsChanged(
-                email: currentState.email,
-                password: currentState.password,
-                verificationToken: currentState.verificationToken,
-                termsAndConditions: currentState.termsAndConditions,
-                marketingEmails: checkBoxState
-            ));
-      }
-    }
-    else if (currentState is PasswordConfirmed) {
+    } else if (currentState is PasswordConfirmed) {
       if (text == "termsAndConditions") {
-        _createAccountBloc.add(
-            TermsAndConditionsChanged(
-                email: currentState.email,
-                password: currentState.password,
-                verificationToken: currentState.verificationToken,
-                termsAndConditions: checkBoxState,
-                marketingEmails: false
-            ));
-      }
-      else {
-        _createAccountBloc.add(
-            TermsAndConditionsChanged(
-                email: currentState.email,
-                password: currentState.password,
-                verificationToken: currentState.verificationToken,
-                termsAndConditions: false,
-                marketingEmails: checkBoxState
-            ));
+        _createAccountBloc.add(TermsAndConditionsChanged(
+            email: currentState.email,
+            password: currentState.password,
+            verificationToken: currentState.verificationToken,
+            termsAndConditions: checkBoxState,
+            marketingEmails: false));
+      } else {
+        _createAccountBloc.add(TermsAndConditionsChanged(
+            email: currentState.email,
+            password: currentState.password,
+            verificationToken: currentState.verificationToken,
+            termsAndConditions: false,
+            marketingEmails: checkBoxState));
       }
     }
   }
@@ -222,11 +227,9 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     final currentState = _createAccountBloc.state;
     if (currentState is TermsAndConditionsModified) {
       return text == "termsAndConditions" ? currentState.termsAndConditions : currentState.marketingEmails;
-    }
-    else {
+    } else {
       return false;
     }
-
   }
 
   Widget _enterNewPasswordView() {
@@ -237,6 +240,11 @@ class CreateAccountPageState extends State<CreateAccountPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              "Enter a new password",
+              style: appTheme.textTheme.headline6,
+            ),
+            const Padding(padding: EdgeInsets.all(12)),
             _passwordWidget(),
             const Padding(padding: EdgeInsets.all(12)),
             _passwordConfirmationWidget(),
@@ -262,7 +270,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                     .add(PasswordChanged(currentState.email, password, currentState.passwordConfirmation.value));
               }
             },
-            obscureText: true,
+            obscureText: _isObscurePasswordField,
             decoration: _getPasswordWidgetDecoration("password"));
       },
     );
@@ -282,7 +290,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                 _createAccountBloc.add(PasswordChanged(currentState.email, currentState.password.value, password));
               }
             },
-            obscureText: true,
+            obscureText: _isObscurePasswordConfirmationField,
             decoration: _getPasswordWidgetDecoration("passwordConfirmation"));
       },
     );
@@ -292,17 +300,39 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     final currentState = _createAccountBloc.state;
     if (currentState is PasswordModified) {
       return InputDecoration(
+        suffixIcon: IconButton(
+          icon: _getSuffixIcon(key),
+          onPressed: () {
+            setState(() {
+              if (key == "password") {
+                _isObscurePasswordField = !_isObscurePasswordField;
+              }
+              else {
+                _isObscurePasswordConfirmationField = !_isObscurePasswordConfirmationField;
+              }
+            });
+          },
+        ),
         labelText: 'password',
         errorText: key == "password"
             ? (currentState.password.invalid ? 'invalid password' : null)
             : (currentState.doPasswordMatch()
-            ? (currentState.passwordConfirmation.invalid ? 'invalid password' : null)
-            : 'passwords do not match!'),
+                ? (currentState.passwordConfirmation.invalid ? 'invalid password' : null)
+                : 'passwords do not match!'),
       );
     } else if (currentState is VerifiedEmailAddress) {
       return const InputDecoration(labelText: 'password');
     }
     return null;
+  }
+
+  _getSuffixIcon(String key) {
+    if (key == "password") {
+      return Icon(_isObscurePasswordField ? Icons.visibility : Icons.visibility_off);
+    }
+    else {
+      return Icon(_isObscurePasswordConfirmationField ? Icons.visibility : Icons.visibility_off);
+    }
   }
 
   Widget _enterVerificationTokenView() {
@@ -313,7 +343,10 @@ class CreateAccountPageState extends State<CreateAccountPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Text("Enter the verification token you received via email"),
+            Text(
+                "Enter the verification token you received via email",
+              style: appTheme.textTheme.headline6,
+            ),
             const Padding(padding: EdgeInsets.all(12)),
             BlocBuilder<CreateAccountBloc, CreateAccountState>(
               buildWhen: (previous, current) => previous != current,
@@ -354,7 +387,10 @@ class CreateAccountPageState extends State<CreateAccountPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const Text("Enter the email address you wish to use"),
+              Text(
+                  "Enter the email address you wish to use",
+                style: appTheme.textTheme.headline6,
+              ),
               const Padding(padding: EdgeInsets.all(12)),
               _usernameInput(),
               const Padding(padding: EdgeInsets.all(12)),

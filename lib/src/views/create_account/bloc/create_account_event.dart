@@ -96,9 +96,17 @@ class CreateNewAccountRequested extends CreateAccountEvent {
   final String email;
   final String verificationToken;
   final String password;
+  final bool termsAndConditions;
+  final bool marketingEmails;
 
-  const CreateNewAccountRequested(this.email, this.verificationToken, this.password);
+  const CreateNewAccountRequested({
+    required this.email,
+    required this.verificationToken,
+    required this.password,
+    required this.termsAndConditions,
+    required this.marketingEmails,
+  });
 
   @override
-  List<Object> get props => [email, verificationToken, password];
+  List<Object> get props => [email, verificationToken, password, termsAndConditions, marketingEmails];
 }

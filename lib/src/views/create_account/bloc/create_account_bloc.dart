@@ -110,7 +110,8 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
     CreateNewAccountRequested event,
     Emitter<CreateAccountState> emit,
   ) async {
-    await userRepository.createNewUser(event.email, event.verificationToken);
+    await userRepository.createNewUser(
+        event.email, event.verificationToken, event.termsAndConditions, event.marketingEmails);
     await userRepository.resetUserPassword(event.email, event.password, event.verificationToken);
     emit(const AccountCreatedSuccessfully());
   }

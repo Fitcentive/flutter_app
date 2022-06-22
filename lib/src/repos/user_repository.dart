@@ -9,7 +9,8 @@ import 'package:http/http.dart' as http;
 class UserRepository {
   static const String BASE_URL = "http://api.vid.app/api/user";
 
-  Future<User> createNewUser(String email, String verificationToken) async {
+  Future<User> createNewUser(
+      String email, String verificationToken, bool termsAndConditions, bool subscribeToEmails) async {
     final response = await http.post(Uri.parse("$BASE_URL"),
         headers: {
           'Content-Type': 'application/json',
@@ -17,15 +18,15 @@ class UserRepository {
         body: json.encode({
           "email": email,
           "verificationToken": verificationToken,
-        })
-    );
+          "termsAndConditionsAccepted": termsAndConditions,
+          "subscribeToEmails": subscribeToEmails,
+        }));
 
     if (response.statusCode == 201) {
       return User.fromJson(jsonDecode(response.body));
     } else {
       throw Exception(
-          "createNewUser: Received bad response with status: ${response.statusCode} and body ${response.body}"
-      );
+          "createNewUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -45,8 +46,7 @@ class UserRepository {
       return false;
     } else {
       throw Exception(
-          "verifyEmailVerificationToken: Received bad response with status: ${response.statusCode} and body ${response.body}"
-      );
+          "verifyEmailVerificationToken: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -54,14 +54,11 @@ class UserRepository {
     final response = await http.head(Uri.parse("$BASE_URL/email?email=$email"));
     if (response.statusCode == HttpStatus.notFound) {
       return false;
-    }
-    else if (response.statusCode == HttpStatus.ok) {
+    } else if (response.statusCode == HttpStatus.ok) {
       return true;
-    }
-    else {
+    } else {
       throw Exception(
-          "checkIfUserExistsForEmail: Received bad response with status: ${response.statusCode} and body ${response.body}"
-      );
+          "checkIfUserExistsForEmail: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
