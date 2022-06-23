@@ -15,7 +15,6 @@ class AuthTokens extends Equatable {
   final int expiresIn;
   final int refreshExpiresIn;
   final String tokenType;
-  final String sessionState;
   final String scope;
 
   factory AuthTokens.fromJson(Map<String, dynamic> json) => _$AuthTokensFromJson(json);
@@ -28,7 +27,6 @@ class AuthTokens extends Equatable {
       this.expiresIn,
       this.refreshExpiresIn,
       this.tokenType,
-      this.sessionState,
       this.scope,
       );
 
@@ -39,7 +37,6 @@ class AuthTokens extends Equatable {
         refreshExpiresIn,
         refreshToken,
         tokenType,
-        sessionState,
         scope
       ];
 }

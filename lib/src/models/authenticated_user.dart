@@ -3,7 +3,8 @@ import 'package:flutter_app/src/models/user.dart';
 
 class AuthenticatedUser {
   final User user;
+  final String authProvider;
   final AuthTokens authTokens;
 
-  AuthenticatedUser(this.user, this.authTokens);
+  AuthenticatedUser(this.user, this.authTokens, this.authProvider);
 }

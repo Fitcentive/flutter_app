@@ -53,8 +53,25 @@ class LoginFormState extends State<LoginForm> {
             _loginButton(),
             const Padding(padding: EdgeInsets.all(6)),
             _createAccountButton(),
+            const Padding(padding: EdgeInsets.all(30)),
+            _googleLoginButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  _googleLoginButton() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () {
+            context.read<AuthenticationBloc>().add(const SignInWithOidcEvent(provider: "GoogleAuth"));
+        },
+        child: const Text('Login with Google', style: TextStyle(fontSize: 20, color: Colors.white)),
       ),
     );
   }

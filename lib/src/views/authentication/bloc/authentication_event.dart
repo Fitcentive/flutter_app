@@ -49,6 +49,16 @@ class SignInWithEmailEvent extends AuthenticationEvent {
   List<Object> get props => [email, password];
 }
 
+class SignInWithOidcEvent extends AuthenticationEvent {
+
+  final String provider;
+
+  const SignInWithOidcEvent({required this.provider});
+
+  @override
+  List<Object> get props => [provider];
+}
+
 class SignOutEvent extends AuthenticationEvent {
 
   final AuthenticatedUser user;

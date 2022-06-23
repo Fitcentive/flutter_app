@@ -17,7 +17,6 @@ AuthTokens _$AuthTokensFromJson(Map<String, dynamic> json) {
     json['expires_in'] as int,
     json['refresh_expires_in'] as int,
     json['token_type'] as String,
-    json['session_state'] as String,
     json['scope'] as String,
   );
 }
@@ -29,6 +28,5 @@ Map<String, dynamic> _$AuthTokensToJson(AuthTokens instance) =>
       'expires_in': instance.expiresIn,
       'refresh_expires_in': instance.refreshExpiresIn,
       'token_type': instance.tokenType,
-      'session_state': instance.sessionState,
       'scope': instance.scope,
     };
