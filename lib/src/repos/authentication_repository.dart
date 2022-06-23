@@ -22,7 +22,7 @@ class AuthenticationRepository {
     var uri = Uri.parse("$BASE_URL/logout/$authRealm");
     var request = http.MultipartRequest('POST', uri)
       ..headers["Authorization"] = "Bearer $accessToken"
-      ..fields['client_id'] = 'webapp'
+      ..fields['client_id'] = 'mobileapp'
       ..fields['refresh_token'] = refreshToken;
 
     final response = await request.send();
@@ -43,7 +43,7 @@ class AuthenticationRepository {
         oidcProviderInfo!.clientId, oidcProviderInfo.redirectUri,
         discoveryUrl: oidcProviderInfo.discoverUri,
         scopes: ['openid', 'profile', 'email'],
-        additionalParameters: {"kc_idp_hint": "google"}));
+        additionalParameters: {"kc_idp_hint": oidcProviderInfo.keycloakIdpHint}));
 
     final TokenResponse? result = await appAuth.token(TokenRequest(
         oidcProviderInfo.clientId, oidcProviderInfo.redirectUri,
@@ -72,7 +72,7 @@ class AuthenticationRepository {
     final response = await http.post(Uri.parse(url), body: {
       "username": username,
       "password": password,
-      "client_id": "webapp",
+      "client_id": "mobileapp",
       "grant_type": "password",
     });
 
