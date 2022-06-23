@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/authentication/bloc/authentication_state.dart';
@@ -69,7 +70,9 @@ class LoginFormState extends State<LoginForm> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
         ),
         onPressed: () {
-            context.read<AuthenticationBloc>().add(const SignInWithOidcEvent(provider: "GoogleAuth"));
+          context
+              .read<AuthenticationBloc>()
+              .add(const SignInWithOidcEvent(provider: OidcProviderInfo.GOOGLE_AUTH_PROVIDER));
         },
         child: const Text('Login with Google', style: TextStyle(fontSize: 20, color: Colors.white)),
       ),

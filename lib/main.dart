@@ -9,38 +9,35 @@ import 'package:flutter_app/src/views/create_account/create_account_page.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/login/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 void main() {
-  runApp(App(
-    authenticationRepository: AuthenticationRepository(),
-    userRepository: UserRepository(),
-  ));
+  runApp(const App());
 }
 
 class App extends StatelessWidget {
-  const App({
-    Key? key,
-    required this.authenticationRepository,
-    required this.userRepository,
-  }) : super(key: key);
+  const App({Key? key}) : super(key: key);
 
-  final AuthenticationRepository authenticationRepository;
-  final UserRepository userRepository;
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider.value(
-      value: authenticationRepository,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<AuthenticationRepository>(create: (context) => AuthenticationRepository()),
+        RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
+        RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage())
+      ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthenticationBloc>(
               create: (context) => AuthenticationBloc(
-                    authenticationRepository: authenticationRepository,
-                    userRepository: userRepository,
-                  )
+                authenticationRepository: RepositoryProvider.of<AuthenticationRepository>(context),
+                userRepository: RepositoryProvider.of<UserRepository>(context),
+                secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+              )
           ),
           BlocProvider<CreateAccountBloc>(create: (context) =>
-            CreateAccountBloc(userRepository: userRepository)
+              CreateAccountBloc(userRepository: RepositoryProvider.of<UserRepository>(context))
           )
         ],
         child: AppView(),
