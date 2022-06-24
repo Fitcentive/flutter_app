@@ -60,6 +60,23 @@ class UserRepository {
     }
   }
 
+  Future<bool> checkIfUsernameExists(String username, String accessToken) async {
+    final response = await http.head(
+      Uri.parse("$BASE_URL/username?username=$username"),
+      headers: {
+        'Authorization': 'Bearer $accessToken'
+      }
+    );
+    if (response.statusCode == HttpStatus.ok) {
+      return true;
+    } else if (response.statusCode == HttpStatus.notFound) {
+      return false;
+    } else {
+      throw Exception(
+          "checkIfUsernameExists: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<UserAgreements?> getUserAgreements(
       String userId,
       String accessToken) async {

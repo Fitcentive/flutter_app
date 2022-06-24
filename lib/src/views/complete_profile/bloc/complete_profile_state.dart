@@ -88,11 +88,13 @@ class ProfileInfoModified extends CompleteProfileState {
 
 class UsernameModified extends CompleteProfileState {
   final AuthenticatedUser user;
+  final bool doesUsernameExistAlready;
   final Username username;
   final FormzStatus status;
 
   const UsernameModified({
     required this.user,
+    this.doesUsernameExistAlready = true,
     this.status = FormzStatus.pure,
     this.username = const Username.pure(),
   });
@@ -100,9 +102,11 @@ class UsernameModified extends CompleteProfileState {
   UsernameModified copyWith({
     FormzStatus? status,
     Username? username,
+    bool? doesUsernameExistAlready,
   }) {
     return UsernameModified(
       user: user,
+      doesUsernameExistAlready: doesUsernameExistAlready ?? this.doesUsernameExistAlready,
       status: status ?? this.status,
       username: username ?? this.username,
     );

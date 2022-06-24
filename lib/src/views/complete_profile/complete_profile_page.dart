@@ -3,7 +3,9 @@ import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_blo
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
 import 'package:flutter_app/src/views/complete_profile/views/profile_info_view.dart';
+import 'package:flutter_app/src/views/complete_profile/views/select_username_view.dart';
 import 'package:flutter_app/src/views/complete_profile/views/terms_and_conditions_view.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -81,7 +83,10 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
       return BUTTON_AVAILABLE;
     } else if (currentState is ProfileInfoModified && currentState.status.isValid) {
       return BUTTON_AVAILABLE;
-    } else if (currentState is UsernameModified && currentState.status.isValid) {
+    } else if (currentState is UsernameModified &&
+        currentState.status.isValid &&
+        !currentState.doesUsernameExistAlready
+    ) {
       return BUTTON_AVAILABLE;
     } else {
       return BUTTON_DISABLED;
@@ -123,11 +128,7 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
               duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
         if (state is ProfileInfoComplete) {
-          // todo
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile info is complete, must navigate to next section now!')),
-          );
-          Navigator.pop(context);
+          Navigator.pushAndRemoveUntil<void>(context, HomePage.route(), (route) => false);
         }
       },
       child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
@@ -139,7 +140,7 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
               children: const [
                 CompleteProfileTermsAndConditionsView(),
                 ProfileInfoView(),
-                Text("Yet to come still"),
+                SelectUsernameView(),
               ],
             );
           }),

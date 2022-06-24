@@ -12,6 +12,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formz/formz.dart';
 import 'package:intl/intl.dart';
 
+// Todo - need a way to update auth bloc authenticated user upon completion of profile
 class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileState> {
   final UserRepository userRepository;
   final FlutterSecureStorage secureStorage;
@@ -26,19 +27,40 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     on<UsernameSubmitted>(_usernameSubmitted);
   }
 
-  void _usernameSubmitted(UsernameSubmitted event,
-      Emitter<CompleteProfileState> emit,) async {
-    emit(const ProfileInfoComplete());
+  void _usernameSubmitted(
+      UsernameSubmitted event,
+      Emitter<CompleteProfileState> emit
+      ) async {
+    final currentState = state;
+    if (currentState is UsernameModified) {
+      final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
+      final updateUser = UpdateUser(accountStatus: "LoginReady", username: event.username);
+      await userRepository.updateUser(event.user.user.id, updateUser, accessToken!);
+      emit(const ProfileInfoComplete());
+    }
   }
 
-  void _usernameChanged(UsernameChanged event,
-      Emitter<CompleteProfileState> emit,) async {
+  void _usernameChanged(
+      UsernameChanged event,
+      Emitter<CompleteProfileState> emit
+      ) async {
     final username = Username.dirty(event.username);
     final currentState = state;
     final newStatus = Formz.validate([username]);
 
     if (currentState is UsernameModified) {
-      emit(currentState.copyWith(status: newStatus, username: username));
+      if (newStatus.isValid) {
+        final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
+        final doesUsernameExistAlready = await userRepository.checkIfUsernameExists(event.username, accessToken!);
+        emit(currentState.copyWith(
+            status: newStatus,
+            username: username,
+            doesUsernameExistAlready: doesUsernameExistAlready
+        ));
+      }
+      else {
+        emit(currentState.copyWith(status: newStatus, username: username));
+      }
     }
   }
 
