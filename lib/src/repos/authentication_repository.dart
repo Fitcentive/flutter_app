@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 
 class AuthenticationRepository {
   static const String BASE_URL = "http://api.vid.app/api/auth";
@@ -17,6 +19,18 @@ class AuthenticationRepository {
 
   final FlutterAppAuth appAuth = const FlutterAppAuth();
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
+
+  Future<void> createNewSsoUser(String authRealm, String accessToken) async {
+    final response = await http
+        .post(Uri.parse("$BASE_URL/realm/$authRealm/user"), headers: {"Authorization": "Bearer $accessToken"});
+
+    if (response.statusCode == 201) {
+      return;
+    } else {
+      throw Exception(
+          "createNewSsoUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 
   Future<void> logout({required String accessToken, required String refreshToken, required String authRealm}) async {
     var uri = Uri.parse("$BASE_URL/logout/$authRealm");
@@ -67,9 +81,7 @@ class AuthenticationRepository {
     required String username,
     required String password,
   }) async {
-    String url = "${BASE_URL}/login/basic";
-
-    final response = await http.post(Uri.parse(url), body: {
+    final response = await http.post(Uri.parse("${BASE_URL}/login/basic"), body: {
       "username": username,
       "password": password,
       "client_id": "mobileapp",
@@ -82,6 +94,53 @@ class AuthenticationRepository {
       return parsedTokenResponse;
     } else {
       throw Exception("logIn: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<AuthTokens> refreshAccessToken({
+    required String accessToken,
+    required String refreshToken,
+    required String providerRealm,
+  }) async =>
+      refreshAccessTokenHelper(
+          refreshTokenEndpoint: "$BASE_URL/refresh",
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          providerRealm: providerRealm);
+
+  Future<AuthTokens> refreshNewSsoUserAccessToken({
+    required String accessToken,
+    required String refreshToken,
+    required String providerRealm,
+  }) async =>
+      refreshAccessTokenHelper(
+          refreshTokenEndpoint: "$BASE_URL/sso/refresh",
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          providerRealm: providerRealm);
+
+  Future<AuthTokens> refreshAccessTokenHelper({
+    required String refreshTokenEndpoint,
+    required String accessToken,
+    required String refreshToken,
+    required String providerRealm,
+  }) async {
+    var request = http.MultipartRequest('POST', Uri.parse(refreshTokenEndpoint))
+      ..headers["Authorization"] = "Bearer $accessToken"
+      ..fields['client_id'] = 'mobileapp'
+      ..fields['refresh_token'] = refreshToken
+      ..fields['realm'] = providerRealm;
+
+    final streamedResponse = await request.send();
+    final response = await Response.fromStream(streamedResponse);
+
+    if (response.statusCode == HttpStatus.ok) {
+      Map<String, dynamic> responseMap = jsonDecode(response.body);
+      final parsedTokenResponse = AuthTokens.fromJson(responseMap);
+      return parsedTokenResponse;
+    } else {
+      throw Exception(
+          "$refreshTokenEndpoint: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 }

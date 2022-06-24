@@ -37,10 +37,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<SignOutEvent>(_signOut);
   }
 
-  void _signInWithEmail(
-    SignInWithEmailEvent event,
-    Emitter<AuthenticationState> emit,
-  ) async {
+  void _signInWithEmail(SignInWithEmailEvent event,
+      Emitter<AuthenticationState> emit,) async {
     try {
       emit(const AuthLoadingState());
       final authTokens = await authenticationRepository.basicLogIn(username: event.email, password: event.password);
@@ -52,13 +50,10 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     }
   }
 
-  void _signInWithOidc(
-    SignInWithOidcEvent event,
-    Emitter<AuthenticationState> emit,
-  ) async {
+  void _signInWithOidc(SignInWithOidcEvent event,
+      Emitter<AuthenticationState> emit,) async {
     final authTokens = await authenticationRepository.oidcLogin(providerRealm: event.provider);
     final authenticatedUser = await _storeTokensAndGetAuthenticatedUser(authTokens, event.provider);
-    // todo - rename client, separate redirect URLs
     emit(AuthSuccessState(authenticatedUser: authenticatedUser));
   }
 
@@ -66,8 +61,24 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     await secureStorage.write(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY, value: authTokens.accessToken);
     await secureStorage.write(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY, value: authTokens.refreshToken);
     final userId = JwtUtils.getUserIdFromJwtToken(authTokens.accessToken);
-    final user = await userRepository.getUser(userId!, authTokens.accessToken);
-    return AuthenticatedUser(user!, SecureAuthTokens.fromAuthTokens(authTokens), authRealm);
+    if (userId == null) {
+      // This is the case when a new user logins with SSO for the first time, and there is no user ID yet
+      await authenticationRepository.createNewSsoUser(authRealm, authTokens.accessToken);
+      final freshTokens = await authenticationRepository.refreshNewSsoUserAccessToken(
+          accessToken: authTokens.accessToken,
+          refreshToken: authTokens.refreshToken,
+          providerRealm: authRealm
+      );
+      await secureStorage.write(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY, value: freshTokens.accessToken);
+      await secureStorage.write(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY, value: freshTokens.refreshToken);
+      final freshUserId = JwtUtils.getUserIdFromJwtToken(freshTokens.accessToken);
+      final user = await userRepository.getUser(freshUserId!, freshTokens.accessToken);
+      return AuthenticatedUser(user!, SecureAuthTokens.fromAuthTokens(freshTokens), authRealm);
+    }
+    else {
+      final user = await userRepository.getUser(userId, authTokens.accessToken);
+      return AuthenticatedUser(user!, SecureAuthTokens.fromAuthTokens(authTokens), authRealm);
+    }
   }
 
   // todo - null safety error handling?
@@ -82,20 +93,16 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     emit(AuthInitialState());
   }
 
-  void _initiateAuthenticationFlow(
-    InitiateAuthenticationFlow event,
-    Emitter<AuthenticationState> emit,
-  ) async {
+  void _initiateAuthenticationFlow(InitiateAuthenticationFlow event,
+      Emitter<AuthenticationState> emit,) async {
     final username = event.username.isEmpty ? const Email.pure() : Email.dirty(event.username);
     final password = event.password.isEmpty ? const Password.pure() : Password.dirty(event.password);
     final status = Formz.validate([username, password]);
     emit(AuthCredentialsModified(status: status, username: username, password: password));
   }
 
-  void _onUsernameChanged(
-    LoginUsernameChanged event,
-    Emitter<AuthenticationState> emit,
-  ) {
+  void _onUsernameChanged(LoginUsernameChanged event,
+      Emitter<AuthenticationState> emit,) {
     final username = Email.dirty(event.username);
     final currentState = state;
 
@@ -107,10 +114,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     }
   }
 
-  void _onPasswordChanged(
-    LoginPasswordChanged event,
-    Emitter<AuthenticationState> emit,
-  ) {
+  void _onPasswordChanged(LoginPasswordChanged event,
+      Emitter<AuthenticationState> emit,) {
     final password = Password.dirty(event.password);
     final currentState = state;
 
