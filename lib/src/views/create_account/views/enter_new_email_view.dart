@@ -23,14 +23,14 @@ class EnterNewEmailView extends StatelessWidget {
                 style: appTheme.textTheme.headline6,
               ),
               const Padding(padding: EdgeInsets.all(12)),
-              _usernameInput(),
+              _emailInput(),
               const Padding(padding: EdgeInsets.all(12)),
             ],
           )),
     );
   }
 
-  _usernameInput() {
+  _emailInput() {
     return BlocBuilder<CreateAccountBloc, CreateAccountState>(
       buildWhen: (previous, current) => previous != current,
       builder: (context, state) {

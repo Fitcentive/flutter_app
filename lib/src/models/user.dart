@@ -37,3 +37,18 @@ class User extends Equatable {
         updatedAt,
       ];
 }
+
+class UpdateUser extends Equatable {
+  final String? username;
+  final String? accountStatus;
+  final bool? enabled;
+
+  const UpdateUser({this.username, this.accountStatus, this.enabled});
+
+  @override
+  List<Object?> get props => [
+    username,
+    accountStatus,
+    enabled,
+  ];
+}

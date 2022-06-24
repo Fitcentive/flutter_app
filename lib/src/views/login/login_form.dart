@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
-import 'package:flutter_app/src/views/authentication/bloc/authentication_bloc.dart';
-import 'package:flutter_app/src/views/authentication/bloc/authentication_event.dart';
-import 'package:flutter_app/src/views/authentication/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';

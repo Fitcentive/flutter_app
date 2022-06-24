@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
@@ -11,11 +10,11 @@ import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/repos/authentication_repository.dart';
 import 'package:flutter_app/src/repos/user_repository.dart';
 import 'package:flutter_app/src/utils/jwt_utils.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formz/formz.dart';
 
 import 'authentication_event.dart';
-import 'authentication_state.dart';
 
 // todo - strategy for handling exceptions thrown
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
@@ -43,7 +42,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       emit(const AuthLoadingState());
       final authTokens = await authenticationRepository.basicLogIn(username: event.email, password: event.password);
       final authenticatedUser =
-          await _storeTokensAndGetAuthenticatedUser(authTokens, OidcProviderInfo.NATIVE_AUTH_PROVIDER);
+      await _storeTokensAndGetAuthenticatedUser(authTokens, OidcProviderInfo.NATIVE_AUTH_PROVIDER);
       emit(AuthSuccessState(authenticatedUser: authenticatedUser));
     } catch (e) {
       emit(AuthFailureState());
@@ -70,14 +69,31 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
           providerRealm: authRealm
       );
       await secureStorage.write(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY, value: freshTokens.accessToken);
-      await secureStorage.write(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY, value: freshTokens.refreshToken);
+      await secureStorage.write(
+          key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY, value: freshTokens.refreshToken);
       final freshUserId = JwtUtils.getUserIdFromJwtToken(freshTokens.accessToken);
       final user = await userRepository.getUser(freshUserId!, freshTokens.accessToken);
-      return AuthenticatedUser(user!, SecureAuthTokens.fromAuthTokens(freshTokens), authRealm);
+      final userProfile = await userRepository.getUserProfile(freshUserId, freshTokens.accessToken);
+      final userAgreements = await userRepository.getUserAgreements(freshUserId, freshTokens.accessToken);
+      return AuthenticatedUser(
+          user: user!,
+          userProfile: userProfile,
+          userAgreements: userAgreements,
+          authTokens: SecureAuthTokens.fromAuthTokens(freshTokens),
+          authProvider: authRealm
+      );
     }
     else {
       final user = await userRepository.getUser(userId, authTokens.accessToken);
-      return AuthenticatedUser(user!, SecureAuthTokens.fromAuthTokens(authTokens), authRealm);
+      final userProfile = await userRepository.getUserProfile(userId, authTokens.accessToken);
+      final userAgreements = await userRepository.getUserAgreements(userId, authTokens.accessToken);
+      return AuthenticatedUser(
+          user: user!,
+          userProfile: userProfile,
+          userAgreements: userAgreements,
+          authTokens: SecureAuthTokens.fromAuthTokens(authTokens),
+          authProvider: authRealm
+      );
     }
   }
 

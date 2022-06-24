@@ -22,15 +22,14 @@ class CreateAccountPage extends StatefulWidget {
   }
 }
 
-// todo - split up widget into separate
 class CreateAccountPageState extends State<CreateAccountPage> {
   late CreateAccountBloc _createAccountBloc;
   final PageController _pageController = PageController();
 
   static const int ENTER_NEW_EMAIL_PAGE = 0;
-  static const int ENTER_VERIFICATION_TOKENS_PAGE = 0;
-  static const int ENTER_PASSWORD_PAGE = 0;
-  static const int ENTER_TERMS_PAGE = 0;
+  static const int ENTER_VERIFICATION_TOKENS_PAGE = 1;
+  static const int ENTER_PASSWORD_PAGE = 2;
+  static const int ENTER_TERMS_PAGE = 3;
 
   static const MaterialColor BUTTON_AVAILABLE = Colors.teal;
   static const MaterialColor BUTTON_DISABLED = Colors.grey;
@@ -117,13 +116,13 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     return BlocListener<CreateAccountBloc, CreateAccountState>(
       listener: (context, state) {
         if (state is UnverifiedEmailAddress) {
-          _pageController.animateToPage(1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+          _pageController.animateToPage(ENTER_VERIFICATION_TOKENS_PAGE, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
         if (state is VerifiedEmailAddress) {
-          _pageController.animateToPage(2, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+          _pageController.animateToPage(ENTER_PASSWORD_PAGE, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
         if (state is PasswordConfirmed) {
-          _pageController.animateToPage(3, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+          _pageController.animateToPage(ENTER_TERMS_PAGE, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
         if (state is AccountCreatedSuccessfully) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/views/authentication/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../authentication/bloc/authentication_bloc.dart';
-import '../authentication/bloc/authentication_event.dart';
+import '../login/bloc/authentication_bloc.dart';
+import '../login/bloc/authentication_event.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -43,7 +43,7 @@ class HomePageState extends State<HomePage> {
               builder: (context) {
                 final currentAuthBlocState = context.select((AuthenticationBloc bloc) => bloc.state);
                 if (currentAuthBlocState is AuthSuccessState) {
-                  return Text('UserID: ${currentAuthBlocState.authenticatedUser.user.id}');
+                  return Text('UserID: ${currentAuthBlocState.authenticatedUser.user}');
                 }
                 else {
                   return Text('Forbidden state!');

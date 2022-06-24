@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/repos/authentication_repository.dart';
 import 'package:flutter_app/src/repos/user_repository.dart';
+import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
+import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
 import 'package:flutter_app/theme.dart';
-import 'package:flutter_app/src/views/authentication/bloc/authentication_bloc.dart';
-import 'package:flutter_app/src/views/authentication/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/create_account_page.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
@@ -11,13 +12,14 @@ import 'package:flutter_app/src/views/login/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'src/views/login/bloc/authentication_state.dart';
+
 void main() {
   runApp(const App());
 }
 
 class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
-
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +33,16 @@ class App extends StatelessWidget {
         providers: [
           BlocProvider<AuthenticationBloc>(
               create: (context) => AuthenticationBloc(
-                authenticationRepository: RepositoryProvider.of<AuthenticationRepository>(context),
-                userRepository: RepositoryProvider.of<UserRepository>(context),
-                secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
-              )
-          ),
-          BlocProvider<CreateAccountBloc>(create: (context) =>
-              CreateAccountBloc(userRepository: RepositoryProvider.of<UserRepository>(context))
-          )
+                    authenticationRepository: RepositoryProvider.of<AuthenticationRepository>(context),
+                    userRepository: RepositoryProvider.of<UserRepository>(context),
+                    secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+                  )),
+          BlocProvider<CreateAccountBloc>(
+              create: (context) => CreateAccountBloc(userRepository: RepositoryProvider.of<UserRepository>(context))),
+          BlocProvider<CompleteProfileBloc>(
+              create: (context) => CompleteProfileBloc(
+                  userRepository: RepositoryProvider.of<UserRepository>(context),
+                  secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context)))
         ],
         child: AppView(),
       ),
@@ -70,7 +74,7 @@ class _AppViewState extends State<AppView> {
           listener: (context, state) {
             if (state is AuthSuccessState) {
               _navigator.pushAndRemoveUntil<void>(
-                HomePage.route(),
+                CompleteProfilePage.route(),
                 (route) => false,
               );
             } else if (state is AuthInitialState) {
