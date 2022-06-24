@@ -1,7 +1,7 @@
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/models/login/email_verification_token.dart';
 import 'package:flutter_app/src/models/login/password.dart';
-import 'package:flutter_app/src/repos/user_repository.dart';
+import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

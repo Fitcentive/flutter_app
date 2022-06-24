@@ -32,7 +32,6 @@ class EnterNewEmailView extends StatelessWidget {
 
   _emailInput() {
     return BlocBuilder<CreateAccountBloc, CreateAccountState>(
-      buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
             key: const Key('createAccountForm_usernameInput_textField'),

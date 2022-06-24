@@ -15,7 +15,6 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
       child: Padding(
           padding: EdgeInsets.all(12),
           child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-              buildWhen: (previous, current) => previous != current,
               builder: (context, state) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,

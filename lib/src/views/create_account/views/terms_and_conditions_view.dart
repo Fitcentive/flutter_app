@@ -15,7 +15,6 @@ class TermsAndConditionsView extends StatelessWidget {
       child: Padding(
           padding: EdgeInsets.all(12),
           child: BlocBuilder<CreateAccountBloc, CreateAccountState>(
-              buildWhen: (previous, current) => previous != current,
               builder: (context, state) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,

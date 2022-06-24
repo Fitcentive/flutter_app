@@ -1,10 +1,14 @@
+import 'dart:async';
+
+import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/date_of_birth.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
 import 'package:flutter_app/src/models/complete_profile/username.dart';
 import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
-import 'package:flutter_app/src/repos/user_repository.dart';
+import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,12 +16,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formz/formz.dart';
 import 'package:intl/intl.dart';
 
-// Todo - need a way to update auth bloc authenticated user upon completion of profile
 class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileState> {
   final UserRepository userRepository;
+  final AuthenticatedUserStreamRepository authUserStreamRepository;
   final FlutterSecureStorage secureStorage;
 
-  CompleteProfileBloc({required this.userRepository, required this.secureStorage}) : super(const InitialState()) {
+  CompleteProfileBloc({
+    required this.userRepository,
+    required this.secureStorage,
+    required this.authUserStreamRepository,
+  }) : super(const InitialState()) {
     on<InitialEvent>(_initialEvent);
     on<CompleteProfileTermsAndConditionsChanged>(_termsAndConditionsChanged);
     on<CompleteProfileTermsAndConditionsSubmitted>(_termsAndConditionsSubmitted);
@@ -35,7 +43,15 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     if (currentState is UsernameModified) {
       final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
       final updateUser = UpdateUser(accountStatus: "LoginReady", username: event.username);
-      await userRepository.updateUser(event.user.user.id, updateUser, accessToken!);
+      final updatedUser = await userRepository.updateUser(event.user.user.id, updateUser, accessToken!);
+      final updatedAuthenticatedUser = AuthenticatedUser(
+          user: updatedUser,
+          userAgreements: event.user.userAgreements,
+          userProfile: event.user.userProfile,
+          authTokens: event.user.authTokens,
+          authProvider: event.user.authProvider
+      );
+      authUserStreamRepository.newUser(updatedAuthenticatedUser);
       emit(const ProfileInfoComplete());
     }
   }
@@ -72,9 +88,17 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     );
     const updateUser = UpdateUser(accountStatus: "UsernameCreationRequired");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
-    await userRepository.createOrUpdateUserProfile(event.user.user.id, updateUserProfile, accessToken!);
-    await userRepository.updateUser(event.user.user.id, updateUser, accessToken);
-    emit(UsernameModified(user: event.user));
+    final userProfile = await userRepository.createOrUpdateUserProfile(event.user.user.id, updateUserProfile, accessToken!);
+    final updatedUser = await userRepository.updateUser(event.user.user.id, updateUser, accessToken);
+    final updatedAuthenticatedUser = AuthenticatedUser(
+        user: updatedUser,
+        userAgreements: event.user.userAgreements,
+        userProfile: userProfile,
+        authTokens: event.user.authTokens,
+        authProvider: event.user.authProvider
+    );
+    authUserStreamRepository.newUser(updatedAuthenticatedUser);
+    emit(UsernameModified(user: updatedAuthenticatedUser));
   }
 
   void _profileInfoChanged(ProfileInfoChanged event,
@@ -86,8 +110,12 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     final newStatus = Formz.validate([firstName, lastname, dateOfBirth]);
 
     if (currentState is ProfileInfoModified) {
-      emit(
-          currentState.copyWith(status: newStatus, firstName: firstName, lastName: lastname, dateOfBirth: dateOfBirth));
+      emit(currentState.copyWith(
+          status: newStatus,
+          firstName: firstName,
+          lastName: lastname,
+          dateOfBirth: dateOfBirth
+      ));
     }
   }
 
@@ -99,9 +127,17 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     );
     const updateUser = UpdateUser(accountStatus: "ProfileInfoRequired");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
-    await userRepository.updateUserAgreements(event.user.user.id, updateAgreements, accessToken!);
-    await userRepository.updateUser(event.user.user.id, updateUser, accessToken);
-    emit(ProfileInfoModified(user: event.user));
+    final userAgreements = await userRepository.updateUserAgreements(event.user.user.id, updateAgreements, accessToken!);
+    final updatedUser =  await userRepository.updateUser(event.user.user.id, updateUser, accessToken);
+    final updatedAuthenticatedUser = AuthenticatedUser(
+        user: updatedUser,
+        userAgreements: userAgreements,
+        userProfile: event.user.userProfile,
+        authTokens: event.user.authTokens,
+        authProvider: event.user.authProvider
+    );
+    authUserStreamRepository.newUser(updatedAuthenticatedUser);
+    emit(ProfileInfoModified(user: updatedAuthenticatedUser));
   }
 
   void _termsAndConditionsChanged(CompleteProfileTermsAndConditionsChanged event,

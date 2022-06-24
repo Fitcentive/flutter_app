@@ -25,11 +25,21 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
 
   @override
   void initState() {
+    super.initState();
+
     _completeProfileBloc = BlocProvider.of<CompleteProfileBloc>(context);
     final currentState = _completeProfileBloc.state;
     if (currentState is ProfileInfoModified) {
-      _firstNameController.text = currentState.user.userProfile?.firstName ?? "";
-      _lastNameController.text = currentState.user.userProfile?.lastName ?? "";
+      final userFirstName = currentState.user.userProfile?.firstName ?? "";
+      final userLastName = currentState.user.userProfile?.lastName ?? "";
+      _firstNameController.text = userFirstName;
+      _lastNameController.text = userLastName;
+      _completeProfileBloc.add(ProfileInfoChanged(
+          user: currentState.user,
+          firstName: userFirstName,
+          lastName: userLastName,
+          dateOfBirth: DateTime.parse(currentState.dateOfBirth.value)
+      ));
     }
   }
 
@@ -40,7 +50,6 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
       child: Padding(
           padding: const EdgeInsets.all(12),
           child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-              buildWhen: (previous, current) => previous != current,
               builder: (context, state) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -85,7 +94,6 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
 
   Widget _nameInput(String key) {
     return BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-      buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
             controller: key == "First Name" ? _firstNameController : _lastNameController,

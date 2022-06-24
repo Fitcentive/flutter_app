@@ -28,6 +28,7 @@ class HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    super.initState();
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
   }
 
@@ -44,6 +45,8 @@ class HomePageState extends State<HomePage> {
                 final currentAuthBlocState = context.select((AuthenticationBloc bloc) => bloc.state);
                 if (currentAuthBlocState is AuthSuccessState) {
                   return Text('UserID: ${currentAuthBlocState.authenticatedUser.user}');
+                } else if (currentAuthBlocState is AuthSuccessUserUpdateState) {
+                  return Text('UserID: ${currentAuthBlocState.authenticatedUser.user}');
                 }
                 else {
                   return Text('Forbidden state!');
@@ -55,11 +58,9 @@ class HomePageState extends State<HomePage> {
               onPressed: () {
                 final currentAuthBlocState = _authenticationBloc.state;
                 if (currentAuthBlocState is AuthSuccessState)  {
-                  _authenticationBloc
-                      .add(SignOutEvent(user: currentAuthBlocState.authenticatedUser));
-                }
-                else {
-                  throw Exception("sdffdf");
+                  _authenticationBloc.add(SignOutEvent(user: currentAuthBlocState.authenticatedUser));
+                } else if (currentAuthBlocState is AuthSuccessUserUpdateState) {
+                  _authenticationBloc.add(SignOutEvent(user: currentAuthBlocState.authenticatedUser));
                 }
               },
             ),

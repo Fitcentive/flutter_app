@@ -50,7 +50,6 @@ class SelectUsernameViewState extends State<SelectUsernameView> {
 
   _usernameInput() {
     return BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-      buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
             key: const Key('completeProfileForm_usernameInput_textField'),

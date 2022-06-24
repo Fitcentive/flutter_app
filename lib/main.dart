@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/repos/authentication_repository.dart';
-import 'package:flutter_app/src/repos/user_repository.dart';
-import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
+import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
+import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
@@ -27,7 +27,8 @@ class App extends StatelessWidget {
       providers: [
         RepositoryProvider<AuthenticationRepository>(create: (context) => AuthenticationRepository()),
         RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
-        RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage())
+        RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage()),
+        RepositoryProvider<AuthenticatedUserStreamRepository>(create: (context) => AuthenticatedUserStreamRepository()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -36,13 +37,10 @@ class App extends StatelessWidget {
                     authenticationRepository: RepositoryProvider.of<AuthenticationRepository>(context),
                     userRepository: RepositoryProvider.of<UserRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+                    authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
                   )),
           BlocProvider<CreateAccountBloc>(
               create: (context) => CreateAccountBloc(userRepository: RepositoryProvider.of<UserRepository>(context))),
-          BlocProvider<CompleteProfileBloc>(
-              create: (context) => CompleteProfileBloc(
-                  userRepository: RepositoryProvider.of<UserRepository>(context),
-                  secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context)))
         ],
         child: AppView(),
       ),
@@ -66,7 +64,9 @@ class _AppViewState extends State<AppView> {
       theme: appTheme,
       darkTheme: darkTheme,
       routes: {
+        '/home': (context) => const HomePage(),
         '/create-account': (context) => const CreateAccountPage(),
+        '/complete-profile': (context) => const CompleteProfilePage(),
       },
       navigatorKey: _navigatorKey,
       builder: (context, child) {

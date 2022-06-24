@@ -59,6 +59,16 @@ class SignInWithOidcEvent extends AuthenticationEvent {
   List<Object> get props => [provider];
 }
 
+class AuthenticatedUserDataUpdated extends AuthenticationEvent {
+
+  final AuthenticatedUser user;
+
+  const AuthenticatedUserDataUpdated({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}
+
 class SignOutEvent extends AuthenticationEvent {
 
   final AuthenticatedUser user;

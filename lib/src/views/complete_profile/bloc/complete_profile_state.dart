@@ -61,7 +61,7 @@ class ProfileInfoModified extends CompleteProfileState {
   const ProfileInfoModified({
     required this.user,
     this.status = FormzStatus.pure,
-    this.firstName = const Name.pure(),
+    this.firstName =  const Name.pure(),
     this.lastName = const Name.pure(),
     this.dateOfBirth = const DateOfBirth.pure(),
   });

@@ -60,6 +60,15 @@ class AuthSuccessState extends AuthenticationState {
   List<Object> get props => [authenticatedUser];
 }
 
+class AuthSuccessUserUpdateState extends AuthenticationState {
+  final AuthenticatedUser authenticatedUser;
+
+  const AuthSuccessUserUpdateState({required this.authenticatedUser});
+
+  @override
+  List<Object> get props => [authenticatedUser];
+}
+
 class UnauthorizedState extends AuthenticationState {}
 
 class AuthFailureState extends AuthenticationState {}

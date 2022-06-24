@@ -22,6 +22,7 @@ class LoginFormState extends State<LoginForm> {
 
   @override
   void initState() {
+    super.initState();
     context.read<AuthenticationBloc>().add(const InitiateAuthenticationFlow(username: "", password: ""));
   }
 
@@ -81,7 +82,6 @@ class LoginFormState extends State<LoginForm> {
 
   _usernameInput() {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(
-      buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
             controller: _usernameController,
@@ -99,7 +99,6 @@ class LoginFormState extends State<LoginForm> {
 
   _passwordInput() {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(
-      buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
           controller: _passwordController,
@@ -141,7 +140,6 @@ class LoginFormState extends State<LoginForm> {
 
   _loginButton() {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(
-      buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         final currentState = state;
         if (currentState is AuthLoadingState) {

@@ -43,6 +43,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
 
   @override
   void initState() {
+    super.initState();
     _createAccountBloc = BlocProvider.of<CreateAccountBloc>(context);
     _createAccountBloc.add(const InitiateCreateAccountFlow());
   }
@@ -67,7 +68,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
 
   _nextButton() {
     return BlocBuilder<CreateAccountBloc, CreateAccountState>(
-        buildWhen: (previous, current) => previous != current,
         builder: (context, state) {
           return FloatingActionButton(
               onPressed: _onFloatingActionButtonPress,
@@ -142,7 +142,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
         }
       },
       child: BlocBuilder<CreateAccountBloc, CreateAccountState>(
-          buildWhen: (previous, current) => previous != current,
           builder: (context, state) {
             return PageView(
               controller: _pageController,

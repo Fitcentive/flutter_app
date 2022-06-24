@@ -45,7 +45,6 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
 
   Widget _passwordWidget() {
     return BlocBuilder<CreateAccountBloc, CreateAccountState>(
-      buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
             key: const Key('createAccountForm_passwordInput_textField'),
@@ -67,7 +66,6 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
 
   Widget _passwordConfirmationWidget() {
     return BlocBuilder<CreateAccountBloc, CreateAccountState>(
-      buildWhen: (previous, current) => previous != current,
       builder: (context, state) {
         return TextField(
             key: const Key('createAccountForm_passwordInputConfirmation_textField'),

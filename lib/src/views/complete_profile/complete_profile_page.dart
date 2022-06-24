@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
@@ -9,13 +11,25 @@ import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formz/formz.dart';
 
 class CompleteProfilePage extends StatefulWidget {
   const CompleteProfilePage({Key? key}) : super(key: key);
 
   static Route route() {
-    return MaterialPageRoute<void>(builder: (_) => const CompleteProfilePage());
+    return MaterialPageRoute<void>(
+        builder: (_) => MultiBlocProvider(
+              providers: [
+                BlocProvider<CompleteProfileBloc>(
+                    create: (context) => CompleteProfileBloc(
+                          userRepository: RepositoryProvider.of<UserRepository>(context),
+                          secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+                          authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
+                        )),
+              ],
+              child: const CompleteProfilePage(),
+            ));
   }
 
   @override
@@ -44,6 +58,7 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
 
   @override
   void initState() {
+    super.initState();
     _completeProfileBloc = BlocProvider.of<CompleteProfileBloc>(context);
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
 
@@ -67,14 +82,12 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
   }
 
   _nextButton() {
-    return BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-        buildWhen: (previous, current) => previous != current,
-        builder: (context, state) {
-          return FloatingActionButton(
-              onPressed: _onFloatingActionButtonPress,
-              backgroundColor: _getBackgroundColor(),
-              child: const Icon(Icons.navigate_next_sharp));
-        });
+    return BlocBuilder<CompleteProfileBloc, CompleteProfileState>(builder: (context, state) {
+      return FloatingActionButton(
+          onPressed: _onFloatingActionButtonPress,
+          backgroundColor: _getBackgroundColor(),
+          child: const Icon(Icons.navigate_next_sharp));
+    });
   }
 
   MaterialColor _getBackgroundColor() {
@@ -85,8 +98,7 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
       return BUTTON_AVAILABLE;
     } else if (currentState is UsernameModified &&
         currentState.status.isValid &&
-        !currentState.doesUsernameExistAlready
-    ) {
+        !currentState.doesUsernameExistAlready) {
       return BUTTON_AVAILABLE;
     } else {
       return BUTTON_DISABLED;
@@ -131,19 +143,17 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
           Navigator.pushAndRemoveUntil<void>(context, HomePage.route(), (route) => false);
         }
       },
-      child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-          buildWhen: (previous, current) => previous != current,
-          builder: (context, state) {
-            return PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: const [
-                CompleteProfileTermsAndConditionsView(),
-                ProfileInfoView(),
-                SelectUsernameView(),
-              ],
-            );
-          }),
+      child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(builder: (context, state) {
+        return PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: const [
+            CompleteProfileTermsAndConditionsView(),
+            ProfileInfoView(),
+            SelectUsernameView(),
+          ],
+        );
+      }),
     );
   }
 }

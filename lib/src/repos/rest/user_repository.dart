@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:flutter_app/src/models/user_agreements.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 
-import '../models/user.dart';
+import '../../models/user.dart';
 
 import 'package:http/http.dart' as http;
 

@@ -24,7 +24,6 @@ class EnterVerificationTokenView extends StatelessWidget {
             ),
             const Padding(padding: EdgeInsets.all(12)),
             BlocBuilder<CreateAccountBloc, CreateAccountState>(
-              buildWhen: (previous, current) => previous != current,
               builder: (context, state) {
                 return TextField(
                     textAlign: TextAlign.center,

@@ -7,8 +7,9 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/login/password.dart';
 import 'package:flutter_app/src/models/login/email.dart';
-import 'package:flutter_app/src/repos/authentication_repository.dart';
-import 'package:flutter_app/src/repos/user_repository.dart';
+import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
+import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/utils/jwt_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -21,11 +22,15 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   final AuthenticationRepository authenticationRepository;
   final UserRepository userRepository;
   final FlutterSecureStorage secureStorage;
+  final AuthenticatedUserStreamRepository authUserStreamRepository;
+
+  late final StreamSubscription<AuthenticatedUser>_authenticatedUserSubscription;
 
   AuthenticationBloc({
     required this.authenticationRepository,
     required this.userRepository,
     required this.secureStorage,
+    required this.authUserStreamRepository
   }) : super(AuthInitialState()) {
     // Event-Handler mappings
     on<SignInWithEmailEvent>(_signInWithEmail);
@@ -34,9 +39,21 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<InitiateAuthenticationFlow>(_initiateAuthenticationFlow);
     on<SignInWithOidcEvent>(_signInWithOidc);
     on<SignOutEvent>(_signOut);
+    on<AuthenticatedUserDataUpdated>(_authenticatedUserDataUpdated);
+
+    _authenticatedUserSubscription = authUserStreamRepository.authenticatedUser.listen((newUser) {
+      add(AuthenticatedUserDataUpdated(user: newUser));
+    });
   }
 
-  void _signInWithEmail(SignInWithEmailEvent event,
+  void _authenticatedUserDataUpdated(
+      AuthenticatedUserDataUpdated event,
+      Emitter<AuthenticationState> emit) async {
+    emit(AuthSuccessUserUpdateState(authenticatedUser: event.user));
+  }
+
+  void _signInWithEmail(
+      SignInWithEmailEvent event,
       Emitter<AuthenticationState> emit,) async {
     try {
       emit(const AuthLoadingState());
@@ -97,7 +114,6 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     }
   }
 
-  // todo - null safety error handling?
   void _signOut(SignOutEvent event, Emitter<AuthenticationState> emit) async {
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final refreshToken = await secureStorage.read(key: event.user.authTokens.refreshTokenSecureStorageKey);
@@ -106,6 +122,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       refreshToken: refreshToken!,
       authRealm: event.user.authProvider,
     );
+    await secureStorage.delete(key: event.user.authTokens.accessTokenSecureStorageKey);
+    await secureStorage.delete(key: event.user.authTokens.refreshTokenSecureStorageKey);
     emit(AuthInitialState());
   }
 
