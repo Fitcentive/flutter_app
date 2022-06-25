@@ -29,7 +29,7 @@ class UserRepository {
           "subscribeToEmails": subscribeToEmails,
         }));
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == HttpStatus.created) {
       return User.fromJson(jsonDecode(response.body));
     } else {
       throw Exception(

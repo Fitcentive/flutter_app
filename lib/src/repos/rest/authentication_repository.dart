@@ -23,7 +23,7 @@ class AuthenticationRepository {
     final response = await http
         .post(Uri.parse("$BASE_URL/realm/$authRealm/user"), headers: {"Authorization": "Bearer $accessToken"});
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == HttpStatus.created) {
       return;
     } else {
       throw Exception(
