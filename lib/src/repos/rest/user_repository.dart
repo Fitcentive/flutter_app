@@ -12,8 +12,12 @@ import 'package:http/http.dart' as http;
 class UserRepository {
   static const String BASE_URL = "http://api.vid.app/api/user";
 
-  Future<User> createNewUser(String email, String verificationToken, bool termsAndConditions,
-      bool subscribeToEmails) async {
+  Future<User> createNewUser(
+      String email,
+      String verificationToken,
+      bool termsAndConditions,
+      bool subscribeToEmails
+      ) async {
     final response = await http.post(Uri.parse("$BASE_URL"),
         headers: {
           'Content-Type': 'application/json',
@@ -36,7 +40,8 @@ class UserRepository {
   Future<UserAgreements> updateUserAgreements(
       String userId,
       UpdateUserAgreements userAgreements,
-      String accessToken) async {
+      String accessToken
+      ) async {
     final jsonBody = {
       'termsAndConditionsAccepted' : userAgreements.termsAndConditionsAccepted,
       'subscribeToEmails': userAgreements.subscribeToEmails,

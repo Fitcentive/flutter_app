@@ -59,6 +59,16 @@ class SignInWithOidcEvent extends AuthenticationEvent {
   List<Object> get props => [provider];
 }
 
+class RefreshAccessTokenRequested extends AuthenticationEvent {
+
+  final AuthenticatedUser user;
+
+  const RefreshAccessTokenRequested({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}
+
 class AuthenticatedUserDataUpdated extends AuthenticationEvent {
 
   final AuthenticatedUser user;

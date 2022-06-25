@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
@@ -102,24 +101,26 @@ class AuthenticationRepository {
     required String refreshToken,
     required String providerRealm,
   }) async =>
-      refreshAccessTokenHelper(
+      _refreshAccessTokenHelper(
           refreshTokenEndpoint: "$BASE_URL/refresh",
           accessToken: accessToken,
           refreshToken: refreshToken,
-          providerRealm: providerRealm);
+          providerRealm: providerRealm
+      );
 
   Future<AuthTokens> refreshNewSsoUserAccessToken({
     required String accessToken,
     required String refreshToken,
     required String providerRealm,
   }) async =>
-      refreshAccessTokenHelper(
+      _refreshAccessTokenHelper(
           refreshTokenEndpoint: "$BASE_URL/sso/refresh",
           accessToken: accessToken,
           refreshToken: refreshToken,
-          providerRealm: providerRealm);
+          providerRealm: providerRealm
+      );
 
-  Future<AuthTokens> refreshAccessTokenHelper({
+  Future<AuthTokens> _refreshAccessTokenHelper({
     required String refreshTokenEndpoint,
     required String accessToken,
     required String refreshToken,

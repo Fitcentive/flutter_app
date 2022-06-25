@@ -18,6 +18,7 @@ import 'package:formz/formz.dart';
 import 'authentication_event.dart';
 
 // todo - strategy for handling exceptions thrown
+// todo - increase access token expiration duration in keycloak
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
   final AuthenticationRepository authenticationRepository;
   final UserRepository userRepository;
@@ -40,10 +41,36 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<SignInWithOidcEvent>(_signInWithOidc);
     on<SignOutEvent>(_signOut);
     on<AuthenticatedUserDataUpdated>(_authenticatedUserDataUpdated);
+    on<RefreshAccessTokenRequested>(_refreshAccessTokenRequested);
 
     _authenticatedUserSubscription = authUserStreamRepository.authenticatedUser.listen((newUser) {
       add(AuthenticatedUserDataUpdated(user: newUser));
     });
+  }
+
+  void _refreshAccessTokenRequested(
+      RefreshAccessTokenRequested event,
+      Emitter<AuthenticationState> emit
+      ) async {
+    final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
+    final refreshToken = await secureStorage.read(key: event.user.authTokens.refreshTokenSecureStorageKey);
+    if (accessToken != null && refreshToken != null) {
+      final newAuthTokens = await authenticationRepository.refreshAccessToken(
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          providerRealm: event.user.user.authProvider
+      );
+      final newAuthenticatedUser = AuthenticatedUser(
+          user: event.user.user,
+          userProfile: event.user.userProfile,
+          userAgreements: event.user.userAgreements,
+          authTokens: SecureAuthTokens.fromAuthTokens(newAuthTokens),
+          authProvider: event.user.user.authProvider
+      );
+
+      _setUpRefreshAccessTokenTrigger(newAuthTokens, newAuthenticatedUser);
+      emit(AuthSuccessUserUpdateState(authenticatedUser: newAuthenticatedUser));
+    }
   }
 
   void _authenticatedUserDataUpdated(
@@ -59,7 +86,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       emit(const AuthLoadingState());
       final authTokens = await authenticationRepository.basicLogIn(username: event.email, password: event.password);
       final authenticatedUser =
-      await _storeTokensAndGetAuthenticatedUser(authTokens, OidcProviderInfo.NATIVE_AUTH_PROVIDER);
+        await _storeTokensAndGetAuthenticatedUser(authTokens, OidcProviderInfo.NATIVE_AUTH_PROVIDER);
+      _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
       emit(AuthSuccessState(authenticatedUser: authenticatedUser));
     } catch (e) {
       emit(AuthFailureState());
@@ -70,8 +98,15 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       Emitter<AuthenticationState> emit,) async {
     final authTokens = await authenticationRepository.oidcLogin(providerRealm: event.provider);
     final authenticatedUser = await _storeTokensAndGetAuthenticatedUser(authTokens, event.provider);
+    _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
     emit(AuthSuccessState(authenticatedUser: authenticatedUser));
   }
+
+  void _setUpRefreshAccessTokenTrigger(AuthTokens authTokens, AuthenticatedUser user) =>
+      // Refresh auth token 5 minute before expiry
+      Future.delayed(Duration(seconds: authTokens.expiresIn - 60), () {
+        add(RefreshAccessTokenRequested(user: user));
+      });
 
   Future<AuthenticatedUser> _storeTokensAndGetAuthenticatedUser(AuthTokens authTokens, String authRealm) async {
     await secureStorage.write(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY, value: authTokens.accessToken);
