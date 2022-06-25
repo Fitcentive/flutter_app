@@ -56,7 +56,10 @@ class AuthenticationRepository {
         oidcProviderInfo!.clientId, oidcProviderInfo.redirectUri,
         discoveryUrl: oidcProviderInfo.discoverUri,
         scopes: ['openid', 'profile', 'email'],
-        additionalParameters: {"kc_idp_hint": oidcProviderInfo.keycloakIdpHint}));
+        additionalParameters: {
+          "kc_idp_hint": oidcProviderInfo.keycloakIdpHint,
+          "prompt": "login",
+        }));
 
     final TokenResponse? result = await appAuth.token(TokenRequest(
         oidcProviderInfo.clientId, oidcProviderInfo.redirectUri,
