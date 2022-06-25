@@ -102,8 +102,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     emit(AuthSuccessState(authenticatedUser: authenticatedUser));
   }
 
+  // Refresh auth token 60 seconds before expiry
   void _setUpRefreshAccessTokenTrigger(AuthTokens authTokens, AuthenticatedUser user) =>
-      // Refresh auth token 5 minute before expiry
       Future.delayed(Duration(seconds: authTokens.expiresIn - 60), () {
         add(RefreshAccessTokenRequested(user: user));
       });

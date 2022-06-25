@@ -4,7 +4,7 @@ import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_eve
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:intl/intl.dart';
 
 class ProfileInfoView extends StatefulWidget {
 
@@ -62,34 +62,48 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
                     _nameInput("First Name"),
                     const Padding(padding: EdgeInsets.all(6)),
                     _nameInput("Last Name"),
+                    const Padding(padding: EdgeInsets.all(20)),
+                    Text(
+                        "Date of birth",
+                      style: appTheme.textTheme.headline6,
+                    ),
                     const Padding(padding: EdgeInsets.all(6)),
-                    // todo - make this a dialog popup
-                    _datePicker(),
+                    _datePickerButton(),
                   ],
                 );
               })),
     );
   }
 
-  // todo - https://api.flutter.dev/flutter/material/showDatePicker.html
-  Widget _datePicker() {
-    return BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-      builder: (context, state) {
-        return SfDateRangePicker(
-          onSelectionChanged: (selection) {
-            if (state is ProfileInfoModified) {
-              context.read<CompleteProfileBloc>().add(ProfileInfoChanged(
-                  user: state.user,
-                  firstName: state.firstName.value,
-                  lastName: state.lastName.value,
-                  dateOfBirth: selection.value
-              ));
-            }
-          },
-          selectionMode: DateRangePickerSelectionMode.single,
-          initialSelectedDate: DateTime.now(),
-        );
+  Widget _datePickerButton() {
+    final currentState = context.read<CompleteProfileBloc>().state;
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+      ),
+      onPressed: () async {
+        if (currentState is ProfileInfoModified) {
+          final selectedDate = await showDatePicker(
+            context: context,
+            initialEntryMode: DatePickerEntryMode.calendarOnly,
+            initialDate: DateTime.parse(currentState.dateOfBirth.value),
+            firstDate: DateTime(1970),
+            lastDate: DateTime(2050),
+          );
+          _completeProfileBloc.add(ProfileInfoChanged(
+              user: currentState.user,
+              firstName: currentState.firstName.value,
+              lastName: currentState.lastName.value,
+              dateOfBirth: selectedDate ?? DateTime.parse(currentState.dateOfBirth.value)
+          ));
+        }
       },
+      child: Text(
+          (currentState is ProfileInfoModified) ? currentState.dateOfBirth.value : "Bad State",
+          style: const TextStyle(
+              fontSize: 15,
+              color: Colors.white
+          )),
     );
   }
 
