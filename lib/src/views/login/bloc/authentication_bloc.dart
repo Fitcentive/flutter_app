@@ -14,6 +14,7 @@ import 'package:flutter_app/src/utils/jwt_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formz/formz.dart';
+import 'package:logging/logging.dart';
 
 import 'authentication_event.dart';
 
@@ -26,6 +27,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   final AuthenticatedUserStreamRepository authUserStreamRepository;
 
   late final StreamSubscription<AuthenticatedUser>_authenticatedUserSubscription;
+
+  final logger = Logger("AuthenticationBloc");
 
   AuthenticationBloc({
     required this.authenticationRepository,
@@ -55,21 +58,25 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final refreshToken = await secureStorage.read(key: event.user.authTokens.refreshTokenSecureStorageKey);
     if (accessToken != null && refreshToken != null) {
-      final newAuthTokens = await authenticationRepository.refreshAccessToken(
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          providerRealm: event.user.user.authProvider
-      );
-      final newAuthenticatedUser = AuthenticatedUser(
-          user: event.user.user,
-          userProfile: event.user.userProfile,
-          userAgreements: event.user.userAgreements,
-          authTokens: SecureAuthTokens.fromAuthTokens(newAuthTokens),
-          authProvider: event.user.user.authProvider
-      );
-
-      _setUpRefreshAccessTokenTrigger(newAuthTokens, newAuthenticatedUser);
-      emit(AuthSuccessUserUpdateState(authenticatedUser: newAuthenticatedUser));
+      try {
+        final newAuthTokens = await authenticationRepository.refreshAccessToken(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            providerRealm: event.user.user.authProvider
+        );
+        final newAuthenticatedUser = AuthenticatedUser(
+            user: event.user.user,
+            userProfile: event.user.userProfile,
+            userAgreements: event.user.userAgreements,
+            authTokens: SecureAuthTokens.fromAuthTokens(newAuthTokens),
+            authProvider: event.user.user.authProvider
+        );
+        _setUpRefreshAccessTokenTrigger(newAuthTokens, newAuthenticatedUser);
+        emit(AuthSuccessUserUpdateState(authenticatedUser: newAuthenticatedUser));
+      } catch (e) {
+        logger.warning("Could not retrieve refresh token, possible token expiry. Signing out now");
+        add(SignOutEvent(user: event.user));
+      }
     }
   }
 
@@ -103,10 +110,11 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   }
 
   // Refresh auth token 60 seconds before expiry
-  void _setUpRefreshAccessTokenTrigger(AuthTokens authTokens, AuthenticatedUser user) =>
-      Future.delayed(Duration(seconds: authTokens.expiresIn - 60), () {
-        add(RefreshAccessTokenRequested(user: user));
-      });
+  void _setUpRefreshAccessTokenTrigger(AuthTokens authTokens, AuthenticatedUser user) {
+    Future.delayed(Duration(seconds: authTokens.expiresIn - 60), () {
+      add(RefreshAccessTokenRequested(user: user));
+    });
+  }
 
   Future<AuthenticatedUser> _storeTokensAndGetAuthenticatedUser(AuthTokens authTokens, String authRealm) async {
     await secureStorage.write(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY, value: authTokens.accessToken);

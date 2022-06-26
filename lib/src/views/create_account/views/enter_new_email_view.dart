@@ -44,12 +44,12 @@ class EnterNewEmailView extends StatelessWidget {
   InputDecoration _getDecoration(CreateAccountState state) {
     if (state is EmailAddressModified) {
       return InputDecoration(
-        labelText: 'username',
+        labelText: 'Email',
         errorText: state.email.invalid ? 'invalid email address' : null,
       );
     } else {
       return const InputDecoration(
-        labelText: 'username',
+        labelText: 'Email',
         errorText: null,
       );
     }

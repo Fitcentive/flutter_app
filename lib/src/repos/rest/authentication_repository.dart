@@ -4,10 +4,12 @@ import 'dart:io';
 
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
+import 'package:flutter_app/src/utils/datetime_utils.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:logging/logging.dart';
 
 class AuthenticationRepository {
   static const String BASE_URL = "http://api.vid.app/api/auth";
@@ -16,6 +18,7 @@ class AuthenticationRepository {
     OidcProviderInfo.GOOGLE_AUTH_PROVIDER: OidcProviderInfo.googleOidcProviderInfo()
   };
 
+  final logger = Logger('AuthenticationRepository');
   final FlutterAppAuth appAuth = const FlutterAppAuth();
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
@@ -43,7 +46,8 @@ class AuthenticationRepository {
     if (response.statusCode == HttpStatus.noContent) {
       return;
     } else {
-      throw Exception("logIn: Received bad response with status: ${response.statusCode}");
+      logger.warning("logIn: Received bad response with status: ${response.statusCode}");
+      return;
     }
   }
 
@@ -72,9 +76,9 @@ class AuthenticationRepository {
     return AuthTokens(
         result!.accessToken!,
         result.refreshToken!,
-        result.accessTokenExpirationDateTime!.millisecondsSinceEpoch,
+        DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch),
         // todo - this has to be replaced with refresh token expiry time
-        result.accessTokenExpirationDateTime!.millisecondsSinceEpoch,
+        DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch),
         result.tokenType!,
         result.scopes!.join(" "));
   }
