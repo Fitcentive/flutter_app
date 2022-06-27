@@ -7,13 +7,6 @@ abstract class CreateAccountEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class InitiateCreateAccountFlow extends CreateAccountEvent {
-  const InitiateCreateAccountFlow();
-
-  @override
-  List<Object> get props => [];
-}
-
 class EmailAddressChanged extends CreateAccountEvent {
   const EmailAddressChanged(this.email);
 

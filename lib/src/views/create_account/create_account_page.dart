@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
@@ -13,7 +14,16 @@ class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({Key? key}) : super(key: key);
 
   static Route route() {
-    return MaterialPageRoute<void>(builder: (_) => const CreateAccountPage());
+    return MaterialPageRoute<void>(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider<CreateAccountBloc>(
+                create: (context) => CreateAccountBloc(
+                  userRepository: RepositoryProvider.of<UserRepository>(context),
+                )),
+          ],
+          child: const CreateAccountPage(),
+        ));
   }
 
   @override
@@ -34,7 +44,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   static const MaterialColor BUTTON_AVAILABLE = Colors.teal;
   static const MaterialColor BUTTON_DISABLED = Colors.grey;
 
-
   @override
   void dispose() {
     _pageController.dispose();
@@ -45,35 +54,24 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   void initState() {
     super.initState();
     _createAccountBloc = BlocProvider.of<CreateAccountBloc>(context);
-    _createAccountBloc.add(const InitiateCreateAccountFlow());
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: () async {
-          _onBackPressed();
-          return true;
-        },
-        child: Scaffold(
-          appBar: AppBar(title: const Text('Sign up')),
-          body: _pageViews(),
-          floatingActionButton: _nextButton(),
-        ));
-  }
-
-  _onBackPressed() {
-    _createAccountBloc.add(const InitiateCreateAccountFlow());
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sign up')),
+      body: _pageViews(),
+      floatingActionButton: _nextButton(),
+    );
   }
 
   _nextButton() {
-    return BlocBuilder<CreateAccountBloc, CreateAccountState>(
-        builder: (context, state) {
-          return FloatingActionButton(
-              onPressed: _onFloatingActionButtonPress,
-              backgroundColor: _getBackgroundColor(),
-              child: const Icon(Icons.navigate_next_sharp));
-        });
+    return BlocBuilder<CreateAccountBloc, CreateAccountState>(builder: (context, state) {
+      return FloatingActionButton(
+          onPressed: _onFloatingActionButtonPress,
+          backgroundColor: _getBackgroundColor(),
+          child: const Icon(Icons.navigate_next_sharp));
+    });
   }
 
   VoidCallback? _onFloatingActionButtonPress() {
@@ -116,13 +114,16 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     return BlocListener<CreateAccountBloc, CreateAccountState>(
       listener: (context, state) {
         if (state is UnverifiedEmailAddress) {
-          _pageController.animateToPage(ENTER_VERIFICATION_TOKENS_PAGE, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+          _pageController.animateToPage(ENTER_VERIFICATION_TOKENS_PAGE,
+              duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
         if (state is VerifiedEmailAddress) {
-          _pageController.animateToPage(ENTER_PASSWORD_PAGE, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+          _pageController.animateToPage(ENTER_PASSWORD_PAGE,
+              duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
         if (state is PasswordConfirmed) {
-          _pageController.animateToPage(ENTER_TERMS_PAGE, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+          _pageController.animateToPage(ENTER_TERMS_PAGE,
+              duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
         if (state is AccountCreatedSuccessfully) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -141,19 +142,18 @@ class CreateAccountPageState extends State<CreateAccountPage> {
           );
         }
       },
-      child: BlocBuilder<CreateAccountBloc, CreateAccountState>(
-          builder: (context, state) {
-            return PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: const [
-                EnterNewEmailView(),
-                EnterVerificationTokenView(),
-                EnterNewPasswordView(),
-                TermsAndConditionsView(),
-              ],
-            );
-          }),
+      child: BlocBuilder<CreateAccountBloc, CreateAccountState>(builder: (context, state) {
+        return PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: const [
+            EnterNewEmailView(),
+            EnterVerificationTokenView(),
+            EnterNewPasswordView(),
+            TermsAndConditionsView(),
+          ],
+        );
+      }),
     );
   }
 }

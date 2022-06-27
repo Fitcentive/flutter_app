@@ -11,7 +11,6 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
   final UserRepository userRepository;
 
   CreateAccountBloc({required this.userRepository}) : super(const InitialState()) {
-    on<InitiateCreateAccountFlow>(_initiateCreateAccountFlow);
     on<EmailAddressChanged>(_emailAddressChanged);
     on<EmailAddressEnteredForVerification>(_emailAddressEnteredForVerification);
     on<EmailVerificationTokenSubmitted>(_emailVerificationTokenSubmitted);
@@ -32,13 +31,6 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
         verificationToken: event.verificationToken,
         termsAndConditions: event.termsAndConditions,
         marketingEmails: event.marketingEmails));
-  }
-
-  void _initiateCreateAccountFlow(
-    InitiateCreateAccountFlow event,
-    Emitter<CreateAccountState> emit,
-  ) async {
-    emit(const InitialState());
   }
 
   void _emailAddressEnteredForVerification(

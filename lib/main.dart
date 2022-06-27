@@ -3,6 +3,7 @@ import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
+import 'package:flutter_app/src/views/reset_password/reset_password_page.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
@@ -66,6 +67,7 @@ class _AppViewState extends State<AppView> {
       routes: {
         '/home': (context) => const HomePage(),
         '/create-account': (context) => const CreateAccountPage(),
+        '/reset-password': (context) => const ResetPasswordPage(),
         '/complete-profile': (context) => const CompleteProfilePage(),
       },
       navigatorKey: _navigatorKey,

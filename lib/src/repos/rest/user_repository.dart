@@ -218,6 +218,27 @@ class UserRepository {
     }
   }
 
+  Future<bool> requestPasswordResetVerificationToken(String email) async {
+    final response = await http.post(Uri.parse("$BASE_URL/password-reset/request"),
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: json.encode({"email": email}));
+
+    if (response.statusCode == HttpStatus.accepted) {
+      return true;
+    } else if (response.statusCode == HttpStatus.notFound) {
+      return false;
+    } else if (response.statusCode == HttpStatus.badRequest) {
+      return false;
+    }
+    else {
+      throw Exception(
+          "requestPasswordResetVerificationToken: Received bad response with status: ${response
+              .statusCode} and body ${response.body}");
+    }
+  }
+
   Future<void> requestNewEmailVerificationToken(String email) async {
     final response = await http.post(Uri.parse("$BASE_URL/verify-email"),
         headers: {

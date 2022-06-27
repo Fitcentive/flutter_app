@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
+import 'package:flutter_app/src/views/create_account/create_account_page.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/reset_password/reset_password_page.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
@@ -52,6 +54,8 @@ class LoginFormState extends State<LoginForm> {
             const Padding(padding: EdgeInsets.all(12)),
             _passwordInput(),
             const Padding(padding: EdgeInsets.all(12)),
+            _resetPasswordButton(),
+            const Padding(padding: EdgeInsets.all(6)),
             _loginButton(),
             const Padding(padding: EdgeInsets.all(6)),
             _createAccountButton(),
@@ -129,10 +133,22 @@ class LoginFormState extends State<LoginForm> {
   _createAccountButton() {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/create-account');
+        Navigator.pushAndRemoveUntil<void>(context, CreateAccountPage.route(), (route) => true);
       },
       child: const Text(
         "New user? Create new account",
+        style: TextStyle(color: ColorConstants.primary500Teal),
+      ),
+    );
+  }
+
+  _resetPasswordButton() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushAndRemoveUntil<void>(context, ResetPasswordPage.route(), (route) => true);
+      },
+      child: const Text(
+        "Forgot password?",
         style: TextStyle(color: ColorConstants.primary500Teal),
       ),
     );
