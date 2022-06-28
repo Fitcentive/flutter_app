@@ -158,7 +158,36 @@ class UserRepository {
     }
   }
 
-  Future<User> updateUser(String userId, UpdateUser user, String accessToken) async {
+  Future<UserProfile> updateUserProfilePost(
+      String userId,
+      UpdateUserProfile userProfile,
+      String accessToken) async {
+    final jsonBody = {
+      'firstName' : userProfile.firstName,
+      'lastName': userProfile.lastName,
+      'photoUrl': userProfile.photoUrl,
+      'dateOfBirth': userProfile.dateOfBirth,
+    };
+    final response = await http.post(
+        Uri.parse("$BASE_URL/$userId/profile"),
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+        body: json.encode(jsonBody)
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final userProfile = UserProfile.fromJson(jsonResponse);
+      return userProfile;
+    } else {
+      throw Exception(
+          "updateUserProfilePost: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<User> updateUserPatch(String userId, UpdateUserPatch user, String accessToken) async {
     final jsonBody = {
       'username' : user.username,
       'accountStatus': user.accountStatus,
@@ -179,7 +208,32 @@ class UserRepository {
       return user;
     } else {
       throw Exception(
-          "updateUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+          "updateUserPatch: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<User> updateUserPost(String userId, UpdateUserPost user, String accessToken) async {
+    final jsonBody = {
+      'username' : user.username,
+      'accountStatus': user.accountStatus,
+      'enabled': user.enabled,
+    };
+    final response = await http.post(
+        Uri.parse("$BASE_URL/$userId"),
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+        body: json.encode(jsonBody)
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final user = User.fromJson(jsonResponse);
+      return user;
+    } else {
+      throw Exception(
+          "updateUserPost: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

@@ -15,7 +15,8 @@ class HomePage extends StatefulWidget {
 
   static Route route() {
     return MaterialPageRoute<void>(
-        builder: (_) => MultiBlocProvider(
+        builder: (_) =>
+            MultiBlocProvider(
               providers: [
                 BlocProvider<MenuNavigationBloc>(create: (context) => MenuNavigationBloc()),
               ],
@@ -71,64 +72,93 @@ class HomePageState extends State<HomePage> {
             ),
             body: _generateBody(selectedMenuItem),
           );
-    });
+        });
   }
 
   Widget _drawerHeader() {
-    final firstName = userProfile?.firstName ?? "";
-    final lastName = userProfile?.lastName ?? "";
-    return SizedBox(
-      height: 200,
-      child: DrawerHeader(
-        decoration: const BoxDecoration(
-          color: Colors.teal,
-        ),
-        child: Column(
-          children: [
-            Expanded(
-                flex:1,
-                child: Text(
-                      "$firstName $lastName",
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    )),
-            Expanded(flex: 2, child: Center(child: _circleImageView("", ""))),
-            const Align(
-              alignment: Alignment.bottomRight,
-              child: Icon(
-                Icons.settings
+    return BlocBuilder<AuthenticationBloc, AuthenticationState>(
+        builder: (context, state) {
+          return SizedBox(
+            height: 200,
+            child: DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Colors.teal,
               ),
-            )
-          ],
+              child: Column(
+                children: [
+                  _userFirstAndLastName(state),
+                  Expanded(flex: 2, child: Center(child: _userProfileImage(state))),
+                  _settingsIcon()
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  _settingsIcon() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pop(context);
+        if (selectedMenuItem != accountDetails) {
+          _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: accountDetails));
+        }
+      },
+      child: const Align(
+        alignment: Alignment.bottomRight,
+        child: Icon(
+            Icons.settings
         ),
       ),
     );
   }
 
-  Widget _circleImageView(String url, String assetUrl) {
+  _userFirstAndLastName(AuthenticationState state) {
+    String firstName = "";
+    String lastName = "";
+    if (state is AuthSuccessState) {
+      firstName = state.authenticatedUser.userProfile?.firstName ?? "";
+      lastName = state.authenticatedUser.userProfile?.lastName ?? "";
+    } else if (state is AuthSuccessUserUpdateState) {
+      firstName = state.authenticatedUser.userProfile?.firstName ?? "";
+      lastName = state.authenticatedUser.userProfile?.lastName ?? "";
+    }
+    return Expanded(
+        flex: 1,
+        child: Text(
+          "$firstName $lastName",
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        )
+    );
+  }
+
+  Widget _userProfileImage(AuthenticationState state) {
     return GestureDetector(
       onTap: () async {
-        print("No implementation for onTap yet");
+        Navigator.pop(context);
+        if (selectedMenuItem != accountDetails) {
+          _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: accountDetails));
+        }
       },
       child: Container(
         width: 100,
         height: 100,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          image: _getDecorationImage(),
+          image: _getDecorationImage(state),
         ),
       ),
     );
   }
 
-  _getDecorationImage() {
-    final authCurrentState = _authenticationBloc.state;
-    if (authCurrentState is AuthSuccessState) {
-      final photoUrlOpt = authCurrentState.authenticatedUser.userProfile?.photoUrl;
+  _getDecorationImage(AuthenticationState state) {
+    if (state is AuthSuccessState) {
+      final photoUrlOpt = state.authenticatedUser.userProfile?.photoUrl;
       if (photoUrlOpt != null) {
         return DecorationImage(image: NetworkImage("$imageBaseUrl/100x100/$photoUrlOpt"), fit: BoxFit.fitHeight);
       }
-    } else if (authCurrentState is AuthSuccessUserUpdateState) {
-      final photoUrlOpt = authCurrentState.authenticatedUser.userProfile?.photoUrl;
+    } else if (state is AuthSuccessUserUpdateState) {
+      final photoUrlOpt = state.authenticatedUser.userProfile?.photoUrl;
       if (photoUrlOpt != null) {
         return DecorationImage(image: NetworkImage("$imageBaseUrl/100x100/$photoUrlOpt"), fit: BoxFit.fitHeight);
       }
@@ -142,15 +172,6 @@ class HomePageState extends State<HomePage> {
       padding: EdgeInsets.zero,
       children: <Widget>[
         _drawerHeader(),
-        ListTile(
-          title: const Text(accountDetails),
-          onTap: () {
-            Navigator.pop(context);
-            if (selectedMenuItem != accountDetails) {
-              _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: accountDetails));
-            }
-          },
-        ),
         ListTile(
           title: const Text(otherPage),
           onTap: () {

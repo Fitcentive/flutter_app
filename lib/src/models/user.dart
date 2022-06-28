@@ -38,12 +38,27 @@ class User extends Equatable {
       ];
 }
 
-class UpdateUser extends Equatable {
+class UpdateUserPatch extends Equatable {
   final String? username;
   final String? accountStatus;
   final bool? enabled;
 
-  const UpdateUser({this.username, this.accountStatus, this.enabled});
+  const UpdateUserPatch({this.username, this.accountStatus, this.enabled});
+
+  @override
+  List<Object?> get props => [
+    username,
+    accountStatus,
+    enabled,
+  ];
+}
+
+class UpdateUserPost extends Equatable {
+  final String? username;
+  final String accountStatus;
+  final bool enabled;
+
+  const UpdateUserPost({this.username, required this.accountStatus, required this.enabled});
 
   @override
   List<Object?> get props => [

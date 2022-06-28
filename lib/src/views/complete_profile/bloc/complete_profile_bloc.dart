@@ -42,8 +42,8 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     final currentState = state;
     if (currentState is UsernameModified) {
       final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
-      final updateUser = UpdateUser(accountStatus: "LoginReady", username: event.username);
-      final updatedUser = await userRepository.updateUser(event.user.user.id, updateUser, accessToken!);
+      final updateUser = UpdateUserPatch(accountStatus: "LoginReady", username: event.username);
+      final updatedUser = await userRepository.updateUserPatch(event.user.user.id, updateUser, accessToken!);
       final updatedAuthenticatedUser = AuthenticatedUser(
           user: updatedUser,
           userAgreements: event.user.userAgreements,
@@ -86,10 +86,10 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
         lastName: event.lastName,
         dateOfBirth: DateFormat('yyyy-MM-dd').format(event.dateOfBirth)
     );
-    const updateUser = UpdateUser(accountStatus: "UsernameCreationRequired");
+    const updateUser = UpdateUserPatch(accountStatus: "UsernameCreationRequired");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final userProfile = await userRepository.createOrUpdateUserProfile(event.user.user.id, updateUserProfile, accessToken!);
-    final updatedUser = await userRepository.updateUser(event.user.user.id, updateUser, accessToken);
+    final updatedUser = await userRepository.updateUserPatch(event.user.user.id, updateUser, accessToken);
     final updatedAuthenticatedUser = AuthenticatedUser(
         user: updatedUser,
         userAgreements: event.user.userAgreements,
@@ -125,10 +125,10 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
         termsAndConditionsAccepted: event.termsAndConditions,
         subscribeToEmails: event.marketingEmails
     );
-    const updateUser = UpdateUser(accountStatus: "ProfileInfoRequired");
+    const updateUser = UpdateUserPatch(accountStatus: "ProfileInfoRequired");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final userAgreements = await userRepository.updateUserAgreements(event.user.user.id, updateAgreements, accessToken!);
-    final updatedUser =  await userRepository.updateUser(event.user.user.id, updateUser, accessToken);
+    final updatedUser =  await userRepository.updateUserPatch(event.user.user.id, updateUser, accessToken);
     final updatedAuthenticatedUser = AuthenticatedUser(
         user: updatedUser,
         userAgreements: userAgreements,

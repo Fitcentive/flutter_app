@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
-import 'package:flutter_app/src/models/user.dart';
 
 abstract class CompleteProfileEvent extends Equatable {
   const CompleteProfileEvent();

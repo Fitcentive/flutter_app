@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
 import 'package:formz/formz.dart';
 
@@ -19,12 +20,14 @@ class InitialState extends AccountDetailsState {
 }
 
 class AccountDetailsModified extends AccountDetailsState {
+  final AuthenticatedUser user;
   final FormzStatus status;
   final Name firstName;
   final Name lastName;
   final String? photoUrl;
 
   const AccountDetailsModified({
+    required this.user,
     required this.status,
     required this.firstName,
     required this.lastName,
@@ -35,15 +38,35 @@ class AccountDetailsModified extends AccountDetailsState {
     FormzStatus? status,
     Name? firstName,
     Name? lastName,
-    String? photoUrl
+    required String? photoUrl
   }) =>
       AccountDetailsModified(
+          user: user,
           status: status ?? this.status,
           firstName: firstName ?? this.firstName,
           lastName: lastName ?? this.lastName,
-          photoUrl: photoUrl ?? this.photoUrl
+          photoUrl: photoUrl
       );
 
   @override
-  List<Object?> get props => [status, firstName, lastName, photoUrl];
+  List<Object?> get props => [status, firstName, lastName, photoUrl, user];
+}
+
+class AccountDetailsUpdatedSuccessfully extends AccountDetailsState {
+  final AuthenticatedUser user;
+  final FormzStatus status;
+  final Name firstName;
+  final Name lastName;
+  final String? photoUrl;
+
+  const AccountDetailsUpdatedSuccessfully({
+    required this.user,
+    required this.status,
+    required this.firstName,
+    required this.lastName,
+    this.photoUrl
+  });
+
+  @override
+  List<Object?> get props => [status, firstName, lastName, photoUrl, user];
 }

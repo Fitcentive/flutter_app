@@ -56,7 +56,6 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       RefreshAccessTokenRequested event,
       Emitter<AuthenticationState> emit
       ) async {
-    print("Attempting to refresh the access token");
     logger.info("Attempting to refresh the access token");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final refreshToken = await secureStorage.read(key: event.user.authTokens.refreshTokenSecureStorageKey);
@@ -79,7 +78,6 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
         _setUpRefreshAccessTokenTrigger(newAuthTokens, newAuthenticatedUser);
         emit(AuthSuccessUserUpdateState(authenticatedUser: newAuthenticatedUser));
       } catch (e) {
-        print("Could not retrieve refresh token, possible token expiry. Signing out now. Error: $e");
         logger.warning("Could not retrieve refresh token, possible token expiry. Signing out now");
         add(SignOutEvent(user: event.user));
       }
