@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:formz/formz.dart';
 
 class EnterVerificationTokenView extends StatelessWidget {
-
   const EnterVerificationTokenView({Key? key}) : super(key: key);
 
   @override
@@ -31,7 +32,6 @@ class EnterVerificationTokenView extends StatelessWidget {
                     key: const Key('createAccountForm_usernameInput_textField'),
                     onChanged: (token) {
                       final currentState = context.read<CreateAccountBloc>().state;
-
                       if (currentState is UnverifiedEmailAddress) {
                         context.read<CreateAccountBloc>().add(EmailVerificationTokenChanged(currentState.email, token));
                       } else if (currentState is VerificationTokenModified) {
@@ -47,9 +47,38 @@ class EnterVerificationTokenView extends StatelessWidget {
                     ));
               },
             ),
+            const Padding(padding: EdgeInsets.all(6)),
+            GestureDetector(
+              onTap: () {
+                final currentState = context.read<CreateAccountBloc>().state;
+                if (currentState is VerificationTokenModified) {
+                  context
+                      .read<CreateAccountBloc>()
+                      .add(EmailAddressEnteredForVerification(currentState.email));
+                  SnackbarUtils.showSnackBar(context, 'New verification token sent!');
+                }
+                else if (currentState is UnverifiedEmailAddress) {
+                  context
+                      .read<CreateAccountBloc>()
+                      .add(EmailAddressEnteredForVerification(currentState.email));
+                  SnackbarUtils.showSnackBar(context, 'New verification token sent!');
+                }
+                else if (currentState is InvalidEmailVerificationToken) {
+                  context
+                      .read<CreateAccountBloc>()
+                      .add(EmailAddressEnteredForVerification(currentState.email));
+                  SnackbarUtils.showSnackBar(context, 'New verification token sent!');
+                }
+              },
+              child: const Text(
+                "Didn't receive it? Click here to resend",
+                style: TextStyle(color: ColorConstants.primary500Teal),
+              ),
+            )
           ],
         ),
       ),
     );
   }
+
 }

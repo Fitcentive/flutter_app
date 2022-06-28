@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_bloc.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_event.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_state.dart';
@@ -44,6 +45,28 @@ class EnterResetVerificationTokenView extends StatelessWidget {
                     ));
               },
             ),
+            const Padding(padding: EdgeInsets.all(6)),
+            GestureDetector(
+              onTap: () {
+                final currentState = context.read<ResetPasswordBloc>().state;
+                if (currentState is VerificationTokenModified) {
+                  context
+                      .read<ResetPasswordBloc>()
+                      .add(EmailAddressEnteredForVerification(currentState.email));
+                  SnackbarUtils.showSnackBar(context, 'New verification token sent!');
+                }
+                else if (currentState is InvalidEmailVerificationToken) {
+                  context
+                      .read<ResetPasswordBloc>()
+                      .add(EmailAddressEnteredForVerification(currentState.email));
+                  SnackbarUtils.showSnackBar(context, 'New verification token sent!');
+                }
+              },
+              child: const Text(
+                "Didn't receive it? Click here to resend",
+                style: TextStyle(color: ColorConstants.primary500Teal),
+              ),
+            )
           ],
         ),
       ),
