@@ -86,7 +86,7 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
       return FloatingActionButton(
           onPressed: _onFloatingActionButtonPress,
           backgroundColor: _getBackgroundColor(),
-          child: const Icon(Icons.navigate_next_sharp));
+          child: const Icon(Icons.navigate_next_sharp, color: Colors.white));
     });
   }
 

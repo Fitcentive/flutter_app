@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/views/account_details/account_details_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
@@ -36,6 +38,8 @@ class HomePageState extends State<HomePage> {
 
   String selectedMenuItem = otherPage;
 
+  UserProfile? userProfile;
+
   late AuthenticationBloc _authenticationBloc;
   late MenuNavigationBloc _menuNavigationBloc;
 
@@ -44,6 +48,13 @@ class HomePageState extends State<HomePage> {
     super.initState();
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
+
+    final currentAuthState = _authenticationBloc.state;
+    if (currentAuthState is AuthSuccessState) {
+      userProfile = currentAuthState.authenticatedUser.userProfile;
+    } else if (currentAuthState is AuthSuccessUserUpdateState) {
+      userProfile = currentAuthState.authenticatedUser.userProfile;
+    }
   }
 
   @override
@@ -54,7 +65,7 @@ class HomePageState extends State<HomePage> {
             selectedMenuItem = state.selectedMenuItem;
           }
           return Scaffold(
-            appBar: AppBar(title: const Text('Home')),
+            appBar: AppBar(title: Text(selectedMenuItem)),
             drawer: Drawer(
               child: _menuDrawerListItems(),
             ),
@@ -63,30 +74,35 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  Widget _drawerHeader() => SizedBox(
-        height: 300,
-        child: DrawerHeader(
-          decoration: const BoxDecoration(
-            color: Colors.teal,
-          ),
-          child: Column(
-            children: [
-              const Expanded(
-                  flex: 3,
-                  child: Center(
-                      child: Text(
-                    "Fitcentive",
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                  ))),
-              Expanded(flex: 8, child: Center(child: _circleImageView("", ""))),
-              const Expanded(
-                flex: 1,
-                child: Text("v1.0.0"),
-              )
-            ],
-          ),
+  Widget _drawerHeader() {
+    final firstName = userProfile?.firstName ?? "";
+    final lastName = userProfile?.lastName ?? "";
+    return SizedBox(
+      height: 200,
+      child: DrawerHeader(
+        decoration: const BoxDecoration(
+          color: Colors.teal,
         ),
-      );
+        child: Column(
+          children: [
+            Expanded(
+                flex:1,
+                child: Text(
+                      "$firstName $lastName",
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    )),
+            Expanded(flex: 2, child: Center(child: _circleImageView("", ""))),
+            const Align(
+              alignment: Alignment.bottomRight,
+              child: Icon(
+                Icons.settings
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _circleImageView(String url, String assetUrl) {
     return GestureDetector(
@@ -94,6 +110,8 @@ class HomePageState extends State<HomePage> {
         print("No implementation for onTap yet");
       },
       child: Container(
+        width: 100,
+        height: 100,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           image: _getDecorationImage(),
@@ -146,22 +164,26 @@ class HomePageState extends State<HomePage> {
           title: const Text("Logout"),
           onTap: () {
             Navigator.pop(context);
-            final currentAuthState = _authenticationBloc.state;
-            if (currentAuthState is AuthSuccessUserUpdateState) {
-              _authenticationBloc.add(SignOutEvent(user: currentAuthState.authenticatedUser));
-            } else if (currentAuthState is AuthSuccessState) {
-              _authenticationBloc.add(SignOutEvent(user: currentAuthState.authenticatedUser));
-            }
+            _signOutIfApplicable();
           },
         ),
       ],
     );
   }
 
+  void _signOutIfApplicable() {
+    final currentAuthState = _authenticationBloc.state;
+    if (currentAuthState is AuthSuccessUserUpdateState) {
+      _authenticationBloc.add(SignOutEvent(user: currentAuthState.authenticatedUser));
+    } else if (currentAuthState is AuthSuccessState) {
+      _authenticationBloc.add(SignOutEvent(user: currentAuthState.authenticatedUser));
+    }
+  }
+
   Widget _generateBody(String selectedMenuItem) {
     switch (selectedMenuItem) {
       case "Account Details":
-        return const Text("Coming Soon");
+        return AccountDetailsView.withBloc();
       default:
         return _oldStuff();
     }
@@ -181,17 +203,6 @@ class HomePageState extends State<HomePage> {
                 return Text('UserID: ${currentAuthBlocState.authenticatedUser.user}');
               } else {
                 return Text('Forbidden state!');
-              }
-            },
-          ),
-          ElevatedButton(
-            child: const Text('Logout'),
-            onPressed: () {
-              final currentAuthBlocState = _authenticationBloc.state;
-              if (currentAuthBlocState is AuthSuccessState) {
-                _authenticationBloc.add(SignOutEvent(user: currentAuthBlocState.authenticatedUser));
-              } else if (currentAuthBlocState is AuthSuccessUserUpdateState) {
-                _authenticationBloc.add(SignOutEvent(user: currentAuthBlocState.authenticatedUser));
               }
             },
           ),

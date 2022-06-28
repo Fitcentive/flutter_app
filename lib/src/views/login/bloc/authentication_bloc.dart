@@ -20,6 +20,7 @@ import 'authentication_event.dart';
 
 // todo - strategy for handling exceptions thrown
 // todo - increase access token expiration duration in keycloak
+// todo - refresh token gets updated along with access token, user never forced to logout. Verify background refreshes when app not in use
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
   final AuthenticationRepository authenticationRepository;
   final UserRepository userRepository;
@@ -55,6 +56,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       RefreshAccessTokenRequested event,
       Emitter<AuthenticationState> emit
       ) async {
+    print("Attempting to refresh the access token");
+    logger.info("Attempting to refresh the access token");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final refreshToken = await secureStorage.read(key: event.user.authTokens.refreshTokenSecureStorageKey);
     if (accessToken != null && refreshToken != null) {
@@ -64,6 +67,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
             refreshToken: refreshToken,
             providerRealm: event.user.user.authProvider
         );
+        await secureStorage.write(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY, value: newAuthTokens.accessToken);
+        await secureStorage.write(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY, value: newAuthTokens.refreshToken);
         final newAuthenticatedUser = AuthenticatedUser(
             user: event.user.user,
             userProfile: event.user.userProfile,
@@ -74,6 +79,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
         _setUpRefreshAccessTokenTrigger(newAuthTokens, newAuthenticatedUser);
         emit(AuthSuccessUserUpdateState(authenticatedUser: newAuthenticatedUser));
       } catch (e) {
+        print("Could not retrieve refresh token, possible token expiry. Signing out now. Error: $e");
         logger.warning("Could not retrieve refresh token, possible token expiry. Signing out now");
         add(SignOutEvent(user: event.user));
       }
