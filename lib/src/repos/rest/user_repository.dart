@@ -240,7 +240,7 @@ class UserRepository {
   }
 
   Future<void> requestNewEmailVerificationToken(String email) async {
-    final response = await http.post(Uri.parse("$BASE_URL/verify-email"),
+    final response = await http.post(Uri.parse("$BASE_URL/email/verify"),
         headers: {
           'Content-type': 'application/json',
         },
