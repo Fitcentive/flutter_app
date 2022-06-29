@@ -26,11 +26,20 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
-  if (kDebugMode && Platform.isAndroid) {
-    final androidInfo = await deviceInfoPlugin.androidInfo;
-    if (androidInfo.isPhysicalDevice ?? false) {
-      final proxy = CustomProxy(ipAddress: PROXY_IP, port: 8888);
-      proxy.enable();
+  if (kDebugMode) {
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfoPlugin.androidInfo;
+      if (androidInfo.isPhysicalDevice ?? false) {
+        final proxy = CustomProxy(ipAddress: PROXY_IP, port: 8888);
+        proxy.enable();
+      }
+    }
+    else if (Platform.isIOS) {
+      final iosInfo = await deviceInfoPlugin.iosInfo;
+      if (iosInfo.isPhysicalDevice) {
+        final proxy = CustomProxy(ipAddress: PROXY_IP, port: 8888);
+        proxy.enable();
+      }
     }
   }
   runApp(const App());
