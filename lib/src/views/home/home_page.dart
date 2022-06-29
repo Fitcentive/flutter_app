@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
@@ -155,12 +156,12 @@ class HomePageState extends State<HomePage> {
     if (state is AuthSuccessState) {
       final photoUrlOpt = state.authenticatedUser.userProfile?.photoUrl;
       if (photoUrlOpt != null) {
-        return DecorationImage(image: NetworkImage("$imageBaseUrl/100x100/$photoUrlOpt"), fit: BoxFit.fitHeight);
+        return DecorationImage(image: NetworkImage("${ImageUtils.imageBaseUrl}/$photoUrlOpt?transform=100x100"), fit: BoxFit.fitHeight);
       }
     } else if (state is AuthSuccessUserUpdateState) {
       final photoUrlOpt = state.authenticatedUser.userProfile?.photoUrl;
       if (photoUrlOpt != null) {
-        return DecorationImage(image: NetworkImage("$imageBaseUrl/100x100/$photoUrlOpt"), fit: BoxFit.fitHeight);
+        return DecorationImage(image: NetworkImage("${ImageUtils.imageBaseUrl}/$photoUrlOpt?transform=100x100"), fit: BoxFit.fitHeight);
       }
     } else {
       return null;

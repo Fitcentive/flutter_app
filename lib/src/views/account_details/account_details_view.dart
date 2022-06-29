@@ -298,7 +298,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     }
     else  if (photoUrlOpt != null) {
       return DecorationImage(
-          image: NetworkImage("${ImageUtils.imageBaseUrl}/100x100/$photoUrlOpt"), fit: BoxFit.fitHeight);
+          image: NetworkImage("${ImageUtils.imageBaseUrl}/$photoUrlOpt?transform=100x100"), fit: BoxFit.fitHeight);
     }
   }
 }
