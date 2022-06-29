@@ -58,17 +58,18 @@ class AuthenticationRepository {
 
     final AuthorizationResponse? authorizationResponse = await appAuth.authorize(AuthorizationRequest(
         oidcProviderInfo!.clientId, oidcProviderInfo.redirectUri,
+        serviceConfiguration: oidcProviderInfo.serviceConfiguration,
         discoveryUrl: oidcProviderInfo.discoverUri,
         scopes: ['openid', 'profile', 'email'],
+        promptValues: ["login"],
         additionalParameters: {
           "kc_idp_hint": oidcProviderInfo.keycloakIdpHint,
-          "prompt": "login",
         }));
 
     final TokenResponse? result = await appAuth.token(TokenRequest(
         oidcProviderInfo.clientId, oidcProviderInfo.redirectUri,
         authorizationCode: authorizationResponse!.authorizationCode,
-        discoveryUrl: oidcProviderInfo.discoverUri,
+        serviceConfiguration: oidcProviderInfo.serviceConfiguration,
         codeVerifier: authorizationResponse.codeVerifier,
         nonce: authorizationResponse.nonce,
         scopes: ['openid', 'profile', 'email']));
