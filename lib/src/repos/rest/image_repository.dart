@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:image_picker/image_picker.dart';
 
 class ImageRepository {
-  static const String BASE_URL = "http://api.vid.app/api/upload/image/files";
+  static const String BASE_URL = "http://api.vid.app/api/gateway/image/upload";
 
   Future<String> uploadImage(String filePath, XFile image, String accessToken) async {
     final dir = await path_provider.getTemporaryDirectory();
@@ -16,7 +16,7 @@ class ImageRepository {
       newFile.path,
       quality: 50,
     );
-    var request = http.MultipartRequest('PUT', Uri.parse("$BASE_URL/$filePath"))
+    var request = http.MultipartRequest('POST', Uri.parse("$BASE_URL/$filePath"))
       ..headers["Authorization"] = "Bearer $accessToken"
       ..files.add(await http.MultipartFile.fromPath("file", compressedFile?.path ?? image.path));
     final response = await request.send();
