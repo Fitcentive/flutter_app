@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/proxies/custom_proxy.dart';
 import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
@@ -13,10 +17,22 @@ import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/login/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 import 'src/views/login/bloc/authentication_state.dart';
 
-void main() {
+void main() async {
+  const String PROXY_IP = "192.168.2.25";
+
+  WidgetsFlutterBinding.ensureInitialized();
+  final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+  if (kDebugMode && Platform.isAndroid) {
+    final androidInfo = await deviceInfoPlugin.androidInfo;
+    if (androidInfo.isPhysicalDevice ?? false) {
+      final proxy = CustomProxy(ipAddress: PROXY_IP, port: 8888);
+      proxy.enable();
+    }
+  }
   runApp(const App());
 }
 

@@ -6,7 +6,6 @@ import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:logging/logging.dart';
@@ -20,7 +19,6 @@ class AuthenticationRepository {
 
   final logger = Logger('AuthenticationRepository');
   final FlutterAppAuth appAuth = const FlutterAppAuth();
-  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
   Future<void> createNewSsoUser(String authRealm, String accessToken) async {
     final response = await http

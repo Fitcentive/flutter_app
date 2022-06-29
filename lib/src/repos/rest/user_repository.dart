@@ -239,7 +239,7 @@ class UserRepository {
 
 
   Future<bool> verifyEmailVerificationToken(String email, String token) async {
-    final response = await http.post(Uri.parse("$BASE_URL/password-reset/validate-token"),
+    final response = await http.post(Uri.parse("$BASE_URL/password/validate-token"),
         headers: {
           'Content-type': 'application/json',
         },
@@ -273,7 +273,7 @@ class UserRepository {
   }
 
   Future<bool> requestPasswordResetVerificationToken(String email) async {
-    final response = await http.post(Uri.parse("$BASE_URL/password-reset/request"),
+    final response = await http.post(Uri.parse("$BASE_URL/password/reset-request"),
         headers: {
           'Content-type': 'application/json',
         },
@@ -310,7 +310,7 @@ class UserRepository {
   }
 
   Future<void> resetUserPassword(String email, String password, String verificationToken) async {
-    final response = await http.post(Uri.parse("$BASE_URL/password-reset"),
+    final response = await http.post(Uri.parse("$BASE_URL/password/reset"),
         headers: {
           'Content-type': 'application/json',
         },

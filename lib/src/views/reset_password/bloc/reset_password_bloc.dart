@@ -79,7 +79,7 @@ class ResetPasswordBloc extends Bloc<ResetPasswordEvent, ResetPasswordState> {
   }
 
   void _passwordSubmitted(PasswordSubmitted event, Emitter<ResetPasswordState> emit) async {
-    await userRepository.resetUserPassword(event.email, event.password, event.verificationToken);
+    await userRepository.resetUserPassword(event.email, event.password, event.verificationToken.toUpperCase());
     emit(const PasswordResetSuccessfully());
   }
 
