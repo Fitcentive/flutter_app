@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
+import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -11,6 +14,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AccountDetailsView extends StatefulWidget {
   const AccountDetailsView({Key? key});
@@ -20,6 +24,7 @@ class AccountDetailsView extends StatefulWidget {
           BlocProvider<AccountDetailsBloc>(
               create: (context) => AccountDetailsBloc(
                     userRepository: RepositoryProvider.of<UserRepository>(context),
+                    imageRepository: RepositoryProvider.of<ImageRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                     authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
                   )),
@@ -38,6 +43,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
+
+  final ImagePicker _picker = ImagePicker();
 
   late AuthenticationBloc _authenticationBloc;
   late AccountDetailsBloc _accountDetailsBloc;
@@ -98,7 +105,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _spacer(12),
-                  SizedBox(width: 100, height: 100, child: _userProfileImageView(state)),
+                  _userProfileImageView(state),
                   _deleteImageCrossButton(state),
                   _spacer(12),
                   _fullLengthRowElement(_nameField("First Name", state)),
@@ -142,6 +149,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
             firstName: state.firstName.value,
             lastName: state.lastName.value,
             photoUrl: state.photoUrl,
+            selectedImage: state.selectedImage,
           ));
         }
       },
@@ -227,28 +235,68 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     if (state is AccountDetailsModified) {
       photoUrlOpt = state.photoUrl;
     }
-    return GestureDetector(
-      onTap: () async {},
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: _getDecorationImage(photoUrlOpt),
+    return SizedBox(
+      width: 100,
+      height: 100,
+      child: GestureDetector(
+        onTap: () async {
+          final imageSource = await showDialog(context: context, builder: (context) {
+            return SimpleDialog(
+              title: const Text("Select image source"),
+              children: [
+                SimpleDialogOption(
+                  child: const Text("Gallery"),
+                  onPressed: () {
+                    Navigator.pop(context, ImageSource.gallery);
+                  },
+                ),
+                SimpleDialogOption(
+                  child: const Text("Camera"),
+                  onPressed: () {
+                    Navigator.pop(context, ImageSource.camera);
+                  },
+                ),
+              ],
+            );
+          });
+          final XFile? image = await _picker.pickImage(source: imageSource);
+          if (state is AccountDetailsModified) {
+            context.read<AccountDetailsBloc>().add(AccountDetailsChanged(
+                user: state.user,
+                firstName: state.firstName.value,
+                lastName: state.lastName.value,
+                photoUrl: state.photoUrl,
+                selectedImage: image
+            ));
+          }
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: _getDecorationImage(state, photoUrlOpt),
+          ),
+          child: (photoUrlOpt == null && (state is AccountDetailsModified && state.selectedImage == null))
+              ? const Icon(
+            Icons.account_circle_outlined,
+            color: Colors.teal,
+            size: 100,
+          )
+              : null,
         ),
-        child: photoUrlOpt == null
-            ? const Icon(
-                Icons.account_circle_outlined,
-                color: Colors.teal,
-                size: 100,
-              )
-            : null,
       ),
     );
   }
 
-  _getDecorationImage(String? photoUrlOpt) {
-    if (photoUrlOpt != null) {
+  _getDecorationImage(AccountDetailsState state, String? photoUrlOpt) {
+    if (state is AccountDetailsModified && state.selectedImage != null) {
+      return DecorationImage(
+        image: FileImage(File(state.selectedImage!.path)),
+          fit: BoxFit.fitHeight
+      );
+    }
+    else  if (photoUrlOpt != null) {
       return DecorationImage(
           image: NetworkImage("${ImageUtils.imageBaseUrl}/100x100/$photoUrlOpt"), fit: BoxFit.fitHeight);
     }

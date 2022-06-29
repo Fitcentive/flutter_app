@@ -1,6 +1,7 @@
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_event.dart';
@@ -11,11 +12,13 @@ import 'package:formz/formz.dart';
 
 class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> {
   final UserRepository userRepository;
+  final ImageRepository imageRepository;
   final FlutterSecureStorage secureStorage;
   final AuthenticatedUserStreamRepository authUserStreamRepository;
 
   AccountDetailsBloc({
     required this.userRepository,
+    required this.imageRepository,
     required this.secureStorage,
     required this.authUserStreamRepository,
   }) : super(const InitialState()) {
@@ -40,7 +43,12 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
     } else if (currentState is AccountDetailsModified) {
       final formValidationStatus = Formz.validate([firstName, lastName]);
       emit(currentState.copyWith(
-          status: formValidationStatus, firstName: firstName, lastName: lastName, photoUrl: event.photoUrl));
+          status: formValidationStatus,
+          firstName: firstName,
+          lastName: lastName,
+          photoUrl: event.photoUrl,
+          selectedImage: event.selectedImage,
+      ));
     } else if (currentState is AccountDetailsUpdatedSuccessfully) {
       final formValidationStatus = Formz.validate([firstName, lastName]);
       emit(AccountDetailsModified(
@@ -55,10 +63,16 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
 
   void _accountDetailsSaved(AccountDetailsSaved event, Emitter<AccountDetailsState> emit) async {
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
+    String? newPhotoUrl;
+    if (event.selectedImage != null) {
+      final fileName = event.selectedImage!.path.split("/").last;
+      final filePath = "users/${event.user.user.id}/profile-photos/$fileName";
+      newPhotoUrl = await imageRepository.uploadImage(filePath, event.selectedImage!, accessToken!);
+    }
     final updateUserProfile = UpdateUserProfile(
       firstName: event.firstName,
       lastName: event.lastName,
-      photoUrl: event.photoUrl,
+      photoUrl: newPhotoUrl ?? event.photoUrl,
       dateOfBirth: event.user.userProfile?.dateOfBirth
     );
     final updatedUserProfile = await userRepository.updateUserProfilePost(event.user.user.id, updateUserProfile, accessToken!);

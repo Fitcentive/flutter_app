@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
+import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
@@ -28,6 +29,7 @@ class App extends StatelessWidget {
       providers: [
         RepositoryProvider<AuthenticationRepository>(create: (context) => AuthenticationRepository()),
         RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
+        RepositoryProvider<ImageRepository>(create: (context) => ImageRepository()),
         RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage()),
         RepositoryProvider<AuthenticatedUserStreamRepository>(create: (context) => AuthenticatedUserStreamRepository()),
       ],
