@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "211948202240",
+    "firebase_url": "https://fitcentive-1210.firebaseio.com",
+    "project_id": "fitcentive-1210",
+    "storage_bucket": "fitcentive-1210.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:211948202240:android:26e9a4749f0af8a342ebe5",
+        "android_client_info": {
+          "package_name": "io.fitcentive.flutter_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "211948202240-t858u4oc2v8m9d5m3q4k106ok4iafade.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.fitcentive.flutter_app",
+            "certificate_hash": "c116f45ee9364efc52436e5463a0ea16ecc12c06"
+          }
+        },
+        {
+          "client_id": "211948202240-udn87lece99u096ual3a4cr0ltbru7j0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDT0w9ShI2Q-7G7ixF-JfBXGj8AcKnMDeE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "211948202240-trhluecqj9kbhnnkhkn6sc2tmeon7nvt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

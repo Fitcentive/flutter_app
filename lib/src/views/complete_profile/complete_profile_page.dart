@@ -144,15 +144,20 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
         }
       },
       child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(builder: (context, state) {
-        return PageView(
-          controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: const [
-            CompleteProfileTermsAndConditionsView(),
-            ProfileInfoView(),
-            SelectUsernameView(),
-          ],
-        );
+        if (state is InitialState || state is ProfileInfoComplete) {
+          return const CircularProgressIndicator(color: Colors.teal);
+        }
+        else {
+          return PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: const [
+              CompleteProfileTermsAndConditionsView(),
+              ProfileInfoView(),
+              SelectUsernameView(),
+            ],
+          );
+        }
       }),
     );
   }
