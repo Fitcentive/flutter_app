@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/login/password.dart';
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
+import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/utils/jwt_utils.dart';
@@ -23,6 +25,7 @@ import 'authentication_event.dart';
 // todo - refresh token gets updated along with access token, user never forced to logout. Verify background refreshes when app not in use
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
   final AuthenticationRepository authenticationRepository;
+  final NotificationRepository notificationRepository;
   final UserRepository userRepository;
   final FlutterSecureStorage secureStorage;
   final AuthenticatedUserStreamRepository authUserStreamRepository;
@@ -33,11 +36,11 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
   AuthenticationBloc({
     required this.authenticationRepository,
+    required this.notificationRepository,
     required this.userRepository,
     required this.secureStorage,
     required this.authUserStreamRepository
   }) : super(AuthInitialState()) {
-    // Event-Handler mappings
     on<SignInWithEmailEvent>(_signInWithEmail);
     on<LoginUsernameChanged>(_onUsernameChanged);
     on<LoginPasswordChanged>(_onPasswordChanged);
@@ -169,6 +172,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       refreshToken: refreshToken!,
       authRealm: event.user.authProvider,
     );
+    final registrationToken = await FirebaseMessaging.instance.getToken();
+    await notificationRepository.unregisterDeviceToken(event.user.user.id, registrationToken!, accessToken);
+
     await secureStorage.delete(key: event.user.authTokens.accessTokenSecureStorageKey);
     await secureStorage.delete(key: event.user.authTokens.refreshTokenSecureStorageKey);
     emit(AuthInitialState());

@@ -58,8 +58,6 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     final authState = _authenticationBloc.state;
     if (authState is AuthSuccessUserUpdateState) {
       _fillInUserProfileDetails(authState.authenticatedUser);
-    } else if (authState is AuthSuccessState) {
-      _fillInUserProfileDetails(authState.authenticatedUser);
     }
   }
 
@@ -80,8 +78,6 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     return BlocListener<AuthenticationBloc, AuthenticationState>(
       listener: (context, state) {
         if (state is AuthSuccessUserUpdateState) {
-          _fillInUserProfileDetails(state.authenticatedUser);
-        } else if (state is AuthSuccessState) {
           _fillInUserProfileDetails(state.authenticatedUser);
         }
       },

@@ -33,6 +33,14 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     on<ProfileInfoChanged>(_profileInfoChanged);
     on<UsernameChanged>(_usernameChanged);
     on<UsernameSubmitted>(_usernameSubmitted);
+    on<ForceUpdateAuthState>(_forceUpdateAuthState);
+  }
+
+  void _forceUpdateAuthState(
+      ForceUpdateAuthState event,
+      Emitter<CompleteProfileState> emit
+      ) async {
+    authUserStreamRepository.newUser(event.user);
   }
 
   void _usernameSubmitted(
@@ -52,7 +60,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
           authProvider: event.user.authProvider
       );
       authUserStreamRepository.newUser(updatedAuthenticatedUser);
-      emit(const ProfileInfoComplete());
+      emit(ProfileInfoComplete(updatedAuthenticatedUser));
     }
   }
 
@@ -160,7 +168,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
         emit(UsernameModified(user: event.user));
         break;
       case "LoginReady":
-        emit(const ProfileInfoComplete());
+        emit(ProfileInfoComplete(event.user));
         break;
     }
   }

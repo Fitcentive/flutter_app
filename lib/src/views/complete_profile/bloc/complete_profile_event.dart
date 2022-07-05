@@ -84,3 +84,13 @@ class UsernameSubmitted extends CompleteProfileEvent {
   @override
   List<Object> get props => [user, username];
 }
+
+class ForceUpdateAuthState extends CompleteProfileEvent {
+  final AuthenticatedUser user;
+
+  const ForceUpdateAuthState(this.user);
+
+  @override
+  List<Object> get props => [user];
+
+}

@@ -144,7 +144,11 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
         }
       },
       child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(builder: (context, state) {
-        if (state is InitialState || state is ProfileInfoComplete) {
+        if (state is InitialState) {
+          return const CircularProgressIndicator(color: Colors.teal);
+        }
+        else if (state is ProfileInfoComplete) {
+          _completeProfileBloc.add(ForceUpdateAuthState(state.user));
           return const CircularProgressIndicator(color: Colors.teal);
         }
         else {

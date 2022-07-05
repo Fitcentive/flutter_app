@@ -118,10 +118,12 @@ class UsernameModified extends CompleteProfileState {
 }
 
 class ProfileInfoComplete extends CompleteProfileState {
-  const ProfileInfoComplete();
+  final AuthenticatedUser user;
+
+  const ProfileInfoComplete(this.user);
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [user];
 
 }
 

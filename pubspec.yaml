@@ -52,7 +52,6 @@ dependencies:
   device_info_plus: ^4.0.0
   firebase_core: ^1.18.0
   firebase_messaging: ^11.4.2
-  overlay_support: ^2.0.1
   flutter_local_notifications: ^9.6.1
 
 dev_dependencies:
