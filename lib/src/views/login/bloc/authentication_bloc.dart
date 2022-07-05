@@ -49,10 +49,18 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<SignOutEvent>(_signOut);
     on<AuthenticatedUserDataUpdated>(_authenticatedUserDataUpdated);
     on<RefreshAccessTokenRequested>(_refreshAccessTokenRequested);
+    on<RestoreAuthSuccessState>(_restoreAuthSuccessState);
 
     _authenticatedUserSubscription = authUserStreamRepository.authenticatedUser.listen((newUser) {
       add(AuthenticatedUserDataUpdated(user: newUser));
     });
+  }
+
+  void _restoreAuthSuccessState(
+      RestoreAuthSuccessState event,
+      Emitter<AuthenticationState> emit
+      ) async {
+    emit(AuthSuccessState(authenticatedUser: event.user));
   }
 
   void _refreshAccessTokenRequested(

@@ -79,6 +79,16 @@ class AuthenticatedUserDataUpdated extends AuthenticationEvent {
   List<Object> get props => [user];
 }
 
+class RestoreAuthSuccessState extends AuthenticationEvent {
+
+  final AuthenticatedUser user;
+
+  const RestoreAuthSuccessState({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}
+
 class SignOutEvent extends AuthenticationEvent {
 
   final AuthenticatedUser user;

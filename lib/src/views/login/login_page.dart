@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'login_form.dart';
 
 class LoginPage extends StatelessWidget {
+
+  const LoginPage({Key? key}) : super(key: key);
+
   static Route route() {
     return MaterialPageRoute<void>(builder: (_) => LoginPage());
   }
@@ -16,4 +19,5 @@ class LoginPage extends StatelessWidget {
       ),
     );
   }
+
 }

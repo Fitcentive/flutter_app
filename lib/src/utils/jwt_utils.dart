@@ -2,7 +2,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 
 class JwtUtils {
   static const _userIdKey = 'user_id';
-  static const _authRealmKey = 'claims';
+  static const _authRealmKey = 'auth_realm';
 
   static String? getUserIdFromJwtToken(String token) {
     final decodedTokenMap = JwtDecoder.decode(token);
