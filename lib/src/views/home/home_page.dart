@@ -5,7 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/device/local_device_info.dart';
-import 'package:flutter_app/src/models/notification/notification_device.dart';
+import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -14,6 +14,7 @@ import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/notifications/notifications_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -48,6 +49,7 @@ Future _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class HomePageState extends State<HomePage> {
   static const String accountDetails = 'Account Details';
   static const String otherPage = 'OtherPage';
+  static const String notifications = 'Notifications';
   static const String logout = 'Logout';
 
   static const String imageBaseUrl = "http://api.vid.app/api/images";
@@ -238,7 +240,7 @@ class HomePageState extends State<HomePage> {
           child: Column(
             children: [
               _userFirstAndLastName(state),
-              Expanded(flex: 2, child: Center(child: _userProfileImage(state))),
+              _userProfileImage(state),
               _settingsIcon()
             ],
           ),
@@ -278,22 +280,26 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget _userProfileImage(AuthenticationState state) {
-    return GestureDetector(
-      onTap: () async {
-        Navigator.pop(context);
-        if (selectedMenuItem != accountDetails) {
-          _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: accountDetails));
-        }
-      },
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: _getDecorationImage(state),
-        ),
-      ),
-    );
+    return Expanded(
+        flex: 2,
+        child: Center(
+          child: GestureDetector(
+            onTap: () async {
+              Navigator.pop(context);
+              if (selectedMenuItem != accountDetails) {
+                _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: accountDetails));
+              }
+            },
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: _getDecorationImage(state),
+              ),
+            ),
+          )
+        ));
   }
 
   _getDecorationImage(AuthenticationState state) {
@@ -323,6 +329,15 @@ class HomePageState extends State<HomePage> {
           },
         ),
         ListTile(
+          title: const Text(notifications),
+          onTap: () {
+            Navigator.pop(context);
+            if (selectedMenuItem != notifications) {
+              _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: notifications));
+            }
+          },
+        ),
+        ListTile(
           title: const Text("Logout"),
           onTap: () {
             Navigator.pop(context);
@@ -346,6 +361,8 @@ class HomePageState extends State<HomePage> {
     switch (selectedMenuItem) {
       case "Account Details":
         return AccountDetailsView.withBloc();
+      case "Notifications":
+        return NotificationsView.withBloc();
       default:
         return _oldStuff();
     }

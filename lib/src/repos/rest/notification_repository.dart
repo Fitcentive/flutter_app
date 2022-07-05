@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_app/src/models/notification/notification_device.dart';
+import 'package:flutter_app/src/models/notification/app_notification.dart';
+import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:http/http.dart' as http;
 
 class NotificationRepository {
@@ -42,6 +43,23 @@ class NotificationRepository {
       return;
     } else {
       throw Exception("unregisterDeviceToken: Received bad response with status: ${response.statusCode}");
+    }
+  }
+
+  Future<List<AppNotification>> fetchUserNotifications(String userId, String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/$userId/notifications"),
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': 'Bearer $accessToken'
+      },
+    );
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<AppNotification> notifications = jsonResponse.map((e) => AppNotification.fromJson(e)).toList();
+      return notifications;
+    } else {
+      throw Exception("fetchUserNotifications: Received bad response with status: ${response.statusCode}");
     }
   }
 

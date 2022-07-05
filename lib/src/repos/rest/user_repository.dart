@@ -129,6 +129,32 @@ class UserRepository {
     }
   }
 
+  Future<List<UserProfile>> getUserProfiles(
+      List<String> userIds,
+      String accessToken
+      ) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/profile/get-by-ids"),
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': 'Bearer $accessToken'
+      },
+      body: json.encode({
+        "userIds": userIds
+      })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final userProfiles = jsonResponse.map((e) => UserProfile.fromJson(e)).toList();
+      return userProfiles;
+    }
+    else {
+      throw Exception(
+          "getUserProfile: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<UserProfile> createOrUpdateUserProfile(
       String userId,
       UpdateUserProfile userProfile,
