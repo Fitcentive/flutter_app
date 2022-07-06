@@ -84,7 +84,8 @@ class SplashPageState extends State<SplashPage> {
           userProfile: userProfile,
           userAgreements: userAgreements,
           authTokens: secureAuthTokens,
-          authProvider: authRealm);
+          authProvider: authRealm
+      );
 
       _authenticationBloc.add(RestoreAuthSuccessState(user: authenticatedUser));
     } catch (ex) {

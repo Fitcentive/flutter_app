@@ -25,7 +25,10 @@ class LoginFormState extends State<LoginForm> {
   @override
   void initState() {
     super.initState();
-    context.read<AuthenticationBloc>().add(const InitiateAuthenticationFlow(username: "", password: ""));
+    final currentAuthState = context.read<AuthenticationBloc>().state;
+    if (currentAuthState is AuthInitialState) {
+      context.read<AuthenticationBloc>().add(const InitiateAuthenticationFlow(username: "", password: ""));
+    }
   }
 
   @override

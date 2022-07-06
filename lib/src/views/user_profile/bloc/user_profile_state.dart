@@ -25,11 +25,12 @@ class UsernameLoading extends UserProfileState {
   List<Object?> get props => [];
 }
 
-class UsernameResolved extends UserProfileState {
+class RequiredDataResolved extends UserProfileState {
+  final bool hasCurrentUserAlreadyRequestedToFollowUser;
   final String? username;
 
-  const UsernameResolved({this.username});
+  const RequiredDataResolved({this.username, required this.hasCurrentUserAlreadyRequestedToFollowUser});
 
   @override
-  List<Object?> get props => [username];
+  List<Object?> get props => [username, hasCurrentUserAlreadyRequestedToFollowUser];
 }

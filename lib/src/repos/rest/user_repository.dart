@@ -13,11 +13,7 @@ class UserRepository {
   static const String BASE_URL = "http://api.vid.app/api/user";
 
   Future<User> createNewUser(
-      String email,
-      String verificationToken,
-      bool termsAndConditions,
-      bool subscribeToEmails
-      ) async {
+      String email, String verificationToken, bool termsAndConditions, bool subscribeToEmails) async {
     final response = await http.post(Uri.parse("$BASE_URL"),
         headers: {
           'Content-Type': 'application/json',
@@ -38,22 +34,14 @@ class UserRepository {
   }
 
   Future<UserAgreements> updateUserAgreements(
-      String userId,
-      UpdateUserAgreements userAgreements,
-      String accessToken
-      ) async {
+      String userId, UpdateUserAgreements userAgreements, String accessToken) async {
     final jsonBody = {
-      'termsAndConditionsAccepted' : userAgreements.termsAndConditionsAccepted,
+      'termsAndConditionsAccepted': userAgreements.termsAndConditionsAccepted,
       'subscribeToEmails': userAgreements.subscribeToEmails,
     };
-    final response = await http.patch(
-      Uri.parse("$BASE_URL/$userId/agreements"),
-      headers: {
-        'Content-type': 'application/json',
-        'Authorization': 'Bearer $accessToken'
-      },
-      body: json.encode(jsonBody)
-    );
+    final response = await http.patch(Uri.parse("$BASE_URL/$userId/agreements"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode(jsonBody));
 
     if (response.statusCode == HttpStatus.ok) {
       final jsonResponse = jsonDecode(response.body);
@@ -66,12 +54,8 @@ class UserRepository {
   }
 
   Future<bool> checkIfUsernameExists(String username, String accessToken) async {
-    final response = await http.head(
-      Uri.parse("$BASE_URL/username?username=$username"),
-      headers: {
-        'Authorization': 'Bearer $accessToken'
-      }
-    );
+    final response = await http
+        .head(Uri.parse("$BASE_URL/username?username=$username"), headers: {'Authorization': 'Bearer $accessToken'});
     if (response.statusCode == HttpStatus.ok) {
       return true;
     } else if (response.statusCode == HttpStatus.notFound) {
@@ -82,15 +66,10 @@ class UserRepository {
     }
   }
 
-  Future<UserAgreements?> getUserAgreements(
-      String userId,
-      String accessToken) async {
+  Future<UserAgreements?> getUserAgreements(String userId, String accessToken) async {
     final response = await http.get(
-        Uri.parse("$BASE_URL/$userId/agreements"),
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
+      Uri.parse("$BASE_URL/$userId/agreements"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
     if (response.statusCode == HttpStatus.ok) {
@@ -105,15 +84,10 @@ class UserRepository {
     }
   }
 
-  Future<UserProfile?> getUserProfile(
-      String userId,
-      String accessToken) async {
+  Future<UserProfile?> getUserProfile(String userId, String accessToken) async {
     final response = await http.get(
-        Uri.parse("$BASE_URL/$userId/profile"),
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
+      Uri.parse("$BASE_URL/$userId/profile"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
     if (response.statusCode == HttpStatus.ok) {
@@ -122,57 +96,38 @@ class UserRepository {
       return userProfile;
     } else if (response.statusCode == HttpStatus.notFound) {
       return null;
-    }
-    else {
+    } else {
       throw Exception(
           "getUserProfile: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
-  Future<List<UserProfile>> getUserProfiles(
-      List<String> userIds,
-      String accessToken
-      ) async {
-    final response = await http.post(
-      Uri.parse("$BASE_URL/profile/get-by-ids"),
-      headers: {
-        'Content-type': 'application/json',
-        'Authorization': 'Bearer $accessToken'
-      },
-      body: json.encode({
-        "userIds": userIds
-      })
-    );
+  Future<List<UserProfile>> getUserProfiles(List<String> userIds, String accessToken) async {
+    final response = await http.post(Uri.parse("$BASE_URL/profile/get-by-ids"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode({"userIds": userIds}));
 
     if (response.statusCode == HttpStatus.ok) {
       final List<dynamic> jsonResponse = jsonDecode(response.body);
       final userProfiles = jsonResponse.map((e) => UserProfile.fromJson(e)).toList();
       return userProfiles;
-    }
-    else {
+    } else {
       throw Exception(
           "getUserProfile: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
   Future<UserProfile> createOrUpdateUserProfile(
-      String userId,
-      UpdateUserProfile userProfile,
-      String accessToken) async {
+      String userId, UpdateUserProfile userProfile, String accessToken) async {
     final jsonBody = {
-      'firstName' : userProfile.firstName,
+      'firstName': userProfile.firstName,
       'lastName': userProfile.lastName,
       'photoUrl': userProfile.photoUrl,
       'dateOfBirth': userProfile.dateOfBirth,
     };
-    final response = await http.patch(
-        Uri.parse("$BASE_URL/$userId/profile"),
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
-        body: json.encode(jsonBody)
-    );
+    final response = await http.patch(Uri.parse("$BASE_URL/$userId/profile"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode(jsonBody));
 
     if (response.statusCode == HttpStatus.ok) {
       final jsonResponse = jsonDecode(response.body);
@@ -184,24 +139,16 @@ class UserRepository {
     }
   }
 
-  Future<UserProfile> updateUserProfilePost(
-      String userId,
-      UpdateUserProfile userProfile,
-      String accessToken) async {
+  Future<UserProfile> updateUserProfilePost(String userId, UpdateUserProfile userProfile, String accessToken) async {
     final jsonBody = {
-      'firstName' : userProfile.firstName,
+      'firstName': userProfile.firstName,
       'lastName': userProfile.lastName,
       'photoUrl': userProfile.photoUrl,
       'dateOfBirth': userProfile.dateOfBirth,
     };
-    final response = await http.post(
-        Uri.parse("$BASE_URL/$userId/profile"),
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
-        body: json.encode(jsonBody)
-    );
+    final response = await http.post(Uri.parse("$BASE_URL/$userId/profile"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode(jsonBody));
 
     if (response.statusCode == HttpStatus.ok) {
       final jsonResponse = jsonDecode(response.body);
@@ -215,18 +162,13 @@ class UserRepository {
 
   Future<User> updateUserPatch(String userId, UpdateUserPatch user, String accessToken) async {
     final jsonBody = {
-      'username' : user.username,
+      'username': user.username,
       'accountStatus': user.accountStatus,
       'enabled': user.enabled,
     };
-    final response = await http.patch(
-        Uri.parse("$BASE_URL/$userId"),
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
-        body: json.encode(jsonBody)
-    );
+    final response = await http.patch(Uri.parse("$BASE_URL/$userId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode(jsonBody));
 
     if (response.statusCode == HttpStatus.ok) {
       final jsonResponse = jsonDecode(response.body);
@@ -240,18 +182,13 @@ class UserRepository {
 
   Future<User> updateUserPost(String userId, UpdateUserPost user, String accessToken) async {
     final jsonBody = {
-      'username' : user.username,
+      'username': user.username,
       'accountStatus': user.accountStatus,
       'enabled': user.enabled,
     };
-    final response = await http.post(
-        Uri.parse("$BASE_URL/$userId"),
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
-        body: json.encode(jsonBody)
-    );
+    final response = await http.post(Uri.parse("$BASE_URL/$userId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode(jsonBody));
 
     if (response.statusCode == HttpStatus.ok) {
       final jsonResponse = jsonDecode(response.body);
@@ -262,7 +199,6 @@ class UserRepository {
           "updateUserPost: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
-
 
   Future<bool> verifyEmailVerificationToken(String email, String token) async {
     final response = await http.post(Uri.parse("$BASE_URL/password/validate-token"),
@@ -280,8 +216,7 @@ class UserRepository {
       return false;
     } else {
       throw Exception(
-          "verifyEmailVerificationToken: Received bad response with status: ${response.statusCode} and body ${response
-              .body}");
+          "verifyEmailVerificationToken: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -293,8 +228,7 @@ class UserRepository {
       return true;
     } else {
       throw Exception(
-          "checkIfUserExistsForEmail: Received bad response with status: ${response.statusCode} and body ${response
-              .body}");
+          "checkIfUserExistsForEmail: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -311,11 +245,9 @@ class UserRepository {
       return false;
     } else if (response.statusCode == HttpStatus.badRequest) {
       return false;
-    }
-    else {
+    } else {
       throw Exception(
-          "requestPasswordResetVerificationToken: Received bad response with status: ${response
-              .statusCode} and body ${response.body}");
+          "requestPasswordResetVerificationToken: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -330,8 +262,7 @@ class UserRepository {
       return;
     } else {
       throw Exception(
-          "requestNewEmailVerificationToken: Received bad response with status: ${response
-              .statusCode} and body ${response.body}");
+          "requestNewEmailVerificationToken: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -367,10 +298,8 @@ class UserRepository {
   }
 
   Future<String?> getUserUsername(String userId, String accessToken) async {
-    final response = await http.get(
-        Uri.parse("$BASE_URL/$userId/username"),
-        headers: {"Authorization": "Bearer $accessToken"}
-    );
+    final response =
+        await http.get(Uri.parse("$BASE_URL/$userId/username"), headers: {"Authorization": "Bearer $accessToken"});
 
     if (response.statusCode == HttpStatus.ok) {
       final jsonResponse = jsonDecode(response.body);
@@ -378,6 +307,49 @@ class UserRepository {
       return username;
     } else {
       return null;
+    }
+  }
+
+  Future<void> requestToFollowUser(String currentUserId, String targetUserId, String accessToken) async {
+    final response = await http.post(Uri.parse("$BASE_URL/$currentUserId/follow/$targetUserId/request"),
+        headers: {"Authorization": "Bearer $accessToken"});
+
+    if (response.statusCode == HttpStatus.accepted) {
+      return;
+    } else {
+      throw Exception(
+          "requestToFollowUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<bool> checkIfUserHasRequestedToFollowOtherUser(
+      String requestingUserId, String targetUserId, String accessToken) async {
+    final response = await http.get(Uri.parse("$BASE_URL/$requestingUserId/follow/$targetUserId"),
+        headers: {"Authorization": "Bearer $accessToken"});
+
+    if (response.statusCode == HttpStatus.ok) {
+      return true;
+    } else if (response.statusCode == HttpStatus.notFound) {
+      return false;
+    } else {
+      throw Exception(
+          "checkIfUserHasRequestedToFollowOtherUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> applyUserDecisionToFollowRequest(
+      String requestingUserId, String targetUserId, bool isRequestApproved, String accessToken) async {
+    final response = await http.post(Uri.parse("$BASE_URL/$requestingUserId/follow/$targetUserId"),
+        headers: {"Authorization": "Bearer $accessToken"},
+        body: json.encode({
+          "isRequestApproved": isRequestApproved,
+        }));
+
+    if (response.statusCode == HttpStatus.ok) {
+      return;
+    } else {
+      throw Exception(
+          "applyUserDecisionToFollowRequest: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 }

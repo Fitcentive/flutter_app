@@ -50,6 +50,8 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
   static const MaterialColor BUTTON_AVAILABLE = Colors.teal;
   static const MaterialColor BUTTON_DISABLED = Colors.grey;
 
+  int currentPage = TERMS_AND_CONDITIONS_PAGE;
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -70,6 +72,12 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance
+        .addPostFrameCallback((_){
+          if(_pageController.hasClients) {
+            _pageController.animateToPage(currentPage, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+          }
+    });
     return WillPopScope(
         onWillPop: () async {
           return false;
@@ -127,40 +135,45 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
   Widget _pageViews() {
     return BlocListener<CompleteProfileBloc, CompleteProfileState>(
       listener: (context, state) {
-        if (state is CompleteProfileTermsAndConditionsModified) {
-          _pageController.animateToPage(TERMS_AND_CONDITIONS_PAGE,
-              duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
-        }
-        if (state is ProfileInfoModified) {
-          _pageController.animateToPage(PROFILE_INFO_PAGE,
-              duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
-        }
-        if (state is UsernameModified) {
-          _pageController.animateToPage(USERNAME_PAGE,
-              duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
-        }
-        if (state is ProfileInfoComplete) {
-          Navigator.pushAndRemoveUntil<void>(context, HomePage.route(), (route) => false);
-        }
+        setState(() {
+          if (state is CompleteProfileTermsAndConditionsModified) {
+            currentPage = TERMS_AND_CONDITIONS_PAGE;
+          }
+          if (state is ProfileInfoModified) {
+            currentPage = PROFILE_INFO_PAGE;
+          }
+          if (state is UsernameModified) {
+            currentPage = USERNAME_PAGE;
+          }
+          if (state is ProfileInfoComplete) {
+            Navigator.pushAndRemoveUntil<void>(context, HomePage.route(), (route) => false);
+          }
+        });
+
       },
       child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(builder: (context, state) {
+        final pageView = PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: const [
+            CompleteProfileTermsAndConditionsView(),
+            ProfileInfoView(),
+            SelectUsernameView(),
+          ],
+        );
         if (state is InitialState) {
-          return const CircularProgressIndicator(color: Colors.teal);
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.teal),
+          );
         }
         else if (state is ProfileInfoComplete) {
           _completeProfileBloc.add(ForceUpdateAuthState(state.user));
-          return const CircularProgressIndicator(color: Colors.teal);
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.teal),
+          );
         }
         else {
-          return PageView(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: const [
-              CompleteProfileTermsAndConditionsView(),
-              ProfileInfoView(),
-              SelectUsernameView(),
-            ],
-          );
+          return pageView;
         }
       }),
     );

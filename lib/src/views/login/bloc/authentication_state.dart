@@ -41,8 +41,6 @@ class AuthCredentialsModified extends AuthenticationState {
   List<Object> get props => [status, username, password];
 }
 
-
-
 class AuthLoadingState extends AuthenticationState {
 
   const AuthLoadingState();

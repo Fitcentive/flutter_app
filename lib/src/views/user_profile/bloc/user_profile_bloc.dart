@@ -9,16 +9,28 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   final UserRepository userRepository;
   final FlutterSecureStorage flutterSecureStorage;
 
-  UserProfileBloc({
-    required this.userRepository,
-    required this.flutterSecureStorage
-  }): super(const UserProfileInitial()) {
-    on<FetchUserUsername>(_fetchUserName);
+  UserProfileBloc({required this.userRepository, required this.flutterSecureStorage})
+      : super(const UserProfileInitial()) {
+    on<FetchRequiredData>(_fetchRequiredData);
+    on<RequestToFollowUser>(_requestToFollowUser);
   }
 
-  void _fetchUserName(FetchUserUsername event, Emitter<UserProfileState> emit) async {
+  void _fetchRequiredData(FetchRequiredData event, Emitter<UserProfileState> emit) async {
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final username = await userRepository.getUserUsername(event.userId, accessToken!);
-    emit(UsernameResolved(username: username));
+    final hasCurrentUserAlreadyRequestedToFollowTargetUser = await userRepository
+        .checkIfUserHasRequestedToFollowOtherUser(event.currentUser.user.id, event.userId, accessToken);
+    emit(RequiredDataResolved(
+        username: username,
+        hasCurrentUserAlreadyRequestedToFollowUser: hasCurrentUserAlreadyRequestedToFollowTargetUser));
+  }
+
+  void _requestToFollowUser(RequestToFollowUser event, Emitter<UserProfileState> emit) async {
+    final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await userRepository.requestToFollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
+    emit(RequiredDataResolved(
+        username: event.resolvedUsername,
+        hasCurrentUserAlreadyRequestedToFollowUser: event.hasCurrentUserAlreadyRequestedToFollowUser
+    ));
   }
 }
