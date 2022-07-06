@@ -54,4 +54,27 @@ class NotificationRepository {
       throw Exception("fetchUserNotifications: Received bad response with status: ${response.statusCode}");
     }
   }
+
+  Future<void> updateUserNotification(
+      String userId,
+      AppNotification notification,
+      bool isApproved,
+      String accessToken
+      ) async {
+    final bodyMap = notification.data;
+    bodyMap['isApproved'] = isApproved;
+    final response = await http.put(
+      Uri.parse("$BASE_URL/$userId/notifications/${notification.id}"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: json.encode({
+        "hasBeenInteractedWith": true,
+        "data": bodyMap
+      })
+    );
+    if (response.statusCode == HttpStatus.ok) {
+      return;
+    } else {
+      throw Exception("updateUserNotification: Received bad response with status: ${response.statusCode}");
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
+import 'package:flutter_app/src/models/notification/app_notification.dart';
 
 abstract class NotificationsEvent extends Equatable {
 
@@ -25,5 +26,23 @@ class PullToRefreshEvent extends NotificationsEvent {
   const PullToRefreshEvent({required this.user});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [user];
+}
+
+class NotificationInteractedWith extends NotificationsEvent {
+  final AuthenticatedUser targetUser;
+  final String requestingUserId;
+  final AppNotification notification;
+  final bool isApproved;
+
+
+  const NotificationInteractedWith({
+    required this.requestingUserId,
+    required this.targetUser,
+    required this.notification,
+    required this.isApproved
+  });
+
+  @override
+  List<Object> get props => [targetUser, notification, isApproved];
 }

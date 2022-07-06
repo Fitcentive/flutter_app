@@ -40,5 +40,5 @@ class NotificationsLoaded extends NotificationsState {
   });
 
   @override
-  List<Object> get props => [notifications];
+  List<Object> get props => [notifications, userProfileMap, user];
 }

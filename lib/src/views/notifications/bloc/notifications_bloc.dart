@@ -1,5 +1,4 @@
 import 'package:flutter_app/src/models/notification/app_notification.dart';
-import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
@@ -20,6 +19,22 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }) : super(const NotificationsInitial()) {
     on<FetchNotifications>(_fetchNotifications);
     on<PullToRefreshEvent>(_pullToRefresh);
+    on<NotificationInteractedWith>(_notificationInteractedWith);
+  }
+
+  void _notificationInteractedWith(NotificationInteractedWith event, Emitter<NotificationsState> emit) async {
+    if (event.notification.isInteractive && event.notification.notificationType == "UserFollowRequest") {
+      final accessToken = await secureStorage.read(key: event.targetUser.authTokens.accessTokenSecureStorageKey);
+      await userRepository.applyUserDecisionToFollowRequest(
+          event.requestingUserId,
+          event.targetUser.user.id,
+          event.isApproved,
+          accessToken!
+      );
+      await notificationsRepository
+          .updateUserNotification(event.targetUser.user.id, event.notification, event.isApproved, accessToken);
+      add(FetchNotifications(user: event.targetUser));
+    }
   }
 
   void _fetchNotifications(FetchNotifications event, Emitter<NotificationsState> emit) async {

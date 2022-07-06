@@ -343,11 +343,16 @@ class UserRepository {
 
   Future<void> applyUserDecisionToFollowRequest(
       String requestingUserId, String targetUserId, bool isRequestApproved, String accessToken) async {
-    final response = await http.post(Uri.parse("$BASE_URL/$requestingUserId/follow/$targetUserId"),
-        headers: {"Authorization": "Bearer $accessToken"},
-        body: json.encode({
-          "isRequestApproved": isRequestApproved,
-        }));
+    final jsonBody = {
+      'isRequestApproved': isRequestApproved,
+    };
+    final response = await http.post(
+        Uri.parse("$BASE_URL/$targetUserId/follow/$requestingUserId"),
+        headers: {
+          'Content-type': 'application/json',
+          "Authorization": "Bearer $accessToken",
+        },
+        body: json.encode(jsonBody));
 
     if (response.statusCode == HttpStatus.ok) {
       return;

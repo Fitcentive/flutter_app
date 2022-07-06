@@ -102,7 +102,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final String requestingUserId = notification.data['requestingUser'];
     final UserProfile? requestingUserProfile = userProfileMap[requestingUserId];
     if (notification.hasBeenInteractedWith) {
-      final didUserApproveFollowRequest = notification.data['didTargetUserApproveFollowRequest'] ?? false;
+      final didUserApproveFollowRequest = notification.data['isApproved'] ?? false;
       final titleText = didUserApproveFollowRequest ?
       "You are now friends with ${_getUserFirstAndLastName(requestingUserProfile)}" :
       "You have rejected ${_getUserFirstAndLastName(requestingUserProfile)}'s request to follow you";
@@ -125,19 +125,11 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
         title: Text(
           titleText,
-          style: const TextStyle(fontSize: 15),
+          style: const TextStyle(fontSize: 14),
         ),
         subtitle: Text(
           DateFormat("hh:mm      yyyy-MM-dd").format(notification.updatedAt),
           style: const TextStyle(fontSize: 10),
-        ),
-        trailing: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _generateActionButton(true),
-            const Padding(padding: EdgeInsets.all(5)),
-            _generateActionButton(false)
-          ],
         ),
       );
     }
@@ -161,20 +153,20 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
         title: Text(
           "${_getUserFirstAndLastName(requestingUserProfile)} has requested to follow you",
-          style: const TextStyle(fontSize: 15),
+          style: const TextStyle(fontSize: 14),
         ),
         subtitle: Text(
           DateFormat("hh:mm      yyyy-MM-dd").format(notification.updatedAt),
           style: const TextStyle(fontSize: 10),
         ),
-        trailing: Column(
+        trailing: notification.isInteractive ? Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _generateActionButton(true),
+            _generateActionButton(true, notification, requestingUserId),
             const Padding(padding: EdgeInsets.all(5)),
-            _generateActionButton(false)
+            _generateActionButton(false, notification, requestingUserId)
           ],
-        ),
+        ) : null,
       );
     }
 
@@ -190,7 +182,7 @@ class NotificationsViewState extends State<NotificationsView> {
   }
 
 
-  _generateActionButton(bool isApproveButton) {
+  _generateActionButton(bool isApproveButton, AppNotification notification, String requestingUserId) {
     return CircleAvatar(
       radius: 11.5,
       backgroundColor: isApproveButton ? Colors.teal : Colors.redAccent,
@@ -199,7 +191,16 @@ class NotificationsViewState extends State<NotificationsView> {
             padding: EdgeInsets.zero,
             iconSize: 12,
             onPressed: () {
-              print("Yet to do");
+              final currentAuthState = _authenticationBloc.state;
+              if (notification.isInteractive && currentAuthState is AuthSuccessUserUpdateState) {
+                _notificationsBloc.add(
+                    NotificationInteractedWith(
+                        requestingUserId: requestingUserId,
+                        targetUser: currentAuthState.authenticatedUser,
+                        notification: notification,
+                        isApproved: isApproveButton
+                    ));
+              }
             },
             icon: Icon(
               isApproveButton ? Icons.check : Icons.close,
