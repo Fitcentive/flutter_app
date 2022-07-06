@@ -4,9 +4,12 @@ import 'dart:io';
 import 'package:flutter_app/src/models/notification/app_notification.dart';
 import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 class NotificationRepository {
   static const String BASE_URL = "http://api.vid.app/api/notification";
+
+  final logger = Logger("NotificationRepository");
 
   Future<void> registerDeviceToken(NotificationDevice device, String accessToken) async {
     final response = await http.post(Uri.parse("$BASE_URL/push/${device.userId}/devices"),

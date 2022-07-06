@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 
 abstract class AuthenticationEvent extends Equatable {
@@ -80,10 +81,10 @@ class AuthenticatedUserDataUpdated extends AuthenticationEvent {
 }
 
 class RestoreAuthSuccessState extends AuthenticationEvent {
-
+  final AuthTokens tokens;
   final AuthenticatedUser user;
 
-  const RestoreAuthSuccessState({required this.user});
+  const RestoreAuthSuccessState({required this.user, required this.tokens});
 
   @override
   List<Object> get props => [user];

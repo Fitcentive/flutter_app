@@ -60,6 +60,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       RestoreAuthSuccessState event,
       Emitter<AuthenticationState> emit
       ) async {
+    _setUpRefreshAccessTokenTrigger(event.tokens, event.user);
     emit(AuthSuccessState(authenticatedUser: event.user));
   }
 

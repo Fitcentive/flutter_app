@@ -23,15 +23,22 @@ import '../login/bloc/authentication_bloc.dart';
 import '../login/bloc/authentication_event.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({Key? key, this.defaultSelectedTab = HomePageState.otherPage}) : super(key: key);
 
-  static Route route() {
+  static const String routeName = 'HomePage';
+
+  final String defaultSelectedTab;
+
+  static Route route({String defaultSelectedTab = HomePageState.otherPage}) {
     return MaterialPageRoute<void>(
+      settings: const RouteSettings(
+        name: routeName
+      ),
         builder: (_) => MultiBlocProvider(
               providers: [
                 BlocProvider<MenuNavigationBloc>(create: (context) => MenuNavigationBloc()),
               ],
-              child: const HomePage(),
+              child: HomePage(defaultSelectedTab: defaultSelectedTab),
             ));
   }
 
@@ -43,7 +50,7 @@ class HomePage extends StatefulWidget {
 
 // todo - figure out if this is needed
 Future _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
+  print("======= Handling a background message: ${message.messageId} ========");
 }
 
 class HomePageState extends State<HomePage> {
@@ -52,9 +59,7 @@ class HomePageState extends State<HomePage> {
   static const String notifications = 'Notifications';
   static const String logout = 'Logout';
 
-  static const String imageBaseUrl = "http://api.vid.app/api/images";
-
-  String selectedMenuItem = otherPage;
+  late String selectedMenuItem;
 
   UserProfile? userProfile;
 
@@ -81,7 +86,9 @@ class HomePageState extends State<HomePage> {
     reactToNotification(initialMessage);
   }
 
-  // todo - double couting of notifications?
+  // todo - double couting of notifications? might have to switch to data notifications instead of notification type
+  //        as we are showing it explicitly instead of the system doing it
+  // todo - notification payloads not coming through
   void registerNotification() async {
     await Firebase.initializeApp();
     _messaging = FirebaseMessaging.instance;
@@ -94,9 +101,9 @@ class HomePageState extends State<HomePage> {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String? payload) async {
       if (payload != null) {
-        print('received notification payload: $payload');
+        print('received notification payload: ---$payload----');
       }
-      _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: notifications));
+      Navigator.pushAndRemoveUntil(context, HomePage.route(defaultSelectedTab: notifications), (route) => false);
     });
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -200,6 +207,8 @@ class HomePageState extends State<HomePage> {
 
     _notificationRepository = RepositoryProvider.of<NotificationRepository>(context);
     _secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
+
+    selectedMenuItem = widget.defaultSelectedTab;
 
     registerNotification();
     handleAppInBackgroundWhenNotificationReceived();

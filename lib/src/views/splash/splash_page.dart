@@ -87,7 +87,7 @@ class SplashPageState extends State<SplashPage> {
           authProvider: authRealm
       );
 
-      _authenticationBloc.add(RestoreAuthSuccessState(user: authenticatedUser));
+      _authenticationBloc.add(RestoreAuthSuccessState(user: authenticatedUser, tokens: freshTokens));
     } catch (ex) {
       print("An exception occurred when trying to restore auth state, proceeding with normal flow. Exception: ${ex.toString()}");
       logger.info("An exception occurred when trying to restore auth state, proceeding with normal flow. Exception: ${ex.toString()}");

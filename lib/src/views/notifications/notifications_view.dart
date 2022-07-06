@@ -12,6 +12,7 @@ import 'package:flutter_app/src/views/notifications/bloc/notifications_state.dar
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 
 class NotificationsView extends StatefulWidget {
   const NotificationsView({Key? key});
@@ -124,7 +125,11 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
         title: Text(
           titleText,
-          style: TextStyle(fontSize: 15),
+          style: const TextStyle(fontSize: 15),
+        ),
+        subtitle: Text(
+          DateFormat("hh:mm      yyyy-MM-dd").format(notification.updatedAt),
+          style: const TextStyle(fontSize: 10),
         ),
         trailing: Column(
           mainAxisSize: MainAxisSize.min,
@@ -158,9 +163,9 @@ class NotificationsViewState extends State<NotificationsView> {
           "${_getUserFirstAndLastName(requestingUserProfile)} has requested to follow you",
           style: const TextStyle(fontSize: 15),
         ),
-        subtitle: const Text(
-          "Click here to view user profile",
-          style: TextStyle(fontSize: 12),
+        subtitle: Text(
+          DateFormat("hh:mm      yyyy-MM-dd").format(notification.updatedAt),
+          style: const TextStyle(fontSize: 10),
         ),
         trailing: Column(
           mainAxisSize: MainAxisSize.min,

@@ -103,6 +103,10 @@ class UserRepository {
   }
 
   Future<List<UserProfile>> getUserProfiles(List<String> userIds, String accessToken) async {
+    if (userIds.isEmpty) {
+      return List.empty();
+    }
+
     final response = await http.post(Uri.parse("$BASE_URL/profile/get-by-ids"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: json.encode({"userIds": userIds}));
@@ -113,7 +117,7 @@ class UserRepository {
       return userProfiles;
     } else {
       throw Exception(
-          "getUserProfile: Received bad response with status: ${response.statusCode} and body ${response.body}");
+          "getUserProfiles: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
