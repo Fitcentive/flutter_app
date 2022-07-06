@@ -81,6 +81,7 @@ class HomePageState extends State<HomePage> {
     reactToNotification(initialMessage);
   }
 
+  // todo - double couting of notifications?
   void registerNotification() async {
     await Firebase.initializeApp();
     _messaging = FirebaseMessaging.instance;
@@ -95,6 +96,7 @@ class HomePageState extends State<HomePage> {
       if (payload != null) {
         print('received notification payload: $payload');
       }
+      _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: notifications));
     });
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
