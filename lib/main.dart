@@ -29,6 +29,7 @@ void main() async {
   const String PROXY_IP = "192.168.2.25";
 
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   if (kDebugMode) {
     if (Platform.isAndroid) {

@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/firebase/push_notification_settings.dart';
 import 'package:flutter_app/src/models/device/local_device_info.dart';
 import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
@@ -13,14 +13,13 @@ import 'package:flutter_app/src/views/account_details/account_details_view.dart'
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/notifications_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-import '../login/bloc/authentication_bloc.dart';
-import '../login/bloc/authentication_event.dart';
+import 'package:logging/logging.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.defaultSelectedTab = HomePageState.otherPage}) : super(key: key);
@@ -48,16 +47,13 @@ class HomePage extends StatefulWidget {
   }
 }
 
-// todo - figure out if this is needed
-Future _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("======= Handling a background message: ${message.messageId} ========");
-}
-
 class HomePageState extends State<HomePage> {
   static const String accountDetails = 'Account Details';
   static const String otherPage = 'OtherPage';
   static const String notifications = 'Notifications';
   static const String logout = 'Logout';
+
+  final logger = Logger("HomePageState");
 
   late String selectedMenuItem;
 
@@ -68,99 +64,6 @@ class HomePageState extends State<HomePage> {
 
   late NotificationRepository _notificationRepository;
   late FlutterSecureStorage _secureStorage;
-
-  late final FirebaseMessaging _messaging;
-
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  AndroidNotificationChannel channel = const AndroidNotificationChannel(
-    'high_importance_channel',
-    'High Importance Notifications',
-    description: 'High Importance Notifications',
-    importance: Importance.max,
-  );
-
-  void checkForInitialMessage() async {
-    await Firebase.initializeApp();
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-    reactToNotification(initialMessage);
-  }
-
-  // todo - double couting of notifications? might have to switch to data notifications instead of notification type
-  //        as we are showing it explicitly instead of the system doing it
-  // todo - notification payloads not coming through
-  void registerNotification() async {
-    await Firebase.initializeApp();
-    _messaging = FirebaseMessaging.instance;
-
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('food');
-    final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
-    final InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: (String? payload) async {
-      if (payload != null) {
-        print('received notification payload: ---$payload----');
-      }
-      Navigator.pushAndRemoveUntil(context, HomePage.route(defaultSelectedTab: notifications), (route) => false);
-    });
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-    NotificationSettings settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      provisional: false,
-      sound: true,
-    );
-    await _messaging.setForegroundNotificationPresentationOptions(
-      alert: true, // Required to display a heads up notification
-      badge: true,
-      sound: true,
-    );
-
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        reactToNotification(message);
-      });
-    } else {
-      print('User declined or has not accepted permission');
-    }
-  }
-
-  // todo - handle ios specific notification data
-  void reactToNotification(RemoteMessage? remoteMessage) {
-    if (remoteMessage != null) {
-      RemoteNotification? notification = remoteMessage.notification;
-      AndroidNotification? android = remoteMessage.notification?.android;
-      if (notification != null) {
-        flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channelDescription: channel.description,
-                icon: android?.smallIcon,
-              ),
-            ));
-      }
-    }
-  }
-
-  void handleAppInBackgroundWhenNotificationReceived() {
-    // For handling notification when the app is in background
-    // but not terminated
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      reactToNotification(message);
-    });
-  }
 
   void syncDeviceRegistrationToken() async {
     final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
@@ -176,10 +79,10 @@ class HomePageState extends State<HomePage> {
       localDeviceInfo =
           LocalDeviceInfo(manufacturer: "Apple", model: iosInfo.model!, isPhysicalDevice: iosInfo.isPhysicalDevice);
     }
-    _messaging.onTokenRefresh.listen((String token) async {
+    FirebaseMessaging.instance.onTokenRefresh.listen((String token) async {
       _syncTokenWithServer(token, localDeviceInfo);
     });
-    String? token = await _messaging.getToken();
+    String? token = await FirebaseMessaging.instance.getToken();
     _syncTokenWithServer(token!, localDeviceInfo);
   }
 
@@ -191,7 +94,8 @@ class HomePageState extends State<HomePage> {
           registrationToken: token,
           manufacturer: localDeviceInfo.manufacturer,
           model: localDeviceInfo.model,
-          isPhysicalDevice: localDeviceInfo.isPhysicalDevice);
+          isPhysicalDevice: localDeviceInfo.isPhysicalDevice
+      );
       final accessToken =
       await _secureStorage.read(key: currentAuthState.authenticatedUser.authTokens.accessTokenSecureStorageKey);
       await _notificationRepository.registerDeviceToken(deviceInfo, accessToken!);
@@ -210,9 +114,7 @@ class HomePageState extends State<HomePage> {
 
     selectedMenuItem = widget.defaultSelectedTab;
 
-    registerNotification();
-    handleAppInBackgroundWhenNotificationReceived();
-    checkForInitialMessage();
+    PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
   }
 
   @override
