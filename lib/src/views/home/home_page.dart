@@ -17,6 +17,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/notifications_view.dart';
+import 'package:flutter_app/src/views/search/search_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
@@ -51,6 +52,7 @@ class HomePageState extends State<HomePage> {
   static const String accountDetails = 'Account Details';
   static const String otherPage = 'OtherPage';
   static const String notifications = 'Notifications';
+  static const String search = 'Search';
   static const String logout = 'Logout';
 
   final logger = Logger("HomePageState");
@@ -132,7 +134,21 @@ class HomePageState extends State<HomePage> {
           selectedMenuItem = state.selectedMenuItem;
         }
         return Scaffold(
-          appBar: AppBar(title: Text(selectedMenuItem)),
+          appBar: AppBar(
+            title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
+            iconTheme: const IconThemeData(color: Colors.teal),
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(
+                  Icons.search,
+                  color: Colors.teal,
+                ),
+                onPressed: () {
+                  _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: search));
+                },
+              )
+            ],
+          ),
           drawer: Drawer(
             child: _menuDrawerListItems(),
           ),
@@ -251,6 +267,15 @@ class HomePageState extends State<HomePage> {
           },
         ),
         ListTile(
+          title: const Text(search),
+          onTap: () {
+            Navigator.pop(context);
+            if (selectedMenuItem != search) {
+              _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: search));
+            }
+          },
+        ),
+        ListTile(
           title: const Text("Logout"),
           onTap: () {
             Navigator.pop(context);
@@ -276,6 +301,8 @@ class HomePageState extends State<HomePage> {
         return AccountDetailsView.withBloc();
       case "Notifications":
         return NotificationsView.withBloc();
+      case "Search":
+        return SearchView.withBloc();
       default:
         return _oldStuff();
     }

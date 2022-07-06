@@ -58,7 +58,7 @@ class ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset Password')),
+      appBar: AppBar(title: const Text('Reset Password', style: TextStyle(color: Colors.teal),)),
       body: _pageViews(),
       floatingActionButton: _nextButton(),
     );

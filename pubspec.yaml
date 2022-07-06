@@ -53,6 +53,7 @@ dependencies:
   firebase_core: ^1.18.0
   firebase_messaging: ^11.4.2
   flutter_local_notifications: ^9.6.1
+  flutter_typeahead: ^4.0.0
 
 dev_dependencies:
   flutter_test:

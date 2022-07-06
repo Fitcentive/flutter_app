@@ -59,7 +59,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign up')),
+      appBar: AppBar(title: const Text('Sign up', style: TextStyle(color: Colors.teal),)),
       body: _pageViews(),
       floatingActionButton: _nextButton(),
     );

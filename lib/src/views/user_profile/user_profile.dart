@@ -57,7 +57,7 @@ class UserProfileViewState extends State<UserProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("View Profile")),
+      appBar: AppBar(title: const Text("View Profile", style: TextStyle(color: Colors.teal),)),
       body: BlocBuilder<UserProfileBloc, UserProfileState>(builder: (context, state) {
         if (state is RequiredDataResolved) {
           return _buildUserProfilePage(state);
