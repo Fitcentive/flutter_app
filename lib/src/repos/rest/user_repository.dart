@@ -365,4 +365,19 @@ class UserRepository {
       return null;
     }
   }
+
+  Future<String?> getUserUsername(String userId, String accessToken) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/$userId/username"),
+        headers: {"Authorization": "Bearer $accessToken"}
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final String username = jsonResponse;
+      return username;
+    } else {
+      return null;
+    }
+  }
 }

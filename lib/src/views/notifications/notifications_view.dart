@@ -9,6 +9,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_bloc.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_event.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_state.dart';
+import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -75,7 +76,10 @@ class NotificationsViewState extends State<NotificationsView> {
   }
 
   Future<void> _pullRefresh() async {
-    // todo - implement this
+    final currentAuthState = _authenticationBloc.state;
+    if (currentAuthState is AuthSuccessUserUpdateState) {
+      _notificationsBloc.add(FetchNotifications(user: currentAuthState.authenticatedUser));
+    }
   }
 
   Widget _generateNotificationListItem(AppNotification notification, Map<String, UserProfile> userProfileMap) {
@@ -84,6 +88,12 @@ class NotificationsViewState extends State<NotificationsView> {
         return _generateUserFollowRequestNotification(notification, userProfileMap);
       default:
         return const Text("Unknown notification type");
+    }
+  }
+
+  _goToUserProfile(UserProfile? userProfile) {
+    if (userProfile != null) {
+      Navigator.pushAndRemoveUntil(context, UserProfileView.route(userProfile), (route) => true);
     }
   }
 
@@ -96,16 +106,19 @@ class NotificationsViewState extends State<NotificationsView> {
       "You are now friends with ${_getUserFirstAndLastName(requestingUserProfile)}" :
       "You have rejected ${_getUserFirstAndLastName(requestingUserProfile)}'s request to follow you";
       return ListTile(
+        onTap: () async {
+          _goToUserProfile(requestingUserProfile);
+        },
         leading: GestureDetector(
           onTap: () async {
-            // todo - go to user profile
+            _goToUserProfile(requestingUserProfile);
           },
           child: Container(
             width: 50,
             height: 50,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              image: _getUserProfileImage(userProfileMap[requestingUserId]),
+              image: _getUserProfileImage(requestingUserProfile),
             ),
           ),
         ),
@@ -125,9 +138,12 @@ class NotificationsViewState extends State<NotificationsView> {
     }
     else {
       return ListTile(
+        onTap: () async {
+          _goToUserProfile(requestingUserProfile);
+        },
         leading: GestureDetector(
           onTap: () async {
-            // todo
+            _goToUserProfile(requestingUserProfile);
           },
           child: Container(
             width: 50,

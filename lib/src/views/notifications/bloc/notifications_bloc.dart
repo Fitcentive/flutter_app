@@ -23,6 +23,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   void _fetchNotifications(FetchNotifications event, Emitter<NotificationsState> emit) async {
+    emit(const NotificationsLoading());
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final List<AppNotification> notifications =
         await notificationsRepository.fetchUserNotifications(event.user.user.id, accessToken!);
