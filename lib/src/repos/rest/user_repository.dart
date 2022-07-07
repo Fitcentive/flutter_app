@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 
@@ -11,6 +12,28 @@ import 'package:http/http.dart' as http;
 
 class UserRepository {
   static const String BASE_URL = "http://api.vid.app/api/user";
+
+  Future<List<PublicUserProfile>> searchForUsers(String searchQuery, int limit, String accessToken) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/public/search?limit=$limit"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+        body: json.encode({
+          "query": searchQuery
+        }));
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final publicUserProfiles = jsonResponse.map((e) => PublicUserProfile.fromJson(e)).toList();
+      return publicUserProfiles;
+    } else {
+      print("searchForUsers: Received bad response with status: ${response.statusCode} and body ${response.body}");
+      throw Exception(
+          "searchForUsers: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 
   Future<User> createNewUser(
       String email, String verificationToken, bool termsAndConditions, bool subscribeToEmails) async {
@@ -114,6 +137,25 @@ class UserRepository {
     if (response.statusCode == HttpStatus.ok) {
       final List<dynamic> jsonResponse = jsonDecode(response.body);
       final userProfiles = jsonResponse.map((e) => UserProfile.fromJson(e)).toList();
+      return userProfiles;
+    } else {
+      throw Exception(
+          "getUserProfiles: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<PublicUserProfile>> getPublicUserProfiles(List<String> userIds, String accessToken) async {
+    if (userIds.isEmpty) {
+      return List.empty();
+    }
+
+    final response = await http.post(Uri.parse("$BASE_URL/public/profile/get-by-ids"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode({"userIds": userIds}));
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final userProfiles = jsonResponse.map((e) => PublicUserProfile.fromJson(e)).toList();
       return userProfiles;
     } else {
       throw Exception(

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/notification/app_notification.dart';
-import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 
 abstract class NotificationsState extends Equatable {
 
@@ -31,7 +31,7 @@ class NotificationsLoading extends NotificationsState {
 class NotificationsLoaded extends NotificationsState {
   final AuthenticatedUser user;
   final List<AppNotification> notifications;
-  final Map<String, UserProfile> userProfileMap;
+  final Map<String, PublicUserProfile> userProfileMap;
 
   const NotificationsLoaded({
     required this.notifications,

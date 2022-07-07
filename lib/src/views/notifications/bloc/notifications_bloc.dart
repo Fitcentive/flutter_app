@@ -1,5 +1,5 @@
 import 'package:flutter_app/src/models/notification/app_notification.dart';
-import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_event.dart';
@@ -44,9 +44,9 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         await notificationsRepository.fetchUserNotifications(event.user.user.id, accessToken!);
 
     final List<String> userIdsFromNotificationSources = _getRelevantUserIdsFromNotifications(notifications);
-    final List<UserProfile> userProfileDetails =
-        await userRepository.getUserProfiles(userIdsFromNotificationSources, accessToken);
-    final Map<String, UserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+    final List<PublicUserProfile> userProfileDetails =
+        await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
+    final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
     emit(NotificationsLoaded(notifications: notifications, user: event.user, userProfileMap: userIdProfileMap));
   }

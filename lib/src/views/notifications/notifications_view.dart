@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/notification/app_notification.dart';
-import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -83,7 +83,7 @@ class NotificationsViewState extends State<NotificationsView> {
     }
   }
 
-  Widget _generateNotificationListItem(AppNotification notification, Map<String, UserProfile> userProfileMap) {
+  Widget _generateNotificationListItem(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     switch (notification.notificationType) {
       case "UserFollowRequest":
         return _generateUserFollowRequestNotification(notification, userProfileMap);
@@ -92,15 +92,15 @@ class NotificationsViewState extends State<NotificationsView> {
     }
   }
 
-  _goToUserProfile(UserProfile? userProfile) {
+  _goToUserProfile(PublicUserProfile? userProfile) {
     if (userProfile != null) {
       Navigator.pushAndRemoveUntil(context, UserProfileView.route(userProfile), (route) => true);
     }
   }
 
-  Widget _generateUserFollowRequestNotification(AppNotification notification, Map<String, UserProfile> userProfileMap) {
+  Widget _generateUserFollowRequestNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String requestingUserId = notification.data['requestingUser'];
-    final UserProfile? requestingUserProfile = userProfileMap[requestingUserId];
+    final PublicUserProfile? requestingUserProfile = userProfileMap[requestingUserId];
     if (notification.hasBeenInteractedWith) {
       final didUserApproveFollowRequest = notification.data['isApproved'] ?? false;
       final titleText = didUserApproveFollowRequest ?
@@ -172,7 +172,7 @@ class NotificationsViewState extends State<NotificationsView> {
 
   }
 
-  String _getUserFirstAndLastName(UserProfile? userProfile) {
+  String _getUserFirstAndLastName(PublicUserProfile? userProfile) {
     if (userProfile == null) {
       return "A user";
     }
@@ -211,7 +211,7 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  DecorationImage? _getUserProfileImage(UserProfile? profile) {
+  DecorationImage? _getUserProfileImage(PublicUserProfile? profile) {
     final photoUrlOpt = profile?.photoUrl;
     if (photoUrlOpt != null) {
       return DecorationImage(

@@ -1,3 +1,4 @@
+import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/search/bloc/search_event.dart';
 import 'package:flutter_app/src/views/search/bloc/search_state.dart';
@@ -27,7 +28,13 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
   void _searchQuerySubmitted(SearchQuerySubmitted event, Emitter<SearchState> emit) async {
     emit(SearchResultsLoading(query: event.query));
-    // todo - send results
-    emit(SearchResultsLoaded(query: event.query, userData: List.empty()));
+    try {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final results = await userRepository.searchForUsers(event.query, 100, accessToken!);
+      emit(SearchResultsLoaded(query: event.query, userData: results));
+    } catch (ex) {
+      emit(SearchResultsError(query: event.query, error: ex.toString()));
+    }
+
   }
 }

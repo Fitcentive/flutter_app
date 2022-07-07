@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/search/bloc/search_bloc.dart';
 import 'package:flutter_app/src/views/search/bloc/search_state.dart';
+import 'package:flutter_app/src/views/search/views/activity_search_view.dart';
 import 'package:flutter_app/src/views/search/views/user_search_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -72,7 +73,7 @@ class SearchViewState extends State<SearchView> with SingleTickerProviderStateMi
               controller: _tabController,
               children: const [
                 UserSearchView(),
-                UserSearchView(),
+                ActivitySearchView(),
               ],
             ),
           )

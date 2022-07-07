@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 
 abstract class SearchState extends Equatable {
   const SearchState();
@@ -36,7 +36,7 @@ class SearchResultsLoading extends SearchState {
 
 class SearchResultsLoaded extends SearchState {
   final String query;
-  final List<UserProfile> userData;
+  final List<PublicUserProfile> userData;
 
   const SearchResultsLoaded({required this.query, required this.userData});
 
