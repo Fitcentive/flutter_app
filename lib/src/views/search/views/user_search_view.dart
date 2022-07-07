@@ -6,6 +6,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/search/bloc/search_bloc.dart';
 import 'package:flutter_app/src/views/search/bloc/search_event.dart';
 import 'package:flutter_app/src/views/search/bloc/search_state.dart';
+import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -120,7 +121,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                       height: 60,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        image: _getUserProfileImage(suggestion),
+                        image: ImageUtils.getUserProfileImage(suggestion, 100, 100),
                       ),
                     ),
                   ),
@@ -160,71 +161,12 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
         if (state is SearchResultsLoaded) {
           return state.userData.isEmpty
               ? const Expanded(child: Center(child: Text('No Results')))
-              : Expanded(child: _displayResults(state));
+              : Expanded(child: UserResultsList(userProfiles: state.userData));
         } else {
           return const Center(child: Text("Error: Something went wrong"));
         }
       },
     );
-  }
-
-  Widget _displayResults(SearchResultsLoaded state) {
-    return Column(
-      children: [
-        ListTile(
-          title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
-          trailing: Text(state.userData.length.toString(), style: const TextStyle(color: Colors.teal)),
-        ),
-        Expanded(child: _searchResults(state.userData))
-      ],
-    );
-  }
-
-  Widget _searchResults(List<PublicUserProfile> items) {
-    return ListView.builder(
-      controller: _scrollController,
-      itemCount: items.length,
-      itemBuilder: (BuildContext context, int index) {
-        if (index >= items.length) {
-          return const Center(child: CircularProgressIndicator());
-        } else {
-          return _userSearchResultItem(items[index]);
-        }
-      },
-    );
-  }
-
-  Widget _userSearchResultItem(PublicUserProfile userProfile) {
-    return ListTile(
-      title: Text("${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""}",
-          style: const TextStyle(fontWeight: FontWeight.w500)),
-      trailing: const Text(""),
-      subtitle: const Text("username"),
-      leading: CircleAvatar(
-        radius: 30,
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: _getUserProfileImage(userProfile),
-          ),
-        ),
-      ),
-      onTap: () {
-        Navigator.pushAndRemoveUntil(context, UserProfileView.route(userProfile), (route) => true);
-      },
-    );
-  }
-
-  DecorationImage? _getUserProfileImage(PublicUserProfile? profile) {
-    final photoUrlOpt = profile?.photoUrl;
-    if (photoUrlOpt != null) {
-      return DecorationImage(
-          image: NetworkImage("${ImageUtils.imageBaseUrl}/$photoUrlOpt?transform=100x100"), fit: BoxFit.fitHeight);
-    } else {
-      return null;
-    }
   }
 
   void startFreshSearch(String searchQuery) {

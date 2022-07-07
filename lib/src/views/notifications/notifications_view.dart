@@ -119,7 +119,7 @@ class NotificationsViewState extends State<NotificationsView> {
             height: 50,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              image: _getUserProfileImage(requestingUserProfile),
+              image: ImageUtils.getUserProfileImage(requestingUserProfile, 100, 100),
             ),
           ),
         ),
@@ -147,7 +147,7 @@ class NotificationsViewState extends State<NotificationsView> {
             height: 50,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              image: _getUserProfileImage(requestingUserProfile),
+              image: ImageUtils.getUserProfileImage(requestingUserProfile, 100, 100),
             ),
           ),
         ),
@@ -211,14 +211,4 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  DecorationImage? _getUserProfileImage(PublicUserProfile? profile) {
-    final photoUrlOpt = profile?.photoUrl;
-    if (photoUrlOpt != null) {
-      return DecorationImage(
-          image: NetworkImage("${ImageUtils.imageBaseUrl}/$photoUrlOpt?transform=100x100"), fit: BoxFit.fitHeight);
-    }
-    else {
-      return null;
-    }
-  }
 }

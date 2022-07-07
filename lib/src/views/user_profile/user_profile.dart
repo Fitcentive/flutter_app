@@ -170,7 +170,7 @@ class UserProfileViewState extends State<UserProfileView> {
           height: 200,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            image: _getUserProfileImage(widget.userProfile.photoUrl),
+            image: ImageUtils.getUserProfileImage(widget.userProfile, 200, 200),
           ),
         ),
       ),
@@ -189,12 +189,4 @@ class UserProfileViewState extends State<UserProfileView> {
     );
   }
 
-  DecorationImage? _getUserProfileImage(String? photoUrl) {
-    if (photoUrl != null) {
-      return DecorationImage(
-          image: NetworkImage("${ImageUtils.imageBaseUrl}/$photoUrl?transform=200x200"), fit: BoxFit.fitHeight);
-    } else {
-      return null;
-    }
-  }
 }

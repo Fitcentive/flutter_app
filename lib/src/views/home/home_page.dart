@@ -10,6 +10,7 @@ import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
+import 'package:flutter_app/src/views/followers/followers_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
@@ -53,6 +54,8 @@ class HomePageState extends State<HomePage> {
   static const String otherPage = 'OtherPage';
   static const String notifications = 'Notifications';
   static const String search = 'Search';
+  static const String followers = 'Followers';
+  static const String following = 'Following';
   static const String logout = 'Logout';
 
   final logger = Logger("HomePageState");
@@ -276,6 +279,15 @@ class HomePageState extends State<HomePage> {
           },
         ),
         ListTile(
+          title: const Text(followers),
+          onTap: () {
+            Navigator.pop(context);
+            if (selectedMenuItem != followers) {
+              _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: followers));
+            }
+          },
+        ),
+        ListTile(
           title: const Text("Logout"),
           onTap: () {
             Navigator.pop(context);
@@ -303,6 +315,8 @@ class HomePageState extends State<HomePage> {
         return NotificationsView.withBloc();
       case "Search":
         return SearchView.withBloc();
+      case "Followers":
+        return FollowersView.withBloc();
       default:
         return _oldStuff();
     }
