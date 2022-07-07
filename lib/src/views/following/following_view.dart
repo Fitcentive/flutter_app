@@ -4,50 +4,53 @@ import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/followers/bloc/followers_bloc.dart';
 import 'package:flutter_app/src/views/followers/bloc/followers_event.dart';
 import 'package:flutter_app/src/views/followers/bloc/followers_state.dart';
+import 'package:flutter_app/src/views/following/bloc/following_bloc.dart';
+import 'package:flutter_app/src/views/following/bloc/following_event.dart';
+import 'package:flutter_app/src/views/following/bloc/following_state.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class FollowersView extends StatefulWidget {
+class FollowingUsersView extends StatefulWidget {
 
-  const FollowersView({Key? key});
+  const FollowingUsersView({Key? key});
 
   static Widget withBloc() => MultiBlocProvider(
     providers: [
-      BlocProvider<FollowersBloc>(
-          create: (context) => FollowersBloc(
+      BlocProvider<FollowingBloc>(
+          create: (context) => FollowingBloc(
             userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
-    child: const FollowersView(),
+    child: const FollowingUsersView(),
   );
 
 
   @override
   State createState() {
-    return FollowersViewState();
+    return FollowingUsersViewState();
   }
 
 }
 
-class FollowersViewState extends State<FollowersView> {
+class FollowingUsersViewState extends State<FollowingUsersView> {
 
-  late final FollowersBloc _followersBloc;
+  late final FollowingBloc _followingBloc;
   late final AuthenticationBloc _authenticationBloc;
 
   @override
   void initState() {
     super.initState();
 
-    _followersBloc = BlocProvider.of<FollowersBloc>(context);
+    _followingBloc = BlocProvider.of<FollowingBloc>(context);
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
 
     final authState = _authenticationBloc.state;
     if (authState is AuthSuccessUserUpdateState) {
-      _followersBloc.add(FetchFollowersRequested(userId: authState.authenticatedUser.user.id));
+      _followingBloc.add(FetchFollowingUsersRequested(userId: authState.authenticatedUser.user.id));
     }
   }
 
@@ -59,8 +62,8 @@ class FollowersViewState extends State<FollowersView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<FollowersBloc, FollowersState>(builder: (context, state) {
-        if (state is FollowersDataLoaded) {
+      body: BlocBuilder<FollowingBloc, FollowingState>(builder: (context, state) {
+        if (state is FollowingUsersDataLoaded) {
           return state.userProfiles.isEmpty ? const Center(child: Text('No Results'))
               : _generateUserResultsList(state.userProfiles);
         } else {
@@ -74,15 +77,15 @@ class FollowersViewState extends State<FollowersView> {
 
   _generateUserResultsList(List<PublicUserProfile> profiles) {
     return RefreshIndicator(
-        onRefresh: _pullRefresh,
-        child: UserResultsList(userProfiles: profiles),
+      onRefresh: _pullRefresh,
+      child: UserResultsList(userProfiles: profiles),
     );
   }
 
   Future<void> _pullRefresh() async {
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
-      _followersBloc.add(FetchFollowersRequested(userId: currentAuthState.authenticatedUser.user.id));
+      _followingBloc.add(FetchFollowingUsersRequested(userId: currentAuthState.authenticatedUser.user.id));
     }
   }
 

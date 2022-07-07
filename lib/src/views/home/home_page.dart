@@ -11,6 +11,7 @@ import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
 import 'package:flutter_app/src/views/followers/followers_view.dart';
+import 'package:flutter_app/src/views/following/following_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
@@ -246,47 +247,28 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  Widget _generateListTile(String text) {
+    return ListTile(
+      title: Text(text),
+      onTap: () {
+        Navigator.pop(context);
+        if (selectedMenuItem != text) {
+          _menuNavigationBloc.add(MenuItemChosen(selectedMenuItem: text));
+        }
+      },
+    );
+  }
+
   Widget _menuDrawerListItems() {
     return ListView(
       padding: EdgeInsets.zero,
       children: <Widget>[
         _drawerHeader(),
-        ListTile(
-          title: const Text(otherPage),
-          onTap: () {
-            Navigator.pop(context);
-            if (selectedMenuItem != otherPage) {
-              _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: otherPage));
-            }
-          },
-        ),
-        ListTile(
-          title: const Text(notifications),
-          onTap: () {
-            Navigator.pop(context);
-            if (selectedMenuItem != notifications) {
-              _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: notifications));
-            }
-          },
-        ),
-        ListTile(
-          title: const Text(search),
-          onTap: () {
-            Navigator.pop(context);
-            if (selectedMenuItem != search) {
-              _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: search));
-            }
-          },
-        ),
-        ListTile(
-          title: const Text(followers),
-          onTap: () {
-            Navigator.pop(context);
-            if (selectedMenuItem != followers) {
-              _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: followers));
-            }
-          },
-        ),
+        _generateListTile(otherPage),
+        _generateListTile(notifications),
+        _generateListTile(search),
+        _generateListTile(followers),
+        _generateListTile(following),
         ListTile(
           title: const Text("Logout"),
           onTap: () {
@@ -317,6 +299,8 @@ class HomePageState extends State<HomePage> {
         return SearchView.withBloc();
       case "Followers":
         return FollowersView.withBloc();
+      case "Following":
+        return FollowingUsersView.withBloc();
       default:
         return _oldStuff();
     }
