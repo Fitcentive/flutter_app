@@ -58,14 +58,19 @@ class NotificationsViewState extends State<NotificationsView> {
         onRefresh: _pullRefresh,
         child: BlocBuilder<NotificationsBloc, NotificationsState>(builder: (context, state) {
           if (state is NotificationsLoaded) {
-            return Padding(
-              padding: const EdgeInsets.all(5),
-              child: ListView.builder(
-                  itemCount: state.notifications.length,
-                  itemBuilder: (context, index) {
-                    return _generateNotificationListItem(state.notifications[index], state.userProfileMap);
-                  }),
-            );
+            if (state.notifications.isEmpty) {
+              return const Center(child: Text('No Results'));
+            }
+            else {
+              return Padding(
+                padding: const EdgeInsets.all(5),
+                child: ListView.builder(
+                    itemCount: state.notifications.length,
+                    itemBuilder: (context, index) {
+                      return _generateNotificationListItem(state.notifications[index], state.userProfileMap);
+                    }),
+              );
+            }
           } else {
             return const Center(
               child: CircularProgressIndicator(color: Colors.teal),
