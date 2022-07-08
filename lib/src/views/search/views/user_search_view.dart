@@ -91,16 +91,11 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                         onPressed: () {
                           _suggestionsController.close();
                           shouldShow = false;
-
-                          final s = _searchBloc.state;
-                          print("Adding to reset bloc");
-                          print(s);
                           _searchBloc.add(const SearchQueryReset());
                         },
                         icon: const Icon(Icons.close),
                       ))),
               suggestionsCallback: (pattern) async {
-                print("changing here and adding to query chnaged");
                 _searchBloc.add(SearchQueryChanged(query: pattern));
                 if (shouldShow) {
                   const limit = 5;

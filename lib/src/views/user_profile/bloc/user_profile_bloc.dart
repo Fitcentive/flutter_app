@@ -30,7 +30,6 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     await userRepository.requestToFollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
     await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
-    print(userFollowStatus.toString());
     emit(RequiredDataResolved(userFollowStatus: userFollowStatus));
   }
 

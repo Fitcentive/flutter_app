@@ -104,7 +104,7 @@ class NotificationsViewState extends State<NotificationsView> {
     if (notification.hasBeenInteractedWith) {
       final didUserApproveFollowRequest = notification.data['isApproved'] ?? false;
       final titleText = didUserApproveFollowRequest ?
-      "You are now friends with ${_getUserFirstAndLastName(requestingUserProfile)}" :
+      "${_getUserFirstAndLastName(requestingUserProfile)} is now following you" :
       "You have rejected ${_getUserFirstAndLastName(requestingUserProfile)}'s request to follow you";
       return ListTile(
         onTap: () async {
