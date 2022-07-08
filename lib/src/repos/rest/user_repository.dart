@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
+import 'package:flutter_app/src/models/user_follow_status.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 
 import '../../models/user.dart';
@@ -439,18 +440,18 @@ class UserRepository {
     }
   }
 
-  Future<bool> checkIfUserHasRequestedToFollowOtherUser(
+  Future<UserFollowStatus> getUserFollowStatus(
       String requestingUserId, String targetUserId, String accessToken) async {
-    final response = await http.get(Uri.parse("$BASE_URL/$requestingUserId/follow/$targetUserId"),
+    final response = await http.get(Uri.parse("$BASE_URL/$requestingUserId/follow-status/$targetUserId"),
         headers: {"Authorization": "Bearer $accessToken"});
 
     if (response.statusCode == HttpStatus.ok) {
-      return true;
-    } else if (response.statusCode == HttpStatus.notFound) {
-      return false;
+      final jsonResponse = jsonDecode(response.body);
+      final userFollowStatus = UserFollowStatus.fromJson(jsonResponse);
+      return userFollowStatus;
     } else {
       throw Exception(
-          "checkIfUserHasRequestedToFollowOtherUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+          "getUserFollowStatus: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

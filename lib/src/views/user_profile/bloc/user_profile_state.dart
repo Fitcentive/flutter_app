@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/user_follow_status.dart';
 
 abstract class UserProfileState extends Equatable {
 
@@ -26,10 +27,12 @@ class UsernameLoading extends UserProfileState {
 }
 
 class RequiredDataResolved extends UserProfileState {
-  final bool hasCurrentUserAlreadyRequestedToFollowUser;
+  final UserFollowStatus userFollowStatus;
 
-  const RequiredDataResolved({required this.hasCurrentUserAlreadyRequestedToFollowUser});
+  const RequiredDataResolved({
+    required this.userFollowStatus
+  });
 
   @override
-  List<Object?> get props => [hasCurrentUserAlreadyRequestedToFollowUser];
+  List<Object?> get props => [userFollowStatus];
 }
