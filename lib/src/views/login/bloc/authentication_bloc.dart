@@ -30,6 +30,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   final FlutterSecureStorage secureStorage;
   final AuthenticatedUserStreamRepository authUserStreamRepository;
 
+  Timer? _refreshAccessTokenTimer;
+
   late final StreamSubscription<AuthenticatedUser>_authenticatedUserSubscription;
 
   final logger = Logger("AuthenticationBloc");
@@ -127,7 +129,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
   // Refresh auth token 60 seconds before expiry
   void _setUpRefreshAccessTokenTrigger(AuthTokens authTokens, AuthenticatedUser user) {
-    Future.delayed(Duration(seconds: authTokens.expiresIn - 60), () {
+    _refreshAccessTokenTimer = Timer(Duration(seconds: authTokens.expiresIn - 60), () {
       add(RefreshAccessTokenRequested(user: user));
     });
   }
@@ -174,6 +176,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   }
 
   void _signOut(SignOutEvent event, Emitter<AuthenticationState> emit) async {
+    _refreshAccessTokenTimer?.cancel();
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final refreshToken = await secureStorage.read(key: event.user.authTokens.refreshTokenSecureStorageKey);
     await authenticationRepository.logout(
