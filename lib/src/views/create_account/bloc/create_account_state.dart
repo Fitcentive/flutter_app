@@ -53,17 +53,6 @@ class EmailAddressAlreadyInUse extends CreateAccountState {
 
 }
 
-class UnverifiedEmailAddress extends CreateAccountState {
-
-  final String email;
-
-  const UnverifiedEmailAddress(this.email);
-
-  @override
-  List<Object> get props => [email];
-
-}
-
 class VerificationTokenModified extends CreateAccountState {
   const VerificationTokenModified({
     required this.email,
@@ -102,18 +91,6 @@ class InvalidEmailVerificationToken extends CreateAccountState {
 
 }
 
-class VerifiedEmailAddress extends CreateAccountState {
-
-  final String verificationToken;
-  final String email;
-
-  const VerifiedEmailAddress(this.email, this.verificationToken);
-
-  @override
-  List<Object> get props => [email, verificationToken];
-
-}
-
 class PasswordModified extends CreateAccountState {
   const PasswordModified({
     required this.email,
@@ -147,17 +124,6 @@ class PasswordModified extends CreateAccountState {
 
   @override
   List<Object> get props => [status, email, password, passwordConfirmation];
-}
-
-class PasswordConfirmed extends CreateAccountState {
-  final String email;
-  final String password;
-  final String verificationToken;
-
-  const PasswordConfirmed({required this.email, required this.password, required this.verificationToken});
-
-  @override
-  List<Object> get props => [email, password, verificationToken];
 }
 
 class TermsAndConditionsModified extends CreateAccountState {

@@ -43,7 +43,7 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
       emit(EmailAddressAlreadyInUse(event.email));
     } else {
       await userRepository.requestNewEmailVerificationToken(event.email);
-      emit(UnverifiedEmailAddress(event.email));
+      emit(VerificationTokenModified(email: event.email));
     }
   }
 
@@ -55,14 +55,20 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
         await userRepository.verifyEmailVerificationToken(event.email, event.verificationToken.toUpperCase());
 
     if (booleanResult) {
-      emit(VerifiedEmailAddress(event.email, event.verificationToken));
+      emit(PasswordModified(email: event.email, token: event.verificationToken));
     } else {
       emit(InvalidEmailVerificationToken(event.email, event.verificationToken));
     }
   }
 
   void _passwordSubmitted(PasswordSubmitted event, Emitter<CreateAccountState> emit) async {
-    emit(PasswordConfirmed(email: event.email, password: event.password, verificationToken: event.verificationToken));
+    emit(TermsAndConditionsModified(
+        email: event.email,
+        password: event.password,
+        verificationToken: event.verificationToken,
+        termsAndConditions: false,
+        marketingEmails: false
+    ));
   }
 
   void _passwordChanged(PasswordChanged event, Emitter<CreateAccountState> emit) async {
@@ -71,9 +77,7 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
 
     final currentState = state;
 
-    if (currentState is VerifiedEmailAddress) {
-      emit(PasswordModified(email: event.email, token: currentState.verificationToken));
-    } else if (currentState is PasswordModified) {
+    if (currentState is PasswordModified) {
       final doPasswordsMatch = password.value == passwordConfirmation.value;
       final newStatus = Formz.validate([password, passwordConfirmation]);
       final finalStatus = doPasswordsMatch ? newStatus : FormzStatus.invalid;
@@ -91,8 +95,6 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
         token: token,
         status: Formz.validate([token]),
       ));
-    } else if (currentState is UnverifiedEmailAddress) {
-      emit(VerificationTokenModified(email: event.email, token: token, status: Formz.validate([token])));
     } else if (currentState is InvalidEmailVerificationToken) {
       emit(VerificationTokenModified(email: event.email, token: token, status: Formz.validate([token])));
     }
@@ -103,7 +105,7 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
     Emitter<CreateAccountState> emit,
   ) async {
     await userRepository.createNewUser(
-        event.email, event.verificationToken, event.termsAndConditions, event.marketingEmails);
+        event.email, event.verificationToken.toUpperCase(), event.termsAndConditions, event.marketingEmails);
     await userRepository.resetUserPassword(event.email, event.password, event.verificationToken.toUpperCase());
     emit(const AccountCreatedSuccessfully());
   }

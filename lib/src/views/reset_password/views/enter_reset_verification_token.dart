@@ -6,16 +6,32 @@ import 'package:flutter_app/src/views/reset_password/bloc/reset_password_state.d
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class EnterResetVerificationTokenView extends StatelessWidget {
-
+class EnterResetVerificationTokenView extends StatefulWidget {
   const EnterResetVerificationTokenView({Key? key}) : super(key: key);
+
+  @override
+  State createState() {
+    return EnterResetVerificationTokenViewState();
+  }
+}
+
+class EnterResetVerificationTokenViewState extends State<EnterResetVerificationTokenView> {
+
+  final focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode.requestFocus();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: const Alignment(0, -1 / 3),
       child: Padding(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -27,6 +43,7 @@ class EnterResetVerificationTokenView extends StatelessWidget {
             BlocBuilder<ResetPasswordBloc, ResetPasswordState>(
               builder: (context, state) {
                 return TextField(
+                    focusNode: focusNode,
                     textAlign: TextAlign.center,
                     maxLength: 6,
                     key: const Key('createAccountForm_usernameInput_textField'),

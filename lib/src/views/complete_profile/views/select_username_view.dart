@@ -19,6 +19,13 @@ class SelectUsernameView extends StatefulWidget {
 class SelectUsernameViewState extends State<SelectUsernameView> {
 
   Timer? _debounce;
+  final focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode.requestFocus();
+  }
 
   @override
   void dispose() {
@@ -52,6 +59,7 @@ class SelectUsernameViewState extends State<SelectUsernameView> {
     return BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
       builder: (context, state) {
         return TextField(
+            focusNode: focusNode,
             key: const Key('completeProfileForm_usernameInput_textField'),
             onChanged: (username) {
               if (_debounce?.isActive ?? false) _debounce?.cancel();

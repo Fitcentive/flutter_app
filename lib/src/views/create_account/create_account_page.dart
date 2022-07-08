@@ -113,15 +113,15 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   Widget _pageViews() {
     return BlocListener<CreateAccountBloc, CreateAccountState>(
       listener: (context, state) {
-        if (state is UnverifiedEmailAddress) {
+        if (state is VerificationTokenModified) {
           _pageController.animateToPage(ENTER_VERIFICATION_TOKENS_PAGE,
               duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
-        if (state is VerifiedEmailAddress) {
+        if (state is PasswordModified) {
           _pageController.animateToPage(ENTER_PASSWORD_PAGE,
               duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }
-        if (state is PasswordConfirmed) {
+        if (state is TermsAndConditionsModified) {
           _pageController.animateToPage(ENTER_TERMS_PAGE,
               duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
         }

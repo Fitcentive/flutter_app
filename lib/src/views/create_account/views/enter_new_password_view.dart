@@ -19,6 +19,14 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
   bool _isObscurePasswordField = true;
   bool _isObscurePasswordConfirmationField = true;
 
+  final focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -47,12 +55,11 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
     return BlocBuilder<CreateAccountBloc, CreateAccountState>(
       builder: (context, state) {
         return TextField(
+            focusNode: focusNode,
             key: const Key('createAccountForm_passwordInput_textField'),
             onChanged: (password) {
               final currentState = context.read<CreateAccountBloc>().state;
-              if (currentState is VerifiedEmailAddress) {
-                context.read<CreateAccountBloc>().add(PasswordChanged(currentState.email, password, ""));
-              } else if (currentState is PasswordModified) {
+              if (currentState is PasswordModified) {
                 context
                     .read<CreateAccountBloc>()
                     .add(PasswordChanged(currentState.email, password, currentState.passwordConfirmation.value));
@@ -71,9 +78,7 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
             key: const Key('createAccountForm_passwordInputConfirmation_textField'),
             onChanged: (password) {
               final currentState = context.read<CreateAccountBloc>().state;
-              if (currentState is VerifiedEmailAddress) {
-                context.read<CreateAccountBloc>().add(PasswordChanged(currentState.email, "", password));
-              } else if (currentState is PasswordModified) {
+              if (currentState is PasswordModified) {
                 context
                     .read<CreateAccountBloc>()
                     .add(PasswordChanged(currentState.email, currentState.password.value, password));
@@ -105,8 +110,6 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
         labelText: 'password',
         errorText: _getErrorText(key, currentState),
       );
-    } else if (currentState is VerifiedEmailAddress) {
-      return const InputDecoration(labelText: 'password');
     }
     return null;
   }

@@ -64,22 +64,6 @@ class TermsAndConditionsView extends StatelessWidget {
             termsAndConditions: currentState.termsAndConditions,
             marketingEmails: checkBoxState));
       }
-    } else if (currentState is PasswordConfirmed) {
-      if (text == "termsAndConditions") {
-        context.read<CreateAccountBloc>().add(TermsAndConditionsChanged(
-            email: currentState.email,
-            password: currentState.password,
-            verificationToken: currentState.verificationToken,
-            termsAndConditions: checkBoxState,
-            marketingEmails: false));
-      } else {
-        context.read<CreateAccountBloc>().add(TermsAndConditionsChanged(
-            email: currentState.email,
-            password: currentState.password,
-            verificationToken: currentState.verificationToken,
-            termsAndConditions: false,
-            marketingEmails: checkBoxState));
-      }
     }
   }
 

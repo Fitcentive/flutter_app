@@ -19,6 +19,14 @@ class EnterResetPasswordViewState extends State<EnterResetPasswordView> {
   bool _isObscurePasswordField = true;
   bool _isObscurePasswordConfirmationField = true;
 
+  final focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -47,6 +55,7 @@ class EnterResetPasswordViewState extends State<EnterResetPasswordView> {
     return BlocBuilder<ResetPasswordBloc, ResetPasswordState>(
       builder: (context, state) {
         return TextField(
+            focusNode: focusNode,
             key: const Key('resetPasswordForm_passwordInput_textField'),
             onChanged: (password) {
               final currentState = context.read<ResetPasswordBloc>().state;
