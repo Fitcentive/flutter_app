@@ -8,12 +8,25 @@ import 'package:image_picker/image_picker.dart';
 class ImageRepository {
   static const String BASE_URL = "http://api.vid.app/api/gateway/image/upload";
 
+  CompressFormat _getFormat(XFile image) {
+    final extension = image.path.split(".").last;
+    switch (extension) {
+      case "jpg": return CompressFormat.jpeg;
+      case "jpeg": return CompressFormat.jpeg;
+      case "png": return CompressFormat.png;
+      case "heic": return CompressFormat.heic;
+      case "webp": return CompressFormat.webp;
+      default: return CompressFormat.jpeg;
+    }
+  }
+
   Future<String> uploadImage(String filePath, XFile image, String accessToken) async {
     final dir = await path_provider.getTemporaryDirectory();
     File newFile = _createFile("${dir.absolute.path}/$filePath");
     final File? compressedFile = await FlutterImageCompress.compressAndGetFile(
       image.path,
       newFile.path,
+      format: _getFormat(image),
       quality: 50,
     );
     var request = http.MultipartRequest('POST', Uri.parse("$BASE_URL/$filePath"))
