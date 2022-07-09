@@ -22,7 +22,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final userFollowStatus =
         await userRepository.getUserFollowStatus(event.currentUser.user.id, event.userId, accessToken!);
-    emit(RequiredDataResolved(userFollowStatus: userFollowStatus));
+    emit(RequiredDataResolved(userFollowStatus: userFollowStatus, currentUser: event.currentUser));
   }
 
   void _requestToFollowUser(RequestToFollowUser event, Emitter<UserProfileState> emit) async {
@@ -30,7 +30,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     await userRepository.requestToFollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
     await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
-    emit(RequiredDataResolved(userFollowStatus: userFollowStatus));
+    emit(RequiredDataResolved(userFollowStatus: userFollowStatus, currentUser: event.currentUser));
   }
 
   void _unfollowUser(UnfollowUser event, Emitter<UserProfileState> emit) async {
@@ -38,7 +38,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     await userRepository.unfollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
     await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
-    emit(RequiredDataResolved(userFollowStatus: userFollowStatus));
+    emit(RequiredDataResolved(userFollowStatus: userFollowStatus, currentUser: event.currentUser));
   }
 
   void _removeUserFromCurrentUserFollowers(RemoveUserFromCurrentUserFollowers event, Emitter<UserProfileState> emit) async {
@@ -46,7 +46,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     await userRepository.removeFollowingUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
     await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
-    emit(RequiredDataResolved(userFollowStatus: userFollowStatus));
+    emit(RequiredDataResolved(userFollowStatus: userFollowStatus, currentUser: event.currentUser));
   }
 
   void _applyUserDecisionToFollowRequest(ApplyUserDecisionToFollowRequest event, Emitter<UserProfileState> emit) async {
@@ -59,6 +59,6 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     );
     final userFollowStatus =
     await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
-    emit(RequiredDataResolved(userFollowStatus: userFollowStatus));
+    emit(RequiredDataResolved(userFollowStatus: userFollowStatus, currentUser: event.currentUser));
   }
 }

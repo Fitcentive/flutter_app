@@ -5,10 +5,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/firebase/push_notification_settings.dart';
 import 'package:flutter_app/src/models/device/local_device_info.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/views/%20newsfeed/newsfeed_view.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
 import 'package:flutter_app/src/views/followers/followers_view.dart';
 import 'package:flutter_app/src/views/following/following_view.dart';
@@ -57,6 +59,7 @@ class HomePageState extends State<HomePage> {
   static const String search = 'Search';
   static const String followers = 'Followers';
   static const String following = 'Following';
+  static const String newsFeed = 'News Feed';
   static const String logout = 'Logout';
 
   final logger = Logger("HomePageState");
@@ -132,33 +135,37 @@ class HomePageState extends State<HomePage> {
           syncDeviceRegistrationToken();
         }
       },
-      child: BlocBuilder<MenuNavigationBloc, MenuNavigationState>(
-          builder: (BuildContext context, MenuNavigationState state) {
-        if (state is MenuItemSelected) {
-          selectedMenuItem = state.selectedMenuItem;
-        }
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
-            iconTheme: const IconThemeData(color: Colors.teal),
-            actions: <Widget>[
-              IconButton(
-                icon: const Icon(
-                  Icons.search,
-                  color: Colors.teal,
-                ),
-                onPressed: () {
-                  _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: search));
-                },
-              )
-            ],
-          ),
-          drawer: Drawer(
-            child: _menuDrawerListItems(),
-          ),
-          body: _generateBody(selectedMenuItem),
-        );
-      }),
+      child: BlocBuilder<AuthenticationBloc, AuthenticationState>(
+        builder: (context, state) {
+          return BlocBuilder<MenuNavigationBloc, MenuNavigationState>(
+              builder: (BuildContext context, MenuNavigationState state) {
+                if (state is MenuItemSelected) {
+                  selectedMenuItem = state.selectedMenuItem;
+                }
+                return Scaffold(
+                  appBar: AppBar(
+                    title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
+                    iconTheme: const IconThemeData(color: Colors.teal),
+                    actions: <Widget>[
+                      IconButton(
+                        icon: const Icon(
+                          Icons.search,
+                          color: Colors.teal,
+                        ),
+                        onPressed: () {
+                          _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: search));
+                        },
+                      )
+                    ],
+                  ),
+                  drawer: Drawer(
+                    child: _menuDrawerListItems(),
+                  ),
+                  body: _generateBody(selectedMenuItem),
+                );
+              });
+        },
+      ),
     );
   }
 
@@ -269,6 +276,7 @@ class HomePageState extends State<HomePage> {
         _generateListTile(search),
         _generateListTile(followers),
         _generateListTile(following),
+        _generateListTile(newsFeed),
         ListTile(
           title: const Text("Logout"),
           onTap: () {
@@ -290,19 +298,36 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget _generateBody(String selectedMenuItem) {
-    switch (selectedMenuItem) {
-      case "Account Details":
-        return AccountDetailsView.withBloc();
-      case "Notifications":
-        return NotificationsView.withBloc();
-      case "Search":
-        return SearchView.withBloc();
-      case "Followers":
-        return FollowersView.withBloc();
-      case "Following":
-        return FollowingUsersView.withBloc();
-      default:
-        return _oldStuff();
+    final authState = _authenticationBloc.state;
+    if (authState is AuthSuccessUserUpdateState) {
+      final publicUserProfile = PublicUserProfile(
+          authState.authenticatedUser.user.id,
+          authState.authenticatedUser.user.username,
+          authState.authenticatedUser.userProfile?.firstName,
+          authState.authenticatedUser.userProfile?.lastName,
+          authState.authenticatedUser.userProfile?.photoUrl
+      );
+      switch (selectedMenuItem) {
+        case "Account Details":
+          return AccountDetailsView.withBloc();
+        case "Notifications":
+          return NotificationsView.withBloc();
+        case "Search":
+          return SearchView.withBloc();
+        case "Followers":
+          return FollowersView.withBloc();
+        case "Following":
+          return FollowingUsersView.withBloc();
+        case "News Feed":
+          return NewsFeedView.withBloc(publicUserProfile);
+        default:
+          return _oldStuff();
+      }
+    }
+    else {
+      return const Center(
+        child: Text("Bad State"),
+      );
     }
   }
 

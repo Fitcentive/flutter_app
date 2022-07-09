@@ -8,6 +8,7 @@ import 'package:flutter_app/src/infrastructure/proxies/custom_proxy.dart';
 import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
+import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
@@ -26,7 +27,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'src/views/login/bloc/authentication_state.dart';
 
 void main() async {
-  const String PROXY_IP = "192.168.2.25";
+  // const String PROXY_IP = "192.168.2.25";
+  const String PROXY_IP = "192.168.0.15";
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -60,6 +62,7 @@ class App extends StatelessWidget {
         RepositoryProvider<AuthenticationRepository>(create: (context) => AuthenticationRepository()),
         RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
         RepositoryProvider<ImageRepository>(create: (context) => ImageRepository()),
+        RepositoryProvider<SocialMediaRepository>(create: (context) => SocialMediaRepository()),
         RepositoryProvider<NotificationRepository>(create: (context) => NotificationRepository()),
         RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage()),
         RepositoryProvider<AuthenticatedUserStreamRepository>(create: (context) => AuthenticatedUserStreamRepository()),

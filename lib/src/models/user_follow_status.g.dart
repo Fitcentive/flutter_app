@@ -10,6 +10,8 @@ UserFollowStatus _$UserFollowStatusFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
     requiredKeys: const [
+      'currentUserId',
+      'otherUserId',
       'isCurrentUserFollowingOtherUser',
       'isOtherUserFollowingCurrentUser',
       'hasCurrentUserRequestedToFollowOtherUser',
@@ -17,6 +19,8 @@ UserFollowStatus _$UserFollowStatusFromJson(Map<String, dynamic> json) {
     ],
   );
   return UserFollowStatus(
+    json['currentUserId'] as String,
+    json['otherUserId'] as String,
     json['isCurrentUserFollowingOtherUser'] as bool,
     json['isOtherUserFollowingCurrentUser'] as bool,
     json['hasCurrentUserRequestedToFollowOtherUser'] as bool,
@@ -26,6 +30,8 @@ UserFollowStatus _$UserFollowStatusFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$UserFollowStatusToJson(UserFollowStatus instance) =>
     <String, dynamic>{
+      'currentUserId': instance.currentUserId,
+      'otherUserId': instance.otherUserId,
       'isCurrentUserFollowingOtherUser':
           instance.isCurrentUserFollowingOtherUser,
       'isOtherUserFollowingCurrentUser':

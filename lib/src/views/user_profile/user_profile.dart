@@ -13,7 +13,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class UserProfileView extends StatefulWidget {
   final PublicUserProfile userProfile;
 
-  UserProfileView({required this.userProfile});
+  const UserProfileView({Key? key, required this.userProfile}): super(key: key);
 
   static Route route(PublicUserProfile userProfile) {
     return MaterialPageRoute<void>(
@@ -83,7 +83,7 @@ class UserProfileViewState extends State<UserProfileView> {
             const Padding(padding: EdgeInsets.all(10)),
             _userUsername(widget.userProfile.username),
             const Padding(padding: EdgeInsets.all(10)),
-            _messageUserButton(),
+            _messageUserButton(state),
             _followUserButton(state),
             _removeUserFromFollowersButtonOpt(state),
           ]),
@@ -105,7 +105,10 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
-  Widget _messageUserButton() {
+  Widget? _messageUserButton(RequiredDataResolved state) {
+    if (state.currentUser.user.id == state.userFollowStatus.currentUserId) {
+      return null;
+    }
     return Container(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
         child: ElevatedButton.icon(
@@ -187,7 +190,10 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
-  Widget _followUserButton(RequiredDataResolved state) {
+  Widget? _followUserButton(RequiredDataResolved state) {
+    if (state.currentUser.user.id == state.userFollowStatus.otherUserId) {
+      return null;
+    }
     return Container(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
         child: ElevatedButton.icon(
