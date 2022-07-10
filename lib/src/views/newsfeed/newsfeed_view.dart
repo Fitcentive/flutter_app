@@ -4,9 +4,10 @@ import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/%20newsfeed/bloc/newsfeed_bloc.dart';
-import 'package:flutter_app/src/views/%20newsfeed/bloc/newsfeed_event.dart';
-import 'package:flutter_app/src/views/%20newsfeed/bloc/newsfeed_state.dart';
+import 'package:flutter_app/src/views/create_new_post/create_new_post_view.dart';
+import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_bloc.dart';
+import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_event.dart';
+import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
@@ -208,7 +209,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
           WidgetUtils.spacer(10),
           GestureDetector(
             onTap: () {
-              // Open create post view
+              Navigator.pushAndRemoveUntil(context, CreateNewPostView.route(widget.userProfile), (route) => true);
             },
             child: Card(
                 shape: RoundedRectangleBorder(

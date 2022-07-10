@@ -10,7 +10,7 @@ import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
-import 'package:flutter_app/src/views/%20newsfeed/newsfeed_view.dart';
+import 'package:flutter_app/src/views/newsfeed/newsfeed_view.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
 import 'package:flutter_app/src/views/followers/followers_view.dart';
 import 'package:flutter_app/src/views/following/following_view.dart';

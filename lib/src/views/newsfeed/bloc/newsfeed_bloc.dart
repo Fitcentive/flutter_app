@@ -1,7 +1,7 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
-import 'package:flutter_app/src/views/%20newsfeed/bloc/newsfeed_event.dart';
-import 'package:flutter_app/src/views/%20newsfeed/bloc/newsfeed_state.dart';
+import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_event.dart';
+import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 

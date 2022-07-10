@@ -21,6 +21,7 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
 
   final focusNode = FocusNode();
 
+  // todo - do not use requestFocus https://stackoverflow.com/questions/44991968/how-can-i-dismiss-the-on-screen-keyboard
   @override
   void initState() {
     super.initState();

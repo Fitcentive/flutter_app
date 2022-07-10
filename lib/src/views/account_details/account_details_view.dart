@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/utils/dialog_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_bloc.dart';
@@ -237,23 +238,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       child: GestureDetector(
         onTap: () async {
           final imageSource = await showDialog(context: context, builder: (context) {
-            return SimpleDialog(
-              title: const Text("Select image source"),
-              children: [
-                SimpleDialogOption(
-                  child: const Text("Gallery"),
-                  onPressed: () {
-                    Navigator.pop(context, ImageSource.gallery);
-                  },
-                ),
-                SimpleDialogOption(
-                  child: const Text("Camera"),
-                  onPressed: () {
-                    Navigator.pop(context, ImageSource.camera);
-                  },
-                ),
-              ],
-            );
+            return DialogUtils.showImageSourceSimpleDialog(context);
           });
           final XFile? image = await _picker.pickImage(source: imageSource);
           if (state is AccountDetailsModified) {

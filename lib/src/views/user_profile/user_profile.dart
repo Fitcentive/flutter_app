@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_bloc.dart';
@@ -76,7 +77,7 @@ class UserProfileViewState extends State<UserProfileView> {
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: skipNulls([
+          children: WidgetUtils.skipNulls([
             _userFirstAndLastName(),
             const Padding(padding: EdgeInsets.all(15)),
             _userAvatar(),
@@ -90,11 +91,6 @@ class UserProfileViewState extends State<UserProfileView> {
         ),
       ),
     );
-  }
-
-
-  List<T> skipNulls<T>(List<T?> items) {
-    return items.whereType<T>().toList();
   }
 
   Future<void> _pullRefresh() async {

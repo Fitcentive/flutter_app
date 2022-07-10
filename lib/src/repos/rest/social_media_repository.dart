@@ -38,7 +38,7 @@ class SocialMediaRepository {
     }
   }
 
-  Future<SocialPost> createPostForUser(String userId, SocialPostCreate newPost,String accessToken, ) async {
+  Future<SocialPost> createPostForUser(String userId, SocialPostCreate newPost,String accessToken) async {
     final response = await http.post(Uri.parse("$BASE_URL/$userId/post"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
       body: json.encode({
