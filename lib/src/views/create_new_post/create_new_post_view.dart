@@ -13,6 +13,7 @@ import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_event
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:formz/formz.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreateNewPostView extends StatefulWidget {
@@ -54,7 +55,9 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
     super.initState();
 
     _createNewPostBloc = BlocProvider.of<CreateNewPostBloc>(context);
-    _createNewPostBloc.add(PostDetailsChanged(userId: widget.userProfile.userId, text: "", image: null));
+    _createNewPostBloc.add(
+        PostDetailsChanged(userId: widget.userProfile.userId, text: "", image: null)
+    );
   }
 
   @override
@@ -76,10 +79,17 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                 padding: const EdgeInsets.all(10),
                 child: ElevatedButton(
                   onPressed: () {
-                    // Todo - need to do form validation on Text
+                    // todo - like button working, add likers as part of post response directly (wont scale)
+                    // todo - comment button, think about scaling strategy again
                     final state = _createNewPostBloc.state;
-                    if (state is PostDetailsModified) {
-                      _createNewPostBloc.add(PostSubmitted(userId: state.userId, text: state.text, image: state.image));
+                    if (state is PostDetailsModified && state.status.isValid) {
+                      _createNewPostBloc.add(
+                          PostSubmitted(
+                              userId: state.userId,
+                              text: state.text.value,
+                              image: state.image
+                          )
+                      );
                     }
                   },
                   child: const Text("Post"),
@@ -143,15 +153,16 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                         constraints: const BoxConstraints(minHeight: 50),
                         child: IntrinsicHeight(
                           child: TextField(
+                            decoration: InputDecoration(
+                              hintText: "What's on your mind?",
+                              errorText: state.text.invalid ? 'This cannot be left blank' : null,
+                            ),
                             onChanged: (text)  {
                               _createNewPostBloc.add(
                                   PostDetailsChanged(userId: state.userId, text: text, image: state.image)
                               );
                             } ,
                             maxLines: 10,
-                            decoration: const InputDecoration.collapsed(
-                                hintText: "What's on your mind?"
-                            ),
                           ),
                         ),
                       ),
@@ -171,7 +182,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                       if (imageSource != null) {
                         final XFile? image = await _picker.pickImage(source: imageSource);
                         _createNewPostBloc.add(
-                            PostDetailsChanged(userId: state.userId, text: state.text, image: image)
+                            PostDetailsChanged(userId: state.userId, text: state.text.value, image: image)
                         );
                       }
                     },
@@ -220,7 +231,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
       onTap: () {
         _createNewPostBloc.add(PostDetailsChanged(
           userId: state.userId,
-          text: state.text,
+          text: state.text.value,
           image: null
         ));
       },

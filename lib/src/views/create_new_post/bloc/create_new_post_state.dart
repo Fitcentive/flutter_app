@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/social/new_post.dart';
+import 'package:formz/formz.dart';
 import 'package:image_picker/image_picker.dart';
 
 abstract class CreateNewPostState extends Equatable {
@@ -14,13 +16,28 @@ class CreateNewPostInitialState extends CreateNewPostState {
 
 class PostDetailsModified extends CreateNewPostState {
   final String userId;
-  final String text;
+  final NewPost text;
+  final FormzStatus status;
   final XFile? image;
+
+  PostDetailsModified copyWith({
+    FormzStatus? status,
+    NewPost? text,
+    XFile? image,
+  }) {
+    return PostDetailsModified(
+      status: status ?? this.status,
+      text: text ?? this.text,
+      image: image ?? this.image,
+      userId: userId
+    );
+  }
 
   const PostDetailsModified({
     required this.userId,
     required this.text,
     required this.image,
+    required this.status
   } );
 
   @override
