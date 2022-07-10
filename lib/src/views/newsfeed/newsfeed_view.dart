@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_post/create_new_post_view.dart';
@@ -24,6 +25,7 @@ class NewsFeedView extends StatefulWidget {
           BlocProvider<NewsFeedBloc>(
               create: (context) => NewsFeedBloc(
                     socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
+                    userRepository: RepositoryProvider.of<UserRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                   )),
         ],
@@ -61,13 +63,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
   Widget build(BuildContext context) {
     return BlocBuilder<NewsFeedBloc, NewsFeedState>(builder: (context, state) {
       return Scaffold(
-        body: Column(
-          children: [
-            _addNewPostView(),
-            _separation(),
-            _newsfeedListView(state),
-          ],
-        ),
+        body: _newsfeedListView(state),
       );
     });
   }
@@ -80,91 +76,149 @@ class NewsFeedViewState extends State<NewsFeedView> {
             _newsFeedBloc.add(NewsFeedFetchRequested(user: state.user));
           },
           child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: state.posts.length,
+            itemCount: state.posts.length + 1,
             itemBuilder: (BuildContext context, int index) {
-              if (index >= state.posts.length) {
+              if (index == 0) {
+                return Column(
+                  children: [
+                    _addNewPostView(),
+                    _separation(),
+                  ],
+                );
+              }
+              if (index >= state.posts.length + 1) {
                 return const Center(child: CircularProgressIndicator());
               } else {
-                return _newsFeedListItem(state.posts[index]);
+                return _newsFeedListItem(state.posts[index - 1], state.userIdProfileMap);
               }
             },
           ),
         );
       }
       else {
-        return const Expanded(
-            child: Center(
-                child: Text("Awfully quiet here....")
-            )
+        return const Center(
+            child: Text("Awfully quiet here....")
         );
       }
     } else {
-      return const Expanded(
-          child: Center(
-            child: CircularProgressIndicator(),
-          )
+      return const Center(
+        child: CircularProgressIndicator(),
       );
     }
   }
 
-  Widget _newsFeedListItem(SocialPost post) {
-    return Expanded(
-        child: Card(
-          child: SizedBox(
-            height: 100,
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                        child: CircleAvatar(
-                      radius: 30,
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: ImageUtils.getImage(post.photoUrl, 100, 100),
-                        ),
-                      ),
-                    )),
-                    Expanded(child: Text(post.userId))
-                  ],
-                ),
-                Row(
-                  children: [Expanded(child: Text(post.text))],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                        child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        image: ImageUtils.getImage(post.photoUrl, 100, 100),
-                      ),
-                    ))
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(child: Text("${post.numberOfLikes} people like this")),
-                    Expanded(child: Text("${post.numberOfComments} comments")),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(child: ElevatedButton(onPressed: () {}, child: Text("Like"))),
-                    Expanded(child: ElevatedButton(onPressed: () {}, child: Text("Comment"))),
-                    Expanded(child: ElevatedButton(onPressed: () {}, child: Text("Share"))),
-                  ],
-                ),
-          ],
+  String _getUserNameFromUserId(String userId, PublicUserProfile? publicUserProfile) {
+    if (publicUserProfile != null) {
+      return "${publicUserProfile.firstName} ${publicUserProfile.lastName}";
+    }
+    return "";
+  }
+
+  Widget? _generatePostImageIfExists(String? postImageUrl) {
+    if (postImageUrl != null) {
+      return Container(
+        height: 300,
+        decoration: BoxDecoration(
+          shape: BoxShape.rectangle,
+          image: ImageUtils.getImage(postImageUrl, 300, 300),
         ),
+      );
+    }
+    return null;
+  }
+
+  Widget _newsFeedListItem(SocialPost post, Map<String, PublicUserProfile> userIdProfileMap) {
+    final publicUser = userIdProfileMap[post.userId];
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: Card(
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: WidgetUtils.skipNulls(
+                  [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: ImageUtils.getUserProfileImage(publicUser, 100, 100),
+                            ),
+                          ),
+                        ),
+                        WidgetUtils.spacer(20),
+                        Text(
+                          _getUserNameFromUserId(post.userId, publicUser),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
+                    WidgetUtils.spacer(10),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
+                              child: Text(post.text),
+                            )
+                        )
+                      ],
+                    ),
+                    WidgetUtils.spacer(5),
+                    _generatePostImageIfExists(post.photoUrl),
+                    WidgetUtils.spacer(5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
+                          child: Align(
+                            alignment: Alignment.bottomLeft,
+                            child: Text("${post.numberOfLikes} people like this"),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: Text("${post.numberOfComments} comments"),
+                          ),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(2.5),
+                              child: ElevatedButton(onPressed: () {}, child: Text("Like")),
+                            )
+                        ),
+                        Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(2.5),
+                              child: ElevatedButton(onPressed: () {}, child: Text("Comment")),
+                            )
+                        ),
+                        Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(2.5),
+                              child: ElevatedButton(onPressed: () {}, child: Text("Share")),
+                            )
+                        ),
+                      ],
+                    ),
+                  ]
+              ),
+            ),
+          ),
       ),
-    ));
+    );
   }
 
   Widget _separation() {
@@ -174,10 +228,11 @@ class NewsFeedViewState extends State<NewsFeedView> {
         children: [
           Expanded(
               child: Container(
-            height: 30,
-            width: 30,
-            color: Colors.teal,
-          ))
+                height: 30,
+                width: 30,
+                color: Colors.teal,
+              )
+          )
         ],
       ),
     );
@@ -216,7 +271,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
                   borderRadius: BorderRadius.circular(15.0),
                 ),
                 child: Container(
-                    padding: EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(15),
                     child: const Center(
                       child: Text("Share something with your community"),
                     ))),
