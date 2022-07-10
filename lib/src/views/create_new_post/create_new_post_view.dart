@@ -6,6 +6,7 @@ import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/utils/dialog_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_bloc.dart';
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_event.dart';
@@ -71,16 +72,16 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                 style: TextStyle(color: Colors.teal)
             ),
             actions: <Widget>[
-              ElevatedButton(
-                onPressed: () {
-                  // Todo - need to do form validation on Text
-                  final state = _createNewPostBloc.state;
-                  if (state is PostDetailsModified) {
-                    _createNewPostBloc.add(PostSubmitted(userId: state.userId, text: state.text, image: state.image));
-                  }
-                },
-                child: Container(
-                  margin: const EdgeInsets.all(10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Todo - need to do form validation on Text
+                    final state = _createNewPostBloc.state;
+                    if (state is PostDetailsModified) {
+                      _createNewPostBloc.add(PostSubmitted(userId: state.userId, text: state.text, image: state.image));
+                    }
+                  },
                   child: const Text("Post"),
                 ),
               )
@@ -88,7 +89,9 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
           ),
           body: BlocBuilder<CreateNewPostBloc, CreateNewPostState>(builder: (context, state) {
             if (state is PostDetailsModified) {
-              return _buildCreatePostPage(state);
+              return SingleChildScrollView(
+                child: _buildCreatePostPage(state),
+              );
             } else {
               return const Center(
                 child: CircularProgressIndicator(color: Colors.teal),
@@ -100,80 +103,85 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
   }
 
   _buildCreatePostPage(PostDetailsModified state) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        children: WidgetUtils.skipNulls([
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 30,
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: ImageUtils.getUserProfileImage(widget.userProfile, 100, 100),
+    return GestureDetector(
+      onTap: () {
+        KeyboardUtils.hideKeyboard(context);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: WidgetUtils.skipNulls([
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: ImageUtils.getUserProfileImage(widget.userProfile, 100, 100),
+                    ),
                   ),
                 ),
-              ),
-              WidgetUtils.spacer(10),
-              Text(
-                "${widget.userProfile.firstName} ${widget.userProfile.lastName}",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              )
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                  child: Container(
-                    height: 300,
-                    padding: const EdgeInsets.all(20),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 50),
-                      child: IntrinsicHeight(
-                        child: TextField(
-                          onChanged: (text)  {
-                            _createNewPostBloc.add(
-                                PostDetailsChanged(userId: state.userId, text: text, image: state.image)
-                            );
-                          } ,
-                          maxLines: 10,
-                          decoration: const InputDecoration.collapsed(
-                              hintText: "What's on your mind?"
+                WidgetUtils.spacer(10),
+                Text(
+                  "${widget.userProfile.firstName} ${widget.userProfile.lastName}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                )
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                    child: Container(
+                      height: 200,
+                      padding: const EdgeInsets.all(20),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 50),
+                        child: IntrinsicHeight(
+                          child: TextField(
+                            onChanged: (text)  {
+                              _createNewPostBloc.add(
+                                  PostDetailsChanged(userId: state.userId, text: text, image: state.image)
+                              );
+                            } ,
+                            maxLines: 10,
+                            decoration: const InputDecoration.collapsed(
+                                hintText: "What's on your mind?"
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  )
-              )
-            ],
-          ),
-          _generatePostImageIfPresent(state),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final imageSource = await showDialog(context: context, builder: (context) {
-                      return DialogUtils.showImageSourceSimpleDialog(context);
-                    });
-                    if (imageSource != null) {
-                      final XFile? image = await _picker.pickImage(source: imageSource);
-                      _createNewPostBloc.add(
-                          PostDetailsChanged(userId: state.userId, text: state.text, image: image)
-                      );
-                    }
-                  },
-                  child: const Text("Add an image"),
-                ),
-              )
-            ],
-          )
-        ]),
+                    )
+                )
+              ],
+            ),
+            _generatePostImageIfPresent(state),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final imageSource = await showDialog(context: context, builder: (context) {
+                        return DialogUtils.showImageSourceSimpleDialog(context);
+                      });
+                      if (imageSource != null) {
+                        final XFile? image = await _picker.pickImage(source: imageSource);
+                        _createNewPostBloc.add(
+                            PostDetailsChanged(userId: state.userId, text: state.text, image: image)
+                        );
+                      }
+                    },
+                    child: const Text("Add an image"),
+                  ),
+                )
+              ],
+            )
+          ]),
+        ),
       ),
     );
   }
@@ -183,21 +191,53 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
       return Row(
         children: [
           Expanded(
-              child: Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.rectangle,
-                  image: DecorationImage(
-                      image: FileImage(File(state.image!.path)),
-                      fit: BoxFit.fitHeight
+              child: Stack(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    height: 300,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      image: DecorationImage(
+                          image: FileImage(File(state.image!.path)),
+                          fit: BoxFit.fitHeight
+                      ),
+                    ),
                   ),
-                ),
+                  _deleteImageCrossButton(state)
+                ],
               )
-          )
+          ),
+
         ],
       );
     }
     return null;
+  }
+
+  _deleteImageCrossButton(PostDetailsModified state) {
+    return GestureDetector(
+      onTap: () {
+        _createNewPostBloc.add(PostDetailsChanged(
+          userId: state.userId,
+          text: state.text,
+          image: null
+        ));
+      },
+      child: Align(
+        alignment: const Alignment(1, -1),
+        child: Container(
+          width: 25,
+          height: 25,
+          decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.teal),
+          child: const Icon(
+            Icons.close,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+      ),
+    );
   }
 
 }

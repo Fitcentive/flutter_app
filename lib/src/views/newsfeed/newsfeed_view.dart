@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_post/create_new_post_view.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_bloc.dart';
@@ -107,26 +108,6 @@ class NewsFeedViewState extends State<NewsFeedView> {
     }
   }
 
-  String _getUserNameFromUserId(String userId, PublicUserProfile? publicUserProfile) {
-    if (publicUserProfile != null) {
-      return "${publicUserProfile.firstName} ${publicUserProfile.lastName}";
-    }
-    return "";
-  }
-
-  Widget? _generatePostImageIfExists(String? postImageUrl) {
-    if (postImageUrl != null) {
-      return Container(
-        height: 300,
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          image: ImageUtils.getImage(postImageUrl, 300, 300),
-        ),
-      );
-    }
-    return null;
-  }
-
   Widget _newsFeedListItem(SocialPost post, Map<String, PublicUserProfile> userIdProfileMap) {
     final publicUser = userIdProfileMap[post.userId];
     return Container(
@@ -153,7 +134,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
                         ),
                         WidgetUtils.spacer(20),
                         Text(
-                          _getUserNameFromUserId(post.userId, publicUser),
+                          StringUtils.getUserNameFromUserId(post.userId, publicUser),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         )
                       ],
@@ -170,7 +151,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
                       ],
                     ),
                     WidgetUtils.spacer(5),
-                    _generatePostImageIfExists(post.photoUrl),
+                    WidgetUtils.generatePostImageIfExists(post.photoUrl),
                     WidgetUtils.spacer(5),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -196,19 +177,43 @@ class NewsFeedViewState extends State<NewsFeedView> {
                         Expanded(
                             child: Container(
                               padding: const EdgeInsets.all(2.5),
-                              child: ElevatedButton(onPressed: () {}, child: Text("Like")),
+                              child: ElevatedButton(
+                                  onPressed: () {},
+                                  child: const Text(
+                                      "Like",
+                                    style: TextStyle(
+                                      fontSize: 12
+                                    ),
+                                  )
+                              ),
                             )
                         ),
                         Expanded(
                             child: Container(
                               padding: const EdgeInsets.all(2.5),
-                              child: ElevatedButton(onPressed: () {}, child: Text("Comment")),
+                              child: ElevatedButton(
+                                  onPressed: () {},
+                                  child: const Text(
+                                    "Comment",
+                                    style: TextStyle(
+                                        fontSize: 12
+                                    ),
+                                  )
+                              ),
                             )
                         ),
                         Expanded(
                             child: Container(
                               padding: const EdgeInsets.all(2.5),
-                              child: ElevatedButton(onPressed: () {}, child: Text("Share")),
+                              child: ElevatedButton(
+                                  onPressed: () {},
+                                  child: const Text(
+                                    "Share",
+                                    style: TextStyle(
+                                        fontSize: 12
+                                    ),
+                                  )
+                              ),
                             )
                         ),
                       ],

@@ -34,7 +34,7 @@ class SocialMediaRepository {
       return posts;
     } else {
       throw Exception(
-          "getNewsfeedForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+          "getPostsForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -54,7 +54,7 @@ class SocialMediaRepository {
       return post;
     } else {
       throw Exception(
-          "getNewsfeedForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+          "createPostForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 }

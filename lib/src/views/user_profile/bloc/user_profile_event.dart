@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
+import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/user_follow_status.dart';
 
 abstract class UserProfileEvent extends Equatable {
@@ -19,49 +20,66 @@ class FetchRequiredData extends UserProfileEvent {
   List<Object?> get props => [userId, currentUser];
 }
 
+class FetchUserPostsData extends UserProfileEvent {
+  final UserFollowStatus userFollowStatus;
+  final AuthenticatedUser currentUser;
+  final String userId;
+
+  const FetchUserPostsData({required this.userFollowStatus, required this.userId, required this.currentUser});
+
+  @override
+  List<Object?> get props => [userFollowStatus, userId, currentUser];
+}
+
 class RequestToFollowUser extends UserProfileEvent {
   final AuthenticatedUser currentUser;
   final String targetUserId;
   final UserFollowStatus userFollowStatus;
+  final List<SocialPost>? userPosts;
 
   const RequestToFollowUser({
     required this.targetUserId,
     required this.currentUser,
     required this.userFollowStatus,
+    required this.userPosts,
   });
 
   @override
-  List<Object?> get props => [targetUserId, currentUser, userFollowStatus];
+  List<Object?> get props => [targetUserId, currentUser, userFollowStatus, userPosts];
 }
 
 class UnfollowUser extends UserProfileEvent {
   final AuthenticatedUser currentUser;
   final String targetUserId;
   final UserFollowStatus userFollowStatus;
+  final List<SocialPost>? userPosts;
 
   const UnfollowUser({
     required this.targetUserId,
     required this.currentUser,
     required this.userFollowStatus,
+    required this.userPosts,
   });
 
   @override
-  List<Object?> get props => [targetUserId, currentUser, userFollowStatus];
+  List<Object?> get props => [targetUserId, currentUser, userFollowStatus, userPosts];
 }
 
 class RemoveUserFromCurrentUserFollowers extends UserProfileEvent {
   final AuthenticatedUser currentUser;
   final String targetUserId;
   final UserFollowStatus userFollowStatus;
+  final List<SocialPost>? userPosts;
 
   const RemoveUserFromCurrentUserFollowers({
     required this.targetUserId,
     required this.currentUser,
     required this.userFollowStatus,
+    required this.userPosts,
   });
 
   @override
-  List<Object?> get props => [targetUserId, currentUser, userFollowStatus];
+  List<Object?> get props => [targetUserId, currentUser, userFollowStatus, userPosts];
 }
 
 class ApplyUserDecisionToFollowRequest extends UserProfileEvent {
@@ -69,14 +87,16 @@ class ApplyUserDecisionToFollowRequest extends UserProfileEvent {
   final String targetUserId;
   final UserFollowStatus userFollowStatus;
   final bool isFollowRequestApproved;
+  final List<SocialPost>? userPosts;
 
   const ApplyUserDecisionToFollowRequest({
     required this.targetUserId,
     required this.currentUser,
     required this.userFollowStatus,
     required this.isFollowRequestApproved,
+    required this.userPosts,
   });
 
   @override
-  List<Object?> get props => [targetUserId, currentUser, userFollowStatus, isFollowRequestApproved];
+  List<Object?> get props => [targetUserId, currentUser, userFollowStatus, isFollowRequestApproved, userPosts];
 }
