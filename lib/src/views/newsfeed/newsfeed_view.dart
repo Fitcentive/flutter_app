@@ -45,6 +45,8 @@ class NewsFeedViewState extends State<NewsFeedView> {
 
   final TextEditingController _textController = TextEditingController();
 
+  List<SocialPost> postsState = List.empty();
+
   @override
   void initState() {
     super.initState();
@@ -72,6 +74,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
   _newsfeedListView(NewsFeedState state) {
     if (state is NewsFeedDataReady) {
       if (state.posts.isNotEmpty) {
+        postsState = state.posts;
         return RefreshIndicator(
           onRefresh: () async {
             _newsFeedBloc.add(NewsFeedFetchRequested(user: state.user));
@@ -108,6 +111,113 @@ class NewsFeedViewState extends State<NewsFeedView> {
     }
   }
 
+  _userHeader(PublicUserProfile? publicUser) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 30,
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              image: ImageUtils.getUserProfileImage(publicUser, 100, 100),
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(20),
+        Text(
+          StringUtils.getUserNameFromUserId(publicUser),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        )
+      ],
+    );
+  }
+
+  _userPostText(SocialPost post) {
+    return Row(
+      children: [
+        Expanded(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
+              child: Text(post.text),
+            )
+        )
+      ],
+    );
+  }
+
+  _getLikesAndComments(SocialPost post) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Text("${post.numberOfLikes} people like this"),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: Text("${post.numberOfComments} comments"),
+          ),
+        )
+      ],
+    );
+  }
+
+  _getPostActionButtons(SocialPost post) {
+    return Row(
+      children: [
+        Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(2.5),
+              child: ElevatedButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "Like",
+                    style: TextStyle(
+                        fontSize: 12
+                    ),
+                  )
+              ),
+            )
+        ),
+        Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(2.5),
+              child: ElevatedButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "Comment",
+                    style: TextStyle(
+                        fontSize: 12
+                    ),
+                  )
+              ),
+            )
+        ),
+        Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(2.5),
+              child: ElevatedButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "Share",
+                    style: TextStyle(
+                        fontSize: 12
+                    ),
+                  )
+              ),
+            )
+        ),
+      ],
+    );
+  }
+
   Widget _newsFeedListItem(SocialPost post, Map<String, PublicUserProfile> userIdProfileMap) {
     final publicUser = userIdProfileMap[post.userId];
     return Container(
@@ -119,105 +229,14 @@ class NewsFeedViewState extends State<NewsFeedView> {
               mainAxisSize: MainAxisSize.min,
               children: WidgetUtils.skipNulls(
                   [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 30,
-                          child: Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: ImageUtils.getUserProfileImage(publicUser, 100, 100),
-                            ),
-                          ),
-                        ),
-                        WidgetUtils.spacer(20),
-                        Text(
-                          StringUtils.getUserNameFromUserId(post.userId, publicUser),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      ],
-                    ),
+                    _userHeader(publicUser),
                     WidgetUtils.spacer(10),
-                    Row(
-                      children: [
-                        Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-                              child: Text(post.text),
-                            )
-                        )
-                      ],
-                    ),
+                    _userPostText(post),
                     WidgetUtils.spacer(5),
                     WidgetUtils.generatePostImageIfExists(post.photoUrl),
                     WidgetUtils.spacer(5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-                          child: Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Text("${post.numberOfLikes} people like this"),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
-                          child: Align(
-                            alignment: Alignment.bottomRight,
-                            child: Text("${post.numberOfComments} comments"),
-                          ),
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(2.5),
-                              child: ElevatedButton(
-                                  onPressed: () {},
-                                  child: const Text(
-                                      "Like",
-                                    style: TextStyle(
-                                      fontSize: 12
-                                    ),
-                                  )
-                              ),
-                            )
-                        ),
-                        Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(2.5),
-                              child: ElevatedButton(
-                                  onPressed: () {},
-                                  child: const Text(
-                                    "Comment",
-                                    style: TextStyle(
-                                        fontSize: 12
-                                    ),
-                                  )
-                              ),
-                            )
-                        ),
-                        Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(2.5),
-                              child: ElevatedButton(
-                                  onPressed: () {},
-                                  child: const Text(
-                                    "Share",
-                                    style: TextStyle(
-                                        fontSize: 12
-                                    ),
-                                  )
-                              ),
-                            )
-                        ),
-                      ],
-                    ),
+                    _getLikesAndComments(post),
+                    _getPostActionButtons(post),
                   ]
               ),
             ),
