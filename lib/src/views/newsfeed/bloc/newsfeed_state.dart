@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 
 abstract class NewsFeedState extends Equatable {
@@ -25,14 +26,16 @@ class NewsFeedDataLoading extends NewsFeedState {
 class NewsFeedDataReady extends NewsFeedState {
   final AuthenticatedUser user;
   final List<SocialPost> posts;
+  final List<PostsWithLikedUserIds> postsWithLikedUserIds;
   final Map<String, PublicUserProfile> userIdProfileMap;
 
   const NewsFeedDataReady({
     required this.user,
     required this.posts,
+    required this.postsWithLikedUserIds,
     required this.userIdProfileMap,
   });
 
   @override
-  List<Object> get props => [user, posts, userIdProfileMap];
+  List<Object> get props => [user, posts, postsWithLikedUserIds, userIdProfileMap];
 }

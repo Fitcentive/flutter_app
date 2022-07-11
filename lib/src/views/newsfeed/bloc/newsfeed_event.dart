@@ -13,3 +13,23 @@ class NewsFeedFetchRequested extends NewsFeedEvent {
   @override
   List<Object> get props => [user];
 }
+
+class LikePostForUser extends NewsFeedEvent {
+  final String userId;
+  final String postId;
+
+  const LikePostForUser({required this.userId, required this.postId});
+
+  @override
+  List<Object> get props => [userId, postId];
+}
+
+class UnlikePostForUser extends NewsFeedEvent {
+  final String userId;
+  final String postId;
+
+  const UnlikePostForUser({required this.userId, required this.postId});
+
+  @override
+  List<Object> get props => [userId, postId];
+}

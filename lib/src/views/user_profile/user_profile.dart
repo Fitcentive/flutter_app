@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
@@ -43,6 +44,9 @@ class UserProfileView extends StatefulWidget {
 class UserProfileViewState extends State<UserProfileView> {
   late final UserProfileBloc _userProfileBloc;
   late final AuthenticationBloc _authenticationBloc;
+
+  List<SocialPost>? postsState = List.empty();
+  List<PostsWithLikedUserIds>? likedUsersForPosts = List.empty();
 
   @override
   void initState() {
@@ -123,6 +127,8 @@ class UserProfileViewState extends State<UserProfileView> {
         child: Center(child: Text("Awfully quiet here....")),
       );
     } else {
+      postsState = state.userPosts;
+      likedUsersForPosts = state.usersWhoLikedPosts;
       return _newsfeedListView(state.userPosts!);
     }
   }
@@ -137,7 +143,9 @@ class UserProfileViewState extends State<UserProfileView> {
           if (index >= userPosts.length) {
             return const Center(child: CircularProgressIndicator());
           } else {
-            return _newsFeedListItem(userPosts[index], widget.userProfile);
+            final usersWhoLikedPost = likedUsersForPosts!
+                .firstWhere((element) => element.postId == postsState![index].postId);
+            return _newsFeedListItem(userPosts[index], usersWhoLikedPost);
           }
         },
       );
@@ -146,7 +154,156 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
-  Widget _newsFeedListItem(SocialPost post, PublicUserProfile userProfile) {
+  _userHeader(PublicUserProfile? publicUser) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 30,
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              image: ImageUtils.getUserProfileImage(publicUser, 100, 100),
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(20),
+        Text(
+          StringUtils.getUserNameFromUserId(publicUser),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        )
+      ],
+    );
+  }
+
+  _userPostText(SocialPost post) {
+    return Row(
+      children: [
+        Expanded(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
+              child: Text(post.text),
+            )
+        )
+      ],
+    );
+  }
+
+  _getLikesAndComments(SocialPost post, PostsWithLikedUserIds likedUserIds) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.userProfile.userId, likedUserIds.userIds)),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: Text("${post.numberOfComments} comments"),
+          ),
+        )
+      ],
+    );
+  }
+
+  _getPostActionButtons(SocialPost post, PostsWithLikedUserIds likedUserIds) {
+    return Row(
+      children: [
+        Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(2.5),
+              child: ElevatedButton.icon(
+                  icon: likedUserIds.userIds.contains(widget.userProfile.userId) ?
+                  const Icon(Icons.thumb_down) : const Icon(Icons.thumb_up),
+                  onPressed: () {
+                    List<String> newLikedUserIdsForCurrentPost = likedUserIds.userIds;
+                    final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.userProfile.userId);
+
+                    final currentAuthState = _authenticationBloc.state;
+                    final currentUserProfileState = _userProfileBloc.state;
+
+                    if (currentAuthState is AuthSuccessUserUpdateState
+                        && currentUserProfileState is RequiredDataResolved) {
+                      if (hasUserAlreadyLikedPost) {
+                        _userProfileBloc.add(
+                            UnlikePostForUser(
+                              currentUser: currentAuthState.authenticatedUser,
+                              postId: post.postId,
+                            ));
+                      }
+                      else {
+                        _userProfileBloc.add(
+                            LikePostForUser(
+                              currentUser: currentAuthState.authenticatedUser,
+                              postId: post.postId,
+                            ));
+                      }
+
+                    }
+
+                    setState(() {
+                      if (hasUserAlreadyLikedPost) {
+                        newLikedUserIdsForCurrentPost.remove(widget.userProfile.userId);
+                      }
+                      else {
+                        newLikedUserIdsForCurrentPost.add(widget.userProfile.userId);
+                      }
+                      likedUsersForPosts = likedUsersForPosts!.map((e) {
+                        if (e.postId == post.postId) {
+                          return PostsWithLikedUserIds(e.postId, newLikedUserIdsForCurrentPost);
+                        } else {
+                          return e;
+                        }
+                      }).toList();
+                    });
+                  },
+                  label: Text(likedUserIds.userIds.contains(widget.userProfile.userId) ? "Unlike" : "Like",
+                    style: const TextStyle(
+                        fontSize: 12
+                    ),
+                  )
+              ),
+            )
+        ),
+        Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(2.5),
+              child: ElevatedButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "Comment",
+                    style: TextStyle(
+                        fontSize: 12
+                    ),
+                  )
+              ),
+            )
+        ),
+        Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(2.5),
+              child: ElevatedButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "Share",
+                    style: TextStyle(
+                        fontSize: 12
+                    ),
+                  )
+              ),
+            )
+        ),
+      ],
+    );
+  }
+
+  Widget _newsFeedListItem(SocialPost post, PostsWithLikedUserIds likedUserIds) {
     return Container(
       padding: const EdgeInsets.all(10),
       child: Card(
@@ -155,92 +312,14 @@ class UserProfileViewState extends State<UserProfileView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: WidgetUtils.skipNulls([
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: ImageUtils.getUserProfileImage(userProfile, 100, 100),
-                      ),
-                    ),
-                  ),
-                  WidgetUtils.spacer(20),
-                  Text(
-                    StringUtils.getUserNameFromUserId(userProfile),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  )
-                ],
-              ),
+              _userHeader(widget.userProfile),
               WidgetUtils.spacer(10),
-              Row(
-                children: [
-                  Expanded(
-                      child: Container(
-                    padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-                    child: Text(post.text),
-                  ))
-                ],
-              ),
+              _userPostText(post),
               WidgetUtils.spacer(5),
               WidgetUtils.generatePostImageIfExists(post.photoUrl),
               WidgetUtils.spacer(5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-                    child: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Text("${post.numberOfLikes} people like this"),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
-                    child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: Text("${post.numberOfComments} comments"),
-                    ),
-                  )
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                      child: Container(
-                    padding: const EdgeInsets.all(2.5),
-                    child: ElevatedButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "Like",
-                          style: TextStyle(fontSize: 12),
-                        )),
-                  )),
-                  Expanded(
-                      child: Container(
-                    padding: const EdgeInsets.all(2.5),
-                    child: ElevatedButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "Comment",
-                          style: TextStyle(fontSize: 12),
-                        )),
-                  )),
-                  Expanded(
-                      child: Container(
-                    padding: const EdgeInsets.all(2.5),
-                    child: ElevatedButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "Share",
-                          style: TextStyle(fontSize: 12),
-                        )),
-                  )),
-                ],
-              ),
+              _getLikesAndComments(post, likedUserIds),
+              _getPostActionButtons(post, likedUserIds),
             ]),
           ),
         ),
@@ -308,13 +387,17 @@ class UserProfileViewState extends State<UserProfileView> {
             targetUserId: widget.userProfile.userId,
             currentUser: currentAuthState.authenticatedUser,
             userFollowStatus: currentUserProfileState.userFollowStatus,
-            userPosts: currentUserProfileState.userPosts));
+            userPosts: currentUserProfileState.userPosts,
+            usersWhoLikedPosts: currentUserProfileState.usersWhoLikedPosts,
+        ));
       } else if (!currentUserProfileState.userFollowStatus.hasCurrentUserRequestedToFollowOtherUser) {
         _userProfileBloc.add(RequestToFollowUser(
             targetUserId: widget.userProfile.userId,
             currentUser: currentAuthState.authenticatedUser,
             userFollowStatus: currentUserProfileState.userFollowStatus,
-            userPosts: currentUserProfileState.userPosts));
+            userPosts: currentUserProfileState.userPosts,
+          usersWhoLikedPosts: currentUserProfileState.usersWhoLikedPosts,
+        ));
       }
     }
   }
@@ -327,7 +410,9 @@ class UserProfileViewState extends State<UserProfileView> {
           targetUserId: widget.userProfile.userId,
           currentUser: currentAuthState.authenticatedUser,
           userFollowStatus: currentUserProfileState.userFollowStatus,
-          userPosts: currentUserProfileState.userPosts));
+          userPosts: currentUserProfileState.userPosts,
+          usersWhoLikedPosts: currentUserProfileState.usersWhoLikedPosts,
+      ));
     }
   }
 
@@ -413,7 +498,9 @@ class UserProfileViewState extends State<UserProfileView> {
           currentUser: currentAuthState.authenticatedUser,
           userFollowStatus: currentUserProfileState.userFollowStatus,
           isFollowRequestApproved: isFollowRequestApproved,
-          userPosts: currentUserProfileState.userPosts));
+          userPosts: currentUserProfileState.userPosts,
+          usersWhoLikedPosts: currentUserProfileState.usersWhoLikedPosts,
+      ));
     }
   }
 

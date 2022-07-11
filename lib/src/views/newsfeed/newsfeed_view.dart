@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
@@ -46,6 +47,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
   final TextEditingController _textController = TextEditingController();
 
   List<SocialPost> postsState = List.empty();
+  List<PostsWithLikedUserIds> likedUsersForPosts = List.empty();
 
   @override
   void initState() {
@@ -75,12 +77,13 @@ class NewsFeedViewState extends State<NewsFeedView> {
     if (state is NewsFeedDataReady) {
       if (state.posts.isNotEmpty) {
         postsState = state.posts;
+        likedUsersForPosts = state.postsWithLikedUserIds;
         return RefreshIndicator(
           onRefresh: () async {
             _newsFeedBloc.add(NewsFeedFetchRequested(user: state.user));
           },
           child: ListView.builder(
-            itemCount: state.posts.length + 1,
+            itemCount: postsState.length + 1,
             itemBuilder: (BuildContext context, int index) {
               if (index == 0) {
                 return Column(
@@ -90,10 +93,12 @@ class NewsFeedViewState extends State<NewsFeedView> {
                   ],
                 );
               }
-              if (index >= state.posts.length + 1) {
+              if (index >= postsState.length + 1) {
                 return const Center(child: CircularProgressIndicator());
               } else {
-                return _newsFeedListItem(state.posts[index - 1], state.userIdProfileMap);
+                final usersWhoLikedPost = likedUsersForPosts
+                    .firstWhere((element) => element.postId == postsState[index - 1].postId);
+                return _newsFeedListItem(postsState[index - 1], state.userIdProfileMap, usersWhoLikedPost);
               }
             },
           ),
@@ -114,14 +119,19 @@ class NewsFeedViewState extends State<NewsFeedView> {
   _userHeader(PublicUserProfile? publicUser) {
     return Row(
       children: [
-        CircleAvatar(
-          radius: 30,
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: ImageUtils.getUserProfileImage(publicUser, 100, 100),
+        GestureDetector(
+          onTap: () {
+            Navigator.pushAndRemoveUntil(context, UserProfileView.route(publicUser!), (route) => true);
+          },
+          child: CircleAvatar(
+            radius: 30,
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: ImageUtils.getUserProfileImage(publicUser, 100, 100),
+              ),
             ),
           ),
         ),
@@ -147,7 +157,9 @@ class NewsFeedViewState extends State<NewsFeedView> {
     );
   }
 
-  _getLikesAndComments(SocialPost post) {
+
+
+  _getLikesAndComments(SocialPost post, PostsWithLikedUserIds likedUserIds) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -155,7 +167,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
           padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
           child: Align(
             alignment: Alignment.bottomLeft,
-            child: Text("${post.numberOfLikes} people like this"),
+            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.userProfile.userId, likedUserIds.userIds)),
           ),
         ),
         Container(
@@ -169,17 +181,43 @@ class NewsFeedViewState extends State<NewsFeedView> {
     );
   }
 
-  _getPostActionButtons(SocialPost post) {
+  _getPostActionButtons(SocialPost post, PostsWithLikedUserIds likedUserIds) {
     return Row(
       children: [
         Expanded(
             child: Container(
               padding: const EdgeInsets.all(2.5),
-              child: ElevatedButton(
-                  onPressed: () {},
-                  child: const Text(
-                    "Like",
-                    style: TextStyle(
+              child: ElevatedButton.icon(
+                  icon: likedUserIds.userIds.contains(widget.userProfile.userId) ?
+                            const Icon(Icons.thumb_down) : const Icon(Icons.thumb_up),
+                  onPressed: () {
+                    List<String> newLikedUserIdsForCurrentPost = likedUserIds.userIds;
+                    final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.userProfile.userId);
+
+                    if (hasUserAlreadyLikedPost) {
+                      _newsFeedBloc.add(UnlikePostForUser(userId: widget.userProfile.userId, postId: post.postId));
+                    } else {
+                      _newsFeedBloc.add(LikePostForUser(userId: widget.userProfile.userId, postId: post.postId));
+                    }
+
+                    setState(() {
+                      if (hasUserAlreadyLikedPost) {
+                        newLikedUserIdsForCurrentPost.remove(widget.userProfile.userId);
+                      }
+                      else {
+                        newLikedUserIdsForCurrentPost.add(widget.userProfile.userId);
+                      }
+                      likedUsersForPosts = likedUsersForPosts.map((e) {
+                        if (e.postId == post.postId) {
+                          return PostsWithLikedUserIds(e.postId, newLikedUserIdsForCurrentPost);
+                        } else {
+                          return e;
+                        }
+                      }).toList();
+                    });
+                  },
+                  label: Text(likedUserIds.userIds.contains(widget.userProfile.userId) ? "Unlike" : "Like",
+                    style: const TextStyle(
                         fontSize: 12
                     ),
                   )
@@ -218,7 +256,11 @@ class NewsFeedViewState extends State<NewsFeedView> {
     );
   }
 
-  Widget _newsFeedListItem(SocialPost post, Map<String, PublicUserProfile> userIdProfileMap) {
+  Widget _newsFeedListItem(
+      SocialPost post,
+      Map<String, PublicUserProfile> userIdProfileMap,
+      PostsWithLikedUserIds likedUserIds
+  ) {
     final publicUser = userIdProfileMap[post.userId];
     return Container(
       padding: const EdgeInsets.all(10),
@@ -235,8 +277,8 @@ class NewsFeedViewState extends State<NewsFeedView> {
                     WidgetUtils.spacer(5),
                     WidgetUtils.generatePostImageIfExists(post.photoUrl),
                     WidgetUtils.spacer(5),
-                    _getLikesAndComments(post),
-                    _getPostActionButtons(post),
+                    _getLikesAndComments(post, likedUserIds),
+                    _getPostActionButtons(post, likedUserIds),
                   ]
               ),
             ),
