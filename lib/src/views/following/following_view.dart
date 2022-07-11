@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/followers/bloc/followers_bloc.dart';
 import 'package:flutter_app/src/views/followers/bloc/followers_event.dart';
@@ -21,7 +22,7 @@ class FollowingUsersView extends StatefulWidget {
     providers: [
       BlocProvider<FollowingBloc>(
           create: (context) => FollowingBloc(
-            userRepository: RepositoryProvider.of<UserRepository>(context),
+            socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],

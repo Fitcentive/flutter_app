@@ -14,78 +14,6 @@ import 'package:http/http.dart' as http;
 class UserRepository {
   static const String BASE_URL = "http://api.vid.app/api/user";
 
-  Future<List<PublicUserProfile>> fetchUserFollowers(String userId, String accessToken) async {
-    final response = await http.get(
-        Uri.parse("$BASE_URL/$userId/followers"),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
-        },
-    );
-
-    if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
-      final publicUserProfiles = jsonResponse.map((e) => PublicUserProfile.fromJson(e)).toList();
-      return publicUserProfiles;
-    } else {
-      throw Exception(
-          "fetchUserFollowers: Received bad response with status: ${response.statusCode} and body ${response.body}");
-    }
-  }
-
-  Future<List<PublicUserProfile>> fetchUserFollowing(String userId, String accessToken) async {
-    final response = await http.get(
-      Uri.parse("$BASE_URL/$userId/following"),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken'
-      },
-    );
-
-    if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
-      final publicUserProfiles = jsonResponse.map((e) => PublicUserProfile.fromJson(e)).toList();
-      return publicUserProfiles;
-    } else {
-      throw Exception(
-          "fetchUserFollowing: Received bad response with status: ${response.statusCode} and body ${response.body}");
-    }
-  }
-
-  Future<void> unfollowUser(String currentUserId, String targetUserId, String accessToken) async {
-    final response = await http.post(
-      Uri.parse("$BASE_URL/$currentUserId/unfollow/$targetUserId"),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken'
-      },
-    );
-
-    if (response.statusCode == HttpStatus.ok) {
-      return;
-    } else {
-      throw Exception(
-          "fetchUserFollowing: Received bad response with status: ${response.statusCode} and body ${response.body}");
-    }
-  }
-
-  Future<void> removeFollowingUser(String currentUserId, String followingUserId, String accessToken) async {
-    final response = await http.post(
-      Uri.parse("$BASE_URL/$currentUserId/follow/$followingUserId/remove"),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken'
-      },
-    );
-
-    if (response.statusCode == HttpStatus.ok) {
-      return;
-    } else {
-      throw Exception(
-          "fetchUserFollowing: Received bad response with status: ${response.statusCode} and body ${response.body}");
-    }
-  }
-
   Future<List<PublicUserProfile>> searchForUsers(String searchQuery, int limit, String accessToken) async {
     final response = await http.post(
         Uri.parse("$BASE_URL/public/search?limit=$limit"),
@@ -425,54 +353,6 @@ class UserRepository {
       return username;
     } else {
       return null;
-    }
-  }
-
-  Future<void> requestToFollowUser(String currentUserId, String targetUserId, String accessToken) async {
-    final response = await http.post(Uri.parse("$BASE_URL/$currentUserId/follow/$targetUserId/request"),
-        headers: {"Authorization": "Bearer $accessToken"});
-
-    if (response.statusCode == HttpStatus.accepted) {
-      return;
-    } else {
-      throw Exception(
-          "requestToFollowUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
-    }
-  }
-
-  Future<UserFollowStatus> getUserFollowStatus(
-      String requestingUserId, String targetUserId, String accessToken) async {
-    final response = await http.get(Uri.parse("$BASE_URL/$requestingUserId/follow-status/$targetUserId"),
-        headers: {"Authorization": "Bearer $accessToken"});
-
-    if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
-      final userFollowStatus = UserFollowStatus.fromJson(jsonResponse);
-      return userFollowStatus;
-    } else {
-      throw Exception(
-          "getUserFollowStatus: Received bad response with status: ${response.statusCode} and body ${response.body}");
-    }
-  }
-
-  Future<void> applyUserDecisionToFollowRequest(
-      String requestingUserId, String targetUserId, bool isRequestApproved, String accessToken) async {
-    final jsonBody = {
-      'isRequestApproved': isRequestApproved,
-    };
-    final response = await http.post(
-        Uri.parse("$BASE_URL/$targetUserId/follow/$requestingUserId"),
-        headers: {
-          'Content-type': 'application/json',
-          "Authorization": "Bearer $accessToken",
-        },
-        body: json.encode(jsonBody));
-
-    if (response.statusCode == HttpStatus.ok) {
-      return;
-    } else {
-      throw Exception(
-          "applyUserDecisionToFollowRequest: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_app/src/models/notification/app_notification.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
+import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_event.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_state.dart';
@@ -10,11 +11,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   final NotificationRepository notificationsRepository;
   final UserRepository userRepository;
+  final SocialMediaRepository socialMediaRepository;
   final FlutterSecureStorage secureStorage;
 
   NotificationsBloc({
     required this.notificationsRepository,
     required this.userRepository,
+    required this.socialMediaRepository,
     required this.secureStorage,
   }) : super(const NotificationsInitial()) {
     on<FetchNotifications>(_fetchNotifications);
@@ -25,7 +28,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   void _notificationInteractedWith(NotificationInteractedWith event, Emitter<NotificationsState> emit) async {
     if (event.notification.isInteractive && event.notification.notificationType == "UserFollowRequest") {
       final accessToken = await secureStorage.read(key: event.targetUser.authTokens.accessTokenSecureStorageKey);
-      await userRepository.applyUserDecisionToFollowRequest(
+      await socialMediaRepository.applyUserDecisionToFollowRequest(
           event.requestingUserId,
           event.targetUser.user.id,
           event.isApproved,

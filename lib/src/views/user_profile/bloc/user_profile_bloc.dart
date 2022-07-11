@@ -62,7 +62,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     emit(const DataLoading());
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final userFollowStatus =
-        await userRepository.getUserFollowStatus(event.currentUser.user.id, event.userId, accessToken!);
+        await socialMediaRepository.getUserFollowStatus(event.currentUser.user.id, event.userId, accessToken!);
 
     List<SocialPost>? userPosts;
     List<PostsWithLikedUserIds>? likedUsersForPostIds;
@@ -81,9 +81,9 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
 
   void _requestToFollowUser(RequestToFollowUser event, Emitter<UserProfileState> emit) async {
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await userRepository.requestToFollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
+    await socialMediaRepository.requestToFollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
-    await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
+    await socialMediaRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
     emit(RequiredDataResolved(
         userFollowStatus: userFollowStatus,
         currentUser: event.currentUser,
@@ -94,9 +94,9 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
 
   void _unfollowUser(UnfollowUser event, Emitter<UserProfileState> emit) async {
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await userRepository.unfollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
+    await socialMediaRepository.unfollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
-    await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
+    await socialMediaRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
     emit(RequiredDataResolved(
         userFollowStatus: userFollowStatus,
         currentUser: event.currentUser,
@@ -107,9 +107,9 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
 
   void _removeUserFromCurrentUserFollowers(RemoveUserFromCurrentUserFollowers event, Emitter<UserProfileState> emit) async {
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await userRepository.removeFollowingUser(event.currentUser.user.id, event.targetUserId, accessToken!);
+    await socialMediaRepository.removeFollowingUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
-    await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
+    await socialMediaRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
     emit(RequiredDataResolved(
         userFollowStatus: userFollowStatus,
         currentUser: event.currentUser,
@@ -120,14 +120,14 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
 
   void _applyUserDecisionToFollowRequest(ApplyUserDecisionToFollowRequest event, Emitter<UserProfileState> emit) async {
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await userRepository.applyUserDecisionToFollowRequest(
+    await socialMediaRepository.applyUserDecisionToFollowRequest(
         event.targetUserId,
         event.currentUser.user.id,
         event.isFollowRequestApproved,
         accessToken!
     );
     final userFollowStatus =
-    await userRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
+    await socialMediaRepository.getUserFollowStatus(event.currentUser.user.id, event.targetUserId, accessToken);
     emit(RequiredDataResolved(
         userFollowStatus: userFollowStatus,
         currentUser: event.currentUser,

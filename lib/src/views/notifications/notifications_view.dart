@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/notification/app_notification.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
+import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
@@ -23,6 +24,7 @@ class NotificationsView extends StatefulWidget {
               create: (context) => NotificationsBloc(
                     notificationsRepository: RepositoryProvider.of<NotificationRepository>(context),
                     userRepository: RepositoryProvider.of<UserRepository>(context),
+                    socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                   )),
         ],
