@@ -27,8 +27,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'src/views/login/bloc/authentication_state.dart';
 
 void main() async {
-  // const String PROXY_IP = "192.168.2.25";
-  const String PROXY_IP = "192.168.0.15";
+  const String PROXY_IP = "192.168.2.25";
+  // const String PROXY_IP = "192.168.0.15";
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

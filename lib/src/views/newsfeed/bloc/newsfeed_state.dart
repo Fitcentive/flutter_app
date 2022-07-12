@@ -12,7 +12,7 @@ class NewsFeedStateInitial extends NewsFeedState {
   const NewsFeedStateInitial();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class NewsFeedDataLoading extends NewsFeedState {
@@ -20,7 +20,7 @@ class NewsFeedDataLoading extends NewsFeedState {
   const NewsFeedDataLoading();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class NewsFeedDataReady extends NewsFeedState {
@@ -28,14 +28,28 @@ class NewsFeedDataReady extends NewsFeedState {
   final List<SocialPost> posts;
   final List<PostsWithLikedUserIds> postsWithLikedUserIds;
   final Map<String, PublicUserProfile> userIdProfileMap;
+  final String? selectedPostId;
 
   const NewsFeedDataReady({
     required this.user,
     required this.posts,
     required this.postsWithLikedUserIds,
     required this.userIdProfileMap,
+    required this.selectedPostId,
   });
 
+  NewsFeedDataReady copyWith({
+    required String newPostId,
+  }) {
+    return NewsFeedDataReady(
+        user: user,
+        posts: posts,
+        postsWithLikedUserIds: postsWithLikedUserIds,
+        userIdProfileMap: userIdProfileMap,
+        selectedPostId: newPostId
+    );
+  }
+
   @override
-  List<Object> get props => [user, posts, postsWithLikedUserIds, userIdProfileMap];
+  List<Object?> get props => [user, posts, postsWithLikedUserIds, userIdProfileMap, selectedPostId];
 }

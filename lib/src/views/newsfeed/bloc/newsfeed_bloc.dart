@@ -7,7 +7,6 @@ import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_event.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart';
 
 class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
   final SocialMediaRepository socialMediaRepository;
@@ -22,6 +21,14 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
     on<NewsFeedFetchRequested>(_newsFeedFetchRequested);
     on<LikePostForUser>(_likePostForUser);
     on<UnlikePostForUser>(_unlikePostForUser);
+    on<ViewCommentsForSelectedPost>(_viewCommentsForSelectedPost);
+  }
+
+  void _viewCommentsForSelectedPost(ViewCommentsForSelectedPost event, Emitter<NewsFeedState> emit) async {
+    final currentState = state;
+    if (currentState is NewsFeedDataReady) {
+      emit(currentState.copyWith(newPostId: event.postId));
+    }
   }
 
   void _likePostForUser(LikePostForUser event, Emitter<NewsFeedState> emit) async {
@@ -51,7 +58,8 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
         user: event.user,
         posts: posts,
         postsWithLikedUserIds: likedUsersForPostIds,
-        userIdProfileMap: userIdProfileMap
+        userIdProfileMap: userIdProfileMap,
+        selectedPostId: null,
     ));
   }
 
