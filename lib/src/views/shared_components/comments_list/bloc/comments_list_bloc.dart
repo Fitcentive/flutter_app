@@ -19,6 +19,20 @@ class CommentsListBloc extends Bloc<CommentsListEvent, CommentsListState> {
     required this.secureStorage
   }): super(const CommentsListStateInitial()) {
     on<FetchCommentsRequested>(_fetchCommentsRequested);
+    on<AddNewComment>(_addNewComment);
+  }
+
+  void _addNewComment(AddNewComment event, Emitter<CommentsListState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await socialMediaRepository.addCommentToPost(event.postId, event.userId, event.comment, accessToken!);
+    emit(CommentsLoading(userId: event.postId));
+
+    final comments = await socialMediaRepository.getCommentsForPost(event.postId, accessToken);
+    final List<String> userIdsFromNotificationSources = _getDistinctUserIds(comments);
+    final List<PublicUserProfile> userProfileDetails =
+    await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
+    final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+    emit(CommentsLoaded(userId: event.postId, comments: comments, userIdProfileMap: userIdProfileMap));
   }
 
   void _fetchCommentsRequested(FetchCommentsRequested event, Emitter<CommentsListState> emit) async {

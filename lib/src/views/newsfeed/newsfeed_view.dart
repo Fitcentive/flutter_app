@@ -363,7 +363,8 @@ class NewsFeedViewState extends State<NewsFeedView> {
                     padding: const EdgeInsets.all(15),
                     child: const Center(
                       child: Text("Share something with your community"),
-                    ))),
+                    ))
+            ),
           )
         ],
       ),

@@ -34,14 +34,28 @@ class RequiredDataResolved extends UserProfileState {
   final UserFollowStatus userFollowStatus;
   final List<SocialPost>? userPosts;
   final List<PostsWithLikedUserIds>? usersWhoLikedPosts;
+  final String? selectedPostId;
 
   const RequiredDataResolved({
     required this.userFollowStatus,
     required this.currentUser,
     required this.userPosts,
-    required this.usersWhoLikedPosts
+    required this.usersWhoLikedPosts,
+    required this.selectedPostId
   });
 
+  RequiredDataResolved copyWith({
+    required String newPostId,
+  }) {
+    return RequiredDataResolved(
+        userFollowStatus: userFollowStatus,
+        currentUser: currentUser,
+        userPosts: userPosts,
+        usersWhoLikedPosts: usersWhoLikedPosts,
+        selectedPostId: newPostId
+    );
+  }
+
   @override
-  List<Object?> get props => [userFollowStatus, currentUser, userPosts, usersWhoLikedPosts];
+  List<Object?> get props => [userFollowStatus, currentUser, userPosts, usersWhoLikedPosts, selectedPostId];
 }

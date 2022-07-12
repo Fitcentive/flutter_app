@@ -26,8 +26,15 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     on<LikePostForUser>(_likePostForUser);
     on<RemoveUserFromCurrentUserFollowers>(_removeUserFromCurrentUserFollowers);
     on<ApplyUserDecisionToFollowRequest>(_applyUserDecisionToFollowRequest);
+    on<ViewCommentsForSelectedPost>(_viewCommentsForSelectedPost);
   }
 
+  void _viewCommentsForSelectedPost(ViewCommentsForSelectedPost event, Emitter<UserProfileState> emit) async {
+    final currentState = state;
+    if (currentState is RequiredDataResolved) {
+      emit(currentState.copyWith(newPostId: event.postId));
+    }
+  }
 
   void _likePostForUser(LikePostForUser event, Emitter<UserProfileState> emit) async {
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
@@ -54,7 +61,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         userFollowStatus: event.userFollowStatus,
         currentUser: event.currentUser,
         userPosts: userPosts,
-        usersWhoLikedPosts: likedUsersForPostIds
+        usersWhoLikedPosts: likedUsersForPostIds,
+        selectedPostId: null
     ));
   }
 
@@ -75,7 +83,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         userFollowStatus: userFollowStatus,
         currentUser: event.currentUser,
         userPosts: userPosts,
-        usersWhoLikedPosts: likedUsersForPostIds
+        usersWhoLikedPosts: likedUsersForPostIds,
+        selectedPostId: null
     ));
   }
 
@@ -89,6 +98,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: event.userPosts,
         usersWhoLikedPosts: event.usersWhoLikedPosts,
+        selectedPostId: null
     ));
   }
 
@@ -102,6 +112,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: event.userPosts,
         usersWhoLikedPosts: event.usersWhoLikedPosts,
+        selectedPostId: null
     ));
   }
 
@@ -115,6 +126,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: event.userPosts,
         usersWhoLikedPosts: event.usersWhoLikedPosts,
+        selectedPostId: null
     ));
   }
 
@@ -133,6 +145,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: event.userPosts,
         usersWhoLikedPosts: event.usersWhoLikedPosts,
+        selectedPostId: null
     ));
   }
 }

@@ -142,3 +142,12 @@ class ApplyUserDecisionToFollowRequest extends UserProfileEvent {
     usersWhoLikedPosts
   ];
 }
+
+class ViewCommentsForSelectedPost extends UserProfileEvent {
+  final String postId;
+
+  const ViewCommentsForSelectedPost({required this.postId});
+
+  @override
+  List<Object> get props => [postId];
+}

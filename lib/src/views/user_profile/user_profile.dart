@@ -9,11 +9,13 @@ import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/shared_components/comments_list/comments_list.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_bloc.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class UserProfileView extends StatefulWidget {
   final PublicUserProfile userProfile;
@@ -48,6 +50,8 @@ class UserProfileViewState extends State<UserProfileView> {
   List<SocialPost>? postsState = List.empty();
   List<PostsWithLikedUserIds>? likedUsersForPosts = List.empty();
 
+  final PanelController _panelController = PanelController();
+
   @override
   void initState() {
     super.initState();
@@ -71,7 +75,12 @@ class UserProfileViewState extends State<UserProfileView> {
       )),
       body: BlocBuilder<UserProfileBloc, UserProfileState>(builder: (context, state) {
         if (state is RequiredDataResolved) {
-          return _buildUserProfilePage(state);
+          return SlidingUpPanel(
+            controller: _panelController,
+            minHeight: 0,
+            panel: _generateSlidingPanel(state),
+            body: _buildUserProfilePage(state),
+          );
         } else {
           return const Center(
             child: CircularProgressIndicator(color: Colors.teal),
@@ -131,6 +140,13 @@ class UserProfileViewState extends State<UserProfileView> {
       likedUsersForPosts = state.usersWhoLikedPosts;
       return _newsfeedListView(state.userPosts!);
     }
+  }
+
+  _generateSlidingPanel(RequiredDataResolved state) {
+    return CommentsListView.withBloc(
+        key: Key(state.selectedPostId ?? "null"),
+        postId: state.selectedPostId
+    );
   }
 
   _newsfeedListView(List<SocialPost> userPosts) {
@@ -275,7 +291,10 @@ class UserProfileViewState extends State<UserProfileView> {
             child: Container(
               padding: const EdgeInsets.all(2.5),
               child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _userProfileBloc.add(ViewCommentsForSelectedPost(postId: post.postId));
+                    _panelController.animatePanelToPosition(1.0, duration: const Duration(milliseconds: 250));
+                  },
                   child: const Text(
                     "Comment",
                     style: TextStyle(
