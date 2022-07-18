@@ -10,6 +10,7 @@ import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
 import 'package:flutter_app/src/views/newsfeed/newsfeed_view.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
 import 'package:flutter_app/src/views/followers/followers_view.dart';
@@ -60,6 +61,7 @@ class HomePageState extends State<HomePage> {
   static const String followers = 'Followers';
   static const String following = 'Following';
   static const String newsFeed = 'News Feed';
+  static const String chat = 'Chat';
   static const String logout = 'Logout';
 
   final logger = Logger("HomePageState");
@@ -277,6 +279,7 @@ class HomePageState extends State<HomePage> {
         _generateListTile(followers),
         _generateListTile(following),
         _generateListTile(newsFeed),
+        _generateListTile(chat),
         ListTile(
           title: const Text("Logout"),
           onTap: () {
@@ -320,6 +323,8 @@ class HomePageState extends State<HomePage> {
           return FollowingUsersView.withBloc();
         case "News Feed":
           return NewsFeedView.withBloc(publicUserProfile);
+        case "Chat":
+          return ChatHomeView.withBloc(publicUserProfile);
         default:
           return _oldStuff();
       }

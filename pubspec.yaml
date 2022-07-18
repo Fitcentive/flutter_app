@@ -55,6 +55,7 @@ dependencies:
   flutter_local_notifications: ^9.6.1
   flutter_typeahead: ^4.0.0
   sliding_up_panel: ^2.0.0+1
+  flutter_chat_ui: ^1.6.3
 
 dev_dependencies:
   flutter_test:

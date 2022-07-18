@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/proxies/custom_proxy.dart';
 import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
+import 'package:flutter_app/src/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
@@ -61,6 +61,7 @@ class App extends StatelessWidget {
       providers: [
         RepositoryProvider<AuthenticationRepository>(create: (context) => AuthenticationRepository()),
         RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
+        RepositoryProvider<ChatRepository>(create: (context) => ChatRepository()),
         RepositoryProvider<ImageRepository>(create: (context) => ImageRepository()),
         RepositoryProvider<SocialMediaRepository>(create: (context) => SocialMediaRepository()),
         RepositoryProvider<NotificationRepository>(create: (context) => NotificationRepository()),

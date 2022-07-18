@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
-import 'package:flutter_app/src/models/user_follow_status.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 
 import '../../models/user.dart';

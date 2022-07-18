@@ -15,6 +15,9 @@ class ImageUtils {
     }
   }
 
+  static getFullImageUrl(String? photoUrlOpt, int width, int height) =>
+      "$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}";
+
   static DecorationImage? getImage(String? photoUrlOpt, int width, int height) {
     if (photoUrlOpt != null) {
       return DecorationImage(

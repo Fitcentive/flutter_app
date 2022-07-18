@@ -157,7 +157,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
         ),
         WidgetUtils.spacer(20),
         Text(
-          StringUtils.getUserNameFromUserId(publicUser),
+          StringUtils.getUserNameFromUserProfile(publicUser),
           style: const TextStyle(fontWeight: FontWeight.bold),
         )
       ],
@@ -363,7 +363,8 @@ class NewsFeedViewState extends State<NewsFeedView> {
                     padding: const EdgeInsets.all(15),
                     child: const Center(
                       child: Text("Share something with your community"),
-                    ))
+                    )
+                )
             ),
           )
         ],

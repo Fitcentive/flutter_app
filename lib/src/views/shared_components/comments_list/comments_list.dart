@@ -302,7 +302,7 @@ class CommentsListViewState extends State<CommentsListView> {
         ),
       ),
       title: Text(
-        StringUtils.getUserNameFromUserId(userProfile),
+        StringUtils.getUserNameFromUserProfile(userProfile),
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: _userCommentText(comment),

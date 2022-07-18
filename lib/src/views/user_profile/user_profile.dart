@@ -186,7 +186,7 @@ class UserProfileViewState extends State<UserProfileView> {
         ),
         WidgetUtils.spacer(20),
         Text(
-          StringUtils.getUserNameFromUserId(publicUser),
+          StringUtils.getUserNameFromUserProfile(publicUser),
           style: const TextStyle(fontWeight: FontWeight.bold),
         )
       ],
