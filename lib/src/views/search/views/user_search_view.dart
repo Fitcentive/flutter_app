@@ -56,7 +56,10 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
     super.build(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: <Widget>[_userSearchBar(), _userSearchBody()],
+      children: <Widget>[
+        _userSearchBar(),
+        _userSearchBody()
+      ],
     );
   }
 
@@ -130,7 +133,8 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                 startFreshSearch(_searchTextController.value.text);
               },
               hideOnEmpty: true,
-            ));
+            )
+        );
       },
     );
   }

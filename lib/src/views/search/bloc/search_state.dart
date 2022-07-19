@@ -51,5 +51,5 @@ class SearchResultsError extends SearchState {
   const SearchResultsError({required this.query, required this.error});
 
   @override
-  List<Object> get props => [query, Future.error(error)];
+  List<Object> get props => [query, error];
 }

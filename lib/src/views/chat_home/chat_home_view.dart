@@ -8,6 +8,7 @@ import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_bloc.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_event.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_state.dart';
+import 'package:flutter_app/src/views/chat_search/chat_search_view.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -55,71 +56,14 @@ class ChatHomeViewState extends State<ChatHomeView> {
       body: BlocBuilder<ChatHomeBloc, ChatHomeState>(
         builder: (context, state) {
           if (state is UserRoomsLoaded) {
-            return ListView.builder(
-                shrinkWrap: true,
-                itemCount: state.rooms.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return InkWell(
-                      onTap: () {
-                        print("No search implementation yet");
-                      },
-                      child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          child: Container(
-                              padding: const EdgeInsets.all(15),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Icon(
-                                    Icons.search,
-                                    color: Colors.teal,
-                                  ),
-                                  Expanded(
-                                      child: Center(
-                                        child: Text("Search"),
-                                      )
-                                  )
-                                ],
-                              )
-                          )
-                      ),
-                    );
-                  }
-                  else {
-                    final currentChatRoom = state.rooms[index - 1];
-                    final otherUserInChatRoom = currentChatRoom.userIds.firstWhere((element) => element != widget.currentUserProfile.userId);
-                    final otherUserProfile = state.userIdProfileMap[otherUserInChatRoom];
-
-                    return ListTile(
-                      title: Text(
-                        StringUtils.getUserNameFromUserProfile(otherUserProfile),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600
-                        ),
-                      ),
-                      subtitle: Text(currentChatRoom.mostRecentMessage),
-                      leading: GestureDetector(
-                        onTap: () async {
-                          _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: ImageUtils.getUserProfileImage(otherUserProfile, 100, 100),
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
-                      }
-                    );
-                  }
-                }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _searchBar(),
+                Expanded(
+                    child: _chatList(state)
+                )
+              ],
             );
           }
           else {
@@ -128,6 +72,85 @@ class ChatHomeViewState extends State<ChatHomeView> {
             );
           }
         },
+      ),
+    );
+  }
+
+  _searchBar() {
+    return InkWell(
+      onTap: () {
+        Navigator.pushAndRemoveUntil<void>(
+            context,
+            ChatSearchView.route(widget.currentUserProfile), (route) => true
+        );
+      },
+      child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          child: Container(
+              padding: const EdgeInsets.all(15),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(
+                    Icons.search,
+                    color: Colors.teal,
+                  ),
+                  Expanded(
+                      child: Center(
+                        child: Text("Search"),
+                      )
+                  )
+                ],
+              )
+          )
+      ),
+    );
+  }
+
+  _chatList(UserRoomsLoaded state) {
+    return RefreshIndicator(
+        onRefresh: _pullRefresh,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: state.rooms.length,
+          itemBuilder: (context, index) {
+            final currentChatRoom = state.rooms[index];
+            final otherUserInChatRoom = currentChatRoom
+                .userIds
+                .firstWhere(
+                    (element) => element != widget.currentUserProfile.userId,
+                orElse: () => widget.currentUserProfile.userId
+            );
+            final otherUserProfile = state.userIdProfileMap[otherUserInChatRoom];
+
+            return ListTile(
+                title: Text(
+                  StringUtils.getUserNameFromUserProfile(otherUserProfile),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600
+                  ),
+                ),
+                subtitle: Text(currentChatRoom.mostRecentMessage),
+                leading: GestureDetector(
+                  onTap: () async {
+                    _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
+                  },
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: ImageUtils.getUserProfileImage(otherUserProfile, 100, 100),
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
+                }
+            );
+          }
       ),
     );
   }
@@ -144,5 +167,8 @@ class ChatHomeViewState extends State<ChatHomeView> {
     );
   }
 
+  Future<void> _pullRefresh() async {
+    _chatBloc.add(FetchUserRooms(userId: widget.currentUserProfile.userId));
+  }
 
 }

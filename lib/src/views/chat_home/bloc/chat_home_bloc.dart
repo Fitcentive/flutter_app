@@ -25,6 +25,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     on<FetchUserRooms>(_fetchUserRooms);
   }
 
+  // todo - need to enforce room ordering based on recent messages
   void _fetchUserRooms(FetchUserRooms event, Emitter<ChatHomeState> emit) async {
     emit(const UserRoomsLoading());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
