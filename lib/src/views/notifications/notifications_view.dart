@@ -16,9 +16,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsView extends StatefulWidget {
-  const NotificationsView({Key? key});
+  final PublicUserProfile currentUserProfile;
 
-  static Widget withBloc() => MultiBlocProvider(
+  const NotificationsView({Key? key, required this.currentUserProfile}): super(key: key);
+
+  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
         providers: [
           BlocProvider<NotificationsBloc>(
               create: (context) => NotificationsBloc(
@@ -28,7 +30,7 @@ class NotificationsView extends StatefulWidget {
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                   )),
         ],
-        child: const NotificationsView(),
+        child: NotificationsView(currentUserProfile: currentUserProfile),
       );
 
   @override
@@ -101,7 +103,11 @@ class NotificationsViewState extends State<NotificationsView> {
 
   _goToUserProfile(PublicUserProfile? userProfile) {
     if (userProfile != null) {
-      Navigator.pushAndRemoveUntil(context, UserProfileView.route(userProfile), (route) => true);
+      Navigator.pushAndRemoveUntil(
+          context,
+          UserProfileView.route(userProfile, widget.currentUserProfile),
+              (route) => true
+      );
     }
   }
 

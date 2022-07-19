@@ -20,11 +20,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class NewsFeedView extends StatefulWidget {
-  final PublicUserProfile userProfile;
+  final PublicUserProfile currentUserProfile;
 
-  const NewsFeedView({Key? key, required this.userProfile}) : super(key: key);
+  const NewsFeedView({Key? key, required this.currentUserProfile}) : super(key: key);
 
-  static Widget withBloc(PublicUserProfile userProfile) => MultiBlocProvider(
+  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
         providers: [
           BlocProvider<NewsFeedBloc>(
               create: (context) => NewsFeedBloc(
@@ -33,7 +33,7 @@ class NewsFeedView extends StatefulWidget {
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                   )),
         ],
-        child: NewsFeedView(userProfile: userProfile),
+        child: NewsFeedView(currentUserProfile: currentUserProfile),
       );
 
   @override
@@ -141,7 +141,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.pushAndRemoveUntil(context, UserProfileView.route(publicUser!), (route) => true);
+            Navigator.pushAndRemoveUntil(context, UserProfileView.route(publicUser!, widget.currentUserProfile), (route) => true);
           },
           child: CircleAvatar(
             radius: 30,
@@ -187,7 +187,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
           padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
           child: Align(
             alignment: Alignment.bottomLeft,
-            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.userProfile.userId, likedUserIds.userIds)),
+            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)),
           ),
         ),
         Container(
@@ -208,24 +208,24 @@ class NewsFeedViewState extends State<NewsFeedView> {
             child: Container(
               padding: const EdgeInsets.all(2.5),
               child: ElevatedButton.icon(
-                  icon: likedUserIds.userIds.contains(widget.userProfile.userId) ?
+                  icon: likedUserIds.userIds.contains(widget.currentUserProfile.userId) ?
                             const Icon(Icons.thumb_down) : const Icon(Icons.thumb_up),
                   onPressed: () {
                     List<String> newLikedUserIdsForCurrentPost = likedUserIds.userIds;
-                    final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.userProfile.userId);
+                    final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.currentUserProfile.userId);
 
                     if (hasUserAlreadyLikedPost) {
-                      _newsFeedBloc.add(UnlikePostForUser(userId: widget.userProfile.userId, postId: post.postId));
+                      _newsFeedBloc.add(UnlikePostForUser(userId: widget.currentUserProfile.userId, postId: post.postId));
                     } else {
-                      _newsFeedBloc.add(LikePostForUser(userId: widget.userProfile.userId, postId: post.postId));
+                      _newsFeedBloc.add(LikePostForUser(userId: widget.currentUserProfile.userId, postId: post.postId));
                     }
 
                     setState(() {
                       if (hasUserAlreadyLikedPost) {
-                        newLikedUserIdsForCurrentPost.remove(widget.userProfile.userId);
+                        newLikedUserIdsForCurrentPost.remove(widget.currentUserProfile.userId);
                       }
                       else {
-                        newLikedUserIdsForCurrentPost.add(widget.userProfile.userId);
+                        newLikedUserIdsForCurrentPost.add(widget.currentUserProfile.userId);
                       }
                       likedUsersForPosts = likedUsersForPosts.map((e) {
                         if (e.postId == post.postId) {
@@ -236,7 +236,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
                       }).toList();
                     });
                   },
-                  label: Text(likedUserIds.userIds.contains(widget.userProfile.userId) ? "Unlike" : "Like",
+                  label: Text(likedUserIds.userIds.contains(widget.currentUserProfile.userId) ? "Unlike" : "Like",
                     style: const TextStyle(
                         fontSize: 12
                     ),
@@ -335,7 +335,11 @@ class NewsFeedViewState extends State<NewsFeedView> {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.pushAndRemoveUntil(context, UserProfileView.route(widget.userProfile), (route) => true);
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  UserProfileView.route(widget.currentUserProfile, widget.currentUserProfile),
+                      (route) => true
+              );
             },
             child: CircleAvatar(
               radius: 30,
@@ -345,7 +349,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
                 height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  image: ImageUtils.getUserProfileImage(widget.userProfile, 100, 100),
+                  image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 100, 100),
                 ),
               ),
             ),
@@ -353,7 +357,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
           WidgetUtils.spacer(10),
           GestureDetector(
             onTap: () {
-              Navigator.pushAndRemoveUntil(context, CreateNewPostView.route(widget.userProfile), (route) => true);
+              Navigator.pushAndRemoveUntil(context, CreateNewPostView.route(widget.currentUserProfile), (route) => true);
             },
             child: Card(
                 shape: RoundedRectangleBorder(

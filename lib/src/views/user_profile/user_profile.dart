@@ -19,10 +19,11 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class UserProfileView extends StatefulWidget {
   final PublicUserProfile userProfile;
+  final PublicUserProfile currentUserProfile;
 
-  const UserProfileView({Key? key, required this.userProfile}) : super(key: key);
+  const UserProfileView({Key? key, required this.currentUserProfile, required this.userProfile}) : super(key: key);
 
-  static Route route(PublicUserProfile userProfile) {
+  static Route route(PublicUserProfile userProfile, PublicUserProfile currentUserProfile) {
     return MaterialPageRoute<void>(
         builder: (_) => MultiBlocProvider(
               providers: [
@@ -33,7 +34,7 @@ class UserProfileView extends StatefulWidget {
                           flutterSecureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                         )),
               ],
-              child: UserProfileView(userProfile: userProfile),
+              child: UserProfileView(userProfile: userProfile, currentUserProfile: currentUserProfile),
             ));
   }
 
@@ -214,7 +215,7 @@ class UserProfileViewState extends State<UserProfileView> {
           padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
           child: Align(
             alignment: Alignment.bottomLeft,
-            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.userProfile.userId, likedUserIds.userIds)),
+            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)),
           ),
         ),
         Container(
@@ -347,7 +348,9 @@ class UserProfileViewState extends State<UserProfileView> {
   }
 
   Widget? _messageUserButton(RequiredDataResolved state) {
-    if (state.currentUser.user.id == state.userFollowStatus.currentUserId) {
+    print("Message user button run opt");
+    if (state.currentUser.user.id == state.userFollowStatus.otherUserId) {
+      print("Doing fuck all");
       return null;
     }
     return Container(

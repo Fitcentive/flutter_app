@@ -6,8 +6,13 @@ import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 class UserResultsList extends StatefulWidget {
 
   final List<PublicUserProfile> userProfiles;
+  final PublicUserProfile currentUserProfile;
 
-  const UserResultsList({Key? key, required this.userProfiles});
+  const UserResultsList({
+    Key? key,
+    required this.userProfiles,
+    required this.currentUserProfile,
+  }): super(key: key);
 
   @override
   State createState() {
@@ -77,7 +82,11 @@ class UserResultsListState extends State<UserResultsList> {
         ),
       ),
       onTap: () {
-        Navigator.pushAndRemoveUntil(context, UserProfileView.route(userProfile), (route) => true);
+        Navigator.pushAndRemoveUntil(
+            context,
+            UserProfileView.route(userProfile, widget.currentUserProfile),
+                (route) => true
+        );
       },
     );
   }

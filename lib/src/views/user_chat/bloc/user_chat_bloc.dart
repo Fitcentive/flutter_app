@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
+
   final ChatRepository chatRepository;
   final FlutterSecureStorage secureStorage;
   late final WebSocketChannel _chatRoomChannel;
@@ -57,7 +58,9 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         case "shout":
           final Map<String, dynamic> decodedShoutJson = jsonDecode(jsonEncode(websocketEvent.payload));
           final shoutPayload = ShoutPayload.fromJson(decodedShoutJson);
-          add(UpdateIncomingMessageIntoChatRoom(userId: shoutPayload.userId, text: shoutPayload.body));
+          if (shoutPayload.userId != currentUserId) {
+            add(UpdateIncomingMessageIntoChatRoom(userId: shoutPayload.userId, text: shoutPayload.body));
+          }
           break;
 
         default:
@@ -78,12 +81,12 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     emit(HistoricalChatsFetched(roomId: event.roomId, messages: chatMessages));
   }
 
-  // todo - this is untested
   void _addMessageToChatRoom(AddMessageToChatRoom event, Emitter<UserChatState> emit) async {
     _chatRoomChannel.sink.add(jsonEncode({
       "topic": "chat_room:${event.roomId}",
       "event": "shout",
       "payload": {
+        "user_id": event.userId,
         "body": event.text
       },
       "join_ref": joinRef,

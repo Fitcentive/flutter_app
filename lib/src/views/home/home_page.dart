@@ -314,13 +314,13 @@ class HomePageState extends State<HomePage> {
         case "Account Details":
           return AccountDetailsView.withBloc();
         case "Notifications":
-          return NotificationsView.withBloc();
+          return NotificationsView.withBloc(publicUserProfile);
         case "Search":
-          return SearchView.withBloc();
+          return SearchView.withBloc(publicUserProfile);
         case "Followers":
-          return FollowersView.withBloc();
+          return FollowersView.withBloc(publicUserProfile);
         case "Following":
-          return FollowingUsersView.withBloc();
+          return FollowingUsersView.withBloc(publicUserProfile);
         case "News Feed":
           return NewsFeedView.withBloc(publicUserProfile);
         case "Chat":

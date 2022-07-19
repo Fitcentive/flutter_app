@@ -7,13 +7,14 @@ import 'package:flutter_app/src/views/search/bloc/search_bloc.dart';
 import 'package:flutter_app/src/views/search/bloc/search_event.dart';
 import 'package:flutter_app/src/views/search/bloc/search_state.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
-import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class UserSearchView extends StatefulWidget {
-  const UserSearchView({Key? key});
+  final PublicUserProfile currentUserProfile;
+
+  const UserSearchView({Key? key, required this.currentUserProfile}): super(key: key);
 
   @override
   State createState() {
@@ -156,7 +157,12 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
         if (state is SearchResultsLoaded) {
           return state.userData.isEmpty
               ? const Expanded(child: Center(child: Text('No Results')))
-              : Expanded(child: UserResultsList(userProfiles: state.userData));
+              : Expanded(
+                  child: UserResultsList(
+                    userProfiles: state.userData,
+                    currentUserProfile: widget.currentUserProfile
+                )
+              );
         } else {
           return const Center(child: Text("Error: Something went wrong"));
         }

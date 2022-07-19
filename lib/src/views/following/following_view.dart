@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
-import 'package:flutter_app/src/views/followers/bloc/followers_bloc.dart';
-import 'package:flutter_app/src/views/followers/bloc/followers_event.dart';
-import 'package:flutter_app/src/views/followers/bloc/followers_state.dart';
 import 'package:flutter_app/src/views/following/bloc/following_bloc.dart';
 import 'package:flutter_app/src/views/following/bloc/following_event.dart';
 import 'package:flutter_app/src/views/following/bloc/following_state.dart';
@@ -15,10 +11,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class FollowingUsersView extends StatefulWidget {
+  final PublicUserProfile currentUserProfile;
 
-  const FollowingUsersView({Key? key});
+  const FollowingUsersView({Key? key, required this.currentUserProfile}): super(key: key);
 
-  static Widget withBloc() => MultiBlocProvider(
+  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
     providers: [
       BlocProvider<FollowingBloc>(
           create: (context) => FollowingBloc(
@@ -26,7 +23,7 @@ class FollowingUsersView extends StatefulWidget {
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
-    child: const FollowingUsersView(),
+    child: FollowingUsersView(currentUserProfile: currentUserProfile),
   );
 
 
@@ -79,7 +76,7 @@ class FollowingUsersViewState extends State<FollowingUsersView> {
   _generateUserResultsList(List<PublicUserProfile> profiles) {
     return RefreshIndicator(
       onRefresh: _pullRefresh,
-      child: UserResultsList(userProfiles: profiles),
+      child: UserResultsList(userProfiles: profiles, currentUserProfile: widget.currentUserProfile),
     );
   }
 

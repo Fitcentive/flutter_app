@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/search/bloc/search_bloc.dart';
 import 'package:flutter_app/src/views/search/bloc/search_state.dart';
@@ -8,10 +9,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SearchView extends StatefulWidget {
+  final PublicUserProfile currentUserProfile;
 
-  const SearchView({Key? key}): super(key: key);
+  const SearchView({Key? key, required this.currentUserProfile}): super(key: key);
 
-  static Widget withBloc() => MultiBlocProvider(
+  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
     providers: [
       BlocProvider<SearchBloc>(
           create: (context) => SearchBloc(
@@ -19,7 +21,7 @@ class SearchView extends StatefulWidget {
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
-    child: const SearchView(),
+    child: SearchView(currentUserProfile: currentUserProfile),
   );
 
   @override
@@ -71,9 +73,9 @@ class SearchViewState extends State<SearchView> with SingleTickerProviderStateMi
             ),
             body: TabBarView(
               controller: _tabController,
-              children: const [
-                UserSearchView(),
-                ActivitySearchView(),
+              children: [
+                UserSearchView(currentUserProfile: widget.currentUserProfile),
+                const ActivitySearchView(),
               ],
             ),
           )

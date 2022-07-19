@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/chat_repository.dart';
@@ -11,7 +13,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:http/http.dart' as http;
+
+
 
 class UserChatView extends StatefulWidget {
   final String currentRoomId;
@@ -140,15 +146,19 @@ class UserChatViewState extends State<UserChatView> {
               id: msg.id,
               text: msg.text,
             )));
+
+            // Cannot simply add after, need to sort
             for (var msg in _newMessages.reversed) {
               _previousMessages.insert(0, msg);
             }
 
+            _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+
             return Chat(
               messages: _previousMessages,
-              // onAttachmentPressed: _handleAtachmentPressed,
-              // onMessageTap: _handleMessageTap,
-              // onPreviewDataFetched: _handlePreviewDataFetched,
+              onAttachmentPressed: _handleAttachmentPressed,
+              onMessageTap: _handleMessageTap,
+              onPreviewDataFetched: _handlePreviewDataFetched,
               onSendPressed: _handleSendPressed,
               showUserAvatars: true,
               showUserNames: true,
@@ -163,6 +173,157 @@ class UserChatViewState extends State<UserChatView> {
         },
       )
     );
+  }
+
+  void _handleAttachmentPressed() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) => SafeArea(
+        child: SizedBox(
+          height: 144,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleImageSelection();
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('Photo'),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleFileSelection();
+                },
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('File'),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text('Cancel'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleFileSelection() async {
+    print("Something here");
+    // final result = await FilePicker.platform.pickFiles(
+    //   type: FileType.any,
+    // );
+    //
+    // if (result != null && result.files.single.path != null) {
+    //   final message = types.FileMessage(
+    //     author: _user,
+    //     createdAt: DateTime.now().millisecondsSinceEpoch,
+    //     id: const Uuid().v4(),
+    //     mimeType: lookupMimeType(result.files.single.path!),
+    //     name: result.files.single.name,
+    //     size: result.files.single.size,
+    //     uri: result.files.single.path!,
+    //   );
+    //
+    //   _addMessage(message);
+    // }
+  }
+
+  void _handleImageSelection() async {
+    print("Something here as well");
+    // final result = await ImagePicker().pickImage(
+    //   imageQuality: 70,
+    //   maxWidth: 1440,
+    //   source: ImageSource.gallery,
+    // );
+    //
+    // if (result != null) {
+    //   final bytes = await result.readAsBytes();
+    //   final image = await decodeImageFromList(bytes);
+    //
+    //   final message = types.ImageMessage(
+    //     author: _user,
+    //     createdAt: DateTime.now().millisecondsSinceEpoch,
+    //     height: image.height.toDouble(),
+    //     id: const Uuid().v4(),
+    //     name: result.name,
+    //     size: bytes.length,
+    //     uri: result.path,
+    //     width: image.width.toDouble(),
+    //   );
+    //
+    //   _addMessage(message);
+    // }
+  }
+
+  void _handlePreviewDataFetched(
+      types.TextMessage message,
+      types.PreviewData previewData,
+      ) {
+    print("PREVIE DATA FETFCHED SON");
+    // final index = _messages.indexWhere((element) => element.id == message.id);
+    // final updatedMessage = (_messages[index] as types.TextMessage).copyWith(
+    //   previewData: previewData,
+    // );
+
+    // setState(() {
+    //   _messages[index] = updatedMessage;
+    // });
+  }
+
+  void _handleMessageTap(BuildContext _, types.Message message) async {
+    if (message is types.FileMessage) {
+      var localPath = message.uri;
+
+      if (message.uri.startsWith('http')) {
+        try {
+          // final index =
+          // _messages.indexWhere((element) => element.id == message.id);
+          // final updatedMessage =
+          // (_messages[index] as types.FileMessage).copyWith(
+          //   isLoading: true,
+          // );
+
+          // setState(() {
+          //   _messages[index] = updatedMessage;
+          // });
+
+          final client = http.Client();
+          final request = await client.get(Uri.parse(message.uri));
+          final bytes = request.bodyBytes;
+          final documentsDir = (await getApplicationDocumentsDirectory()).path;
+          localPath = '$documentsDir/${message.name}';
+
+          if (!File(localPath).existsSync()) {
+            final file = File(localPath);
+            await file.writeAsBytes(bytes);
+          }
+        } finally {
+          // final index =
+          // _messages.indexWhere((element) => element.id == message.id);
+          // final updatedMessage =
+          // (_messages[index] as types.FileMessage).copyWith(
+          //   isLoading: null,
+          // );
+          //
+          // setState(() {
+          //   _messages[index] = updatedMessage;
+          // });
+        }
+      }
+
+      // await OpenFile.open(localPath);
+    }
   }
 
   void _handleSendPressed(types.PartialText message) {
@@ -180,7 +341,13 @@ class UserChatViewState extends State<UserChatView> {
     setState(() {
       _newMessages.insert(0, message);
     });
-    _userChatBloc.add(AddMessageToChatRoom(roomId: widget.currentRoomId, text: textMessage));
+    _userChatBloc.add(
+        AddMessageToChatRoom(
+            roomId: widget.currentRoomId,
+            text: textMessage,
+            userId: widget.currentUserProfile.userId
+        )
+    );
   }
 
 }

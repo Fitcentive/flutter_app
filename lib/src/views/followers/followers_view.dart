@@ -11,10 +11,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class FollowersView extends StatefulWidget {
+  final PublicUserProfile currentUserProfile;
 
-  const FollowersView({Key? key});
+  const FollowersView({Key? key, required this.currentUserProfile}): super(key: key);
 
-  static Widget withBloc() => MultiBlocProvider(
+  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
     providers: [
       BlocProvider<FollowersBloc>(
           create: (context) => FollowersBloc(
@@ -22,7 +23,7 @@ class FollowersView extends StatefulWidget {
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
-    child: const FollowersView(),
+    child: FollowersView(currentUserProfile: currentUserProfile),
   );
 
 
@@ -75,7 +76,7 @@ class FollowersViewState extends State<FollowersView> {
   _generateUserResultsList(List<PublicUserProfile> profiles) {
     return RefreshIndicator(
         onRefresh: _pullRefresh,
-        child: UserResultsList(userProfiles: profiles),
+        child: UserResultsList(userProfiles: profiles, currentUserProfile: widget.currentUserProfile),
     );
   }
 

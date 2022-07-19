@@ -19,9 +19,10 @@ class ConnectWebsocketAndFetchHistoricalChats extends UserChatEvent {
 
 class AddMessageToChatRoom extends UserChatEvent {
   final String roomId;
+  final String userId;
   final String text;
 
-  const AddMessageToChatRoom({required this.roomId, required this.text});
+  const AddMessageToChatRoom({required this.roomId, required this.text, required this.userId});
 
   @override
   List<Object?> get props => [roomId, text];
