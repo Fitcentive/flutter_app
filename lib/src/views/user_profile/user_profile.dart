@@ -6,6 +6,7 @@ import 'package:flutter_app/src/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
@@ -93,6 +94,9 @@ class UserProfileViewState extends State<UserProfileView> {
         listener: (context, state) {
           if (state is GoToUserChatView) {
             _openUserChatView(state.roomId, widget.userProfile);
+          }
+          else if (state is TargetUserChatNotEnabled) {
+            SnackbarUtils.showSnackBar(context, "This user has not enabled chat yet!");
           }
         },
         child: BlocBuilder<UserProfileBloc, UserProfileState>(builder: (context, state) {

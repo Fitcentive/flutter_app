@@ -73,3 +73,11 @@ class GoToUserChatView extends UserProfileState {
   @override
   List<Object?> get props => [roomId];
 }
+
+class TargetUserChatNotEnabled extends UserProfileState {
+
+  const TargetUserChatNotEnabled();
+
+  @override
+  List<Object?> get props => [];
+}

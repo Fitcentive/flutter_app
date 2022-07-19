@@ -11,6 +11,23 @@ import 'package:http/http.dart' as http;
 class ChatRepository {
   static const String BASE_URL = "http://api.vid.app/api/chat";
 
+  Future<void> upsertChatUser(String accessToken) async {
+    final response = await http.post(
+        Uri.parse(BASE_URL),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        }
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return;
+    } else {
+      throw Exception(
+          "upsertChatUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<ChatRoom> getChatRoomForConversation(String targetUserId, String accessToken) async {
     final response = await http.post(
         Uri.parse("$BASE_URL/get-chat-room"),

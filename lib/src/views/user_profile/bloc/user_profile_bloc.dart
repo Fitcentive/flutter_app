@@ -37,11 +37,18 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     final currentState = state;
     if (currentState is RequiredDataResolved) {
       if (currentState.chatRoomId == null) {
-        final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-        final chatRoom = await chatRepository.getChatRoomForConversation(event.targetUserId, accessToken!);
 
-        emit(GoToUserChatView(roomId: chatRoom.id));
-        emit(currentState.copyWith(newPostId: currentState.selectedPostId, chatRoomId: chatRoom.id));
+        try {
+          final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+          final chatRoom = await chatRepository.getChatRoomForConversation(event.targetUserId, accessToken!);
+
+          emit(GoToUserChatView(roomId: chatRoom.id));
+          emit(currentState.copyWith(newPostId: currentState.selectedPostId, chatRoomId: chatRoom.id));
+        } catch (ex) {
+          emit(const TargetUserChatNotEnabled());
+          emit(currentState.copyWith(newPostId: currentState.selectedPostId, chatRoomId: currentState.chatRoomId));
+        }
+
       }
       else {
         emit(GoToUserChatView(roomId: currentState.chatRoomId!));

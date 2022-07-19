@@ -9,6 +9,7 @@ import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/login/password.dart';
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
+import 'package:flutter_app/src/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
@@ -27,6 +28,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   final AuthenticationRepository authenticationRepository;
   final NotificationRepository notificationRepository;
   final UserRepository userRepository;
+  final ChatRepository chatRepository;
   final FlutterSecureStorage secureStorage;
   final AuthenticatedUserStreamRepository authUserStreamRepository;
 
@@ -40,6 +42,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     required this.authenticationRepository,
     required this.notificationRepository,
     required this.userRepository,
+    required this.chatRepository,
     required this.secureStorage,
     required this.authUserStreamRepository
   }) : super(AuthInitialState()) {
@@ -112,6 +115,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final authTokens = await authenticationRepository.basicLogIn(username: event.email, password: event.password);
       final authenticatedUser =
         await _storeTokensAndGetAuthenticatedUser(authTokens, OidcProviderInfo.NATIVE_AUTH_PROVIDER);
+      await chatRepository.upsertChatUser(authTokens.accessToken);
       _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
       emit(AuthSuccessState(authenticatedUser: authenticatedUser));
     } catch (e) {
@@ -123,6 +127,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       Emitter<AuthenticationState> emit,) async {
     final authTokens = await authenticationRepository.oidcLogin(providerRealm: event.provider);
     final authenticatedUser = await _storeTokensAndGetAuthenticatedUser(authTokens, event.provider);
+    await chatRepository.upsertChatUser(authTokens.accessToken);
     _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
     emit(AuthSuccessState(authenticatedUser: authenticatedUser));
   }

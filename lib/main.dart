@@ -75,6 +75,7 @@ class App extends StatelessWidget {
                     authenticationRepository: RepositoryProvider.of<AuthenticationRepository>(context),
                     notificationRepository: RepositoryProvider.of<NotificationRepository>(context),
                     userRepository: RepositoryProvider.of<UserRepository>(context),
+                    chatRepository: RepositoryProvider.of<ChatRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                     authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
                   )),
