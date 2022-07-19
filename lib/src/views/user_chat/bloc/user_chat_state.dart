@@ -3,6 +3,9 @@ import 'package:flutter_app/src/models/chats/chat_message.dart';
 
 abstract class UserChatState extends Equatable {
   const UserChatState();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class UserChatStateInitial extends UserChatState {

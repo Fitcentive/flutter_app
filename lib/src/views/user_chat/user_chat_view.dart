@@ -68,10 +68,18 @@ class UserChatViewState extends State<UserChatView> {
     text: "This is a test",
   );
 
+  final joinRef = const Uuid().v4();
+
   List<types.Message> _previousMessages = [];
   List<types.Message> _newMessages = [];
 
   late final UserChatBloc _userChatBloc;
+
+  @override
+  void dispose() {
+    _userChatBloc.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -80,18 +88,22 @@ class UserChatViewState extends State<UserChatView> {
     _currentUser = types.User(
       id: widget.currentUserProfile.userId,
       firstName: widget.currentUserProfile.firstName,
-      lastName: widget.currentUserProfile.firstName,
+      lastName: widget.currentUserProfile.lastName,
       imageUrl: ImageUtils.getFullImageUrl(widget.currentUserProfile.photoUrl, 100, 100),
     );
     _otherUser = types.User(
       id: widget.otherUserProfile.userId,
       firstName: widget.otherUserProfile.firstName,
-      lastName: widget.otherUserProfile.firstName,
+      lastName: widget.otherUserProfile.lastName,
       imageUrl: ImageUtils.getFullImageUrl(widget.otherUserProfile.photoUrl, 100, 100),
     );
 
     _userChatBloc = BlocProvider.of<UserChatBloc>(context);
-    _userChatBloc.add(FetchHistoricalChats(roomId: widget.currentRoomId));
+    _userChatBloc.add(ConnectWebsocketAndFetchHistoricalChats(
+        roomId: widget.currentRoomId,
+        currentUserId: widget.currentUserProfile.userId
+    ));
+
   }
 
   @override
@@ -149,7 +161,7 @@ class UserChatViewState extends State<UserChatView> {
             );
           }
         },
-      ),
+      )
     );
   }
 
@@ -161,14 +173,14 @@ class UserChatViewState extends State<UserChatView> {
       text: message.text,
     );
 
-    _addMessage(textMessage);
+    _addMessage(textMessage, message.text);
   }
 
-  void _addMessage(types.Message message) {
+  void _addMessage(types.Message message, String textMessage) {
     setState(() {
-        print("SET STATE IS CALLED HERE");
       _newMessages.insert(0, message);
     });
+    _userChatBloc.add(AddMessageToChatRoom(roomId: widget.currentRoomId, text: textMessage));
   }
 
 }

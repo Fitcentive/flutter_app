@@ -26,6 +26,9 @@ class ChatMessage extends Equatable {
     updatedAt,
   ];
 
+  ChatMessage copyWithLocalTime() =>
+      ChatMessage(id, senderId, roomId, text, imageUrl, createdAt.toLocal(), updatedAt.toLocal());
+
   factory ChatMessage.fromJson(Map<String, dynamic> json) => _$ChatMessageFromJson(json);
 
   Map<String, dynamic> toJson() => _$ChatMessageToJson(this);
