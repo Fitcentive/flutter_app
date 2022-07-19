@@ -34,28 +34,42 @@ class RequiredDataResolved extends UserProfileState {
   final UserFollowStatus userFollowStatus;
   final List<SocialPost>? userPosts;
   final List<PostsWithLikedUserIds>? usersWhoLikedPosts;
+
   final String? selectedPostId;
+  final String? chatRoomId;
 
   const RequiredDataResolved({
     required this.userFollowStatus,
     required this.currentUser,
     required this.userPosts,
     required this.usersWhoLikedPosts,
-    required this.selectedPostId
+    required this.selectedPostId,
+    required this.chatRoomId
   });
 
   RequiredDataResolved copyWith({
-    required String newPostId,
+    required String? newPostId,
+    required String? chatRoomId,
   }) {
     return RequiredDataResolved(
         userFollowStatus: userFollowStatus,
         currentUser: currentUser,
         userPosts: userPosts,
         usersWhoLikedPosts: usersWhoLikedPosts,
-        selectedPostId: newPostId
+        selectedPostId: newPostId,
+        chatRoomId: chatRoomId
     );
   }
 
   @override
-  List<Object?> get props => [userFollowStatus, currentUser, userPosts, usersWhoLikedPosts, selectedPostId];
+  List<Object?> get props => [userFollowStatus, currentUser, userPosts, usersWhoLikedPosts, selectedPostId, chatRoomId];
+}
+
+class GoToUserChatView extends UserProfileState {
+  final String roomId;
+
+  const GoToUserChatView({required this.roomId});
+
+  @override
+  List<Object?> get props => [roomId];
 }

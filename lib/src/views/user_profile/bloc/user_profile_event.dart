@@ -151,3 +151,12 @@ class ViewCommentsForSelectedPost extends UserProfileEvent {
   @override
   List<Object> get props => [postId];
 }
+
+class GetChatRoom extends UserProfileEvent {
+  final String targetUserId;
+
+  const GetChatRoom({required this.targetUserId});
+
+  @override
+  List<Object> get props => [targetUserId];
+}

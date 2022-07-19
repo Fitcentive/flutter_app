@@ -1,6 +1,7 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
+import 'package:flutter_app/src/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart';
@@ -10,11 +11,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   final UserRepository userRepository;
+  final ChatRepository chatRepository;
   final SocialMediaRepository socialMediaRepository;
   final FlutterSecureStorage flutterSecureStorage;
 
   UserProfileBloc({
     required this.userRepository,
+    required this.chatRepository,
     required this.flutterSecureStorage,
     required this.socialMediaRepository,
   }) : super(const UserProfileInitial()) {
@@ -27,12 +30,31 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     on<RemoveUserFromCurrentUserFollowers>(_removeUserFromCurrentUserFollowers);
     on<ApplyUserDecisionToFollowRequest>(_applyUserDecisionToFollowRequest);
     on<ViewCommentsForSelectedPost>(_viewCommentsForSelectedPost);
+    on<GetChatRoom>(_getChatRoom);
+  }
+
+  void _getChatRoom(GetChatRoom event, Emitter<UserProfileState> emit) async {
+    final currentState = state;
+    if (currentState is RequiredDataResolved) {
+      if (currentState.chatRoomId == null) {
+        final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+        final chatRoom = await chatRepository.getChatRoomForConversation(event.targetUserId, accessToken!);
+
+        emit(GoToUserChatView(roomId: chatRoom.id));
+        emit(currentState.copyWith(newPostId: currentState.selectedPostId, chatRoomId: chatRoom.id));
+      }
+      else {
+        emit(GoToUserChatView(roomId: currentState.chatRoomId!));
+        emit(currentState.copyWith(newPostId: currentState.selectedPostId, chatRoomId: currentState.chatRoomId));
+      }
+    }
+
   }
 
   void _viewCommentsForSelectedPost(ViewCommentsForSelectedPost event, Emitter<UserProfileState> emit) async {
     final currentState = state;
     if (currentState is RequiredDataResolved) {
-      emit(currentState.copyWith(newPostId: event.postId));
+      emit(currentState.copyWith(newPostId: event.postId, chatRoomId: currentState.chatRoomId));
     }
   }
 
@@ -62,7 +84,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: userPosts,
         usersWhoLikedPosts: likedUsersForPostIds,
-        selectedPostId: null
+        selectedPostId: null,
+        chatRoomId: null
     ));
   }
 
@@ -84,7 +107,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: userPosts,
         usersWhoLikedPosts: likedUsersForPostIds,
-        selectedPostId: null
+        selectedPostId: null,
+        chatRoomId: null
     ));
   }
 
@@ -98,7 +122,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: event.userPosts,
         usersWhoLikedPosts: event.usersWhoLikedPosts,
-        selectedPostId: null
+        selectedPostId: null,
+        chatRoomId: null
     ));
   }
 
@@ -112,7 +137,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: event.userPosts,
         usersWhoLikedPosts: event.usersWhoLikedPosts,
-        selectedPostId: null
+        selectedPostId: null,
+        chatRoomId: null
     ));
   }
 
@@ -126,7 +152,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: event.userPosts,
         usersWhoLikedPosts: event.usersWhoLikedPosts,
-        selectedPostId: null
+        selectedPostId: null,
+        chatRoomId: null
     ));
   }
 
@@ -145,7 +172,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         currentUser: event.currentUser,
         userPosts: event.userPosts,
         usersWhoLikedPosts: event.usersWhoLikedPosts,
-        selectedPostId: null
+        selectedPostId: null,
+        chatRoomId: null
     ));
   }
 }

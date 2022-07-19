@@ -5,13 +5,16 @@ part 'chat_room.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ChatRoom extends Equatable {
-  final String roomId;
-  final List<String> userIds;
+  final String id;
+  final String name;
+  final String type;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
-  const ChatRoom(this.roomId, this.userIds);
+  const ChatRoom(this.id, this.name, this.type, this.createdAt, this.updatedAt);
 
   @override
-  List<Object> get props => [roomId, userIds];
+  List<Object> get props => [id, name, type, createdAt, updatedAt];
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) => _$ChatRoomFromJson(json);
 

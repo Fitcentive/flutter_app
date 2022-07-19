@@ -1,5 +1,5 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
-import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/chat_repository.dart';
@@ -50,7 +50,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     emit(UserRoomsLoaded(rooms: chatRoomsWithMostRecentMessage, userIdProfileMap: userIdProfileMap));
   }
 
-  List<String> _getDistinctUserIdsFromChatRooms(List<ChatRoom> rooms) {
+  List<String> _getDistinctUserIdsFromChatRooms(List<ChatRoomWithUsers> rooms) {
     return rooms
         .map((e) => e.userIds)
         .expand((element) => element)

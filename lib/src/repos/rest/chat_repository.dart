@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
 
 import 'package:http/http.dart' as http;
@@ -50,7 +51,7 @@ class ChatRepository {
     }
   }
 
-  Future<List<ChatRoom>> getUserChatRooms(String userId, String accessToken) async {
+  Future<List<ChatRoomWithUsers>> getUserChatRooms(String userId, String accessToken) async {
     final response = await http.get(
         Uri.parse("$BASE_URL/user/rooms"),
         headers: {
@@ -60,7 +61,7 @@ class ChatRepository {
 
     if (response.statusCode == HttpStatus.ok) {
       final List<dynamic> jsonResponse = jsonDecode(response.body);
-      final chatRooms = jsonResponse.map((e) => ChatRoom.fromJson(e)).toList();
+      final chatRooms = jsonResponse.map((e) => ChatRoomWithUsers.fromJson(e)).toList();
       return chatRooms;
     } else {
       throw Exception(

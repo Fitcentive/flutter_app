@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
+import 'package:flutter_app/src/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/comments_list/comments_list.dart';
+import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_bloc.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_state.dart';
@@ -30,6 +32,7 @@ class UserProfileView extends StatefulWidget {
                 BlocProvider<UserProfileBloc>(
                     create: (context) => UserProfileBloc(
                           userRepository: RepositoryProvider.of<UserRepository>(context),
+                          chatRepository: RepositoryProvider.of<ChatRepository>(context),
                           socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
                           flutterSecureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                         )),
@@ -66,6 +69,18 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
+  _openUserChatView(String roomId, PublicUserProfile otherUserProfile) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        UserChatView.route(
+            currentRoomId: roomId,
+            currentUserProfile: widget.currentUserProfile,
+            otherUserProfile: otherUserProfile
+        ),
+            (route) => true
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,20 +89,27 @@ class UserProfileViewState extends State<UserProfileView> {
         "View Profile",
         style: TextStyle(color: Colors.teal),
       )),
-      body: BlocBuilder<UserProfileBloc, UserProfileState>(builder: (context, state) {
-        if (state is RequiredDataResolved) {
-          return SlidingUpPanel(
-            controller: _panelController,
-            minHeight: 0,
-            panel: _generateSlidingPanel(state),
-            body: _buildUserProfilePage(state),
-          );
-        } else {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.teal),
-          );
-        }
-      }),
+      body: BlocListener<UserProfileBloc, UserProfileState>(
+        listener: (context, state) {
+          if (state is GoToUserChatView) {
+            _openUserChatView(state.roomId, widget.userProfile);
+          }
+        },
+        child: BlocBuilder<UserProfileBloc, UserProfileState>(builder: (context, state) {
+          if (state is RequiredDataResolved) {
+            return SlidingUpPanel(
+              controller: _panelController,
+              minHeight: 0,
+              panel: _generateSlidingPanel(state),
+              body: _buildUserProfilePage(state),
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.teal),
+            );
+          }
+        }),
+      ),
     );
   }
 
@@ -348,9 +370,7 @@ class UserProfileViewState extends State<UserProfileView> {
   }
 
   Widget? _messageUserButton(RequiredDataResolved state) {
-    print("Message user button run opt");
     if (state.currentUser.user.id == state.userFollowStatus.otherUserId) {
-      print("Doing fuck all");
       return null;
     }
     return Container(
@@ -360,8 +380,8 @@ class UserProfileViewState extends State<UserProfileView> {
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
           ),
-          onPressed: () {
-            // yet to do
+          onPressed: () async {
+            _userProfileBloc.add(GetChatRoom(targetUserId: widget.userProfile.userId));
           },
           label: const Text('Message user',
               style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
