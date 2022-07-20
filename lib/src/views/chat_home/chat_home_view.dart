@@ -92,15 +92,22 @@ class ChatHomeViewState extends State<ChatHomeView> {
               padding: const EdgeInsets.all(15),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(
-                    Icons.search,
-                    color: Colors.teal,
-                  ),
+                children: [
                   Expanded(
-                      child: Center(
-                        child: Text("Search"),
-                      )
+                    child: Stack(
+                      children: const [
+                        Icon(
+                          Icons.search,
+                          color: Colors.teal,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(5),
+                          child: Center(
+                            child: Text("Search", style: TextStyle(fontSize: 15)),
+                          ),
+                        )
+                      ],
+                    ),
                   )
                 ],
               )
