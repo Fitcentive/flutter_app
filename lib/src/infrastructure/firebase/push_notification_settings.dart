@@ -1,8 +1,17 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
+import 'package:flutter_app/src/models/notification/push_notification_metadata.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/push/chat_message_push_notification_metadata.dart';
+import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
+import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 
 class PushNotificationSettings {
@@ -24,17 +33,62 @@ class PushNotificationSettings {
   static const InitializationSettings initializationSettings =
   InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
 
+  static _openUserChatView(
+      BuildContext context,
+      FlutterSecureStorage secureStorage,
+      UserRepository userRepository,
+      String payload
+      ) async {
+    final notificationMetadata = ChatMessagePushNotificationMetadata.fromJson(jsonDecode(payload));
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final userProfiles = await userRepository.getPublicUserProfiles(
+        [notificationMetadata.targetUserId, notificationMetadata.sendingUserId],
+        accessToken!
+    );
+    final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfiles) (e).userId : e };
+    final currentUserProfile = userIdProfileMap[notificationMetadata.targetUserId];
+    final otherUserProfile = userIdProfileMap[notificationMetadata.sendingUserId];
+
+    Navigator.pushAndRemoveUntil(
+        context,
+        UserChatView.route(
+          currentRoomId: notificationMetadata.roomId,
+          currentUserProfile: currentUserProfile!,
+          otherUserProfile: otherUserProfile!,
+        ),
+            (route) => true
+    );
+  }
+
+  static _openNotificationsView(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        HomePage.route(defaultSelectedTab: HomePageState.notifications),
+            (route) => false
+    );
+  }
+
   static Future<void> _setUpFlutterLocalNotifications(BuildContext context) async {
+    final userRepository = RepositoryProvider.of<UserRepository>(context);
+    final secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
+
     await flutterLocalNotificationsPlugin.initialize(PushNotificationSettings.initializationSettings,
         onSelectNotification: (String? payload) async {
           if (payload != null) {
-            print('received notification payload: ---$payload----');
+            final pushNotificationMetadata = PushNotificationMetadata.fromJson(jsonDecode(payload));
+            switch(pushNotificationMetadata.type) {
+              case "user_follow_request":
+                _openNotificationsView(context);
+                break;
+
+              case "chat_message":
+                _openUserChatView(context, secureStorage, userRepository, payload);
+                break;
+
+              default:
+                break;
+            }
           }
-          Navigator.pushAndRemoveUntil(
-              context,
-              HomePage.route(defaultSelectedTab: HomePageState.notifications),
-              (route) => false
-          );
         });
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -85,7 +139,9 @@ class PushNotificationSettings {
                 channelDescription: channel.description,
                 icon: android?.smallIcon,
               ),
-            ));
+            ),
+          payload: jsonEncode(remoteMessage.data).toString()
+        );
       }
     }
   }
