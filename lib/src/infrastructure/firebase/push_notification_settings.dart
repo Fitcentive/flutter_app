@@ -164,7 +164,6 @@ class PushNotificationSettings {
   //        consider turning off local notifications plugin / re-reading overlay support method
   //        might have to switch to data notifications instead of notification type
   //        as we are showing it explicitly instead of the system doing it
-  // todo - notification payloads not coming through
   static setupFirebasePushNotifications(BuildContext context, FirebaseMessaging messaging) async {
     await _setUpFlutterLocalNotifications(context);
     final NotificationSettings settings = await _requestPermissionsIfNeeded(messaging);

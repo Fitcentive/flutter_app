@@ -28,13 +28,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, this.defaultSelectedTab = HomePageState.otherPage}) : super(key: key);
+  const HomePage({Key? key, this.defaultSelectedTab = HomePageState.newsFeed}) : super(key: key);
 
   static const String routeName = 'HomePage';
 
   final String defaultSelectedTab;
 
-  static Route route({String defaultSelectedTab = HomePageState.otherPage}) {
+  static Route route({String defaultSelectedTab = HomePageState.newsFeed}) {
     return MaterialPageRoute<void>(
       settings: const RouteSettings(
         name: routeName
@@ -55,7 +55,6 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   static const String accountDetails = 'Account Details';
-  static const String otherPage = 'OtherPage';
   static const String notifications = 'Notifications';
   static const String search = 'Search';
   static const String followers = 'Followers';
@@ -161,13 +160,39 @@ class HomePageState extends State<HomePage> {
                     ],
                   ),
                   drawer: Drawer(
-                    child: _menuDrawerListItems(),
+                    child: Column(
+                      children: [
+                        _drawerHeader(),
+                        Expanded(child: _menuDrawerListItems()),
+                        const Divider(),
+                        _bottomAlignedButtons(),
+                      ],
+                    ),
                   ),
                   body: _generateBody(selectedMenuItem),
                 );
               });
         },
       ),
+    );
+  }
+
+  Widget _bottomAlignedButtons() {
+    return Align(
+        alignment: FractionalOffset.bottomCenter,
+        // This container holds all the children that will be aligned
+        // on the bottom and should not scroll with the above ListView
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              title: const Text("Logout"),
+              onTap: () {
+                Navigator.pop(context);
+                _signOutIfApplicable();
+              },
+            )
+          ],
+        )
     );
   }
 
@@ -270,23 +295,15 @@ class HomePageState extends State<HomePage> {
 
   Widget _menuDrawerListItems() {
     return ListView(
+      shrinkWrap: true,
       padding: EdgeInsets.zero,
       children: <Widget>[
-        _drawerHeader(),
-        _generateListTile(otherPage),
         _generateListTile(notifications),
         _generateListTile(search),
         _generateListTile(followers),
         _generateListTile(following),
         _generateListTile(newsFeed),
         _generateListTile(chat),
-        ListTile(
-          title: const Text("Logout"),
-          onTap: () {
-            Navigator.pop(context);
-            _signOutIfApplicable();
-          },
-        ),
       ],
     );
   }
