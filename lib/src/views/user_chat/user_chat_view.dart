@@ -65,6 +65,8 @@ class UserChatViewState extends State<UserChatView> {
   late final types.User _currentUser;
   late final types.User _otherUser;
 
+  bool isDraftMessageEmpty = true;
+
   final msg = types.TextMessage(
     author: types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ad'),
     createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -150,10 +152,12 @@ class UserChatViewState extends State<UserChatView> {
               _previousMessages.insert(0, msg);
             }
 
+            // todo - need server side sorting?
             _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
 
             return Chat(
               messages: _previousMessages,
+              onTextChanged: _handleTextChanged,
               onAttachmentPressed: _handleAttachmentPressed,
               onMessageTap: _handleMessageTap,
               onPreviewDataFetched: _handlePreviewDataFetched,
@@ -325,6 +329,7 @@ class UserChatViewState extends State<UserChatView> {
   }
 
   void _handleSendPressed(types.PartialText message) {
+    isDraftMessageEmpty = true;
     final textMessage = types.TextMessage(
       author: _currentUser,
       createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -333,6 +338,18 @@ class UserChatViewState extends State<UserChatView> {
     );
 
     _addMessage(textMessage, message.text);
+  }
+
+  void _handleTextChanged(String messageDraft) {
+    if (messageDraft.isNotEmpty && isDraftMessageEmpty) {
+      isDraftMessageEmpty = false;
+      _userChatBloc.add(CurrentUserTypingStarted(widget.currentRoomId, widget.currentUserProfile.userId));
+    }
+    else if (messageDraft.isEmpty && !isDraftMessageEmpty) {
+      isDraftMessageEmpty = true;
+      _userChatBloc.add(CurrentUserTypingStopped(widget.currentRoomId, widget.currentUserProfile.userId));
+    }
+
   }
 
   void _addMessage(types.Message message, String textMessage) {

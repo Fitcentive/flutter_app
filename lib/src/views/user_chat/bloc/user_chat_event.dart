@@ -38,3 +38,41 @@ class UpdateIncomingMessageIntoChatRoom extends UserChatEvent {
   List<Object?> get props => [userId, text];
 }
 
+class CurrentUserTypingStarted extends UserChatEvent {
+  final String roomId;
+  final String userId;
+
+  const CurrentUserTypingStarted(this.roomId, this.userId);
+
+  @override
+  List<Object?> get props => [roomId, userId];
+}
+
+class OtherUserTypingStarted extends UserChatEvent {
+  final String userId;
+
+  const OtherUserTypingStarted(this.userId);
+
+  @override
+  List<Object?> get props => [userId];
+}
+
+class OtherUserTypingStopped extends UserChatEvent {
+  final String userId;
+
+  const OtherUserTypingStopped(this.userId);
+
+  @override
+  List<Object?> get props => [userId];
+}
+
+class CurrentUserTypingStopped extends UserChatEvent {
+  final String roomId;
+  final String userId;
+
+  const CurrentUserTypingStopped(this.roomId, this.userId);
+
+  @override
+  List<Object?> get props => [userId, roomId];
+}
+
