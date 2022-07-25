@@ -149,7 +149,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         if (state is AuthSuccessUserUpdateState) {
           _fillInUserProfileDetails(state.authenticatedUser);
           _setupMap(state.authenticatedUser);
-          (await _mapController.future).animateCamera(CameraUpdate.newCameraPosition(_initialCameraPosition));
+          (await _mapController.future).moveCamera(CameraUpdate.newCameraPosition(_initialCameraPosition));
         }
       },
       child: BlocListener<AccountDetailsBloc, AccountDetailsState>(
@@ -160,8 +160,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                 user: state.user,
                 firstName: state.firstName.value,
                 lastName: state.lastName.value,
-                photoUrl: state.photoUrl)
-            );
+                photoUrl: state.photoUrl
+            ));
           }
         },
         child: BlocBuilder<AccountDetailsBloc, AccountDetailsState>(builder: (context, state) {
