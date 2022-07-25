@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/dialog_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
@@ -335,7 +336,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           const Text('Gender', style: TextStyle(fontSize: 13),),
           DropdownButton<String>(
               value: selectedUserGender,
-              items: <String>['Male', 'Female', 'Other'].map((e) => DropdownMenuItem<String>(
+              items: ConstantUtils.genderType.map((e) => DropdownMenuItem<String>(
                 value: e,
                 child: Text(e),
               )).toList(),

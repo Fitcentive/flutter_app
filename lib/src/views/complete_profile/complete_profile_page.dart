@@ -132,7 +132,9 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
           user: currentState.user,
           firstName: currentState.firstName.value,
           lastName: currentState.lastName.value,
-          dateOfBirth: DateTime.parse(currentState.dateOfBirth.value)));
+          dateOfBirth: DateTime.parse(currentState.dateOfBirth.value),
+          gender: currentState.gender
+      ));
     } else if (currentState is UsernameModified && currentState.status.isValid) {
       _completeProfileBloc.add(UsernameSubmitted(user: currentState.user, username: currentState.username.value));
     } else if (currentState is LocationInfoModified) {

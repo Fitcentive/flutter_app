@@ -3,7 +3,7 @@ import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/date_of_birth.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
 import 'package:flutter_app/src/models/complete_profile/username.dart';
-import 'package:flutter_app/src/utils/location_utils.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:formz/formz.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -58,10 +58,12 @@ class ProfileInfoModified extends CompleteProfileState {
   final FormzStatus status;
   final Name firstName;
   final Name lastName;
+  final String gender;
   final DateOfBirth dateOfBirth;
 
   const ProfileInfoModified({
     required this.user,
+    this.gender = ConstantUtils.defaultGender,
     this.status = FormzStatus.pure,
     this.firstName =  const Name.pure(),
     this.lastName = const Name.pure(),
@@ -72,6 +74,7 @@ class ProfileInfoModified extends CompleteProfileState {
     FormzStatus? status,
     Name? firstName,
     Name? lastName,
+    String? gender,
     DateOfBirth? dateOfBirth,
   }) {
     return ProfileInfoModified(
@@ -79,12 +82,13 @@ class ProfileInfoModified extends CompleteProfileState {
       status: status ?? this.status,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      gender: gender ?? this.gender,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
     );
   }
 
   @override
-  List<Object> get props => [status, firstName, lastName, dateOfBirth];
+  List<Object> get props => [status, firstName, lastName, dateOfBirth, gender];
 
 }
 

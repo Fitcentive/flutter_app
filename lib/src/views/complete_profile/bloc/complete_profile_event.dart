@@ -46,24 +46,38 @@ class ProfileInfoChanged extends CompleteProfileEvent {
   final AuthenticatedUser user;
   final String firstName;
   final String lastName;
+  final String gender;
   final DateTime dateOfBirth;
 
-  const ProfileInfoChanged({required this.user, required this.firstName, required this.lastName, required this.dateOfBirth});
+  const ProfileInfoChanged({
+    required this.user,
+    required this.firstName,
+    required this.lastName,
+    required this.gender,
+    required this.dateOfBirth
+  });
 
   @override
-  List<Object> get props => [user, firstName, lastName, dateOfBirth];
+  List<Object> get props => [user, firstName, lastName, dateOfBirth, gender];
 }
 
 class ProfileInfoSubmitted extends CompleteProfileEvent {
   final AuthenticatedUser user;
   final String firstName;
   final String lastName;
+  final String gender;
   final DateTime dateOfBirth;
 
-  const ProfileInfoSubmitted({required this.user, required this.firstName, required this.lastName, required this.dateOfBirth});
+  const ProfileInfoSubmitted({
+    required this.user,
+    required this.firstName,
+    required this.lastName,
+    required this.gender,
+    required this.dateOfBirth
+  });
 
   @override
-  List<Object> get props => [user, firstName, lastName, dateOfBirth];
+  List<Object> get props => [user, firstName, lastName, gender, dateOfBirth];
 }
 
 class UsernameChanged extends CompleteProfileEvent {

@@ -120,9 +120,11 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
 
   void _profileInfoSubmitted(ProfileInfoSubmitted event,
       Emitter<CompleteProfileState> emit,) async {
-    final updateUserProfile = UpdateUserProfile(firstName: event.firstName,
+    final updateUserProfile = UpdateUserProfile(
+        firstName: event.firstName,
         lastName: event.lastName,
-        dateOfBirth: DateFormat('yyyy-MM-dd').format(event.dateOfBirth)
+        dateOfBirth: DateFormat('yyyy-MM-dd').format(event.dateOfBirth),
+        gender: event.gender
     );
     const updateUser = UpdateUserPatch(accountStatus: "UsernameCreationRequired");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
@@ -152,7 +154,8 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
           status: newStatus,
           firstName: firstName,
           lastName: lastname,
-          dateOfBirth: dateOfBirth
+          dateOfBirth: dateOfBirth,
+          gender: event.gender,
       ));
     }
   }

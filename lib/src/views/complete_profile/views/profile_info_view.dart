@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 class ProfileInfoView extends StatefulWidget {
 
@@ -22,6 +23,7 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
   final TextEditingController _lastNameController = TextEditingController();
   late final CompleteProfileBloc _completeProfileBloc;
 
+  String selectedUserGender = ConstantUtils.defaultGender;
 
   @override
   void initState() {
@@ -38,7 +40,8 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
           user: currentState.user,
           firstName: userFirstName,
           lastName: userLastName,
-          dateOfBirth: DateTime.parse(currentState.dateOfBirth.value)
+          dateOfBirth: DateTime.parse(currentState.dateOfBirth.value),
+          gender: currentState.user.userProfile?.gender ?? ConstantUtils.defaultGender
       ));
     }
   }
@@ -63,15 +66,45 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
                     const Padding(padding: EdgeInsets.all(6)),
                     _nameInput("Last Name"),
                     const Padding(padding: EdgeInsets.all(20)),
-                    Text(
-                        "Date of birth",
-                      style: appTheme.textTheme.headline6,
-                    ),
+                    Text("Gender", style: appTheme.textTheme.headline6),
+                    _genderPicker(),
+                    WidgetUtils.spacer(15),
+                    Text("Date of birth", style: appTheme.textTheme.headline6),
                     const Padding(padding: EdgeInsets.all(6)),
                     _datePickerButton(),
                   ],
                 );
               })),
+    );
+  }
+
+  Widget _genderPicker() {
+    return  Container(
+      margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 0),
+      child: DropdownButton<String>(
+          value: selectedUserGender,
+          items: ConstantUtils.genderType.map((e) => DropdownMenuItem<String>(
+            value: e,
+            child: Text(e),
+          )).toList(),
+          onChanged: (newValue) {
+            final currentState = context.read<CompleteProfileBloc>().state;
+            if (currentState is ProfileInfoModified) {
+              if (newValue != null) {
+                _completeProfileBloc.add(ProfileInfoChanged(
+                    user: currentState.user,
+                    firstName: currentState.firstName.value,
+                    lastName: currentState.lastName.value,
+                    dateOfBirth: DateTime.parse(currentState.dateOfBirth.value),
+                    gender: newValue
+                ));
+                setState(() {
+                  selectedUserGender = newValue;
+                });
+              }
+            }
+          }
+      ),
     );
   }
 
@@ -94,7 +127,8 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
               user: currentState.user,
               firstName: currentState.firstName.value,
               lastName: currentState.lastName.value,
-              dateOfBirth: selectedDate ?? DateTime.parse(currentState.dateOfBirth.value)
+              dateOfBirth: selectedDate ?? DateTime.parse(currentState.dateOfBirth.value),
+              gender: currentState.gender,
           ));
         }
       },
@@ -119,7 +153,9 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
                     user: state.user,
                     firstName: key == "First Name" ? name : state.firstName.value,
                     lastName: key == "Last Name" ? name : state.lastName.value,
-                    dateOfBirth: DateTime.parse(state.dateOfBirth.value)));
+                    dateOfBirth: DateTime.parse(state.dateOfBirth.value),
+                    gender: state.gender
+                ));
               }
             },
             decoration: _getDecoration(state, key));
