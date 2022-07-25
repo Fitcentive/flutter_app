@@ -168,6 +168,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     if (currentState is HistoricalChatsFetched) {
       final updatedMessages = currentState.messages;
       final now = DateTime.now();
+      // todo - typing indicator feature is in PR - https://github.com/flyerhq/flutter_chat_ui/pull/293
       updatedMessages.insert(0,
           ChatMessage(
               userTypingMessageId,

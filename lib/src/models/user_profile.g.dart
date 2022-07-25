@@ -17,6 +17,10 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) {
     json['lastName'] as String?,
     json['photoUrl'] as String?,
     json['dateOfBirth'] as String?,
+    json['locationRadius'] as int?,
+    json['locationCenter'] == null
+        ? null
+        : Coordinates.fromJson(json['locationCenter'] as Map<String, dynamic>),
   );
 }
 
@@ -27,4 +31,6 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'lastName': instance.lastName,
       'photoUrl': instance.photoUrl,
       'dateOfBirth': instance.dateOfBirth,
+      'locationRadius': instance.locationRadius,
+      'locationCenter': instance.locationCenter,
     };

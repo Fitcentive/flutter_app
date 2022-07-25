@@ -1,20 +1,26 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/permissions/location_permissions.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/utils/dialog_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_bloc.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_event.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_state.dart';
+import 'package:flutter_app/src/views/discovery_radius/discovery_radius_view.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AccountDetailsView extends StatefulWidget {
@@ -28,7 +34,8 @@ class AccountDetailsView extends StatefulWidget {
                     imageRepository: RepositoryProvider.of<ImageRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                     authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
-                  )),
+                  )
+          ),
         ],
         child: const AccountDetailsView(),
       );
@@ -50,15 +57,73 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   late AuthenticationBloc _authenticationBloc;
   late AccountDetailsBloc _accountDetailsBloc;
 
+  late int locationRadius;
+  Position? currentUserLivePosition;
+  late LatLng currentUserProfileLocationCenter;
+  late CameraPosition _initialCameraPosition;
+  final Completer<GoogleMapController> _controller = Completer();
+  MarkerId markerId = const MarkerId("camera_centre_marker_id");
+  CircleId circleId = const CircleId('radius_circle');
+  final Set<Marker> markers = <Marker>{};
+  final Map<CircleId, Circle> circles = <CircleId, Circle>{};
+
+  _getUserCurrentPosition() async {
+    final livePosition = await LocationPermissions.determinePosition();
+    setState(() {
+      currentUserLivePosition = livePosition;
+    });
+  }
+
+  void _generateBoundaryCircle(LatLng position, int radius) {
+    circles.clear();
+    final Circle circle = Circle(
+      circleId: circleId,
+      strokeColor: Colors.tealAccent,
+      fillColor: Colors.teal.withOpacity(0.5),
+      strokeWidth: 5,
+      center: position,
+      radius: radius.toDouble(),
+    );
+    setState(() {
+      circles[circleId] = circle;
+    });
+  }
+
+  _setupMap(AuthenticatedUser user) {
+    locationRadius = user.userProfile?.locationRadius ?? 1000;
+    currentUserProfileLocationCenter = user.userProfile?.locationCenter != null ?
+    LatLng(user.userProfile!.locationCenter!.latitude, user.userProfile!.locationCenter!.longitude) :
+    (currentUserLivePosition != null ? LatLng(currentUserLivePosition!.latitude, currentUserLivePosition!.longitude) :
+    LocationUtils.defaultLocation);
+
+    _initialCameraPosition = CameraPosition(
+        target: currentUserProfileLocationCenter,
+        tilt: 0,
+        zoom: LocationUtils.getZoomLevel(locationRadius.toDouble())
+    );
+
+    _generateBoundaryCircle(currentUserProfileLocationCenter, locationRadius);
+    markers.clear();
+    markers.add(
+      Marker(
+        markerId: markerId,
+        position: currentUserProfileLocationCenter,
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     _accountDetailsBloc = BlocProvider.of<AccountDetailsBloc>(context);
 
+    _getUserCurrentPosition();
+
     final authState = _authenticationBloc.state;
     if (authState is AuthSuccessUserUpdateState) {
       _fillInUserProfileDetails(authState.authenticatedUser);
+      _setupMap(authState.authenticatedUser);
     }
   }
 
@@ -71,7 +136,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         user: user,
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
-        photoUrl: user.userProfile?.photoUrl));
+        photoUrl: user.userProfile?.photoUrl)
+    );
   }
 
   @override
@@ -80,6 +146,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       listener: (context, state) {
         if (state is AuthSuccessUserUpdateState) {
           _fillInUserProfileDetails(state.authenticatedUser);
+          _setupMap(state.authenticatedUser);
         }
       },
       child: BlocListener<AccountDetailsBloc, AccountDetailsState>(
@@ -90,7 +157,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                 user: state.user,
                 firstName: state.firstName.value,
                 lastName: state.lastName.value,
-                photoUrl: state.photoUrl));
+                photoUrl: state.photoUrl)
+            );
           }
         },
         child: BlocBuilder<AccountDetailsBloc, AccountDetailsState>(builder: (context, state) {
@@ -112,7 +180,9 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                   _fullLengthRowElement( _emailWidget()),
                   _spacer(6),
                   _fullLengthRowElement(_usernameField()),
-                  _spacer(6),
+                  _spacer(12),
+                  _fullLengthRowElement(_locationWidget()),
+                  _spacer(40),
                 ],
               ),
             ),
@@ -120,6 +190,42 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         }),
       ),
     );
+  }
+
+  Widget _locationWidget() {
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      return SizedBox(
+        height: 300,
+        child: GoogleMap(
+          onTap: (_) {
+            Navigator.push<void>(
+                context,
+                DiscoveryRadiusView.route(
+                  currentUserProfileLocationCenter.latitude,
+                  currentUserProfileLocationCenter.longitude,
+                  locationRadius.toDouble(),
+                  currentState.authenticatedUser,
+                ),
+            );
+          },
+          mapType: MapType.hybrid,
+          myLocationButtonEnabled: true,
+          myLocationEnabled: true,
+          markers: markers,
+          circles: Set<Circle>.of(circles.values),
+          initialCameraPosition: _initialCameraPosition,
+          onMapCreated: (GoogleMapController controller) {
+            _controller.complete(controller);
+          }
+        ),
+      );
+    }
+    else {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
   }
 
   Widget _spacer(double allPadding) => Padding(padding: EdgeInsets.all(allPadding));

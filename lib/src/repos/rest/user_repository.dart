@@ -169,6 +169,8 @@ class UserRepository {
       'lastName': userProfile.lastName,
       'photoUrl': userProfile.photoUrl,
       'dateOfBirth': userProfile.dateOfBirth,
+      'locationRadius': userProfile.locationRadius,
+      'locationCenter': userProfile.locationCenter == null ? null : userProfile.locationCenter!.toJson()
     };
     final response = await http.patch(Uri.parse("$BASE_URL/$userId/profile"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
@@ -190,6 +192,8 @@ class UserRepository {
       'lastName': userProfile.lastName,
       'photoUrl': userProfile.photoUrl,
       'dateOfBirth': userProfile.dateOfBirth,
+      'locationRadius': userProfile.locationRadius,
+      'locationCenter': userProfile.locationCenter == null ? null : userProfile.locationCenter!.toJson()
     };
     final response = await http.post(Uri.parse("$BASE_URL/$userId/profile"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},

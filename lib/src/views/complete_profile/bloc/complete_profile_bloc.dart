@@ -1,14 +1,14 @@
-import 'dart:async';
-
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/date_of_birth.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
 import 'package:flutter_app/src/models/complete_profile/username.dart';
+import 'package:flutter_app/src/models/spatial/coordinates.dart';
 import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,6 +34,32 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     on<UsernameChanged>(_usernameChanged);
     on<UsernameSubmitted>(_usernameSubmitted);
     on<ForceUpdateAuthState>(_forceUpdateAuthState);
+    on<LocationInfoChanged>(_locationInfoChanged);
+    on<LocationInfoSubmitted>(_locationInfoSubmitted);
+  }
+
+  void _locationInfoSubmitted(LocationInfoSubmitted event, Emitter<CompleteProfileState> emit) async {
+    final updateUserProfile = UpdateUserProfile(
+        locationCenter: Coordinates(event.coordinates.latitude, event.coordinates.longitude),
+        locationRadius: event.radius
+    );
+    const updateUser = UpdateUserPatch(accountStatus: "LoginReady");
+    final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
+    final userProfile = await userRepository.createOrUpdateUserProfile(event.user.user.id, updateUserProfile, accessToken!);
+    final updatedUser = await userRepository.updateUserPatch(event.user.user.id, updateUser, accessToken);
+    final updatedAuthenticatedUser = AuthenticatedUser(
+        user: updatedUser,
+        userAgreements: event.user.userAgreements,
+        userProfile: userProfile,
+        authTokens: event.user.authTokens,
+        authProvider: event.user.authProvider
+    );
+    authUserStreamRepository.newUser(updatedAuthenticatedUser);
+    emit(ProfileInfoComplete(updatedAuthenticatedUser));
+  }
+
+  void _locationInfoChanged(LocationInfoChanged event, Emitter<CompleteProfileState> emit) async {
+    emit(LocationInfoModified(user: event.user, selectedCoordinates: event.coordinates, radius: event.radius));
   }
 
   void _forceUpdateAuthState(
@@ -50,7 +76,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     final currentState = state;
     if (currentState is UsernameModified) {
       final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
-      final updateUser = UpdateUserPatch(accountStatus: "LoginReady", username: event.username);
+      final updateUser = UpdateUserPatch(accountStatus: "LocationRadiusRequired", username: event.username);
       final updatedUser = await userRepository.updateUserPatch(event.user.user.id, updateUser, accessToken!);
       final updatedAuthenticatedUser = AuthenticatedUser(
           user: updatedUser,
@@ -60,7 +86,11 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
           authProvider: event.user.authProvider
       );
       authUserStreamRepository.newUser(updatedAuthenticatedUser);
-      emit(ProfileInfoComplete(updatedAuthenticatedUser));
+      emit(LocationInfoModified(
+          user: updatedAuthenticatedUser,
+          selectedCoordinates: LocationUtils.defaultLocation,
+          radius: 1000
+      ));
     }
   }
 
@@ -166,6 +196,9 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
         break;
       case "UsernameCreationRequired":
         emit(UsernameModified(user: event.user));
+        break;
+      case "LocationRadiusRequired":
+        emit(LocationInfoModified(user: event.user, selectedCoordinates: LocationUtils.defaultLocation, radius: 1000));
         break;
       case "LoginReady":
         emit(ProfileInfoComplete(event.user));

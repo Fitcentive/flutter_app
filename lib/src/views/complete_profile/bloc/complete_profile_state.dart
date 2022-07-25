@@ -3,7 +3,9 @@ import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/date_of_birth.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
 import 'package:flutter_app/src/models/complete_profile/username.dart';
+import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:formz/formz.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 abstract class CompleteProfileState extends Equatable {
   const CompleteProfileState();
@@ -114,6 +116,22 @@ class UsernameModified extends CompleteProfileState {
 
   @override
   List<Object> get props => [status, username];
+
+}
+
+class LocationInfoModified extends CompleteProfileState {
+  final AuthenticatedUser user;
+  final LatLng selectedCoordinates;
+  final int radius;
+
+  const LocationInfoModified({
+    required this.user,
+    required this.selectedCoordinates,
+    required this.radius,
+  });
+
+  @override
+  List<Object> get props => [user, selectedCoordinates, radius];
 
 }
 

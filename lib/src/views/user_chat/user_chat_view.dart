@@ -67,13 +67,6 @@ class UserChatViewState extends State<UserChatView> {
 
   bool isDraftMessageEmpty = true;
 
-  final msg = types.TextMessage(
-    author: types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ad'),
-    createdAt: DateTime.now().millisecondsSinceEpoch,
-    id: const Uuid().v4(),
-    text: "This is a test",
-  );
-
   final joinRef = const Uuid().v4();
 
   List<types.Message> _previousMessages = [];

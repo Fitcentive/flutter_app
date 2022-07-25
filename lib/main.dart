@@ -23,18 +23,21 @@ import 'package:flutter_app/src/views/login/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 
 import 'src/views/login/bloc/authentication_state.dart';
 
 void main() async {
   const String PROXY_IP = "192.168.2.25";
-  // const String PROXY_IP = "192.168.0.15";
+  // const String PROXY_IP = "192.168.0.19";
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   if (kDebugMode) {
     if (Platform.isAndroid) {
+      AndroidGoogleMapsFlutter.useAndroidViewSurface = true;
       final androidInfo = await deviceInfoPlugin.androidInfo;
       if (androidInfo.isPhysicalDevice ?? false) {
         final proxy = CustomProxy(ipAddress: PROXY_IP, port: 8888);

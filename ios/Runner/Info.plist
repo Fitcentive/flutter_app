@@ -60,5 +60,7 @@
     <string>App needs access to photo library for profile images</string>
     <key>NSCameraUsageDescription</key>
     <string>To capture profile photo please grant camera access</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Your location is used to curate the application experience for you</string>
 </dict>
 </plist>
