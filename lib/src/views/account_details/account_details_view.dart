@@ -61,7 +61,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   Position? currentUserLivePosition;
   late LatLng currentUserProfileLocationCenter;
   late CameraPosition _initialCameraPosition;
-  final Completer<GoogleMapController> _controller = Completer();
+  final Completer<GoogleMapController> _mapController = Completer();
   MarkerId markerId = const MarkerId("camera_centre_marker_id");
   CircleId circleId = const CircleId('radius_circle');
   final Set<Marker> markers = <Marker>{};
@@ -91,6 +91,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
 
   _setupMap(AuthenticatedUser user) {
     locationRadius = user.userProfile?.locationRadius ?? 1000;
+
+    // Use user profile location - otherwise use live location - otherwise use default location
     currentUserProfileLocationCenter = user.userProfile?.locationCenter != null ?
     LatLng(user.userProfile!.locationCenter!.latitude, user.userProfile!.locationCenter!.longitude) :
     (currentUserLivePosition != null ? LatLng(currentUserLivePosition!.latitude, currentUserLivePosition!.longitude) :
@@ -143,10 +145,11 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthenticationBloc, AuthenticationState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is AuthSuccessUserUpdateState) {
           _fillInUserProfileDetails(state.authenticatedUser);
           _setupMap(state.authenticatedUser);
+          (await _mapController.future).animateCamera(CameraUpdate.newCameraPosition(_initialCameraPosition));
         }
       },
       child: BlocListener<AccountDetailsBloc, AccountDetailsState>(
@@ -216,7 +219,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           circles: Set<Circle>.of(circles.values),
           initialCameraPosition: _initialCameraPosition,
           onMapCreated: (GoogleMapController controller) {
-            _controller.complete(controller);
+            _mapController.complete(controller);
           }
         ),
       );
