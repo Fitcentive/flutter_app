@@ -78,6 +78,8 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
       photoUrl: newPhotoUrl ?? event.photoUrl,
       dateOfBirth: event.user.userProfile?.dateOfBirth,
       gender: event.gender,
+      locationCenter: event.user.userProfile?.locationCenter,
+      locationRadius: event.user.userProfile?.locationRadius,
     );
     final updatedUserProfile = await userRepository.updateUserProfilePost(event.user.user.id, updateUserProfile, accessToken!);
     final updatedAuthenticatedUser = AuthenticatedUser(

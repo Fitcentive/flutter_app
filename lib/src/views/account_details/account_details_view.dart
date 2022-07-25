@@ -264,15 +264,18 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       ),
       onPressed: () async {
         if (state is AccountDetailsModified) {
-          _accountDetailsBloc.add(AccountDetailsSaved(
-            user: state.user,
-            firstName: state.firstName.value,
-            lastName: state.lastName.value,
-            photoUrl: state.photoUrl,
-            selectedImage: state.selectedImage,
-            gender: state.gender,
-          ));
-        }
+          final authState = _authenticationBloc.state;
+          if (authState is AuthSuccessUserUpdateState) {
+            _accountDetailsBloc.add(AccountDetailsSaved(
+              user: authState.authenticatedUser,
+              firstName: state.firstName.value,
+              lastName: state.lastName.value,
+              photoUrl: state.photoUrl,
+              selectedImage: state.selectedImage,
+              gender: state.gender,
+            ));
+          }
+          }
       },
       child: const Text("Save", style: TextStyle(fontSize: 15, color: Colors.white)),
     );
