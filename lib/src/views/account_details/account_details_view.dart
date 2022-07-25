@@ -57,6 +57,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   late AuthenticationBloc _authenticationBloc;
   late AccountDetailsBloc _accountDetailsBloc;
 
+  late String selectedUserGender;
+
   late int locationRadius;
   Position? currentUserLivePosition;
   late LatLng currentUserProfileLocationCenter;
@@ -126,6 +128,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     if (authState is AuthSuccessUserUpdateState) {
       _fillInUserProfileDetails(authState.authenticatedUser);
       _setupMap(authState.authenticatedUser);
+      selectedUserGender = authState.authenticatedUser.userProfile?.gender ?? 'Other';
     }
   }
 
@@ -138,8 +141,9 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         user: user,
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
-        photoUrl: user.userProfile?.photoUrl)
-    );
+        photoUrl: user.userProfile?.photoUrl,
+        gender: user.userProfile?.gender ?? 'Other'
+    ));
   }
 
   @override
@@ -160,7 +164,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                 user: state.user,
                 firstName: state.firstName.value,
                 lastName: state.lastName.value,
-                photoUrl: state.photoUrl
+                photoUrl: state.photoUrl,
+                gender: state.gender
             ));
           }
         },
@@ -184,6 +189,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                   _spacer(6),
                   _fullLengthRowElement(_usernameField()),
                   _spacer(12),
+                  _fullLengthRowElement(_genderField(state)),
+                  _spacer(6),
                   _fullLengthRowElement(_locationWidget()),
                   _spacer(40),
                 ],
@@ -198,30 +205,37 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   Widget _locationWidget() {
     final currentState = _authenticationBloc.state;
     if (currentState is AuthSuccessUserUpdateState) {
-      return SizedBox(
-        height: 300,
-        child: GoogleMap(
-          onTap: (_) {
-            Navigator.push<void>(
-                context,
-                DiscoveryRadiusView.route(
-                  currentUserProfileLocationCenter.latitude,
-                  currentUserProfileLocationCenter.longitude,
-                  locationRadius.toDouble(),
-                  currentState.authenticatedUser,
-                ),
-            );
-          },
-          mapType: MapType.hybrid,
-          myLocationButtonEnabled: true,
-          myLocationEnabled: true,
-          markers: markers,
-          circles: Set<Circle>.of(circles.values),
-          initialCameraPosition: _initialCameraPosition,
-          onMapCreated: (GoogleMapController controller) {
-            _mapController.complete(controller);
-          }
-        ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Discovery Radius', style: TextStyle(fontSize: 13),),
+          Container(
+            margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+            height: 300,
+            child: GoogleMap(
+                onTap: (_) {
+                  Navigator.push<void>(
+                    context,
+                    DiscoveryRadiusView.route(
+                      currentUserProfileLocationCenter.latitude,
+                      currentUserProfileLocationCenter.longitude,
+                      locationRadius.toDouble(),
+                      currentState.authenticatedUser,
+                    ),
+                  );
+                },
+                mapType: MapType.hybrid,
+                myLocationButtonEnabled: true,
+                myLocationEnabled: true,
+                markers: markers,
+                circles: Set<Circle>.of(circles.values),
+                initialCameraPosition: _initialCameraPosition,
+                onMapCreated: (GoogleMapController controller) {
+                  _mapController.complete(controller);
+                }
+            ),
+          )
+        ],
       );
     }
     else {
@@ -256,6 +270,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
             lastName: state.lastName.value,
             photoUrl: state.photoUrl,
             selectedImage: state.selectedImage,
+            gender: state.gender,
           ));
         }
       },
@@ -271,6 +286,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
             user: state.user,
             firstName: state.firstName.value,
             lastName: state.lastName.value,
+            gender: state.gender,
           ));
         }
       },
@@ -308,6 +324,42 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         decoration: const InputDecoration(labelText: "Username", errorText: null));
   }
 
+  _genderField(AccountDetailsState state) {
+    if (state is AccountDetailsModified) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Gender', style: TextStyle(fontSize: 13),),
+          DropdownButton<String>(
+              value: selectedUserGender,
+              items: <String>['Male', 'Female', 'Other'].map((e) => DropdownMenuItem<String>(
+                value: e,
+                child: Text(e),
+              )).toList(),
+              onChanged: (newValue) {
+                if (newValue != null) {
+                  context.read<AccountDetailsBloc>().add(AccountDetailsChanged(
+                      user: state.user,
+                      firstName: state.firstName.value,
+                      lastName:state.lastName.value,
+                      photoUrl: state.photoUrl,
+                      gender: newValue
+                  ));
+                  setState(() {
+                    selectedUserGender = newValue;
+                  });
+                }
+              }
+          )
+        ],
+      );
+    } else {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+  }
+
   _nameField(String key, AccountDetailsState state) {
     return TextField(
         controller: key == "First Name" ? _firstNameController : _lastNameController,
@@ -318,7 +370,9 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                 user: state.user,
                 firstName: key == "First Name" ? name : state.firstName.value,
                 lastName: key == "Last Name" ? name : state.lastName.value,
-                photoUrl: state.photoUrl));
+                photoUrl: state.photoUrl,
+                gender: state.gender,
+            ));
           }
         },
         decoration: _getDecoration(state, key));
@@ -356,7 +410,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                 firstName: state.firstName.value,
                 lastName: state.lastName.value,
                 photoUrl: state.photoUrl,
-                selectedImage: image
+                selectedImage: image,
+                gender: state.gender,
             ));
           }
         },

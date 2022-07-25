@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/spatial/coordinates.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'public_user_profile.g.dart';
@@ -12,8 +13,20 @@ class PublicUserProfile extends Equatable {
   final String? firstName;
   final String? lastName;
   final String? photoUrl;
+  final int? locationRadius;
+  final Coordinates? locationCenter;
+  final String? gender;
 
-  const PublicUserProfile(this.userId, this.username, this.firstName, this.lastName, this.photoUrl);
+  const PublicUserProfile(
+      this.userId,
+      this.username,
+      this.firstName,
+      this.lastName,
+      this.photoUrl,
+      this.locationRadius,
+      this.locationCenter,
+      this.gender
+      );
 
   factory PublicUserProfile.fromJson(Map<String, dynamic> json) => _$PublicUserProfileFromJson(json);
 
@@ -26,5 +39,8 @@ class PublicUserProfile extends Equatable {
     firstName,
     lastName,
     photoUrl,
+    locationCenter,
+    locationRadius,
+    gender,
   ];
 }

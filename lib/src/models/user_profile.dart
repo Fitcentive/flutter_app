@@ -15,6 +15,7 @@ class UserProfile extends Equatable {
   final String? dateOfBirth;
   final int? locationRadius;
   final Coordinates? locationCenter;
+  final String? gender;
 
   const UserProfile(
       this.userId,
@@ -23,7 +24,8 @@ class UserProfile extends Equatable {
       this.photoUrl,
       this.dateOfBirth,
       this.locationRadius,
-      this.locationCenter
+      this.locationCenter,
+      this.gender,
       );
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
@@ -39,6 +41,7 @@ class UserProfile extends Equatable {
     dateOfBirth,
     locationRadius,
     locationCenter,
+    gender,
   ];
 }
 
@@ -49,6 +52,7 @@ class UpdateUserProfile extends Equatable {
   final String? dateOfBirth;
   final int? locationRadius;
   final Coordinates? locationCenter;
+  final String? gender;
 
   const UpdateUserProfile({
     this.firstName,
@@ -56,7 +60,8 @@ class UpdateUserProfile extends Equatable {
     this.photoUrl,
     this.dateOfBirth,
     this.locationRadius,
-    this.locationCenter
+    this.locationCenter,
+    this.gender,
   });
 
   @override
@@ -66,6 +71,7 @@ class UpdateUserProfile extends Equatable {
     photoUrl,
     dateOfBirth,
     locationRadius,
-    locationCenter
+    locationCenter,
+    gender,
   ];
 }

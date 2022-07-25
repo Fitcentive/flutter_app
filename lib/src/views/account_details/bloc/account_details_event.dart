@@ -10,6 +10,7 @@ class AccountDetailsChanged extends AccountDetailsEvent {
   final AuthenticatedUser user;
   final String firstName;
   final String lastName;
+  final String gender;
   final String? photoUrl;
   final XFile? selectedImage;
 
@@ -17,18 +18,20 @@ class AccountDetailsChanged extends AccountDetailsEvent {
     required this.user,
     required this.firstName,
     required this.lastName,
+    required this.gender,
     this.photoUrl,
     this.selectedImage
   });
 
   @override
-  List<Object?> get props => [user, firstName, lastName, photoUrl, selectedImage];
+  List<Object?> get props => [user, firstName, lastName, gender, photoUrl, selectedImage];
 }
 
 class AccountDetailsSaved extends AccountDetailsEvent {
   final AuthenticatedUser user;
   final String firstName;
   final String lastName;
+  final String gender;
   final String? photoUrl;
   final XFile? selectedImage;
 
@@ -36,10 +39,11 @@ class AccountDetailsSaved extends AccountDetailsEvent {
     required this.user,
     required this.firstName,
     required this.lastName,
+    required this.gender,
     this.photoUrl,
     this.selectedImage
   });
 
   @override
-  List<Object?> get props => [user, firstName, lastName, photoUrl, selectedImage];
+  List<Object?> get props => [user, firstName, lastName, gender, photoUrl, selectedImage];
 }

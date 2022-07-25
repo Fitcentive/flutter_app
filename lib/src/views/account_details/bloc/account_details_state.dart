@@ -25,6 +25,7 @@ class AccountDetailsModified extends AccountDetailsState {
   final FormzStatus status;
   final Name firstName;
   final Name lastName;
+  final String gender;
   final String? photoUrl;
   final XFile? selectedImage;
 
@@ -33,6 +34,7 @@ class AccountDetailsModified extends AccountDetailsState {
     required this.status,
     required this.firstName,
     required this.lastName,
+    required this.gender,
     this.photoUrl,
     this.selectedImage,
   });
@@ -41,6 +43,7 @@ class AccountDetailsModified extends AccountDetailsState {
     FormzStatus? status,
     Name? firstName,
     Name? lastName,
+    String? gender,
     required String? photoUrl,
     required XFile? selectedImage,
   }) =>
@@ -49,12 +52,13 @@ class AccountDetailsModified extends AccountDetailsState {
           status: status ?? this.status,
           firstName: firstName ?? this.firstName,
           lastName: lastName ?? this.lastName,
+          gender: gender ?? this.gender,
           photoUrl: photoUrl,
           selectedImage: selectedImage,
       );
 
   @override
-  List<Object?> get props => [status, firstName, lastName, photoUrl, user, selectedImage];
+  List<Object?> get props => [status, firstName, lastName, photoUrl, user, selectedImage, gender];
 }
 
 class AccountDetailsUpdatedSuccessfully extends AccountDetailsState {
@@ -62,6 +66,7 @@ class AccountDetailsUpdatedSuccessfully extends AccountDetailsState {
   final FormzStatus status;
   final Name firstName;
   final Name lastName;
+  final String gender;
   final String? photoUrl;
   final XFile? selectedImage;
 
@@ -70,10 +75,11 @@ class AccountDetailsUpdatedSuccessfully extends AccountDetailsState {
     required this.status,
     required this.firstName,
     required this.lastName,
+    required this.gender,
     this.photoUrl,
     this.selectedImage,
   });
 
   @override
-  List<Object?> get props => [status, firstName, lastName, photoUrl, user, selectedImage];
+  List<Object?> get props => [status, firstName, lastName, photoUrl, user, selectedImage, gender];
 }

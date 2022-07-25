@@ -169,6 +169,7 @@ class UserRepository {
       'lastName': userProfile.lastName,
       'photoUrl': userProfile.photoUrl,
       'dateOfBirth': userProfile.dateOfBirth,
+      'gender': userProfile.gender,
       'locationRadius': userProfile.locationRadius,
       'locationCenter': userProfile.locationCenter == null ? null : userProfile.locationCenter!.toJson()
     };
@@ -192,6 +193,7 @@ class UserRepository {
       'lastName': userProfile.lastName,
       'photoUrl': userProfile.photoUrl,
       'dateOfBirth': userProfile.dateOfBirth,
+      'gender': userProfile.gender,
       'locationRadius': userProfile.locationRadius,
       'locationCenter': userProfile.locationCenter == null ? null : userProfile.locationCenter!.toJson()
     };

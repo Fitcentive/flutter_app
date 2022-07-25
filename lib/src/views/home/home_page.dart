@@ -325,7 +325,10 @@ class HomePageState extends State<HomePage> {
           authState.authenticatedUser.user.username,
           authState.authenticatedUser.userProfile?.firstName,
           authState.authenticatedUser.userProfile?.lastName,
-          authState.authenticatedUser.userProfile?.photoUrl
+          authState.authenticatedUser.userProfile?.photoUrl,
+          authState.authenticatedUser.userProfile?.locationRadius,
+          authState.authenticatedUser.userProfile?.locationCenter,
+          authState.authenticatedUser.userProfile?.gender,
       );
       switch (selectedMenuItem) {
         case "Account Details":

@@ -38,7 +38,8 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
           status: formValidationStatus,
           firstName: firstName,
           lastName: lastName,
-          photoUrl: event.photoUrl
+          photoUrl: event.photoUrl,
+          gender: event.gender,
       ));
     } else if (currentState is AccountDetailsModified) {
       final formValidationStatus = Formz.validate([firstName, lastName]);
@@ -48,6 +49,7 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
           lastName: lastName,
           photoUrl: event.photoUrl,
           selectedImage: event.selectedImage,
+          gender: event.gender,
       ));
     } else if (currentState is AccountDetailsUpdatedSuccessfully) {
       final formValidationStatus = Formz.validate([firstName, lastName]);
@@ -56,7 +58,8 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
           status: formValidationStatus,
           firstName: firstName,
           lastName: lastName,
-          photoUrl: event.photoUrl
+          photoUrl: event.photoUrl,
+          gender: event.gender
       ));
     }
   }
@@ -73,7 +76,8 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
       firstName: event.firstName,
       lastName: event.lastName,
       photoUrl: newPhotoUrl ?? event.photoUrl,
-      dateOfBirth: event.user.userProfile?.dateOfBirth
+      dateOfBirth: event.user.userProfile?.dateOfBirth,
+      gender: event.gender,
     );
     final updatedUserProfile = await userRepository.updateUserProfilePost(event.user.user.id, updateUserProfile, accessToken!);
     final updatedAuthenticatedUser = AuthenticatedUser(
@@ -92,7 +96,8 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
           status: currentState.status,
           firstName: currentState.firstName,
           lastName: currentState.lastName,
-          photoUrl: event.photoUrl
+          photoUrl: event.photoUrl,
+          gender: event.gender,
       ));
     }
   }
