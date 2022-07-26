@@ -42,7 +42,7 @@ class CustomProxy {
 
   /// Enable the proxy
   void enable() {
-    HttpOverrides.global = CustomProxyHttpOverride.withProxy(toString());
+    HttpOverrides.global = CustomProxyHttpOverride.withProxy(toString(), allowBadCertificates: true);
   }
 
   /// Disable the proxy

@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/firebase/push_notification_settings.dart';
 import 'package:flutter_app/src/models/device/local_device_info.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -78,21 +80,30 @@ class HomePageState extends State<HomePage> {
   void syncDeviceRegistrationToken() async {
     final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     LocalDeviceInfo localDeviceInfo;
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfoPlugin.androidInfo;
-      localDeviceInfo = LocalDeviceInfo(
-          manufacturer: androidInfo.manufacturer!,
-          model: androidInfo.model!,
-          isPhysicalDevice: androidInfo.isPhysicalDevice!);
-    } else {
-      final iosInfo = await deviceInfoPlugin.iosInfo;
-      localDeviceInfo =
-          LocalDeviceInfo(manufacturer: "Apple", model: iosInfo.model!, isPhysicalDevice: iosInfo.isPhysicalDevice);
+
+    if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        localDeviceInfo = LocalDeviceInfo(
+            manufacturer: androidInfo.manufacturer!,
+            model: androidInfo.model!,
+            isPhysicalDevice: androidInfo.isPhysicalDevice!);
+      } else {
+        final iosInfo = await deviceInfoPlugin.iosInfo;
+        localDeviceInfo =
+            LocalDeviceInfo(manufacturer: "Apple", model: iosInfo.model!, isPhysicalDevice: iosInfo.isPhysicalDevice);
+      }
     }
+    else {
+      // Web app
+      final webInfo = await deviceInfoPlugin.webBrowserInfo;
+      localDeviceInfo = LocalDeviceInfo(manufacturer: "Web", model: webInfo.browserName.name, isPhysicalDevice: false);
+    }
+
     FirebaseMessaging.instance.onTokenRefresh.listen((String token) async {
       _syncTokenWithServer(token, localDeviceInfo);
     });
-    String? token = await FirebaseMessaging.instance.getToken();
+    String? token = await FirebaseMessaging.instance.getToken(vapidKey: DefaultFirebaseOptions.vapidKey);
     _syncTokenWithServer(token!, localDeviceInfo);
   }
 

@@ -38,6 +38,13 @@
             {
               "client_id": "211948202240-trhluecqj9kbhnnkhkn6sc2tmeon7nvt.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "211948202240-3b0pv8dm57t4dpntdoqvge043smn0is6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.fitcentive.flutterApp"
+              }
             }
           ]
         }

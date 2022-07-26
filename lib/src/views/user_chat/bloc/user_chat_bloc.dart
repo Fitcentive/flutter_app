@@ -39,9 +39,9 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   _initializeWebsocketConnections(String roomId, String currentUserId) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    // todo - use wss instead of ws
+    // wss works because we allow for unverified certificates in development mode
     _chatRoomChannel = WebSocketChannel.connect(
-      Uri.parse('ws://api.vid.app/api/chat/socket/websocket?token=${accessToken!}'),
+      Uri.parse('wss://api.vid.app/api/chat/socket/websocket?token=${accessToken!}'),
     );
 
     _chatRoomChannel.sink.add(jsonEncode({
