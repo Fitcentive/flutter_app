@@ -14,6 +14,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 
 class SplashPage extends StatefulWidget {
+
+  const SplashPage({Key? key}): super(key: key);
+
   static Route route() {
     return MaterialPageRoute<void>(builder: (_) => SplashPage());
   }

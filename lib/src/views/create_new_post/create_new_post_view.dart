@@ -17,6 +17,7 @@ import 'package:formz/formz.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreateNewPostView extends StatefulWidget {
+  static const String routeName = 'post/create';
 
   final PublicUserProfile userProfile;
 
@@ -24,6 +25,9 @@ class CreateNewPostView extends StatefulWidget {
 
   static Route route(PublicUserProfile userProfile) {
     return MaterialPageRoute<void>(
+        settings: const RouteSettings(
+            name: routeName
+        ),
         builder: (_) =>
             MultiBlocProvider(
               providers: [

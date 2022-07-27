@@ -32,7 +32,7 @@ import 'package:logging/logging.dart';
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.defaultSelectedTab = HomePageState.newsFeed}) : super(key: key);
 
-  static const String routeName = 'HomePage';
+  static const String routeName = 'home';
 
   final String defaultSelectedTab;
 
@@ -41,12 +41,13 @@ class HomePage extends StatefulWidget {
       settings: const RouteSettings(
         name: routeName
       ),
-        builder: (_) => MultiBlocProvider(
-              providers: [
-                BlocProvider<MenuNavigationBloc>(create: (context) => MenuNavigationBloc()),
-              ],
-              child: HomePage(defaultSelectedTab: defaultSelectedTab),
-            ));
+      builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider<MenuNavigationBloc>(create: (context) => MenuNavigationBloc()),
+            ],
+            child: HomePage(defaultSelectedTab: defaultSelectedTab),
+          )
+    );
   }
 
   @override

@@ -12,6 +12,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class DiscoveryRadiusView extends StatefulWidget {
+  static const String routeName = "discovery/radius";
+
   final double latitude;
   final double longitude;
   final double radius;
@@ -27,6 +29,9 @@ class DiscoveryRadiusView extends StatefulWidget {
 
   static Route route(double latitude, double longitude, double radius, AuthenticatedUser user) {
     return MaterialPageRoute<void>(
+        settings: const RouteSettings(
+            name: routeName
+        ),
         builder: (_) => MultiBlocProvider(
             providers: [
               BlocProvider<DiscoveryRadiusBloc>(

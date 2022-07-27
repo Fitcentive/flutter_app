@@ -16,6 +16,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class ChatSearchView extends StatefulWidget {
+  static const String routeName = "chat/user/search";
 
   final PublicUserProfile currentUserProfile;
 
@@ -23,6 +24,9 @@ class ChatSearchView extends StatefulWidget {
 
   static Route route(PublicUserProfile currentUserProfile) {
     return MaterialPageRoute<void>(
+        settings: const RouteSettings(
+            name: routeName
+        ),
         builder: (_) => MultiBlocProvider(
           providers: [
             BlocProvider<ChatSearchBloc>(

@@ -18,6 +18,8 @@ import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 
 class UserChatView extends StatefulWidget {
+  static const String routeName = "chat/user";
+
   final String currentRoomId;
   final PublicUserProfile currentUserProfile;
   final PublicUserProfile otherUserProfile;
@@ -28,6 +30,9 @@ class UserChatView extends StatefulWidget {
     required PublicUserProfile otherUserProfile,
   }) {
     return MaterialPageRoute<void>(
+        settings: const RouteSettings(
+            name: routeName
+        ),
         builder: (_) => MultiBlocProvider(
           providers: [
             BlocProvider<UserChatBloc>(

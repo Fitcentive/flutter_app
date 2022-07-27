@@ -21,6 +21,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class UserProfileView extends StatefulWidget {
+  static const String routeName = "user/profile";
+
   final PublicUserProfile userProfile;
   final PublicUserProfile currentUserProfile;
 
@@ -28,6 +30,9 @@ class UserProfileView extends StatefulWidget {
 
   static Route route(PublicUserProfile userProfile, PublicUserProfile currentUserProfile) {
     return MaterialPageRoute<void>(
+        settings: const RouteSettings(
+            name: routeName
+        ),
         builder: (_) => MultiBlocProvider(
               providers: [
                 BlocProvider<UserProfileBloc>(

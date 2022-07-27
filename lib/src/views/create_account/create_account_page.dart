@@ -11,10 +11,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 
 class CreateAccountPage extends StatefulWidget {
+  static const String routeName = "create-account";
+
   const CreateAccountPage({Key? key}) : super(key: key);
 
   static Route route() {
     return MaterialPageRoute<void>(
+        settings: const RouteSettings(
+            name: routeName
+        ),
         builder: (_) => MultiBlocProvider(
           providers: [
             BlocProvider<CreateAccountBloc>(
