@@ -35,9 +35,10 @@ class AuthenticationRepository {
 
   Future<void> logout({required String accessToken, required String refreshToken, required String authRealm}) async {
     var uri = Uri.parse("$BASE_URL/logout/$authRealm");
+    final clientId = DeviceUtils.isMobileDevice() ? "mobileapp" : "webapp";
     var request = http.MultipartRequest('POST', uri)
       ..headers["Authorization"] = "Bearer $accessToken"
-      ..fields['client_id'] = 'mobileapp'
+      ..fields['client_id'] = clientId
       ..fields['refresh_token'] = refreshToken;
 
     final response = await request.send();
@@ -134,9 +135,10 @@ class AuthenticationRepository {
     required String refreshToken,
     required String providerRealm,
   }) async {
+    final clientId = DeviceUtils.isMobileDevice() ? "mobileapp" : "webapp";
     var request = http.MultipartRequest('POST', Uri.parse(refreshTokenEndpoint))
       ..headers["Authorization"] = "Bearer $accessToken"
-      ..fields['client_id'] = 'mobileapp'
+      ..fields['client_id'] = clientId
       ..fields['refresh_token'] = refreshToken
       ..fields['realm'] = providerRealm;
 
