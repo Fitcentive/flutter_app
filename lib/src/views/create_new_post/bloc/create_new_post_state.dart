@@ -1,7 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/social/new_post.dart';
 import 'package:formz/formz.dart';
-import 'package:image_picker/image_picker.dart';
 
 abstract class CreateNewPostState extends Equatable {
   const CreateNewPostState();
@@ -18,17 +19,20 @@ class PostDetailsModified extends CreateNewPostState {
   final String userId;
   final NewPost text;
   final FormzStatus status;
-  final XFile? image;
+  final Uint8List? selectedImage;
+  final String? selectedImageName;
 
   PostDetailsModified copyWith({
     FormzStatus? status,
     NewPost? text,
-    XFile? image,
+    required Uint8List? selectedImage,
+    required String? selectedImageName,
   }) {
     return PostDetailsModified(
       status: status ?? this.status,
       text: text ?? this.text,
-      image: image ?? this.image,
+      selectedImage: selectedImage,
+      selectedImageName: selectedImageName,
       userId: userId
     );
   }
@@ -36,12 +40,13 @@ class PostDetailsModified extends CreateNewPostState {
   const PostDetailsModified({
     required this.userId,
     required this.text,
-    required this.image,
+    required this.selectedImage,
+    required this.selectedImageName,
     required this.status
   } );
 
   @override
-  List<Object?> get props => [userId, text, image];
+  List<Object?> get props => [userId, text, selectedImage, selectedImageName];
 }
 
 class PostSubmittedSuccessfully extends CreateNewPostState {

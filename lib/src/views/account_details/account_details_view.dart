@@ -1,14 +1,14 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/image_picker/custom_image_picker.dart';
 import 'package:flutter_app/src/infrastructure/permissions/location_permissions.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
-import 'package:flutter_app/src/utils/dialog_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
@@ -22,10 +22,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:tuple/tuple.dart';
 
 class AccountDetailsView extends StatefulWidget {
-  const AccountDetailsView({Key? key});
+  const AccountDetailsView({Key? key}): super(key: key);
 
   static Widget withBloc() => MultiBlocProvider(
         providers: [
@@ -53,7 +53,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
 
-  final ImagePicker _picker = ImagePicker();
+  final CustomImagePicker _picker = CustomImagePicker();
 
   late AuthenticationBloc _authenticationBloc;
   late AccountDetailsBloc _accountDetailsBloc;
@@ -284,6 +284,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
               lastName: state.lastName.value,
               photoUrl: state.photoUrl,
               selectedImage: state.selectedImage,
+              selectedImageName: state.selectedImageName,
               gender: state.gender,
             ));
           }
@@ -415,17 +416,15 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       height: 100,
       child: GestureDetector(
         onTap: () async {
-          final imageSource = await showDialog(context: context, builder: (context) {
-            return DialogUtils.showImageSourceSimpleDialog(context);
-          });
-          final XFile? image = await _picker.pickImage(source: imageSource);
+          final Tuple2<Uint8List?, String?> imageAndName = await _picker.pickImage(context);
           if (state is AccountDetailsModified) {
             context.read<AccountDetailsBloc>().add(AccountDetailsChanged(
                 user: state.user,
                 firstName: state.firstName.value,
                 lastName: state.lastName.value,
                 photoUrl: state.photoUrl,
-                selectedImage: image,
+                selectedImage: imageAndName.item1,
+                selectedImageName: imageAndName.item2,
                 gender: state.gender,
             ));
           }
@@ -452,7 +451,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   _getDecorationImage(AccountDetailsState state, String? photoUrlOpt) {
     if (state is AccountDetailsModified && state.selectedImage != null) {
       return DecorationImage(
-        image: FileImage(File(state.selectedImage!.path)),
+          image: MemoryImage(state.selectedImage!),
           fit: BoxFit.fitHeight
       );
     }

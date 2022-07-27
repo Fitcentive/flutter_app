@@ -49,6 +49,7 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
           lastName: lastName,
           photoUrl: event.photoUrl,
           selectedImage: event.selectedImage,
+          selectedImageName: event.selectedImageName,
           gender: event.gender,
       ));
     } else if (currentState is AccountDetailsUpdatedSuccessfully) {
@@ -68,8 +69,7 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     String? newPhotoUrl;
     if (event.selectedImage != null) {
-      final fileName = event.selectedImage!.path.split("/").last;
-      final filePath = "users/${event.user.user.id}/profile-photos/$fileName";
+      final filePath = "users/${event.user.user.id}/profile-photos/${event.selectedImageName}";
       newPhotoUrl = await imageRepository.uploadImage(filePath, event.selectedImage!, accessToken!);
     }
     final updateUserProfile = UpdateUserProfile(

@@ -1,6 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
-import 'package:image_picker/image_picker.dart';
 
 abstract class AccountDetailsEvent extends Equatable {
   const AccountDetailsEvent();
@@ -12,7 +13,8 @@ class AccountDetailsChanged extends AccountDetailsEvent {
   final String lastName;
   final String gender;
   final String? photoUrl;
-  final XFile? selectedImage;
+  final Uint8List? selectedImage;
+  final String? selectedImageName;
 
   const AccountDetailsChanged({
     required this.user,
@@ -20,11 +22,12 @@ class AccountDetailsChanged extends AccountDetailsEvent {
     required this.lastName,
     required this.gender,
     this.photoUrl,
-    this.selectedImage
+    this.selectedImage,
+    this.selectedImageName
   });
 
   @override
-  List<Object?> get props => [user, firstName, lastName, gender, photoUrl, selectedImage];
+  List<Object?> get props => [user, firstName, lastName, gender, photoUrl, selectedImage, selectedImageName];
 }
 
 class AccountDetailsSaved extends AccountDetailsEvent {
@@ -33,7 +36,8 @@ class AccountDetailsSaved extends AccountDetailsEvent {
   final String lastName;
   final String gender;
   final String? photoUrl;
-  final XFile? selectedImage;
+  final Uint8List? selectedImage;
+  final String? selectedImageName;
 
   const AccountDetailsSaved({
     required this.user,
@@ -41,9 +45,10 @@ class AccountDetailsSaved extends AccountDetailsEvent {
     required this.lastName,
     required this.gender,
     this.photoUrl,
-    this.selectedImage
+    this.selectedImage,
+    this.selectedImageName
   });
 
   @override
-  List<Object?> get props => [user, firstName, lastName, gender, photoUrl, selectedImage];
+  List<Object?> get props => [user, firstName, lastName, gender, photoUrl, selectedImage, selectedImageName];
 }

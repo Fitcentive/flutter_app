@@ -12,6 +12,7 @@ import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/reset_password/reset_password_page.dart';
@@ -37,7 +38,7 @@ void main() async {
   );
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   if (kDebugMode) {
-    if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
+    if (DeviceUtils.isMobileDevice()) {
       if (Platform.isAndroid) {
         AndroidGoogleMapsFlutter.useAndroidViewSurface = true;
         final androidInfo = await deviceInfoPlugin.androidInfo;

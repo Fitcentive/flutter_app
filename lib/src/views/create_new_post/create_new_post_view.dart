@@ -1,10 +1,10 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/image_picker/custom_image_picker.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
-import 'package:flutter_app/src/utils/dialog_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formz/formz.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tuple/tuple.dart';
 
 class CreateNewPostView extends StatefulWidget {
   static const String routeName = 'post/create';
@@ -52,7 +53,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
 
   late final CreateNewPostBloc _createNewPostBloc;
 
-  final ImagePicker _picker = ImagePicker();
+  final CustomImagePicker _picker = CustomImagePicker();
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
 
     _createNewPostBloc = BlocProvider.of<CreateNewPostBloc>(context);
     _createNewPostBloc.add(
-        PostDetailsChanged(userId: widget.userProfile.userId, text: "", image: null)
+        PostDetailsChanged(userId: widget.userProfile.userId, text: "", selectedImage: null, selectedImageName: null)
     );
   }
 
@@ -91,7 +92,8 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                           PostSubmitted(
                               userId: state.userId,
                               text: state.text.value,
-                              image: state.image
+                              selectedImage: state.selectedImage,
+                              selectedImageName: state.selectedImageName
                           )
                       );
                     }
@@ -163,7 +165,12 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                             ),
                             onChanged: (text)  {
                               _createNewPostBloc.add(
-                                  PostDetailsChanged(userId: state.userId, text: text, image: state.image)
+                                  PostDetailsChanged(
+                                      userId: state.userId,
+                                      text: text,
+                                      selectedImage: state.selectedImage,
+                                      selectedImageName: state.selectedImageName,
+                                  )
                               );
                             } ,
                             maxLines: 10,
@@ -180,15 +187,15 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
-                      final imageSource = await showDialog(context: context, builder: (context) {
-                        return DialogUtils.showImageSourceSimpleDialog(context);
-                      });
-                      if (imageSource != null) {
-                        final XFile? image = await _picker.pickImage(source: imageSource);
-                        _createNewPostBloc.add(
-                            PostDetailsChanged(userId: state.userId, text: state.text.value, image: image)
-                        );
-                      }
+                      final Tuple2<Uint8List?, String?> imageAndName = await _picker.pickImage(context);
+                      _createNewPostBloc.add(
+                          PostDetailsChanged(
+                              userId: state.userId,
+                              text: state.text.value,
+                              selectedImage: imageAndName.item1,
+                              selectedImageName: imageAndName.item2,
+                          )
+                      );
                     },
                     child: const Text("Add an image"),
                   ),
@@ -202,7 +209,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
   }
 
   Widget? _generatePostImageIfPresent(PostDetailsModified state) {
-    if (state.image != null) {
+    if (state.selectedImage != null) {
       return Row(
         children: [
           Expanded(
@@ -214,7 +221,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
                       image: DecorationImage(
-                          image: FileImage(File(state.image!.path)),
+                          image: MemoryImage(state.selectedImage!),
                           fit: BoxFit.fitHeight
                       ),
                     ),
@@ -236,7 +243,8 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
         _createNewPostBloc.add(PostDetailsChanged(
           userId: state.userId,
           text: state.text.value,
-          image: null
+          selectedImage: null,
+          selectedImageName: null,
         ));
       },
       child: Align(

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
@@ -86,11 +87,11 @@ class AuthenticationRepository {
     required String username,
     required String password,
   }) async {
+    final clientId = DeviceUtils.isMobileDevice() ? "mobileapp" : "webapp";
     final response = await http.post(Uri.parse("${BASE_URL}/login/basic"), body: {
       "username": username,
       "password": password,
-      // "client_id": "mobileapp",
-      "client_id": "webapp",
+      "client_id": clientId,
       "grant_type": "password",
     });
 

@@ -1,15 +1,15 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart' as path_provider;
-import 'package:image_picker/image_picker.dart';
 
 class ImageRepository {
   static const String BASE_URL = "https://api.vid.app/api/gateway/image/upload";
 
-  CompressFormat _getFormat(XFile image) {
-    final extension = image.path.split(".").last;
+  CompressFormat _getFormat(String filePath) {
+    final extension = filePath.split(".").last;
     switch (extension) {
       case "jpg": return CompressFormat.jpeg;
       case "jpeg": return CompressFormat.jpeg;
@@ -20,18 +20,19 @@ class ImageRepository {
     }
   }
 
-  Future<String> uploadImage(String filePath, XFile image, String accessToken) async {
-    final dir = await path_provider.getTemporaryDirectory();
-    File newFile = _createFile("${dir.absolute.path}/$filePath");
-    final File? compressedFile = await FlutterImageCompress.compressAndGetFile(
-      image.path,
-      newFile.path,
-      format: _getFormat(image),
-      quality: 50,
-    );
+  Future<String> uploadImage(String filePath, Uint8List rawImage, String accessToken) async {
+    // Compression only on mobile for now
+    final Uint8List compressedImage;
+    if (DeviceUtils.isMobileDevice()) {
+      compressedImage = await FlutterImageCompress.compressWithList(rawImage, format: _getFormat(filePath), quality: 50);
+    }
+    else {
+      compressedImage = rawImage;
+    }
+
     var request = http.MultipartRequest('POST', Uri.parse("$BASE_URL/$filePath"))
       ..headers["Authorization"] = "Bearer $accessToken"
-      ..files.add(await http.MultipartFile.fromPath("file", compressedFile?.path ?? image.path));
+      ..files.add(http.MultipartFile.fromBytes("file", compressedImage, filename: "file"));
     final response = await request.send();
     if (response.statusCode == HttpStatus.ok) {
       return filePath;
@@ -39,13 +40,4 @@ class ImageRepository {
       throw Exception("uploadImage: Received bad response with status: ${response.statusCode}");
     }
   }
-
-  File _createFile(String path) {
-    final file = File(path);
-    if (!file.existsSync()) {
-      file.createSync(recursive: true);
-    }
-    return file;
-  }
-
 }

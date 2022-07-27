@@ -30,12 +30,19 @@ class CreateNewPostBloc extends Bloc<CreateNewPostEvent, CreateNewPostState> {
       emit(currentState.copyWith(
         status: Formz.validate([newPostText]),
         text: newPostText,
-        image: event.image,
+        selectedImage: event.selectedImage,
+        selectedImageName: event.selectedImageName,
       ));
     }
     else if (currentState is CreateNewPostInitialState) {
       const newPost = NewPost.dirty();
-      emit(PostDetailsModified(userId: event.userId, text: newPost, image: event.image, status: FormzStatus.invalid));
+      emit(PostDetailsModified(
+          userId: event.userId,
+          text: newPost,
+          selectedImage: event.selectedImage,
+          selectedImageName: event.selectedImageName,
+          status: FormzStatus.invalid
+      ));
     }
   }
 
@@ -43,10 +50,9 @@ class CreateNewPostBloc extends Bloc<CreateNewPostEvent, CreateNewPostState> {
     try {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       String? postPhotoUrl;
-      if (event.image != null) {
-        final fileName = event.image!.path.split("/").last;
-        final filePath = "users/${event.userId}/social-posts/$fileName";
-        postPhotoUrl = await imageRepository.uploadImage(filePath, event.image!, accessToken!);
+      if (event.selectedImage != null) {
+        final filePath = "users/${event.userId}/social-posts/${event.selectedImageName}";
+        postPhotoUrl = await imageRepository.uploadImage(filePath, event.selectedImage!, accessToken!);
       }
       final newPost = SocialPostCreate(userId: event.userId, text: event.text, photoUrl: postPhotoUrl);
       await socialMediaRepository.createPostForUser(event.userId, newPost, accessToken!);

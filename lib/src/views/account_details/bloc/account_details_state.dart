@@ -1,8 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
 import 'package:formz/formz.dart';
-import 'package:image_picker/image_picker.dart';
 
 abstract class AccountDetailsState extends Equatable {
   const AccountDetailsState();
@@ -27,7 +28,8 @@ class AccountDetailsModified extends AccountDetailsState {
   final Name lastName;
   final String gender;
   final String? photoUrl;
-  final XFile? selectedImage;
+  final Uint8List? selectedImage;
+  final String? selectedImageName;
 
   const AccountDetailsModified({
     required this.user,
@@ -37,6 +39,7 @@ class AccountDetailsModified extends AccountDetailsState {
     required this.gender,
     this.photoUrl,
     this.selectedImage,
+    this.selectedImageName
   });
 
   AccountDetailsModified copyWith({
@@ -45,7 +48,8 @@ class AccountDetailsModified extends AccountDetailsState {
     Name? lastName,
     String? gender,
     required String? photoUrl,
-    required XFile? selectedImage,
+    required Uint8List? selectedImage,
+    required String? selectedImageName,
   }) =>
       AccountDetailsModified(
           user: user,
@@ -55,10 +59,11 @@ class AccountDetailsModified extends AccountDetailsState {
           gender: gender ?? this.gender,
           photoUrl: photoUrl,
           selectedImage: selectedImage,
+          selectedImageName: selectedImageName,
       );
 
   @override
-  List<Object?> get props => [status, firstName, lastName, photoUrl, user, selectedImage, gender];
+  List<Object?> get props => [status, firstName, lastName, photoUrl, user, selectedImage, gender, selectedImageName];
 }
 
 class AccountDetailsUpdatedSuccessfully extends AccountDetailsState {
@@ -68,7 +73,8 @@ class AccountDetailsUpdatedSuccessfully extends AccountDetailsState {
   final Name lastName;
   final String gender;
   final String? photoUrl;
-  final XFile? selectedImage;
+  final Uint8List? selectedImage;
+  final String? selectedImageName;
 
   const AccountDetailsUpdatedSuccessfully({
     required this.user,
@@ -78,8 +84,9 @@ class AccountDetailsUpdatedSuccessfully extends AccountDetailsState {
     required this.gender,
     this.photoUrl,
     this.selectedImage,
+    this.selectedImageName,
   });
 
   @override
-  List<Object?> get props => [status, firstName, lastName, photoUrl, user, selectedImage, gender];
+  List<Object?> get props => [status, firstName, lastName, photoUrl, user, selectedImage, gender, selectedImageName];
 }
