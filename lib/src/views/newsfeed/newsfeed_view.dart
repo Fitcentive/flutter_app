@@ -125,8 +125,17 @@ class NewsFeedViewState extends State<NewsFeedView> {
         );
       }
       else {
-        return const Center(
-            child: Text("Awfully quiet here....")
+        return RefreshIndicator(
+          onRefresh: () async {
+            _newsFeedBloc.add(NewsFeedFetchRequested(user: state.user));
+          },
+          child: ListView(
+            children: [
+                Center(child: _addNewPostView()),
+                _separation(),
+                _showNoResults(),
+            ],
+          ),
         );
       }
     } else {
@@ -134,6 +143,15 @@ class NewsFeedViewState extends State<NewsFeedView> {
         child: CircularProgressIndicator(),
       );
     }
+  }
+
+  _showNoResults() {
+    return Center(
+        child: Container(
+          padding: const EdgeInsets.all(30),
+          child: const Text("Awfully quiet here...."),
+        )
+    );
   }
 
   _userHeader(PublicUserProfile? publicUser) {
