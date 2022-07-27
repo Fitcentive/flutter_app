@@ -82,6 +82,13 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     final Circle circle = Circle(
       circleId: circleId,
       strokeColor: Colors.tealAccent,
+      consumeTapEvents: true,
+      onTap: () {
+        final currentState = _authenticationBloc.state;
+        if (currentState is AuthSuccessUserUpdateState) {
+          _goToDiscoveryRadiusView(currentState);
+        }
+      },
       fillColor: Colors.teal.withOpacity(0.5),
       strokeWidth: 5,
       center: position,
@@ -215,15 +222,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
             height: 300,
             child: GoogleMap(
                 onTap: (_) {
-                  Navigator.push<void>(
-                    context,
-                    DiscoveryRadiusView.route(
-                      currentUserProfileLocationCenter.latitude,
-                      currentUserProfileLocationCenter.longitude,
-                      locationRadius.toDouble(),
-                      currentState.authenticatedUser,
-                    ),
-                  );
+                  _goToDiscoveryRadiusView(currentState);
                 },
                 mapType: MapType.hybrid,
                 myLocationButtonEnabled: true,
@@ -244,6 +243,18 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         child: CircularProgressIndicator(),
       );
     }
+  }
+
+  _goToDiscoveryRadiusView(AuthSuccessUserUpdateState currentState) {
+    Navigator.push<void>(
+      context,
+      DiscoveryRadiusView.route(
+        currentUserProfileLocationCenter.latitude,
+        currentUserProfileLocationCenter.longitude,
+        locationRadius.toDouble(),
+        currentState.authenticatedUser,
+      ),
+    );
   }
 
   Widget _spacer(double allPadding) => Padding(padding: EdgeInsets.all(allPadding));

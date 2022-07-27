@@ -100,7 +100,7 @@ class ProvideLocationViewState extends State<ProvideLocationView> {
       currentCentrePosition = cameraPosition.target;
       markers.clear();
       markers.add(Marker(
-        markerId: markerId,
+        markerId: MarkerId("camera_centre_marker_id-${DateTime.now().millisecondsSinceEpoch}"),
         position: currentCentrePosition,
       ));
       _generateBoundaryCircle();
