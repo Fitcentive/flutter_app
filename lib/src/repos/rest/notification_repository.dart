@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
 class NotificationRepository {
-  static const String BASE_URL = "http://api.vid.app/api/notification";
+  static const String BASE_URL = "https://api.vid.app/api/notification";
 
   final logger = Logger("NotificationRepository");
 

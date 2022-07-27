@@ -9,7 +9,7 @@ import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
 import 'package:http/http.dart' as http;
 
 class ChatRepository {
-  static const String BASE_URL = "http://api.vid.app/api/chat";
+  static const String BASE_URL = "https://api.vid.app/api/chat";
 
   Future<void> upsertChatUser(String accessToken) async {
     final response = await http.post(

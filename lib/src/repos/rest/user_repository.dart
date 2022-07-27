@@ -11,7 +11,7 @@ import '../../models/user.dart';
 import 'package:http/http.dart' as http;
 
 class UserRepository {
-  static const String BASE_URL = "http://api.vid.app/api/user";
+  static const String BASE_URL = "https://api.vid.app/api/user";
 
   Future<List<PublicUserProfile>> searchForUsers(String searchQuery, int limit, String accessToken) async {
     final response = await http.post(

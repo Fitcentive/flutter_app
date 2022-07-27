@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:image_picker/image_picker.dart';
 
 class ImageRepository {
-  static const String BASE_URL = "http://api.vid.app/api/gateway/image/upload";
+  static const String BASE_URL = "https://api.vid.app/api/gateway/image/upload";
 
   CompressFormat _getFormat(XFile image) {
     final extension = image.path.split(".").last;

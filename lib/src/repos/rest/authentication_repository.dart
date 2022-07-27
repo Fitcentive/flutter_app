@@ -11,7 +11,7 @@ import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 
 class AuthenticationRepository {
-  static const String BASE_URL = "http://api.vid.app/api/auth";
+  static const String BASE_URL = "https://api.vid.app/api/auth";
 
   static final Map<String, OidcProviderInfo> providerToDetailsMap = {
     OidcProviderInfo.GOOGLE_AUTH_PROVIDER: OidcProviderInfo.googleOidcProviderInfo()
@@ -89,7 +89,8 @@ class AuthenticationRepository {
     final response = await http.post(Uri.parse("${BASE_URL}/login/basic"), body: {
       "username": username,
       "password": password,
-      "client_id": "mobileapp",
+      // "client_id": "mobileapp",
+      "client_id": "webapp",
       "grant_type": "password",
     });
 
