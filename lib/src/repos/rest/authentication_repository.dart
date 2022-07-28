@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:logging/logging.dart';
@@ -56,32 +57,71 @@ class AuthenticationRepository {
   }) async {
     final oidcProviderInfo = providerToDetailsMap[providerRealm];
 
-    final AuthorizationResponse? authorizationResponse = await appAuth.authorize(AuthorizationRequest(
-        oidcProviderInfo!.clientId, oidcProviderInfo.redirectUri,
-        serviceConfiguration: oidcProviderInfo.serviceConfiguration,
-        discoveryUrl: oidcProviderInfo.discoverUri,
-        scopes: ['openid', 'profile', 'email'],
-        promptValues: ["login"],
-        additionalParameters: {
-          "kc_idp_hint": oidcProviderInfo.keycloakIdpHint,
-        }));
+    if (DeviceUtils.isMobileDevice()) {
+      final AuthorizationResponse? authorizationResponse = await appAuth.authorize(AuthorizationRequest(
+          oidcProviderInfo!.clientId, oidcProviderInfo.redirectUri,
+          serviceConfiguration: oidcProviderInfo.serviceConfiguration,
+          discoveryUrl: oidcProviderInfo.discoverUri,
+          scopes: ['openid', 'profile', 'email'],
+          promptValues: ["login"],
+          additionalParameters: {
+            "kc_idp_hint": oidcProviderInfo.keycloakIdpHint,
+          }));
 
-    final TokenResponse? result = await appAuth.token(TokenRequest(
-        oidcProviderInfo.clientId, oidcProviderInfo.redirectUri,
-        authorizationCode: authorizationResponse!.authorizationCode,
-        serviceConfiguration: oidcProviderInfo.serviceConfiguration,
-        codeVerifier: authorizationResponse.codeVerifier,
-        nonce: authorizationResponse.nonce,
-        scopes: ['openid', 'profile', 'email']));
+      final TokenResponse? result = await appAuth.token(TokenRequest(
+          oidcProviderInfo.clientId, oidcProviderInfo.redirectUri,
+          authorizationCode: authorizationResponse!.authorizationCode,
+          serviceConfiguration: oidcProviderInfo.serviceConfiguration,
+          codeVerifier: authorizationResponse.codeVerifier,
+          nonce: authorizationResponse.nonce,
+          scopes: ['openid', 'profile', 'email']));
 
-    return AuthTokens(
-        result!.accessToken!,
-        result.refreshToken!,
-        DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch),
-        // todo - this has to be replaced with refresh token expiry time
-        DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch),
-        result.tokenType!,
-        result.scopes!.join(" "));
+      return AuthTokens(
+          result!.accessToken!,
+          result.refreshToken!,
+          DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch),
+          // todo - this has to be replaced with refresh token expiry time
+          DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch),
+          result.tokenType!,
+          result.scopes!.join(" ")
+      );
+    }
+    else {
+      // todo - move the constants to config
+      final url = Uri.https('api.vid.app', '/auth/realms/GoogleAuth/protocol/openid-connect/auth', {
+        'response_type': 'code',
+        'client_id': oidcProviderInfo!.clientId,
+        'redirect_uri': oidcProviderInfo.redirectUri,
+        'scope': 'openid profile email',
+        "kc_idp_hint": oidcProviderInfo.keycloakIdpHint,
+        'prompt': 'login',
+      });
+
+      // Present the dialog to the user
+      final result = await FlutterWebAuth.authenticate(
+          url: url.toString(),
+          callbackUrlScheme: oidcProviderInfo.redirectUri,
+          preferEphemeral: true,
+      );
+
+      // Extract code from resulting url
+      final code = Uri.parse(result).queryParameters['code'];
+
+      // Exchange code for access token
+      final response = await http.post(
+          Uri.parse(oidcProviderInfo.serviceConfiguration.tokenEndpoint),
+          body: {
+            'client_id': 'webapp',
+            'redirect_uri': oidcProviderInfo.redirectUri,
+            'grant_type': 'authorization_code',
+            'code': code,
+          });
+
+      // Get the access token from the response
+      Map<String, dynamic> responseMap = jsonDecode(response.body);
+      final parsedTokenResponse = AuthTokens.fromJson(responseMap);
+      return parsedTokenResponse;
+    }
   }
 
   Future<AuthTokens> basicLogIn({
