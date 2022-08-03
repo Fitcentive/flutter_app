@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
-
-import '../../models/user.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -102,7 +101,7 @@ class UserRepository {
       return null;
     } else {
       throw Exception(
-          "updateUserAgreements: Received bad response with status: ${response.statusCode} and body ${response.body}");
+          "getUserAgreements: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

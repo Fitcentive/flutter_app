@@ -7,6 +7,7 @@ import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/proxies/custom_proxy.dart';
 import 'package:flutter_app/src/repos/rest/authentication_repository.dart';
 import 'package:flutter_app/src/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
@@ -67,6 +68,7 @@ class App extends StatelessWidget {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<AuthenticationRepository>(create: (context) => AuthenticationRepository()),
+        RepositoryProvider<DiscoverRepository>(create: (context) => DiscoverRepository()),
         RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
         RepositoryProvider<ChatRepository>(create: (context) => ChatRepository()),
         RepositoryProvider<ImageRepository>(create: (context) => ImageRepository()),

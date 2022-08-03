@@ -13,6 +13,7 @@ import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
+import 'package:flutter_app/src/views/discover_home/discover_home_view.dart';
 import 'package:flutter_app/src/views/newsfeed/newsfeed_view.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
 import 'package:flutter_app/src/views/followers/followers_view.dart';
@@ -59,6 +60,7 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   static const String accountDetails = 'Account Details';
   static const String notifications = 'Notifications';
+  static const String discover = 'Discover';
   static const String search = 'Search';
   static const String followers = 'Followers';
   static const String following = 'Following';
@@ -312,6 +314,7 @@ class HomePageState extends State<HomePage> {
       children: <Widget>[
         _generateListTile(notifications),
         _generateListTile(search),
+        _generateListTile(discover),
         _generateListTile(followers),
         _generateListTile(following),
         _generateListTile(newsFeed),
@@ -357,6 +360,8 @@ class HomePageState extends State<HomePage> {
           return NewsFeedView.withBloc(publicUserProfile);
         case "Chat":
           return ChatHomeView.withBloc(publicUserProfile);
+        case "Discover":
+          return DiscoverHomeView.withBloc(publicUserProfile);
         default:
           return _oldStuff();
       }
