@@ -83,7 +83,7 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
       margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 0),
       child: DropdownButton<String>(
           value: selectedUserGender,
-          items: ConstantUtils.genderType.map((e) => DropdownMenuItem<String>(
+          items: ConstantUtils.genderTypes.map((e) => DropdownMenuItem<String>(
             value: e,
             child: Text(e),
           )).toList(),

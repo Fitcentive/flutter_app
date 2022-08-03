@@ -348,7 +348,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           const Text('Gender', style: TextStyle(fontSize: 13),),
           DropdownButton<String>(
               value: selectedUserGender,
-              items: ConstantUtils.genderType.map((e) => DropdownMenuItem<String>(
+              items: ConstantUtils.genderTypes.map((e) => DropdownMenuItem<String>(
                 value: e,
                 child: Text(e),
               )).toList(),

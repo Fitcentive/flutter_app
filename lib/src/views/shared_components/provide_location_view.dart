@@ -15,12 +15,17 @@ class ProvideLocationView extends StatefulWidget {
 
   final UpdateBlocCallback updateBlocState;
 
+  final double mapScreenHeightProportion;
+  final double mapControlsHeightProportion;
+
   const ProvideLocationView({
     Key? key,
     required this.latitude,
     required this.longitude,
     required this.radius,
     required this.updateBlocState,
+    this.mapScreenHeightProportion = 0.65,
+    this.mapControlsHeightProportion = 0.2
   }): super(key: key);
 
 
@@ -79,7 +84,7 @@ class ProvideLocationViewState extends State<ProvideLocationView> {
 
   _renderMap() {
     return SizedBox(
-      height: ScreenUtils.getScreenHeight(context) * 0.65,
+      height: ScreenUtils.getScreenHeight(context) * widget.mapScreenHeightProportion,
       child: GoogleMap(
         mapType: MapType.hybrid,
         myLocationEnabled: true,
@@ -126,7 +131,7 @@ class ProvideLocationViewState extends State<ProvideLocationView> {
 
   _renderMapControls() {
     return SizedBox(
-      height: ScreenUtils.getScreenHeight(context) * 0.2,
+      height: ScreenUtils.getScreenHeight(context) * widget.mapControlsHeightProportion,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

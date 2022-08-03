@@ -5,6 +5,7 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_bloc.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_event.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_state.dart';
+import 'package:flutter_app/src/views/discover_user_preferences/discover_user_preferences_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -49,34 +50,53 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
         listener: (context, state) {
           if (state is DiscoverUserPreferencesFetched) {
             if (state.personalPreferences == null || state.fitnessPreferences == null || state.discoveryPreferences == null) {
-              print("Going to other page now");
-            }
-            else {
-              print("Staying over here");
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  DiscoverUserPreferencesView.route(
+                      userProfile: widget.currentUserProfile,
+                      discoveryPreferences: state.discoveryPreferences,
+                      fitnessPreferences: state.fitnessPreferences,
+                      personalPreferences: state.personalPreferences,
+                  ), (route) => true
+              );
             }
           }
         },
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: const Text("Discover people in your area to join you on your fitness journey", style: TextStyle(fontSize: 20),),
+        child: BlocBuilder<DiscoverHomeBloc, DiscoverHomeState>(
+          builder: (context, state) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    child: const Text("Discover people in your area to join you on your fitness journey", style: TextStyle(fontSize: 20),),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    child: const Text("Update your preferences for most accurate results", style: TextStyle(fontSize: 16),),
+                  ),
+                  WidgetUtils.spacer(30),
+                  _actionButton("Update Preferences", () {
+                    if (state is DiscoverUserPreferencesFetched) {
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          DiscoverUserPreferencesView.route(
+                            userProfile: widget.currentUserProfile,
+                            discoveryPreferences: state.discoveryPreferences,
+                            fitnessPreferences: state.fitnessPreferences,
+                            personalPreferences: state.personalPreferences,
+                          ), (route) => true
+                      );
+                    }
+                  }),
+                  _actionButton("Discover Buddies", () {
+                    print("Update pressed");
+                  }),
+                ],
               ),
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: const Text("Update your preferences for most accurate results", style: TextStyle(fontSize: 16),),
-              ),
-              WidgetUtils.spacer(30),
-              _actionButton("Update Preferences", () {
-                print("Update pressed");
-              }),
-              _actionButton("Discover Buddies", () {
-                print("Update pressed");
-              }),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
