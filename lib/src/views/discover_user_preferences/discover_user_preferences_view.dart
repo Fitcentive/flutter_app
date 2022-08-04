@@ -8,6 +8,11 @@ import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
+import 'package:flutter_app/src/views/discover_user_preferences/views/activity_preferences_view.dart';
+import 'package:flutter_app/src/views/discover_user_preferences/views/body_type_preferences_view.dart';
+import 'package:flutter_app/src/views/discover_user_preferences/views/days_preference_view.dart';
+import 'package:flutter_app/src/views/discover_user_preferences/views/gender_preferences_view.dart';
+import 'package:flutter_app/src/views/discover_user_preferences/views/goals_preferences_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/views/location_preference_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/views/transport_preference_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -68,7 +73,8 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
   final PageController _pageController = PageController();
   late final DiscoverUserPreferencesBloc _discoverUserPreferencesBloc;
 
-  Icon floatingActionButtonIcon = const Icon(Icons.navigate_next_sharp, color: Colors.white);
+  Icon floatingActionButtonIcon = const Icon(Icons.navigate_next, color: Colors.white);
+  Widget? dynamicActionButtons;
 
   @override
   void initState() {
@@ -81,6 +87,8 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
       fitnessPreferences: widget.fitnessPreferences,
       personalPreferences: widget.personalPreferences,
     ));
+
+    dynamicActionButtons = _singleFloatingActionButton();
   }
 
   @override
@@ -88,15 +96,53 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
     return Scaffold(
       appBar: AppBar(title: const Text('Discover Preferences', style: TextStyle(color: Colors.teal),)),
       body: _pageViews(),
-      floatingActionButton: FloatingActionButton(
-          onPressed: _onFloatingActionButtonPress,
-          backgroundColor: Colors.teal,
-          child: floatingActionButtonIcon
-      ),
+      floatingActionButton: dynamicActionButtons,
     );
   }
 
-  VoidCallback? _onFloatingActionButtonPress() {
+  _singleFloatingActionButton() {
+    return FloatingActionButton(
+        onPressed: _onActionButtonPress,
+        backgroundColor: Colors.teal,
+        child: floatingActionButtonIcon
+    );
+  }
+
+  _dynamicFloatingActionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+          child: FloatingActionButton(
+              heroTag: "button1",
+              onPressed: _onBackFloatingActionButtonPress,
+              backgroundColor: Colors.teal,
+              child: const Icon(Icons.navigate_before, color: Colors.white)
+          ),
+        ),
+        FloatingActionButton(
+            heroTag: "button2",
+            onPressed: _onActionButtonPress,
+            backgroundColor: Colors.teal,
+            child: floatingActionButtonIcon
+        )
+      ],
+    );
+  }
+
+  VoidCallback? _onBackFloatingActionButtonPress() {
+    final currentState = _discoverUserPreferencesBloc.state;
+    if (currentState is UserDiscoverPreferencesModified) {
+      final currentPage = _pageController.page;
+      if (currentPage != null) {
+        _goToPreviousPageOrNothing(currentPage.toInt());
+      }
+    }
+    return null;
+  }
+
+  VoidCallback? _onActionButtonPress() {
     final currentState = _discoverUserPreferencesBloc.state;
     if (currentState is UserDiscoverPreferencesModified) {
       final currentPage = _pageController.page;
@@ -113,6 +159,16 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
     return null;
   }
 
+  void _goToPreviousPageOrNothing(int currentPage) {
+    if (currentPage != 0) {
+      // Move to previous page if not at first page
+      _pageController.animateToPage(currentPage - 1,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut
+      );
+    }
+  }
+
   void _moveToNextPageOrPop(int currentPage) {
     if (currentPage < 6) {
       // Move to next page if not at last page
@@ -123,6 +179,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
     }
     else {
       // Go back to previous screen
+      SnackbarUtils.showSnackBar(context, "Discover preferences updated successfully!");
       Navigator.pop(context);
     }
   }
@@ -174,7 +231,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
         _discoverUserPreferencesBloc.add(
             UserDiscoverGenderPreferencesChanged(
               userProfile: state.userProfile,
-              gendersInterestedIn: state.desiredBodyTypes!,
+              gendersInterestedIn: state.gendersInterestedIn!,
               minimumAge: state.minimumAge!,
               maximumAge: state.maximumAge!,
             )
@@ -204,21 +261,48 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
         return state.preferredTransportMode != null;
       case 2:
         // Validate activities
-        return state.activitiesInterestedIn != null;
+        return state.activitiesInterestedIn != null && state.activitiesInterestedIn!.isNotEmpty;
       case 3:
         // Validate fitnessGoals
-        return state.fitnessGoals != null;
+        return state.fitnessGoals != null && state.fitnessGoals!.isNotEmpty;
       case 4:
         // Validate body types
-        return state.desiredBodyTypes != null;
+        return state.desiredBodyTypes != null && state.desiredBodyTypes!.isNotEmpty;
       case 5:
         // Validate personal prefs
-        return state.gendersInterestedIn != null && state.minimumAge != null && state.maximumAge != null;
+        return state.gendersInterestedIn != null && state.gendersInterestedIn!.isNotEmpty
+            && state.minimumAge != null && state.maximumAge != null;
       case 6:
         // Validate personal prefs
-        return state.preferredDays != null && state.hoursPerWeek != null;
+        return state.preferredDays != null && state.preferredDays!.isNotEmpty && state.hoursPerWeek != null;
       default:
         return false;
+    }
+  }
+
+  _changeButtonIconIfNeeded(int pageNumber) {
+    if (pageNumber == 6) {
+      setState(() {
+        floatingActionButtonIcon = const Icon(Icons.save, color: Colors.white);
+      });
+    }
+    else {
+      setState(() {
+        floatingActionButtonIcon = const Icon(Icons.navigate_next, color: Colors.white);
+      });
+    }
+  }
+
+  _changeFloatingActionButtonsIfNeeded(int pageNumber) {
+    if (pageNumber == 0) {
+      setState(() {
+        dynamicActionButtons =  _singleFloatingActionButton();
+      });
+    }
+    else {
+      setState(() {
+        dynamicActionButtons = _dynamicFloatingActionButtons();
+      });
     }
   }
 
@@ -228,11 +312,8 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
         return PageView(
           controller: _pageController,
           onPageChanged: (pageNumber) {
-            if (pageNumber == 6) {
-              setState(() {
-                floatingActionButtonIcon = const Icon(Icons.save, color: Colors.white);
-              });
-            }
+            _changeButtonIconIfNeeded(pageNumber);
+            _changeFloatingActionButtonsIfNeeded(pageNumber);
           },
           physics: const NeverScrollableScrollPhysics(),
           children: [
@@ -244,6 +325,29 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
             TransportPreferenceView(
                 userProfile: state.userProfile,
                 preferredTransportMethod: state.preferredTransportMode
+            ),
+            ActivityPreferencesView(
+                userProfile: state.userProfile,
+                activitiesInterestedIn: state.activitiesInterestedIn
+            ),
+            GoalsPreferencesView(
+                userProfile: state.userProfile,
+                fitnessGoals: state.fitnessGoals
+            ),
+            BodyTypePreferencesView(
+                userProfile: state.userProfile,
+                bodyTypes: state.desiredBodyTypes
+            ),
+            GenderPreferencesView(
+                userProfile: state.userProfile,
+                preferredGenders: state.gendersInterestedIn,
+                minimumAge: state.minimumAge,
+                maximumAge: state.maximumAge
+            ),
+            DaysPreferencesView(
+              userProfile: state.userProfile,
+              preferredDays: state.preferredDays,
+              hoursPerWeek: state.hoursPerWeek,
             )
           ],
         );

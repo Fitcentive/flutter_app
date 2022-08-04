@@ -58,7 +58,9 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
                       fitnessPreferences: state.fitnessPreferences,
                       personalPreferences: state.personalPreferences,
                   ), (route) => true
-              );
+              ).then((value) {
+                _discoverHomeBloc.add(FetchUserDiscoverPreferences(widget.currentUserProfile.userId));
+              });
             }
           }
         },

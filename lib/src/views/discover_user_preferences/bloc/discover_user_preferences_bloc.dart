@@ -111,11 +111,11 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           locationCenter: Coordinates(currentState.locationCenter!.latitude, currentState.locationCenter!.longitude),
           locationRadius: currentState.locationRadius!
       );
-      // final response = await discoverRepository.upsertUserDiscoveryPreferences(
-      //     currentState.userProfile.userId,
-      //     userDiscoverPreferences,
-      //     accessToken!
-      // );
+      final response = await discoverRepository.upsertUserDiscoveryPreferences(
+          currentState.userProfile.userId,
+          userDiscoverPreferences,
+          accessToken!
+      );
 
       emit(UserDiscoverPreferencesModified(
           userProfile: currentState.userProfile,
@@ -196,11 +196,11 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           fitnessGoals: currentState.fitnessGoals!,
           desiredBodyTypes: currentState.desiredBodyTypes!
       );
-      // final response = await discoverRepository.upsertUserFitnessPreferences(
-      //     currentState.userProfile.userId,
-      //     prefs,
-      //     accessToken!
-      // );
+      final response = await discoverRepository.upsertUserFitnessPreferences(
+          currentState.userProfile.userId,
+          prefs,
+          accessToken!
+      );
 
       emit(UserDiscoverPreferencesModified(
           userProfile: currentState.userProfile,
@@ -259,12 +259,11 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           minimumAge: currentState.minimumAge!,
           maximumAge: currentState.maximumAge!,
       );
-      // final response = await discoverRepository.upsertUserPersonalPreferences(
-      //     currentState.userProfile.userId,
-      //     prefs,
-      //     accessToken!
-      // );
-      // todo - re enable saving preferences once UI is stable
+      final response = await discoverRepository.upsertUserPersonalPreferences(
+          currentState.userProfile.userId,
+          prefs,
+          accessToken!
+      );
 
       emit(UserDiscoverPreferencesModified(
           userProfile: currentState.userProfile,

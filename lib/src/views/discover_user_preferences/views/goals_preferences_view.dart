@@ -1,91 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/utils/constant_utils.dart';
-import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class TransportPreferenceView extends StatefulWidget {
+class GoalsPreferencesView extends StatefulWidget {
   final PublicUserProfile userProfile;
-  final String? preferredTransportMethod;
+  final List<String>? fitnessGoals;
 
-  const TransportPreferenceView({
+  const GoalsPreferencesView({
     Key? key,
     required this.userProfile,
-    required this.preferredTransportMethod,
+    required this.fitnessGoals,
   }): super(key: key);
 
   @override
   State createState() {
-    return TransportPreferenceViewState();
+    return GoalsPreferencesViewState();
   }
 }
 
-class TransportPreferenceViewState extends State<TransportPreferenceView> {
+class GoalsPreferencesViewState extends State<GoalsPreferencesView> {
   late final DiscoverUserPreferencesBloc _discoverUserPreferencesBloc;
 
-  String selectedTransportMode = ConstantUtils.defaultTransport;
+  List<String> selectedGoals = List<String>.empty(growable: true);
 
   @override
   void initState() {
     super.initState();
 
     _discoverUserPreferencesBloc = BlocProvider.of<DiscoverUserPreferencesBloc>(context);
-    selectedTransportMode = widget.preferredTransportMethod ?? ConstantUtils.defaultTransport;
-    _updateBlocState(selectedTransportMode);
+    selectedGoals = widget.fitnessGoals ?? List.empty(growable: true);
+    _updateBlocState(selectedGoals);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("What is your preferred mode of transport?", style: TextStyle(fontSize: 20),),
-            WidgetUtils.spacer(20),
-            _transportModePicker()
-          ],
+    return SingleChildScrollView(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(10, 10, 10, 75),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("What are your goals?", style: TextStyle(fontSize: 20),),
+              WidgetUtils.spacer(5),
+              const Text("Select all that apply", style: TextStyle(fontSize: 15),),
+              WidgetUtils.spacer(20),
+              _createCheckbox("Lose Weight"),
+              _createCheckbox("Gain Muscle"),
+              _createCheckbox("Improve Cardio"),
+              _createCheckbox("Strength Training"),
+              _createCheckbox("Keeping Active"),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  _transportModePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Transport mode', style: TextStyle(fontSize: 13),),
-        DropdownButton<String>(
-            value: selectedTransportMode,
-            items: ConstantUtils.transportTypes.map((e) => DropdownMenuItem<String>(
-              value: e,
-              child: Text(e),
-            )).toList(),
-            onChanged: (newValue) {
-              if (newValue != null) {
-                _updateBlocState(newValue);
-              }
+  _createCheckbox(String entity) {
+    return CheckboxListTile(
+        value: selectedGoals.contains(entity),
+        title: Text(entity),
+        onChanged: (newValue) {
+          if (newValue != null) {
+            if (newValue) {
+              selectedGoals.add(entity);
             }
-        )
-      ],
+            else {
+              selectedGoals.remove(entity);
+            }
+            _updateBlocState(selectedGoals);
+          }
+        }
     );
   }
 
-  _updateBlocState(String transportMode) {
+  _updateBlocState(List<String> newGoals) {
     final currentState = _discoverUserPreferencesBloc.state;
     if (currentState is UserDiscoverPreferencesModified) {
       _discoverUserPreferencesBloc.add(UserDiscoverPreferencesChanged(
         userProfile: widget.userProfile,
         locationCenter: currentState.locationCenter,
         locationRadius: currentState.locationRadius,
-        preferredTransportMode: transportMode,
+        preferredTransportMode: currentState.preferredTransportMode,
         activitiesInterestedIn: currentState.activitiesInterestedIn,
-        fitnessGoals: currentState.fitnessGoals,
+        fitnessGoals: newGoals,
         desiredBodyTypes: currentState.desiredBodyTypes,
         gendersInterestedIn: currentState.gendersInterestedIn,
         preferredDays: currentState.preferredDays,
@@ -94,7 +97,7 @@ class TransportPreferenceViewState extends State<TransportPreferenceView> {
         hoursPerWeek: currentState.hoursPerWeek,
       ));
       setState(() {
-        selectedTransportMode = transportMode;
+        selectedGoals = newGoals;
       });
     }
   }
