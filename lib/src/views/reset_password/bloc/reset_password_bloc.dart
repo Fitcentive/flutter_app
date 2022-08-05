@@ -1,7 +1,7 @@
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/models/login/email_verification_token.dart';
 import 'package:flutter_app/src/models/login/password.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_event.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

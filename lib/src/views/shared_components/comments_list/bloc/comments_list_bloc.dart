@@ -1,8 +1,8 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
-import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/shared_components/comments_list/bloc/comments_list_event.dart';
 import 'package:flutter_app/src/views/shared_components/comments_list/bloc/comments_list_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

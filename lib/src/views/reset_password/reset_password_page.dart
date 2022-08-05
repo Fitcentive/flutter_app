@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_bloc.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_event.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_state.dart';

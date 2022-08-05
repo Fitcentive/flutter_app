@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/notification/push_notification_metadata.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/chat_message_push_notification_metadata.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

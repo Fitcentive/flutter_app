@@ -1,9 +1,9 @@
+import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
-import 'package:flutter_app/src/repos/rest/image_repository.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
-import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_event.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

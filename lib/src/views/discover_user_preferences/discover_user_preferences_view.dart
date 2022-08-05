@@ -3,7 +3,7 @@ import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart'
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/repos/rest/discover_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';

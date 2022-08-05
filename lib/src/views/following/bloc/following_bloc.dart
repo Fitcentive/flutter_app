@@ -1,5 +1,5 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
-import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/views/following/bloc/following_event.dart';
 import 'package:flutter_app/src/views/following/bloc/following_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
-import 'package:flutter_app/src/repos/rest/chat_repository.dart';
-import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

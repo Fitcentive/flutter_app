@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/views/following/bloc/following_bloc.dart';
 import 'package:flutter_app/src/views/following/bloc/following_event.dart';
 import 'package:flutter_app/src/views/following/bloc/following_state.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/search/bloc/search_bloc.dart';
 import 'package:flutter_app/src/views/search/bloc/search_state.dart';
 import 'package:flutter_app/src/views/search/views/activity_search_view.dart';

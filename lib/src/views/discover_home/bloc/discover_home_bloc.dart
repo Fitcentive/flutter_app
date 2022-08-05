@@ -1,5 +1,5 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
-import 'package:flutter_app/src/repos/rest/discover_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_event.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

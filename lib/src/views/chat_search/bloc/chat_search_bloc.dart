@@ -1,6 +1,6 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
-import 'package:flutter_app/src/repos/rest/chat_repository.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_event.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

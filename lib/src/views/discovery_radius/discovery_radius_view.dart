@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
-import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/discovery_radius/bloc/discovery_radius_bloc.dart';
 import 'package:flutter_app/src/views/discovery_radius/bloc/discovery_radius_event.dart';

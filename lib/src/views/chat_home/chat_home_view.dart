@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/repos/rest/chat_repository.dart';
-import 'package:flutter_app/src/repos/rest/image_repository.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_bloc.dart';

@@ -6,7 +6,7 @@ import 'package:flutter_app/src/models/websocket/shout_payload.dart';
 import 'package:flutter_app/src/models/websocket/typing_started_payload.dart';
 import 'package:flutter_app/src/models/websocket/typing_stopped_payload.dart';
 import 'package:flutter_app/src/models/websocket/web_socket_event.dart';
-import 'package:flutter_app/src/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_event.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

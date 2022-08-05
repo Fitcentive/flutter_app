@@ -1,10 +1,10 @@
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/repos/rest/chat_repository.dart';
-import 'package:flutter_app/src/repos/rest/image_repository.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_event.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

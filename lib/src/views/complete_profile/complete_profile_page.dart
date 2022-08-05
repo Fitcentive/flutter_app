@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/repos/rest/user_repository.dart';
-import 'package:flutter_app/src/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
