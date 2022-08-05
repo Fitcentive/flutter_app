@@ -15,4 +15,15 @@ class LocationUtils {
     zoomLevel = double.parse(zoomLevel.toStringAsFixed(2));
     return zoomLevel;
   }
+
+  static double getZoomLevelMini(double radius) {
+    double zoomLevel = 12;
+    if (radius > 0) {
+      double radiusElevated = radius + radius / 2;
+      double scale = radiusElevated / 500;
+      zoomLevel = 15 - math.log(scale) / math.log(2);
+    }
+    zoomLevel = double.parse(zoomLevel.toStringAsFixed(2));
+    return zoomLevel;
+  }
 }

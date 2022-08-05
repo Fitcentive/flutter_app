@@ -17,6 +17,7 @@ MatchedAttributes _$MatchedAttributesFromJson(Map<String, dynamic> json) =>
       (json['preferredDays'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
+      json['hoursPerWeek'] as String?,
     );
 
 Map<String, dynamic> _$MatchedAttributesToJson(MatchedAttributes instance) =>
@@ -26,4 +27,5 @@ Map<String, dynamic> _$MatchedAttributesToJson(MatchedAttributes instance) =>
       'bodyTypes': instance.bodyTypes,
       'genders': instance.genders,
       'preferredDays': instance.preferredDays,
+      'hoursPerWeek': instance.hoursPerWeek,
     };

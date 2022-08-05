@@ -10,13 +10,15 @@ class MatchedAttributes extends Equatable {
   final List<String>? bodyTypes;
   final List<String>? genders;
   final List<String>? preferredDays;
+  final String? hoursPerWeek;
 
   const MatchedAttributes(
       this.activities,
       this.fitnessGoals,
       this.bodyTypes,
       this.genders,
-      this.preferredDays
+      this.preferredDays,
+      this.hoursPerWeek
   );
 
   factory MatchedAttributes.fromJson(Map<String, dynamic> json) => _$MatchedAttributesFromJson(json);
@@ -30,5 +32,6 @@ class MatchedAttributes extends Equatable {
     bodyTypes,
     genders,
     preferredDays,
+    hoursPerWeek,
   ];
 }

@@ -8,6 +8,8 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_recommendations/bloc/discover_recommendations_bloc.dart';
 import 'package:flutter_app/src/views/discover_recommendations/bloc/discover_recommendations_event.dart';
 import 'package:flutter_app/src/views/discover_recommendations/bloc/discover_recommendations_state.dart';
+import 'package:flutter_app/src/views/shared_components/location_card.dart';
+import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -15,11 +17,11 @@ import 'package:carousel_slider/carousel_slider.dart';
 class DiscoverRecommendationsView extends StatefulWidget {
   static const String routeName = "discover-recommendations";
 
-  final PublicUserProfile userProfile;
+  final PublicUserProfile currentUserProfile;
 
   const DiscoverRecommendationsView({
     Key? key,
-    required this.userProfile,
+    required this.currentUserProfile,
   }): super(key: key);
 
   static Route route({required PublicUserProfile userProfile}) {
@@ -35,7 +37,7 @@ class DiscoverRecommendationsView extends StatefulWidget {
                   secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                 )),
           ],
-          child: DiscoverRecommendationsView(userProfile: userProfile),
+          child: DiscoverRecommendationsView(currentUserProfile: userProfile),
         )
     );
 
@@ -57,7 +59,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     super.initState();
 
     _discoverRecommendationsBloc = BlocProvider.of<DiscoverRecommendationsBloc>(context);
-    _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.userProfile));
+    _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile));
   }
 
   @override
@@ -200,84 +202,105 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
 
   _generateUserCard(DiscoverRecommendation recommendation) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _userFirstAndLastName(recommendation.user.firstName ?? "", recommendation.user.lastName ?? ""),
+          _generateUserHeader(recommendation),
           const Padding(padding: EdgeInsets.all(10)),
-          _userAvatar(recommendation.user),
-          const Padding(padding: EdgeInsets.all(10)),
-          _userUsername(recommendation.user.username),
-          const Padding(padding: EdgeInsets.all(15)),
-          _generateUserMatchedAttributes(recommendation)
+          _generateUserMatchedAttributes(recommendation),
+          LocationCard(userProfile: recommendation.user)
         ],
       ),
     );
   }
 
-  Widget _generateUserMatchedAttributes(DiscoverRecommendation recommendation) {
-    return Column(
+  _generateUserHeader(DiscoverRecommendation recommendation) {
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IntrinsicHeight(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Expanded(child: Text("Similar activities", style: TextStyle(fontWeight: FontWeight.bold),)),
-              WidgetUtils.spacer(1),
-              const VerticalDivider(color: Colors.teal,),
-              WidgetUtils.spacer(1),
-              const Expanded(child: Text("Similar goals", style: TextStyle(fontWeight: FontWeight.bold),)),
-            ],
-          ),
+        Expanded(
+            child: _userAvatar(recommendation.user)
         ),
-        WidgetUtils.spacer(2),
-        const Divider(color: Colors.teal,),
-        WidgetUtils.spacer(2),
-        IntrinsicHeight(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.activities)),
-              WidgetUtils.spacer(1),
-              const VerticalDivider(color: Colors.teal,),
-              WidgetUtils.spacer(1),
-              Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.fitnessGoals)),
-            ],
-          ),
-        ),
-        WidgetUtils.spacer(5),
-        const Divider(color: Colors.teal,),
-        WidgetUtils.spacer(5),
-        IntrinsicHeight(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Expanded(child: Text("Preferred days", style: TextStyle(fontWeight: FontWeight.bold),)),
-              WidgetUtils.spacer(1),
-              const VerticalDivider(color: Colors.teal,),
-              WidgetUtils.spacer(1),
-              const Expanded(child: Text("Desired body type", style: TextStyle(fontWeight: FontWeight.bold),)),
-            ],
-          ),
-        ),
-        WidgetUtils.spacer(2),
-        const Divider(color: Colors.teal,),
-        WidgetUtils.spacer(2),
-        IntrinsicHeight(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.preferredDays)),
-              WidgetUtils.spacer(1),
-              const VerticalDivider(color: Colors.teal,),
-              WidgetUtils.spacer(1),
-              Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.bodyTypes)),
-            ],
-          ),
+        Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _userFirstAndLastName(recommendation.user.firstName ?? "", recommendation.user.lastName ?? ""),
+                WidgetUtils.spacer(5),
+                _userHoursPerWeekOrUsername(recommendation.user, recommendation.matchedAttributes.hoursPerWeek),
+              ],
+            ),
         ),
       ],
+    );
+  }
+
+  Widget _generateUserMatchedAttributes(DiscoverRecommendation recommendation) {
+    return SizedBox(
+      height: 275,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Expanded(child: Text("Similar activities", style: TextStyle(fontWeight: FontWeight.bold),)),
+                WidgetUtils.spacer(1),
+                const VerticalDivider(color: Colors.teal,),
+                WidgetUtils.spacer(1),
+                const Expanded(child: Text("Similar goals", style: TextStyle(fontWeight: FontWeight.bold),)),
+              ],
+            ),
+          ),
+          WidgetUtils.spacer(1),
+          const Divider(color: Colors.teal,),
+          WidgetUtils.spacer(1),
+          IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.activities)),
+                WidgetUtils.spacer(1),
+                const VerticalDivider(color: Colors.teal,),
+                WidgetUtils.spacer(1),
+                Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.fitnessGoals)),
+              ],
+            ),
+          ),
+          WidgetUtils.spacer(2.5),
+          const Divider(color: Colors.teal,),
+          WidgetUtils.spacer(2.5),
+          IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Expanded(child: Text("Preferred days", style: TextStyle(fontWeight: FontWeight.bold),)),
+                WidgetUtils.spacer(1),
+                const VerticalDivider(color: Colors.teal,),
+                WidgetUtils.spacer(1),
+                const Expanded(child: Text("Desired body type", style: TextStyle(fontWeight: FontWeight.bold),)),
+              ],
+            ),
+          ),
+          WidgetUtils.spacer(1),
+          const Divider(color: Colors.teal,),
+          WidgetUtils.spacer(1),
+          IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.preferredDays)),
+                WidgetUtils.spacer(1),
+                const VerticalDivider(color: Colors.teal,),
+                WidgetUtils.spacer(1),
+                Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.bodyTypes)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -292,16 +315,29 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     }
   }
 
+  _goToUserProfilePage(PublicUserProfile userProfile) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        UserProfileView.route(userProfile, widget.currentUserProfile),
+            (route) => true
+    );
+  }
+
   Widget _userAvatar(PublicUserProfile userProfile) {
-    return CircleAvatar(
-      radius: 60,
-      child: Center(
-        child: Container(
-          width: 200,
-          height: 200,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: ImageUtils.getUserProfileImage(userProfile, 200, 200),
+    return InkWell(
+      onTap: () {
+        _goToUserProfilePage(userProfile);
+      },
+      child: CircleAvatar(
+        radius: 50,
+        child: Center(
+          child: Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              image: ImageUtils.getUserProfileImage(userProfile, 200, 200),
+            ),
           ),
         ),
       ),
@@ -313,7 +349,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
       child: Text(
         "$firstName $lastName",
         style: const TextStyle(
-          fontSize: 30,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -321,11 +357,21 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
   }
 
   Widget _userUsername(String? username) {
-    const style = TextStyle(fontSize: 20, fontWeight: FontWeight.w700);
+    const style = TextStyle(fontSize: 12, fontWeight: FontWeight.w700);
     if (username != null) {
-      return Text("@$username", style: style);
+      return Text("@$username", textAlign: TextAlign.center, style: style);
     }
-    return const Text("", style: style);
+    return const Text("", textAlign: TextAlign.center, style: style);
+  }
+
+  Widget _userHoursPerWeekOrUsername(PublicUserProfile userProfile, String? hoursPerWeek) {
+    const style = TextStyle(fontSize: 14, color: Colors.teal);
+    if (hoursPerWeek != null) {
+      return Text(hoursPerWeek, textAlign: TextAlign.center, style: style);
+    }
+    else {
+      return _userUsername(userProfile.username);
+    }
   }
 
 }
