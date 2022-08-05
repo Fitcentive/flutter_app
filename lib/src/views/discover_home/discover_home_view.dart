@@ -64,11 +64,19 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(20),
-                    child: const Text("Discover people in your area to join you on your fitness journey", style: TextStyle(fontSize: 20),),
+                    child: const Text(
+                      "Discover people in your area to join you on your fitness journey",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20),
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.all(20),
-                    child: const Text("Update your preferences for most accurate results", style: TextStyle(fontSize: 16),),
+                    child: const Text(
+                      "Update your preferences for most accurate results",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                   WidgetUtils.spacer(30),
                   _actionButton("Update Preferences", () {
