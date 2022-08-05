@@ -205,14 +205,7 @@ class ChatSearchViewState extends State<ChatSearchView> {
               onSubmitted: (value) {},
               autocorrect: false,
               onTap: () => _suggestionsController.toggle(),
-              onChanged: (text) {
-                if (text.isNotEmpty) {
-                  if (_debounce?.isActive ?? false) _debounce?.cancel();
-                  _debounce = Timer(const Duration(milliseconds: 300), () {
-                    _chatSearchBloc.add(ChatSearchQueryChanged(query: text));
-                  });
-                }
-              },
+              onChanged: (text) {},
               autofocus: true,
               controller: _searchTextController,
               style: const TextStyle(fontSize: 15),
@@ -226,7 +219,10 @@ class ChatSearchViewState extends State<ChatSearchView> {
                     },
                     icon: const Icon(Icons.close),
                   ))),
-          suggestionsCallback: (pattern)  {
+          suggestionsCallback: (text)  {
+            if (text.isNotEmpty) {
+              _chatSearchBloc.add(ChatSearchQueryChanged(query: text));
+            }
             return List.empty();
           },
           itemBuilder: (context, suggestion) {
