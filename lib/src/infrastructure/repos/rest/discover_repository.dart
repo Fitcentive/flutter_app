@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_app/src/models/discover/discover_recommendation.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
@@ -9,6 +10,25 @@ import 'package:http/http.dart' as http;
 
 class DiscoverRepository {
   static const String BASE_URL = "https://api.vid.app/api/discover";
+
+  Future<List<DiscoverRecommendation>> getUserDiscoverRecommendations(String userId, String accessToken) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/user/$userId/recommendations"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final recommendations = jsonResponse.map((e) => DiscoverRecommendation.fromJson(e)).toList();
+      return recommendations;
+    } else {
+      throw Exception(
+          "getUserDiscoverRecommendations: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 
   Future<UserDiscoveryPreferences?> getUserDiscoveryPreferences(String userId, String accessToken) async {
     final response = await http.get(

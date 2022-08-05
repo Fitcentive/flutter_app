@@ -5,6 +5,7 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_bloc.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_event.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_state.dart';
+import 'package:flutter_app/src/views/discover_recommendations/discover_recommendations_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/discover_user_preferences_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -48,19 +49,10 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
     return Scaffold(
       body: BlocListener<DiscoverHomeBloc, DiscoverHomeState>(
         listener: (context, state) {
-          if (state is DiscoverUserPreferencesFetched) {
-            if (state.personalPreferences == null || state.fitnessPreferences == null || state.discoveryPreferences == null) {
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  DiscoverUserPreferencesView.route(
-                      userProfile: widget.currentUserProfile,
-                      discoveryPreferences: state.discoveryPreferences,
-                      fitnessPreferences: state.fitnessPreferences,
-                      personalPreferences: state.personalPreferences,
-                  ), (route) => true
-              ).then((value) {
-                _discoverHomeBloc.add(FetchUserDiscoverPreferences(widget.currentUserProfile.userId));
-              });
+          final currentState = state;
+          if (currentState is DiscoverUserPreferencesFetched) {
+            if (currentState.personalPreferences == null || currentState.fitnessPreferences == null || currentState.discoveryPreferences == null) {
+              _navigateToDiscoverUserPreferences(currentState);
             }
           }
         },
@@ -81,19 +73,11 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
                   WidgetUtils.spacer(30),
                   _actionButton("Update Preferences", () {
                     if (state is DiscoverUserPreferencesFetched) {
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          DiscoverUserPreferencesView.route(
-                            userProfile: widget.currentUserProfile,
-                            discoveryPreferences: state.discoveryPreferences,
-                            fitnessPreferences: state.fitnessPreferences,
-                            personalPreferences: state.personalPreferences,
-                          ), (route) => true
-                      );
+                      _navigateToDiscoverUserPreferences(state);
                     }
                   }),
                   _actionButton("Discover Buddies", () {
-                    print("Update pressed");
+                    _navigateToDiscoverRecommendations();
                   }),
                 ],
               ),
@@ -109,5 +93,30 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
         onPressed: onTap,
         child: Text(text)
     );
+  }
+
+  _navigateToDiscoverUserPreferences(DiscoverUserPreferencesFetched state) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        DiscoverUserPreferencesView.route(
+          userProfile: widget.currentUserProfile,
+          discoveryPreferences: state.discoveryPreferences,
+          fitnessPreferences: state.fitnessPreferences,
+          personalPreferences: state.personalPreferences,
+        ), (route) => true
+    ).then((value) {
+      _discoverHomeBloc.add(FetchUserDiscoverPreferences(widget.currentUserProfile.userId));
+    });
+  }
+
+  _navigateToDiscoverRecommendations() {
+    Navigator.pushAndRemoveUntil(
+        context,
+        DiscoverRecommendationsView.route(
+          userProfile: widget.currentUserProfile,
+        ), (route) => true
+    ).then((value) {
+      // todo - refetch the user discovered list here
+    });
   }
 }
