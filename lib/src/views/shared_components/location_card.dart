@@ -63,24 +63,21 @@ class LocationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _setupMap(userProfile, context);
-    return SizedBox(
-      height: 125,
-      child: GoogleMap(
-          onTap: (_) {
-            _goToLocationView(userProfile, context);
-          },
-          mapType: MapType.hybrid,
-          mapToolbarEnabled: false,
-          zoomControlsEnabled: false,
-          myLocationButtonEnabled: false,
-          myLocationEnabled: true,
-          markers: markers,
-          circles: Set<Circle>.of(circles.values),
-          initialCameraPosition: _initialCameraPosition,
-          onMapCreated: (GoogleMapController controller) {
-            _mapController.complete(controller);
-          }
-      ),
+    return GoogleMap(
+        onTap: (_) {
+          _goToLocationView(userProfile, context);
+        },
+        mapType: MapType.hybrid,
+        mapToolbarEnabled: false,
+        zoomControlsEnabled: false,
+        myLocationButtonEnabled: false,
+        myLocationEnabled: true,
+        markers: markers,
+        circles: Set<Circle>.of(circles.values),
+        initialCameraPosition: _initialCameraPosition,
+        onMapCreated: (GoogleMapController controller) {
+          _mapController.complete(controller);
+        }
     );
   }
 

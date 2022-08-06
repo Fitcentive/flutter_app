@@ -231,16 +231,22 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
 
   _generateUserCard(DiscoverRecommendation recommendation) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
+      padding: const EdgeInsets.all(10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _generateUserHeader(recommendation),
           const Padding(padding: EdgeInsets.all(10)),
           _generateUserMatchedAttributes(recommendation),
-          LocationCard(userProfile: recommendation.user)
+          _generateLocationCard(recommendation.user),
         ],
       ),
+    );
+  }
+
+  _generateLocationCard(PublicUserProfile userProfile) {
+    return Expanded(
+        child: LocationCard(userProfile: userProfile),
     );
   }
 
@@ -267,7 +273,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
 
   Widget _generateUserMatchedAttributes(DiscoverRecommendation recommendation) {
     return SizedBox(
-      height: 275,
+      height: 250,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
