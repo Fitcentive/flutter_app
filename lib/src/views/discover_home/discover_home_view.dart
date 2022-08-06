@@ -184,15 +184,13 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
     );
   }
 
-  // todo - replace this widget with user view
-  // get all target user preferences
-  // highlight whichever ones user matches on
-  // Click on user to go to profile
   _generateSlidingPanel(DiscoverUserDataFetched state) {
     final userProfile = state.discoveredUserProfiles.firstWhere((element) => element.userId == selectedUserId);
     return DiscoveredUserView.withBloc(
         currentUserProfile: widget.currentUserProfile,
         otherUserId: userProfile.userId,
+        fitnessPreferences: state.fitnessPreferences,
+        personalPreferences: state.personalPreferences,
         key: Key(userProfile.userId + DateTime.now().toString())
     );
   }

@@ -96,7 +96,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
                             _moveToNextItemAndRemoveCurrentItem(currentState);
                           }
                         },
-                        backgroundColor: Colors.red,
+                        backgroundColor: Colors.redAccent,
                         child: const Icon(Icons.close, color: Colors.white)
                     ),
                   ),

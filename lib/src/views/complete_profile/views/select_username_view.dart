@@ -95,7 +95,7 @@ class SelectUsernameViewState extends State<SelectUsernameView> {
   _getSuffixIcon(CompleteProfileState state) {
     if (state is UsernameModified) {
       if (state.doesUsernameExistAlready) {
-        return const Icon(Icons.close, color: Colors.red);
+        return const Icon(Icons.close, color: Colors.redAccent);
       }
       else {
         return const Icon(Icons.check, color: Colors.teal);

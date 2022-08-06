@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -15,17 +16,23 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class DiscoveredUserView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
+  final UserFitnessPreferences? currentUserFitnessPreferences;
+  final UserPersonalPreferences? currentUserPersonalPreferences;
   final String otherUserId;
 
   const DiscoveredUserView({
     Key? key,
     required this.currentUserProfile,
-    required this.otherUserId
+    required this.otherUserId,
+    required this.currentUserFitnessPreferences,
+    required this.currentUserPersonalPreferences,
   }): super(key: key);
 
   static Widget withBloc({
     Key? key,
     required PublicUserProfile currentUserProfile,
+    required UserFitnessPreferences? fitnessPreferences,
+    required UserPersonalPreferences? personalPreferences,
     required String otherUserId
   }
   ) => MultiBlocProvider(
@@ -40,6 +47,8 @@ class DiscoveredUserView extends StatefulWidget {
     child: DiscoveredUserView(
       currentUserProfile: currentUserProfile,
       otherUserId: otherUserId,
+      currentUserFitnessPreferences: fitnessPreferences,
+      currentUserPersonalPreferences: personalPreferences,
       key: key,
     ),
   );
@@ -52,7 +61,6 @@ class DiscoveredUserView extends StatefulWidget {
 }
 
 class DiscoveredUserViewState extends State<DiscoveredUserView> {
-
   late final DiscoveredUserBloc _discoveredUserBloc;
 
   @override
@@ -112,7 +120,7 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
             children: [
               _userFirstAndLastName(state.otherUserProfile.firstName ?? "", state.otherUserProfile.lastName ?? ""),
               WidgetUtils.spacer(5),
-              _userHoursPerWeek(state.personalPreferences),
+              _userHoursPerWeek(state.personalPreferences, widget.currentUserPersonalPreferences),
             ],
           ),
         ),
@@ -120,13 +128,18 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
     );
   }
 
-  Widget _userHoursPerWeek(UserPersonalPreferences? personalPreferences) {
-    const style = TextStyle(fontSize: 14, color: Colors.teal);
-    if (personalPreferences != null) {
-      return Text("${personalPreferences.hoursPerWeek.toString()} hours per week", textAlign: TextAlign.center, style: style);
+  // todo - include match score
+  Widget _userHoursPerWeek(
+      UserPersonalPreferences? otherUserPersonalPreferences,
+      UserPersonalPreferences? currentUserPersonalPreferences
+  ) {
+    if (otherUserPersonalPreferences != null) {
+      final color = currentUserPersonalPreferences?.hoursPerWeek.floor() == otherUserPersonalPreferences.hoursPerWeek.floor() ? Colors.teal : Colors.redAccent;
+      final style = TextStyle(fontSize: 14, color: color);
+      return Text("${otherUserPersonalPreferences.hoursPerWeek.toString()} hours per week", textAlign: TextAlign.center, style: style);
     }
     else {
-      return const Text("", textAlign: TextAlign.center, style: style);
+      return const Text("", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.teal));
     }
   }
 
@@ -196,11 +209,11 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(child: _generateItemsMatchedOn(state.fitnessPreferences?.activitiesInterestedIn)),
+                Expanded(child: _generateItemsMatchedOn(state.fitnessPreferences?.activitiesInterestedIn, widget.currentUserFitnessPreferences?.activitiesInterestedIn)),
                 WidgetUtils.spacer(1),
                 const VerticalDivider(color: Colors.teal,),
                 WidgetUtils.spacer(1),
-                Expanded(child: _generateItemsMatchedOn(state.fitnessPreferences?.fitnessGoals)),
+                Expanded(child: _generateItemsMatchedOn(state.fitnessPreferences?.fitnessGoals, widget.currentUserFitnessPreferences?.fitnessGoals)),
               ],
             ),
           ),
@@ -226,11 +239,11 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(child: _generateItemsMatchedOn(state.personalPreferences?.preferredDays)),
+                Expanded(child: _generateItemsMatchedOn(state.personalPreferences?.preferredDays, widget.currentUserPersonalPreferences?.preferredDays)),
                 WidgetUtils.spacer(1),
                 const VerticalDivider(color: Colors.teal,),
                 WidgetUtils.spacer(1),
-                Expanded(child: _generateItemsMatchedOn(state.fitnessPreferences?.desiredBodyTypes)),
+                Expanded(child: _generateItemsMatchedOn(state.fitnessPreferences?.desiredBodyTypes, widget.currentUserFitnessPreferences?.desiredBodyTypes)),
               ],
             ),
           ),
@@ -245,14 +258,31 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
     );
   }
 
-  _generateItemsMatchedOn(List<String>? items) {
-    if (items == null) {
+  _generateItemsMatchedOn(List<String>? otherUserItems, List<String>? currentUserItems) {
+    if (otherUserItems == null) {
       return const Center(
         child: Text("No data for this attribute", style: TextStyle(fontSize: 12)),
       );
     }
     else {
-      return Text(items.join(", "), style: const TextStyle(fontSize: 12),);
+      return SizedBox(
+        height: 62.5,
+        child: SingleChildScrollView(
+          child: Wrap(
+            children: List<Widget>.generate(
+                otherUserItems.length,
+                    (index) {
+                      final currentItem = otherUserItems[index];
+                      final isCurrentItemPartOfCurrentUserItems = currentUserItems?.contains(currentItem) ?? false;
+                      final color = isCurrentItemPartOfCurrentUserItems ? Colors.teal : Colors.redAccent;
+                      return Padding(
+                        padding: const EdgeInsets.all(2),
+                        child: Text(currentItem, style: TextStyle(fontSize: 12, color: color)),
+                      );
+                    }),
+          ),
+        ),
+      );
     }
   }
 }
