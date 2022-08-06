@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/models/discover/discover_recommendation.dart';
@@ -51,8 +53,11 @@ class DiscoverRecommendationsView extends StatefulWidget {
 
 class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView> {
   late final DiscoverRecommendationsBloc _discoverRecommendationsBloc;
+  List<DiscoverRecommendation> fetchedRecommendations = List.empty(growable: true);
 
   int currentSelectedRecommendationIndex = 0;
+  CarouselController buttonCarouselController = CarouselController();
+
 
   @override
   void initState() {
@@ -88,7 +93,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
                         onPressed: () {
                           final currentState = _discoverRecommendationsBloc.state;
                           if (currentState is DiscoverRecommendationsReady) {
-                            print("User requested to REJECT user ${currentState.recommendations[currentSelectedRecommendationIndex].user.lastName}");
+                            _moveToNextItemAndRemoveCurrentItem(currentState);
                           }
                         },
                         backgroundColor: Colors.red,
@@ -106,7 +111,13 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
                         onPressed: () {
                           final currentState = _discoverRecommendationsBloc.state;
                           if (currentState is DiscoverRecommendationsReady) {
-                            print("User requested to connect with user ${currentState.recommendations[currentSelectedRecommendationIndex].user.lastName}");
+                            _discoverRecommendationsBloc.add(
+                                UpsertNewlyDiscoveredUser(
+                                    currentUserId: widget.currentUserProfile.userId,
+                                    newUserId: currentState.recommendations[currentSelectedRecommendationIndex].user.userId
+                                )
+                            );
+                            _moveToNextItemAndRemoveCurrentItem(currentState);
                           }
                         },
                         backgroundColor: Colors.teal,
@@ -124,11 +135,26 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     });
   }
 
+  _moveToNextItemAndRemoveCurrentItem(DiscoverRecommendationsReady currentState) {
+    final indexToDelete = currentSelectedRecommendationIndex;
+    buttonCarouselController
+        .nextPage(duration: const Duration(milliseconds: 150))
+        .then((value) {
+            final tempRecommendations = fetchedRecommendations;
+            tempRecommendations.removeWhere((element) => element.user.userId == fetchedRecommendations[indexToDelete].user.userId);
+            setState(() {
+              fetchedRecommendations = tempRecommendations;
+              currentSelectedRecommendationIndex = max(currentSelectedRecommendationIndex - 1, 0);
+            });
+    });
+  }
+
   _generateBody() {
     return BlocBuilder<DiscoverRecommendationsBloc, DiscoverRecommendationsState>(builder: (context, state) {
       if (state is DiscoverRecommendationsReady) {
-        if (state.recommendations.isNotEmpty) {
-          return _carouselSlider(state.currentUserProfile, state.recommendations);
+        fetchedRecommendations = state.recommendations;
+        if (fetchedRecommendations.isNotEmpty) {
+          return _carouselSlider(state.currentUserProfile, fetchedRecommendations);
         }
         else {
           return _noResultsView();
@@ -181,19 +207,22 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
         },
       );
     }).toList();
+    if (buttonCarouselController.ready) {
+      buttonCarouselController.jumpToPage(currentSelectedRecommendationIndex);
+    }
     return CarouselSlider(
         items: items,
+        carouselController: buttonCarouselController,
         options: CarouselOptions(
           height: ScreenUtils.getScreenHeight(context) * 0.75,
           aspectRatio: 16/9,
           viewportFraction: 0.825,
-          initialPage: 0,
-          enableInfiniteScroll: true,
+          initialPage: currentSelectedRecommendationIndex,
+          enableInfiniteScroll: false,
           reverse: false,
-          autoPlayCurve: Curves.fastOutSlowIn,
           enlargeCenterPage: true,
           onPageChanged: (page, reason) {
-            currentSelectedRecommendationIndex = page;
+              currentSelectedRecommendationIndex = page;
           },
           scrollDirection: Axis.horizontal,
         )

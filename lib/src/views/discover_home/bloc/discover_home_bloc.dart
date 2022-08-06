@@ -13,18 +13,27 @@ class DiscoverHomeBloc extends Bloc<DiscoverHomeEvent, DiscoverHomeState> {
     required this.discoverRepository,
     required this.secureStorage,
   }) : super(const DiscoverHomeStateInitial()) {
-    on<FetchUserDiscoverPreferences>(_fetchUserDiscoverPreferences);
+    on<FetchUserDiscoverData>(_fetchUserDiscoverPreferences);
+    on<RemoveUserFromListOfDiscoveredUsers>(_removeUserFromListOfDiscoveredUsers);
   }
 
-  void _fetchUserDiscoverPreferences(FetchUserDiscoverPreferences event, Emitter<DiscoverHomeState> emit) async {
+  void _removeUserFromListOfDiscoveredUsers(RemoveUserFromListOfDiscoveredUsers event, Emitter<DiscoverHomeState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await discoverRepository.removeDiscoveredUser(event.currentUserId, event.discoveredUserId, accessToken!);
+  }
+
+  void _fetchUserDiscoverPreferences(FetchUserDiscoverData event, Emitter<DiscoverHomeState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.userId, accessToken!);
     final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.userId, accessToken);
     final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.userId, accessToken);
-    emit(DiscoverUserPreferencesFetched(
+    final userProfiles = await discoverRepository.getDiscoveredUserProfiles(event.userId, accessToken);
+
+    emit(DiscoverUserDataFetched(
       discoveryPreferences: userDiscoverPreferences,
       personalPreferences: userPersonalPreferences,
       fitnessPreferences: userFitnessPreferences,
+      discoveredUserProfiles: userProfiles
     ));
   }
 }

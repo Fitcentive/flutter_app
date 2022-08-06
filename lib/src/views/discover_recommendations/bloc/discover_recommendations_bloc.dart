@@ -14,6 +14,12 @@ class DiscoverRecommendationsBloc extends Bloc<DiscoverRecommendationsEvent, Dis
     required this.secureStorage,
   }) : super(const DiscoverRecommendationsStateInitial()) {
     on<FetchUserDiscoverRecommendations>(_fetchUserDiscoverRecommendations);
+    on<UpsertNewlyDiscoveredUser>(_upsertNewlyDiscoveredUser);
+  }
+
+  void _upsertNewlyDiscoveredUser(UpsertNewlyDiscoveredUser event, Emitter<DiscoverRecommendationsState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await discoverRepository.upsertDiscoveredUser(event.currentUserId, event.newUserId, accessToken!);
   }
 
   void _fetchUserDiscoverRecommendations(FetchUserDiscoverRecommendations event, Emitter<DiscoverRecommendationsState> emit) async {

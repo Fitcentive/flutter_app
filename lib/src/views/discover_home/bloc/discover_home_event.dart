@@ -7,11 +7,25 @@ abstract class DiscoverHomeEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchUserDiscoverPreferences extends DiscoverHomeEvent {
+// Fetches user discover preferences and previously discovered users
+class FetchUserDiscoverData extends DiscoverHomeEvent {
   final String userId;
 
-  const FetchUserDiscoverPreferences(this.userId);
+  const FetchUserDiscoverData(this.userId);
 
   @override
   List<Object?> get props => [userId];
+}
+
+class RemoveUserFromListOfDiscoveredUsers extends DiscoverHomeEvent {
+  final String currentUserId;
+  final String discoveredUserId;
+
+  const RemoveUserFromListOfDiscoveredUsers({
+    required this.currentUserId,
+    required this.discoveredUserId
+  });
+
+  @override
+  List<Object?> get props => [currentUserId, discoveredUserId];
 }
