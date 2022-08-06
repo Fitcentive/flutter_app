@@ -10,6 +10,7 @@ import 'package:flutter_app/src/views/discover_home/bloc/discover_home_event.dar
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_state.dart';
 import 'package:flutter_app/src/views/discover_recommendations/discover_recommendations_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/discover_user_preferences_view.dart';
+import 'package:flutter_app/src/views/discovered_user/discovered_user_view.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -189,19 +190,15 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
   // Click on user to go to profile
   _generateSlidingPanel(DiscoverUserDataFetched state) {
     final userProfile = state.discoveredUserProfiles.firstWhere((element) => element.userId == selectedUserId);
-    return Text("${userProfile.firstName} ${userProfile.lastName}", key: Key(userProfile.userId + DateTime.now().toString()),);
+    return DiscoveredUserView.withBloc(
+        currentUserProfile: widget.currentUserProfile,
+        otherUserId: userProfile.userId,
+        key: Key(userProfile.userId + DateTime.now().toString())
+    );
   }
 
   _showSlidingUpViewWithUserProfile() {
     _panelController.animatePanelToPosition(1.0, duration: const Duration(milliseconds: 250));
-  }
-
-  _goToUserProfilePage(PublicUserProfile userProfile) {
-    Navigator.pushAndRemoveUntil(
-        context,
-        UserProfileView.route(userProfile, widget.currentUserProfile),
-            (route) => true
-    );
   }
 
   _showEmptyDiscoveredUserProfilesScreen(DiscoverUserDataFetched state) {
