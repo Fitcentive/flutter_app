@@ -22,15 +22,17 @@ class DiscoveredUserBloc extends Bloc<DiscoveredUserEvent, DiscoveredUserState> 
   void _fetchDiscoveredUserPreferences(FetchDiscoveredUserPreferences event, Emitter<DiscoveredUserState> emit) async {
     emit(const DiscoveredUserDataLoading());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.userId, accessToken!);
-    final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.userId, accessToken);
-    final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.userId, accessToken);
-    final otherUserProfile = (await userRepository.getPublicUserProfiles([event.userId], accessToken)).first;
+    final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.otherUserId, accessToken!);
+    final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.otherUserId, accessToken);
+    final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.otherUserId, accessToken);
+    final otherUserProfile = (await userRepository.getPublicUserProfiles([event.otherUserId], accessToken)).first;
+    final discoverScore = await discoverRepository.getUserDiscoverScore(event.currentUserId, event.otherUserId, accessToken);
     emit(DiscoveredUserPreferencesFetched(
         discoveryPreferences: userDiscoverPreferences,
         personalPreferences: userPersonalPreferences,
         fitnessPreferences: userFitnessPreferences,
         otherUserProfile: otherUserProfile,
+        discoverScore: discoverScore
     ));
   }
 }

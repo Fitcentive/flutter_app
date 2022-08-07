@@ -9,10 +9,11 @@ abstract class DiscoveredUserEvent extends Equatable {
 
 // Fetches user discover preferences
 class FetchDiscoveredUserPreferences extends DiscoveredUserEvent {
-  final String userId;
+  final String currentUserId;
+  final String otherUserId;
 
-  const FetchDiscoveredUserPreferences(this.userId);
+  const FetchDiscoveredUserPreferences(this.currentUserId, this.otherUserId);
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [otherUserId, currentUserId];
 }

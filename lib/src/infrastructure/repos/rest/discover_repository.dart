@@ -183,6 +183,23 @@ class DiscoverRepository {
     }
   }
 
+  Future<num> getUserDiscoverScore(String currentUserId, String otherUserId, String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$currentUserId/discover-score/$otherUserId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final discoverScore = jsonResponse as num;
+      return discoverScore;
+    }
+    else {
+      throw Exception(
+          "getUserDiscoverScore: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<UserPersonalPreferences> upsertUserPersonalPreferences(String userId, UserPersonalPreferencesPost prefs, String accessToken) async {
     final jsonBody = {
       'userId': prefs.userId,

@@ -24,14 +24,22 @@ class DiscoveredUserPreferencesFetched extends DiscoveredUserState {
   final UserFitnessPreferences? fitnessPreferences;
   final UserPersonalPreferences? personalPreferences;
   final PublicUserProfile otherUserProfile;
+  final num discoverScore;
 
   const DiscoveredUserPreferencesFetched({
     this.discoveryPreferences,
     this.fitnessPreferences,
     this.personalPreferences,
     required this.otherUserProfile,
+    required this.discoverScore,
   });
 
   @override
-  List<Object?> get props => [discoveryPreferences, fitnessPreferences, personalPreferences, otherUserProfile];
+  List<Object?> get props => [
+    discoveryPreferences,
+    fitnessPreferences,
+    personalPreferences,
+    otherUserProfile,
+    discoverScore
+  ];
 }

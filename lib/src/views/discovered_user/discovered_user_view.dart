@@ -13,6 +13,7 @@ import 'package:flutter_app/src/views/shared_components/location_card.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:gauges/gauges.dart';
 
 class DiscoveredUserView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -68,7 +69,7 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
     super.initState();
 
     _discoveredUserBloc = BlocProvider.of<DiscoveredUserBloc>(context);
-    _discoveredUserBloc.add(FetchDiscoveredUserPreferences(widget.otherUserId));
+    _discoveredUserBloc.add(FetchDiscoveredUserPreferences(widget.currentUserProfile.userId, widget.otherUserId));
   }
 
   @override
@@ -107,6 +108,27 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
     );
   }
 
+  _generateDiscoverUserScore(double score) {
+    // RadialNeedlePointer requires range to be in 20-80 because we are only using 180 degs
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        WidgetUtils.render180DegreeGauge(score),
+        WidgetUtils.spacer(10),
+        Container(
+          margin: const EdgeInsets.fromLTRB(0, 0, 0, 25),
+          child: Column(
+            children: [
+              const Text("Match score", textAlign: TextAlign.center, style: TextStyle(fontSize: 12),),
+              WidgetUtils.spacer(5),
+              Text(score.toStringAsFixed(2), textAlign: TextAlign.center, style: const TextStyle(fontSize: 10),),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   _generateUserHeader(DiscoveredUserPreferencesFetched state) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -121,6 +143,8 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
               _userFirstAndLastName(state.otherUserProfile.firstName ?? "", state.otherUserProfile.lastName ?? ""),
               WidgetUtils.spacer(5),
               _userHoursPerWeek(state.personalPreferences, widget.currentUserPersonalPreferences),
+              WidgetUtils.spacer(15),
+              _generateDiscoverUserScore(state.discoverScore.toDouble()),
             ],
           ),
         ),
@@ -128,7 +152,6 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
     );
   }
 
-  // todo - include match score
   Widget _userHoursPerWeek(
       UserPersonalPreferences? otherUserPersonalPreferences,
       UserPersonalPreferences? currentUserPersonalPreferences

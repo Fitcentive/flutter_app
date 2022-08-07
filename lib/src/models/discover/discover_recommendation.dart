@@ -8,15 +8,15 @@ part 'discover_recommendation.g.dart';
 @JsonSerializable()
 class DiscoverRecommendation extends Equatable {
   final PublicUserProfile user;
-  final int pathsInCommon;
+  final num discoverScore;
   final MatchedAttributes matchedAttributes;
 
-  const DiscoverRecommendation(this.user, this.pathsInCommon, this.matchedAttributes);
+  const DiscoverRecommendation(this.user, this.discoverScore, this.matchedAttributes);
 
   factory DiscoverRecommendation.fromJson(Map<String, dynamic> json) => _$DiscoverRecommendationFromJson(json);
 
   Map<String, dynamic> toJson() => _$DiscoverRecommendationToJson(this);
 
   @override
-  List<Object?> get props => [user, pathsInCommon, matchedAttributes];
+  List<Object?> get props => [user, discoverScore, matchedAttributes];
 }

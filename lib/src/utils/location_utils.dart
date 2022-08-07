@@ -21,7 +21,7 @@ class LocationUtils {
     if (radius > 0) {
       double radiusElevated = radius + radius / 2;
       double scale = radiusElevated / 500;
-      zoomLevel = 15 - math.log(scale) / math.log(2);
+      zoomLevel = 14.5 - math.log(scale) / math.log(2);
     }
     zoomLevel = double.parse(zoomLevel.toStringAsFixed(2));
     return zoomLevel;

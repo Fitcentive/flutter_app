@@ -56,7 +56,6 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
 
   @override
   Widget build(BuildContext context) {
-    print("Widget build called with ${selectedUserId}");
     return Scaffold(
       body: BlocListener<DiscoverHomeBloc, DiscoverHomeState>(
         listener: (context, state) {
