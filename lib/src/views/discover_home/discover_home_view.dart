@@ -96,6 +96,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
     return SlidingUpPanel(
       controller: _panelController,
       minHeight: 0,
+      maxHeight: ScreenUtils.getScreenHeight(context) * 0.75,
       panel: _generateSlidingPanel(state),
       body: Column(
         mainAxisSize: MainAxisSize.min,
@@ -142,7 +143,6 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
         if (selectedUserId == userProfile.userId) {
           selectedUserId = null;
         }
-
         _discoverHomeBloc.add(
             RemoveUserFromListOfDiscoveredUsers(
                 currentUserId: widget.currentUserProfile.userId,
