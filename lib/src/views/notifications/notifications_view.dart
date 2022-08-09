@@ -56,6 +56,21 @@ class NotificationsViewState extends State<NotificationsView> {
     }
   }
 
+  _markNotificationsAsRead(NotificationsLoaded state) {
+    WidgetsBinding.instance
+        .addPostFrameCallback((_){
+      final notificationIds = state.notifications.where((element) => !element.hasBeenViewed).map((e) => e.id).toList();
+      if (notificationIds.isNotEmpty) {
+        _notificationsBloc.add(
+            MarkNotificationsAsRead(
+                currentUserId: state.user.user.id,
+                notificationIds: notificationIds
+            )
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,6 +78,7 @@ class NotificationsViewState extends State<NotificationsView> {
         onRefresh: _pullRefresh,
         child: BlocBuilder<NotificationsBloc, NotificationsState>(builder: (context, state) {
           if (state is NotificationsLoaded) {
+            _markNotificationsAsRead(state);
             if (state.notifications.isEmpty) {
               return const Center(child: Text('No Results'));
             }
@@ -132,6 +148,7 @@ class NotificationsViewState extends State<NotificationsView> {
       onTap: () async {
         _goToSelectedPost(postId);
       },
+      tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
         onTap: () async {
           _goToSelectedPost(postId);
@@ -164,6 +181,7 @@ class NotificationsViewState extends State<NotificationsView> {
       onTap: () async {
         _goToSelectedPost(postId);
       },
+      tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
         onTap: () async {
           _goToSelectedPost(postId);
@@ -200,6 +218,7 @@ class NotificationsViewState extends State<NotificationsView> {
         onTap: () async {
           _goToUserProfile(requestingUserProfile);
         },
+        tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
         leading: GestureDetector(
           onTap: () async {
             _goToUserProfile(requestingUserProfile);

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/notification/app_notification.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
@@ -24,6 +25,12 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }) : super(const NotificationsInitial()) {
     on<FetchNotifications>(_fetchNotifications);
     on<NotificationInteractedWith>(_notificationInteractedWith);
+    on<MarkNotificationsAsRead>(_markNotificationsAsRead);
+  }
+
+  void _markNotificationsAsRead(MarkNotificationsAsRead event, Emitter<NotificationsState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await notificationsRepository.markNotificationsAsRead(event.currentUserId, event.notificationIds, accessToken!);
   }
 
   void _notificationInteractedWith(NotificationInteractedWith event, Emitter<NotificationsState> emit) async {
@@ -43,6 +50,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
                 notificationType: n.notificationType,
                 isInteractive: n.isInteractive,
                 hasBeenInteractedWith: true,
+                hasBeenViewed: true,
                 data: jsonBody,
                 createdAt: n.createdAt,
                 updatedAt: now

@@ -9,6 +9,7 @@ class AppNotification {
   String notificationType;
   bool isInteractive;
   bool hasBeenInteractedWith;
+  bool hasBeenViewed;
   Map<dynamic, dynamic> data;
   DateTime createdAt;
   DateTime updatedAt;
@@ -19,6 +20,7 @@ class AppNotification {
     required this.notificationType,
     required this.isInteractive,
     required this.hasBeenInteractedWith,
+    required this.hasBeenViewed,
     required this.data,
     required this.createdAt,
     required this.updatedAt

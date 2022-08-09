@@ -68,6 +68,7 @@ class NotificationRepository {
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
       body: json.encode({
         "hasBeenInteractedWith": true,
+        "hasBeenViewed": true,
         "data": bodyMap
       })
     );
@@ -75,6 +76,25 @@ class NotificationRepository {
       return;
     } else {
       throw Exception("updateUserNotification: Received bad response with status: ${response.statusCode}");
+    }
+  }
+
+  Future<void> markNotificationsAsRead(
+      String userId,
+      List<String> notificationIds,
+      String accessToken
+      ) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/$userId/notifications/mark-as-viewed"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode({
+          "notificationIds": notificationIds,
+        })
+    );
+    if (response.statusCode == HttpStatus.ok) {
+      return;
+    } else {
+      throw Exception("markNotificationsAsRead: Received bad response with status: ${response.statusCode}");
     }
   }
 }

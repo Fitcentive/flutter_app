@@ -37,3 +37,16 @@ class NotificationInteractedWith extends NotificationsEvent {
   @override
   List<Object> get props => [targetUser, notification, isApproved];
 }
+
+class MarkNotificationsAsRead extends NotificationsEvent {
+  final String currentUserId;
+  final List<String> notificationIds;
+
+  const MarkNotificationsAsRead({
+    required this.currentUserId,
+    required this.notificationIds,
+  });
+
+  @override
+  List<Object> get props => [currentUserId, notificationIds];
+}
