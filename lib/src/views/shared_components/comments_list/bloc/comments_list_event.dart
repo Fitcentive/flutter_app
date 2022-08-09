@@ -6,11 +6,12 @@ abstract class CommentsListEvent extends Equatable {
 
 class FetchCommentsRequested extends CommentsListEvent {
   final String postId;
+  final String currentUserId;
 
-  const FetchCommentsRequested({required this.postId});
+  const FetchCommentsRequested({required this.postId, required this.currentUserId});
 
   @override
-  List<Object> get props => [postId];
+  List<Object> get props => [postId, currentUserId];
 }
 
 class AddNewComment extends CommentsListEvent {

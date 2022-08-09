@@ -141,7 +141,7 @@ class NotificationsViewState extends State<NotificationsView> {
           style: const TextStyle(fontSize: 14),
         ),
         subtitle: Text(
-          DateFormat("hh:mm      yyyy-MM-dd").format(notification.updatedAt),
+          DateFormat("hh:mm      yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
         ),
       );

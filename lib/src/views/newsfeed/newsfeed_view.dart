@@ -87,7 +87,8 @@ class NewsFeedViewState extends State<NewsFeedView> {
     if (state is NewsFeedDataReady) {
       return CommentsListView.withBloc(
         key: Key(state.selectedPostId ?? "null"),
-        postId: state.selectedPostId
+        postId: state.selectedPostId,
+        currentUserId: state.user.user.id
       );
     }
     return const Text("Bad State");

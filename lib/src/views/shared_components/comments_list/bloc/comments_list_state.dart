@@ -39,7 +39,7 @@ class CommentsLoaded extends CommentsListState {
     required String userId,
     required String newComment
   }) {
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
     comments.add(SocialPostComment(postId, uuid.v4(), userId, newComment, now, now));
     return CommentsLoaded(
         postId: postId,

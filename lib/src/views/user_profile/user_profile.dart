@@ -177,7 +177,8 @@ class UserProfileViewState extends State<UserProfileView> {
   _generateSlidingPanel(RequiredDataResolved state) {
     return CommentsListView.withBloc(
         key: Key(state.selectedPostId ?? "null"),
-        postId: state.selectedPostId
+        postId: state.selectedPostId,
+        currentUserId: state.currentUser.user.id,
     );
   }
 

@@ -14,18 +14,17 @@ import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/comments_list/bloc/comments_list_bloc.dart';
 import 'package:flutter_app/src/views/shared_components/comments_list/bloc/comments_list_event.dart';
 import 'package:flutter_app/src/views/shared_components/comments_list/bloc/comments_list_state.dart';
-import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 class CommentsListView extends StatefulWidget {
-
+  final String currentUserId;
   final String? postId;
 
-  const CommentsListView({Key? key, required this.postId}): super(key: key);
+  const CommentsListView({Key? key, required this.postId, required this.currentUserId}): super(key: key);
 
-  static Widget withBloc({String? postId, Key? key}) {
+  static Widget withBloc({String? postId, Key? key, required String currentUserId}) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<CommentsListBloc>(
@@ -35,7 +34,7 @@ class CommentsListView extends StatefulWidget {
               secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
             )),
       ],
-      child: CommentsListView(postId: postId, key: key),
+      child: CommentsListView(postId: postId, key: key, currentUserId: currentUserId),
     );
   }
 
@@ -69,7 +68,7 @@ class CommentsListViewState extends State<CommentsListView> {
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
 
     if (widget.postId != null) {
-      _commentsListBloc.add(FetchCommentsRequested(postId: widget.postId!));
+      _commentsListBloc.add(FetchCommentsRequested(postId: widget.postId!, currentUserId: widget.currentUserId));
     }
   }
 
@@ -86,6 +85,7 @@ class CommentsListViewState extends State<CommentsListView> {
       body: BlocBuilder<CommentsListBloc, CommentsListState>(
         builder: (context, state) {
           if (state is CommentsLoaded) {
+            fetchedComments = state.comments;
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -262,7 +262,7 @@ class CommentsListViewState extends State<CommentsListView> {
     else {
       return RefreshIndicator(
         onRefresh: () async {
-          _commentsListBloc.add(FetchCommentsRequested(postId: widget.postId!));
+          _commentsListBloc.add(FetchCommentsRequested(postId: widget.postId!, currentUserId: widget.currentUserId));
         },
         child: GestureDetector(
           onTap: () {
@@ -328,7 +328,7 @@ class CommentsListViewState extends State<CommentsListView> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                 child: Text(
-                  DateFormat("hh:mm      yyyy-MM-dd").format(comment.createdAt),
+                  DateFormat("hh:mm      yyyy-MM-dd").format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
                   style: const TextStyle(
                       fontSize: 10
                   ),

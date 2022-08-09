@@ -37,17 +37,18 @@ class CommentsListBloc extends Bloc<CommentsListEvent, CommentsListState> {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final comments = await socialMediaRepository.getCommentsForPost(event.postId, accessToken!);
 
-    final List<String> userIdsFromNotificationSources = _getDistinctUserIds(comments);
+    final List<String> userIdsFromNotificationSources = _getDistinctUserIds(comments, event.currentUserId);
     final List<PublicUserProfile> userProfileDetails =
     await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
     emit(CommentsLoaded(postId: event.postId, comments: comments, userIdProfileMap: userIdProfileMap));
   }
 
-  List<String> _getDistinctUserIds(List<SocialPostComment> comments) {
-    return comments
+  List<String> _getDistinctUserIds(List<SocialPostComment> comments, String currentUserId) {
+    final userIdSet =  comments
         .map((e) => e.userId)
-        .toSet()
-        .toList();
+        .toSet();
+    userIdSet.add(currentUserId);
+    return userIdSet.toList();
   }
 }
