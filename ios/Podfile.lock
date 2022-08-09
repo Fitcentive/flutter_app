@@ -46,6 +46,8 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
   - Flutter (1.0.0)
+  - flutter_app_badger (1.3.0):
+    - Flutter
   - flutter_appauth (0.0.1):
     - AppAuth (= 1.5.0)
     - Flutter
@@ -129,6 +131,7 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
+  - flutter_app_badger (from `.symlinks/plugins/flutter_app_badger/ios`)
   - flutter_appauth (from `.symlinks/plugins/flutter_appauth/ios`)
   - flutter_image_compress (from `.symlinks/plugins/flutter_image_compress/ios`)
   - flutter_keyboard_visibility (from `.symlinks/plugins/flutter_keyboard_visibility/ios`)
@@ -169,6 +172,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
+  flutter_app_badger:
+    :path: ".symlinks/plugins/flutter_app_badger/ios"
   flutter_appauth:
     :path: ".symlinks/plugins/flutter_appauth/ios"
   flutter_image_compress:
@@ -204,6 +209,7 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 21186f0ca7849f90f4a3219fa31a5eca2e30f113
   FirebaseMessaging: 4eaf1b8a7464b2c5e619ad66e9b20ee3e3206b24
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  flutter_app_badger: b87fc231847b03b92ce1412aa351842e7e97932f
   flutter_appauth: 2c4a407e6d649df3f2308375fb891822dcff291b
   flutter_image_compress: fd2b476345226e1a10ea352fa306af95704642c1
   flutter_keyboard_visibility: 0339d06371254c3eb25eeb90ba8d17dca8f9c069

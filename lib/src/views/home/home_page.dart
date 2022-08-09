@@ -27,6 +27,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/notifications_view.dart';
 import 'package:flutter_app/src/views/search/search_view.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
@@ -148,6 +149,13 @@ class HomePageState extends State<HomePage> {
     PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
   }
 
+  _updateAppBadgeIfPossible() async {
+    final isSupported = await FlutterAppBadger.isAppBadgeSupported();
+    if (isSupported) {
+      FlutterAppBadger.updateBadgeCount(unreadNotificationCount);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthenticationBloc, AuthenticationState>(
@@ -164,6 +172,7 @@ class HomePageState extends State<HomePage> {
                 if (state is MenuItemSelected) {
                   selectedMenuItem = state.selectedMenuItem;
                   unreadNotificationCount = state.unreadNotificationCount;
+                  _updateAppBadgeIfPossible();
                 }
                 return Scaffold(
                   appBar: AppBar(
@@ -329,7 +338,7 @@ class HomePageState extends State<HomePage> {
     if (text == notifications && unreadNotificationCount != 0) {
       element = Badge(
         alignment: Alignment.centerLeft,
-        badgeContent: Text(unreadNotificationCount.toString()),
+        badgeContent: Text(unreadNotificationCount.toString(), style: const TextStyle(color: Colors.white)),
         padding: const EdgeInsets.all(10),
         child: Text(text),
       );

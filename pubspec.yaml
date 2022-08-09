@@ -66,6 +66,7 @@ dependencies:
   carousel_slider: ^4.1.1
   gauges: ^1.0.0
   badges: ^2.0.3
+  flutter_app_badger: ^1.4.0
 
 dev_dependencies:
   flutter_test:
