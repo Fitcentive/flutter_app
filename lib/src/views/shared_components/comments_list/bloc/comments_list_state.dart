@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
+import 'package:uuid/uuid.dart';
 
 abstract class CommentsListState extends Equatable {
   const CommentsListState();
@@ -23,12 +24,30 @@ class CommentsLoading extends CommentsListState {
 }
 
 class CommentsLoaded extends CommentsListState {
-  final String userId;
+  final uuid = const Uuid();
+  final String postId;
   final List<SocialPostComment> comments;
   final Map<String, PublicUserProfile> userIdProfileMap;
 
-  const CommentsLoaded({required this.userId, required this.comments, required this.userIdProfileMap});
+  const CommentsLoaded({
+    required this.postId,
+    required this.comments,
+    required this.userIdProfileMap
+  });
+
+  CommentsLoaded copyWithNewCommentAdded({
+    required String userId,
+    required String newComment
+  }) {
+    final now = DateTime.now();
+    comments.add(SocialPostComment(postId, uuid.v4(), userId, newComment, now, now));
+    return CommentsLoaded(
+        postId: postId,
+        userIdProfileMap: userIdProfileMap,
+        comments: comments
+    );
+  }
 
   @override
-  List<Object> get props => [userId, comments, userIdProfileMap];
+  List<Object> get props => [postId, comments, userIdProfileMap];
 }

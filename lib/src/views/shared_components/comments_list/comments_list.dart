@@ -51,6 +51,7 @@ class CommentsListViewState extends State<CommentsListView> {
   late final AuthenticationBloc _authenticationBloc;
 
   final TextEditingController _textEditingController = TextEditingController();
+  List<SocialPostComment> fetchedComments = List.empty();
 
   String? newUserComment;
 
@@ -91,7 +92,7 @@ class CommentsListViewState extends State<CommentsListView> {
                 LimitedBox(
                   maxHeight: 350,
                   // constraints: const BoxConstraints(maxHeight: 350),
-                  child: _commentsListView(state.comments, state.userIdProfileMap),
+                  child: _commentsListView(state.userIdProfileMap),
                 ),
                 const Spacer(),
                 Align(
@@ -247,8 +248,8 @@ class CommentsListViewState extends State<CommentsListView> {
     }
   }
 
-  _commentsListView(List<SocialPostComment> comments, Map<String, PublicUserProfile> userProfiles) {
-    if (comments.isEmpty) {
+  _commentsListView(Map<String, PublicUserProfile> userProfiles) {
+    if (fetchedComments.isEmpty) {
       return GestureDetector(
         onTap: () {
           KeyboardUtils.hideKeyboard(context);
@@ -270,12 +271,12 @@ class CommentsListViewState extends State<CommentsListView> {
           child: Scrollbar(
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: comments.length,
+              itemCount: fetchedComments.length,
               itemBuilder: (BuildContext context, int index) {
-                if (index >= comments.length) {
+                if (index >= fetchedComments.length) {
                   return const Center(child: CircularProgressIndicator());
                 } else {
-                  final currentComment = comments[index];
+                  final currentComment = fetchedComments[index];
                   final userProfile = userProfiles[currentComment.userId];
                   return _commentListItem(currentComment, userProfile);
                 }
@@ -283,7 +284,6 @@ class CommentsListViewState extends State<CommentsListView> {
             )
           ),
         ),
-
       );
     }
   }

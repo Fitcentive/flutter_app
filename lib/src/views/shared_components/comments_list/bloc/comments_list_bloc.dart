@@ -25,14 +25,11 @@ class CommentsListBloc extends Bloc<CommentsListEvent, CommentsListState> {
   void _addNewComment(AddNewComment event, Emitter<CommentsListState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.addCommentToPost(event.postId, event.userId, event.comment, accessToken!);
-    emit(CommentsLoading(userId: event.postId));
-
-    final comments = await socialMediaRepository.getCommentsForPost(event.postId, accessToken);
-    final List<String> userIdsFromNotificationSources = _getDistinctUserIds(comments);
-    final List<PublicUserProfile> userProfileDetails =
-    await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
-    final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
-    emit(CommentsLoaded(userId: event.postId, comments: comments, userIdProfileMap: userIdProfileMap));
+    final currentState = state;
+    if (currentState is CommentsLoaded) {
+      emit(CommentsLoading(userId: event.userId));
+      emit(currentState.copyWithNewCommentAdded(newComment: event.comment, userId: event.userId));
+    }
   }
 
   void _fetchCommentsRequested(FetchCommentsRequested event, Emitter<CommentsListState> emit) async {
@@ -44,7 +41,7 @@ class CommentsListBloc extends Bloc<CommentsListEvent, CommentsListState> {
     final List<PublicUserProfile> userProfileDetails =
     await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
-    emit(CommentsLoaded(userId: event.postId, comments: comments, userIdProfileMap: userIdProfileMap));
+    emit(CommentsLoaded(postId: event.postId, comments: comments, userIdProfileMap: userIdProfileMap));
   }
 
   List<String> _getDistinctUserIds(List<SocialPostComment> comments) {
