@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>211948202240-3b0pv8dm57t4dpntdoqvge043smn0is6.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.211948202240-3b0pv8dm57t4dpntdoqvge043smn0is6</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>211948202240-7vnfnk5bmj5hq5i1e897c02gcljjacd8.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCyzn-UB4LteGd8wa-wj6zBYs_k7Ks0aYk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>211948202240</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>io.fitcentive.flutterApp</string>
+	<key>PROJECT_ID</key>
+	<string>fitcentive-1210</string>
+	<key>STORAGE_BUCKET</key>
+	<string>fitcentive-1210.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:211948202240:ios:0bf809f34f80cfa242ebe5</string>
+	<key>DATABASE_URL</key>
+	<string>https://fitcentive-1210.firebaseio.com</string>
+</dict>
+</plist>
