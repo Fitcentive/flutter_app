@@ -151,7 +151,7 @@ class NotificationsViewState extends State<NotificationsView> {
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
         onTap: () async {
-          _goToSelectedPost(postId);
+          _goToUserProfile(likingUserProfile);
         },
         child: Container(
           width: 50,
@@ -184,7 +184,7 @@ class NotificationsViewState extends State<NotificationsView> {
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
         onTap: () async {
-          _goToSelectedPost(postId);
+          _goToUserProfile(commentingUserProfile);
         },
         child: Container(
           width: 50,
