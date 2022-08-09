@@ -145,8 +145,8 @@ class ProvideLocationViewState extends State<ProvideLocationView> {
           ),
           Slider(
             value: currentSliderValue,
-            divisions: 25,
-            max: 25.0,
+            divisions: 50,
+            max: 50.0,
             min: 1.0,
             label: currentSliderValue.round().toString(),
             onChanged: (value) {
