@@ -96,6 +96,10 @@ class NotificationsViewState extends State<NotificationsView> {
     switch (notification.notificationType) {
       case "UserFollowRequest":
         return _generateUserFollowRequestNotification(notification, userProfileMap);
+      case "UserCommentedOnPost":
+        return _generateUserCommentedOnPostNotification(notification, userProfileMap);
+      case "UserLikedPost":
+        return _generateUserLikedPostNotification(notification, userProfileMap);
       default:
         return const Text("Unknown notification type");
     }
@@ -109,6 +113,68 @@ class NotificationsViewState extends State<NotificationsView> {
               (route) => true
       );
     }
+  }
+
+  Widget _generateUserLikedPostNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
+    final String requestingUserId = notification.data['likingUser'];
+    final PublicUserProfile? requestingUserProfile = userProfileMap[requestingUserId];
+    return ListTile(
+      onTap: () async {
+        // todo
+      },
+      leading: GestureDetector(
+        onTap: () async {
+          // todo
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(requestingUserProfile, 100, 100),
+          ),
+        ),
+      ),
+      title: Text(
+        "${_getUserFirstAndLastName(requestingUserProfile)} liked your post",
+        style: const TextStyle(fontSize: 14),
+      ),
+      subtitle: Text(
+        DateFormat("hh:mm a     yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+        style: const TextStyle(fontSize: 10),
+      ),
+    );
+  }
+
+  Widget _generateUserCommentedOnPostNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
+    final String requestingUserId = notification.data['commentingUser'];
+    final PublicUserProfile? requestingUserProfile = userProfileMap[requestingUserId];
+    return ListTile(
+      onTap: () async {
+        // todo
+      },
+      leading: GestureDetector(
+        onTap: () async {
+          // todo
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(requestingUserProfile, 100, 100),
+          ),
+        ),
+      ),
+      title: Text(
+        "${_getUserFirstAndLastName(requestingUserProfile)} commented on your post",
+        style: const TextStyle(fontSize: 14),
+      ),
+      subtitle: Text(
+        DateFormat("hh:mm a     yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+        style: const TextStyle(fontSize: 10),
+      ),
+    );
   }
 
   Widget _generateUserFollowRequestNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {

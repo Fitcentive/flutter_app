@@ -87,11 +87,28 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   List<String> _getRelevantUserIdsFromNotifications(List<AppNotification> notifications) {
-    return notifications
+    final userFollowRequestNotificationUsers = notifications
         .where((element) => element.notificationType == "UserFollowRequest")
         .map((e) => e.data['requestingUser'] as String)
         .toSet()
         .toList();
+    final userCommentedOnPostNotificationUsers = notifications
+        .where((element) => element.notificationType == "UserCommentedOnPost")
+        .map((e) => e.data['commentingUser'] as String)
+        .toSet()
+        .toList();
+    final userLikedPostNotificationUsers = notifications
+        .where((element) => element.notificationType == "UserLikedPost")
+        .map((e) => e.data['likingUser'] as String)
+        .toSet()
+        .toList();
+
+    final userIdList = [
+      ...userFollowRequestNotificationUsers,
+      ...userCommentedOnPostNotificationUsers,
+      ...userLikedPostNotificationUsers
+    ];
+    return userIdList.toSet().toList();
   }
 
 }
