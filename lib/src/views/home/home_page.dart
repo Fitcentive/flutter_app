@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:badges/badges.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -44,7 +45,10 @@ class HomePage extends StatefulWidget {
       ),
       builder: (_) => MultiBlocProvider(
             providers: [
-              BlocProvider<MenuNavigationBloc>(create: (context) => MenuNavigationBloc()),
+              BlocProvider<MenuNavigationBloc>(create: (context) => MenuNavigationBloc(
+                notificationRepository: RepositoryProvider.of<NotificationRepository>(context),
+                secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context)
+              )),
             ],
             child: HomePage(defaultSelectedTab: defaultSelectedTab),
           )
@@ -71,6 +75,7 @@ class HomePageState extends State<HomePage> {
   final logger = Logger("HomePageState");
 
   late String selectedMenuItem;
+  late int unreadNotificationCount;
 
   UserProfile? userProfile;
 
@@ -137,6 +142,8 @@ class HomePageState extends State<HomePage> {
     _secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
 
     selectedMenuItem = widget.defaultSelectedTab;
+    unreadNotificationCount = 0;
+    _updateBloc(selectedMenuItem);
 
     PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
   }
@@ -156,6 +163,7 @@ class HomePageState extends State<HomePage> {
               builder: (BuildContext context, MenuNavigationState state) {
                 if (state is MenuItemSelected) {
                   selectedMenuItem = state.selectedMenuItem;
+                  unreadNotificationCount = state.unreadNotificationCount;
                 }
                 return Scaffold(
                   appBar: AppBar(
@@ -168,7 +176,7 @@ class HomePageState extends State<HomePage> {
                           color: Colors.teal,
                         ),
                         onPressed: () {
-                          _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: search));
+                          _updateBloc(search);
                         },
                       )
                     ],
@@ -230,12 +238,32 @@ class HomePageState extends State<HomePage> {
     });
   }
 
+  _updateBloc(String selectedItem) {
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      _menuNavigationBloc.add(
+          MenuItemChosen(
+              selectedMenuItem: selectedItem  ,
+              currentUserId: currentState.authenticatedUser.user.id
+          )
+      );
+    }
+  }
+
   _settingsIcon() {
     return GestureDetector(
       onTap: () {
         Navigator.pop(context);
         if (selectedMenuItem != accountDetails) {
-          _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: accountDetails));
+          final currentState = _authenticationBloc.state;
+          if (currentState is AuthSuccessUserUpdateState) {
+            _menuNavigationBloc.add(
+                MenuItemChosen(
+                    selectedMenuItem: accountDetails,
+                    currentUserId: currentState.authenticatedUser.user.id
+                )
+            );
+          }
         }
       },
       child: const Align(
@@ -268,7 +296,7 @@ class HomePageState extends State<HomePage> {
             onTap: () async {
               Navigator.pop(context);
               if (selectedMenuItem != accountDetails) {
-                _menuNavigationBloc.add(const MenuItemChosen(selectedMenuItem: accountDetails));
+                _updateBloc(accountDetails);
               }
             },
             child: Container(
@@ -280,7 +308,8 @@ class HomePageState extends State<HomePage> {
               ),
             ),
           )
-        ));
+        )
+    );
   }
 
   _getDecorationImage(AuthenticationState state) {
@@ -296,12 +325,24 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget _generateListTile(String text) {
+    final Widget element;
+    if (text == notifications && unreadNotificationCount != 0) {
+      element = Badge(
+        alignment: Alignment.centerLeft,
+        badgeContent: Text(unreadNotificationCount.toString()),
+        padding: const EdgeInsets.all(10),
+        child: Text(text),
+      );
+    }
+    else {
+      element = Text(text);
+    }
     return ListTile(
-      title: Text(text),
+      title: element,
       onTap: () {
         Navigator.pop(context);
         if (selectedMenuItem != text) {
-          _menuNavigationBloc.add(MenuItemChosen(selectedMenuItem: text));
+          _updateBloc(text);
         }
       },
     );

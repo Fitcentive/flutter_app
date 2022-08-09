@@ -11,11 +11,13 @@ class MenuNavigationInitial extends MenuNavigationState {}
 
 class MenuItemSelected extends MenuNavigationState {
   final String selectedMenuItem;
+  final int unreadNotificationCount;
 
   const MenuItemSelected({
-    required this.selectedMenuItem
+    required this.selectedMenuItem,
+    required this.unreadNotificationCount
   });
 
   @override
-  List<Object> get props => [selectedMenuItem];
+  List<Object> get props => [selectedMenuItem, unreadNotificationCount];
 }

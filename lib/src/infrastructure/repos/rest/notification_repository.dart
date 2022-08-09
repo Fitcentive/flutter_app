@@ -79,6 +79,23 @@ class NotificationRepository {
     }
   }
 
+  Future<int> getUnreadNotificationCount(
+      String userId,
+      String accessToken
+  ) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/$userId/notifications/get-unread-count"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final unreadCount = jsonResponse as int;
+      return unreadCount;
+    } else {
+      throw Exception("getUnreadNotificationCount: Received bad response with status: ${response.statusCode}");
+    }
+  }
+
   Future<void> markNotificationsAsRead(
       String userId,
       List<String> notificationIds,
