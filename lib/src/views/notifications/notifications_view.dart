@@ -10,6 +10,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_bloc.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_event.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_state.dart';
+import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -115,28 +116,37 @@ class NotificationsViewState extends State<NotificationsView> {
     }
   }
 
+  _goToSelectedPost(String postId) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        SelectedPostView.route(widget.currentUserProfile, postId),
+            (route) => true
+    );
+  }
+
   Widget _generateUserLikedPostNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String requestingUserId = notification.data['likingUser'];
-    final PublicUserProfile? requestingUserProfile = userProfileMap[requestingUserId];
+    final String postId = notification.data['postId'];
+    final PublicUserProfile? likingUserProfile = userProfileMap[requestingUserId];
     return ListTile(
       onTap: () async {
-        // todo
+        _goToSelectedPost(postId);
       },
       leading: GestureDetector(
         onTap: () async {
-          // todo
+          _goToSelectedPost(postId);
         },
         child: Container(
           width: 50,
           height: 50,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            image: ImageUtils.getUserProfileImage(requestingUserProfile, 100, 100),
+            image: ImageUtils.getUserProfileImage(likingUserProfile, 100, 100),
           ),
         ),
       ),
       title: Text(
-        "${_getUserFirstAndLastName(requestingUserProfile)} liked your post",
+        "${_getUserFirstAndLastName(likingUserProfile)} liked your post",
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Text(
@@ -148,26 +158,27 @@ class NotificationsViewState extends State<NotificationsView> {
 
   Widget _generateUserCommentedOnPostNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String requestingUserId = notification.data['commentingUser'];
-    final PublicUserProfile? requestingUserProfile = userProfileMap[requestingUserId];
+    final String postId = notification.data['postId'];
+    final PublicUserProfile? commentingUserProfile = userProfileMap[requestingUserId];
     return ListTile(
       onTap: () async {
-        // todo
+        _goToSelectedPost(postId);
       },
       leading: GestureDetector(
         onTap: () async {
-          // todo
+          _goToSelectedPost(postId);
         },
         child: Container(
           width: 50,
           height: 50,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            image: ImageUtils.getUserProfileImage(requestingUserProfile, 100, 100),
+            image: ImageUtils.getUserProfileImage(commentingUserProfile, 100, 100),
           ),
         ),
       ),
       title: Text(
-        "${_getUserFirstAndLastName(requestingUserProfile)} commented on your post",
+        "${_getUserFirstAndLastName(commentingUserProfile)} commented on your post",
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Text(

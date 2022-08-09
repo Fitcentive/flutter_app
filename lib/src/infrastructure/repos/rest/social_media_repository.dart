@@ -213,6 +213,21 @@ class SocialMediaRepository {
     }
   }
 
+  Future<SocialPost> getPostById(String postId, String accessToken) async {
+    final response = await http.get(Uri.parse("$BASE_URL/post/$postId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final post =  SocialPost.fromJson(jsonResponse);
+      return post;
+    } else {
+      throw Exception(
+          "getPostById: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<void> likePostForUser(String postId, String userId, String accessToken) async {
     final response = await http.post(Uri.parse("$BASE_URL/user/$userId/post/$postId/like"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
