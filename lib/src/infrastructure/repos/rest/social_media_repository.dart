@@ -138,7 +138,7 @@ class SocialMediaRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final posts = jsonResponse.map((e) => SocialPost.fromJson(e)).toList();
       return posts;
     } else {
@@ -186,7 +186,7 @@ class SocialMediaRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final comments = jsonResponse.map((e) => SocialPostComment.fromJson(e)).toList();
       return comments;
     } else {
