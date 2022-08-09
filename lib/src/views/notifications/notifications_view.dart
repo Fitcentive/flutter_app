@@ -169,7 +169,7 @@ class NotificationsViewState extends State<NotificationsView> {
           style: const TextStyle(fontSize: 14),
         ),
         subtitle: Text(
-          DateFormat("hh:mm      yyyy-MM-dd").format(notification.updatedAt),
+          DateFormat("hh:mm a      yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
         ),
         trailing: notification.isInteractive ? Column(
@@ -212,7 +212,8 @@ class NotificationsViewState extends State<NotificationsView> {
                         targetUser: currentAuthState.authenticatedUser,
                         notification: notification,
                         isApproved: isApproveButton
-                    ));
+                    )
+                );
               }
             },
             icon: Icon(

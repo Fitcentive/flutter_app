@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_app/src/models/notification/app_notification.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
@@ -21,12 +23,43 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     required this.secureStorage,
   }) : super(const NotificationsInitial()) {
     on<FetchNotifications>(_fetchNotifications);
-    on<PullToRefreshEvent>(_pullToRefresh);
     on<NotificationInteractedWith>(_notificationInteractedWith);
   }
 
   void _notificationInteractedWith(NotificationInteractedWith event, Emitter<NotificationsState> emit) async {
     if (event.notification.isInteractive && event.notification.notificationType == "UserFollowRequest") {
+      final currentState = state;
+      if (currentState is NotificationsLoaded) {
+        final newNotifications = currentState.notifications.map((n) {
+          if (n.id == event.notification.id) {
+            final now = DateTime.now().toUtc();
+            final jsonBody = {
+              ...n.data,
+              'isRequestApproved': event.isApproved,
+            };
+            return AppNotification(
+                id: n.id,
+                targetUser: n.targetUser,
+                notificationType: n.notificationType,
+                isInteractive: n.isInteractive,
+                hasBeenInteractedWith: true,
+                data: jsonBody,
+                createdAt: n.createdAt,
+                updatedAt: now
+            );
+          }
+          else {
+            return n;
+          }
+        }).toList();
+        emit(const NotificationsLoading());
+        emit(NotificationsLoaded(
+            notifications: newNotifications,
+            user: currentState.user,
+            userProfileMap: currentState.userProfileMap
+        ));
+      }
+
       final accessToken = await secureStorage.read(key: event.targetUser.authTokens.accessTokenSecureStorageKey);
       await socialMediaRepository.applyUserDecisionToFollowRequest(
           event.requestingUserId,
@@ -36,7 +69,6 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       );
       await notificationsRepository
           .updateUserNotification(event.targetUser.user.id, event.notification, event.isApproved, accessToken);
-      add(FetchNotifications(user: event.targetUser));
     }
   }
 
@@ -62,7 +94,4 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .toList();
   }
 
-  void _pullToRefresh(PullToRefreshEvent event, Emitter<NotificationsState> emit) async {
-    // todo - yet to implement
-  }
 }

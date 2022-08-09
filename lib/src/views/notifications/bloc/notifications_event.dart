@@ -20,15 +20,6 @@ class FetchNotifications extends NotificationsEvent {
   List<Object> get props => [];
 }
 
-class PullToRefreshEvent extends NotificationsEvent {
-  final AuthenticatedUser user;
-
-  const PullToRefreshEvent({required this.user});
-
-  @override
-  List<Object> get props => [user];
-}
-
 class NotificationInteractedWith extends NotificationsEvent {
   final AuthenticatedUser targetUser;
   final String requestingUserId;
