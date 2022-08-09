@@ -135,8 +135,8 @@ class UserProfileViewState extends State<UserProfileView> {
             const Padding(padding: EdgeInsets.all(10)),
             _userUsername(widget.userProfile.username),
             const Padding(padding: EdgeInsets.all(10)),
-            _messageUserButton(state),
-            _followUserButton(state),
+            _messageUserButtonOpt(state),
+            _followUserButtonOpt(state),
             _removeUserFromFollowersButtonOpt(state),
             _showUserPostsIfRequired(state)
           ]),
@@ -156,7 +156,7 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
-  Widget? _showUserPostsIfRequired(RequiredDataResolved state) {
+  Widget _showUserPostsIfRequired(RequiredDataResolved state) {
     if (state.userPosts == null) {
       return const SizedBox(
         height: 200,
@@ -379,13 +379,13 @@ class UserProfileViewState extends State<UserProfileView> {
     );
   }
 
-  Widget? _messageUserButton(RequiredDataResolved state) {
+  Widget? _messageUserButtonOpt(RequiredDataResolved state) {
     if (state.currentUser.user.id == state.userFollowStatus.otherUserId) {
       return null;
     }
-    return Container(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-        child: ElevatedButton.icon(
+    return Column(
+      children: [
+        ElevatedButton.icon(
           icon: const Icon(Icons.message),
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
@@ -395,7 +395,10 @@ class UserProfileViewState extends State<UserProfileView> {
           },
           label: const Text('Message user',
               style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-        ));
+        ),
+        WidgetUtils.spacer(5)
+      ],
+    );
   }
 
   _getBackgroundColours(RequiredDataResolved state) {
@@ -468,22 +471,24 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
-  Widget? _followUserButton(RequiredDataResolved state) {
+  Widget? _followUserButtonOpt(RequiredDataResolved state) {
     if (state.currentUser.user.id == state.userFollowStatus.otherUserId) {
       return null;
     }
-    return Container(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-        child: ElevatedButton.icon(
+    return Column(
+      children: [
+        ElevatedButton.icon(
           icon: Icon(_getIcon(state)),
           style: ButtonStyle(backgroundColor: _getBackgroundColours(state)),
           onPressed: () {
-            // yet to do
             _followUserButtonOnPressed();
           },
           label: Text(_getText(state),
               style: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-        ));
+        ),
+        WidgetUtils.spacer(5),
+      ],
+    );
   }
 
   Widget? _removeUserFromFollowersButtonOpt(RequiredDataResolved state) {
@@ -491,51 +496,58 @@ class UserProfileViewState extends State<UserProfileView> {
         !state.userFollowStatus.hasOtherUserRequestedToFollowCurrentUser) {
       return null;
     } else if (state.userFollowStatus.isOtherUserFollowingCurrentUser) {
-      return Container(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-          child: ElevatedButton.icon(
+      return Column(
+        children: [
+          ElevatedButton.icon(
             icon: const Icon(Icons.remove),
             style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.teal)),
             onPressed: () {
-              // yet to do
               _removeUserFromFollowersButtonPressed();
             },
             label: const Text("Remove user from followers",
                 style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-          ));
+          ),
+          WidgetUtils.spacer(5),
+        ],
+      );
     } else if (state.userFollowStatus.hasOtherUserRequestedToFollowCurrentUser) {
-      return Container(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-        child: Column(
-          children: [
-            Text("${widget.userProfile.firstName} ${widget.userProfile.lastName} has requested to follow you",
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-            Row(
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            child: Column(
               children: [
-                Expanded(
-                    child: ElevatedButton.icon(
-                  icon: const Icon(Icons.check),
-                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.teal)),
-                  onPressed: () {
-                    _applyUserFollowRequestDecision(true);
-                  },
-                  label: const Text("Approve",
-                      style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-                )),
-                Expanded(
-                    child: ElevatedButton.icon(
-                  icon: const Icon(Icons.close),
-                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent)),
-                  onPressed: () {
-                    _applyUserFollowRequestDecision(false);
-                  },
-                  label: const Text("Deny",
-                      style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-                )),
+                Text("${widget.userProfile.firstName} ${widget.userProfile.lastName} has requested to follow you",
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                Row(
+                  children: [
+                    Expanded(
+                        child: ElevatedButton.icon(
+                      icon: const Icon(Icons.check),
+                      style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.teal)),
+                      onPressed: () {
+                        _applyUserFollowRequestDecision(true);
+                      },
+                      label: const Text("Approve",
+                          style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                    )),
+                    Expanded(
+                        child: ElevatedButton.icon(
+                      icon: const Icon(Icons.close),
+                      style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent)),
+                      onPressed: () {
+                        _applyUserFollowRequestDecision(false);
+                      },
+                      label: const Text("Deny",
+                          style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                    )),
+                  ],
+                ),
+                WidgetUtils.spacer(5)
               ],
-            )
-          ],
-        ),
+            ),
+          ),
+        ],
       );
     }
     return null;

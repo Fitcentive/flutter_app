@@ -328,7 +328,7 @@ class CommentsListViewState extends State<CommentsListView> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                 child: Text(
-                  DateFormat("hh:mm      yyyy-MM-dd").format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
+                  DateFormat("hh:mm a      yyyy-MM-dd").format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
                   style: const TextStyle(
                       fontSize: 10
                   ),

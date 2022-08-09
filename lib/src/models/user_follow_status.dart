@@ -30,7 +30,7 @@ class UserFollowStatus extends Equatable {
       this.isOtherUserFollowingCurrentUser,
       this.hasCurrentUserRequestedToFollowOtherUser,
       this.hasOtherUserRequestedToFollowCurrentUser
-      );
+  );
 
   factory UserFollowStatus.fromJson(Map<String, dynamic> json) => _$UserFollowStatusFromJson(json);
 
@@ -38,9 +38,11 @@ class UserFollowStatus extends Equatable {
 
   @override
   List<Object?> get props => [
-        isCurrentUserFollowingOtherUser,
-        isOtherUserFollowingCurrentUser,
-        hasCurrentUserRequestedToFollowOtherUser,
-        hasOtherUserRequestedToFollowCurrentUser
-      ];
+    currentUserId,
+    otherUserId,
+    isCurrentUserFollowingOtherUser,
+    isOtherUserFollowingCurrentUser,
+    hasCurrentUserRequestedToFollowOtherUser,
+    hasOtherUserRequestedToFollowCurrentUser
+  ];
 }

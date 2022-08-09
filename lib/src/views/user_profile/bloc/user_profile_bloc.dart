@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/user_follow_status.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,7 +28,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     on<UnfollowUser>(_unfollowUser);
     on<UnlikePostForUser>(_unlikePostForUser);
     on<LikePostForUser>(_likePostForUser);
-    on<RemoveUserFromCurrentUserFollowers>(_removeUserFromCurrentUserFollowers);
+    on<RemoveUserFromCurrentUserFollowers>(_removeOtherUserFromCurrentUserFollowers);
     on<ApplyUserDecisionToFollowRequest>(_applyUserDecisionToFollowRequest);
     on<ViewCommentsForSelectedPost>(_viewCommentsForSelectedPost);
     on<GetChatRoom>(_getChatRoom);
@@ -120,6 +121,22 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   }
 
   void _requestToFollowUser(RequestToFollowUser event, Emitter<UserProfileState> emit) async {
+    final newFollowStatus = UserFollowStatus(
+        event.userFollowStatus.currentUserId,
+        event.userFollowStatus.otherUserId,
+        event.userFollowStatus.isCurrentUserFollowingOtherUser,
+        event.userFollowStatus.isOtherUserFollowingCurrentUser,
+        true,
+        event.userFollowStatus.hasOtherUserRequestedToFollowCurrentUser
+    );
+    emit(RequiredDataResolved(
+        userFollowStatus: newFollowStatus,
+        currentUser: event.currentUser,
+        userPosts: event.userPosts,
+        usersWhoLikedPosts: event.usersWhoLikedPosts,
+        selectedPostId: null,
+        chatRoomId: null
+    ));
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.requestToFollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
@@ -135,6 +152,22 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   }
 
   void _unfollowUser(UnfollowUser event, Emitter<UserProfileState> emit) async {
+    final newFollowStatus = UserFollowStatus(
+        event.userFollowStatus.currentUserId,
+        event.userFollowStatus.otherUserId,
+        false,
+        event.userFollowStatus.isOtherUserFollowingCurrentUser,
+        event.userFollowStatus.hasCurrentUserRequestedToFollowOtherUser,
+        event.userFollowStatus.hasOtherUserRequestedToFollowCurrentUser
+    );
+    emit(RequiredDataResolved(
+        userFollowStatus: newFollowStatus,
+        currentUser: event.currentUser,
+        userPosts: event.userPosts,
+        usersWhoLikedPosts: event.usersWhoLikedPosts,
+        selectedPostId: null,
+        chatRoomId: null
+    ));
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.unfollowUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
@@ -149,7 +182,23 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     ));
   }
 
-  void _removeUserFromCurrentUserFollowers(RemoveUserFromCurrentUserFollowers event, Emitter<UserProfileState> emit) async {
+  void _removeOtherUserFromCurrentUserFollowers(RemoveUserFromCurrentUserFollowers event, Emitter<UserProfileState> emit) async {
+    final newFollowStatus = UserFollowStatus(
+        event.userFollowStatus.currentUserId,
+        event.userFollowStatus.otherUserId,
+        event.userFollowStatus.isCurrentUserFollowingOtherUser,
+        false,
+        event.userFollowStatus.hasCurrentUserRequestedToFollowOtherUser,
+        event.userFollowStatus.hasOtherUserRequestedToFollowCurrentUser
+    );
+    emit(RequiredDataResolved(
+        userFollowStatus: newFollowStatus,
+        currentUser: event.currentUser,
+        userPosts: event.userPosts,
+        usersWhoLikedPosts: event.usersWhoLikedPosts,
+        selectedPostId: null,
+        chatRoomId: null
+    ));
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.removeFollowingUser(event.currentUser.user.id, event.targetUserId, accessToken!);
     final userFollowStatus =
@@ -165,6 +214,22 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   }
 
   void _applyUserDecisionToFollowRequest(ApplyUserDecisionToFollowRequest event, Emitter<UserProfileState> emit) async {
+    final newFollowStatus = UserFollowStatus(
+        event.userFollowStatus.currentUserId,
+        event.userFollowStatus.otherUserId,
+        event.userFollowStatus.isCurrentUserFollowingOtherUser,
+        event.isFollowRequestApproved,
+        event.userFollowStatus.hasCurrentUserRequestedToFollowOtherUser,
+        event.userFollowStatus.hasOtherUserRequestedToFollowCurrentUser
+    );
+    emit(RequiredDataResolved(
+        userFollowStatus: newFollowStatus,
+        currentUser: event.currentUser,
+        userPosts: event.userPosts,
+        usersWhoLikedPosts: event.usersWhoLikedPosts,
+        selectedPostId: null,
+        chatRoomId: null
+    ));
     final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.applyUserDecisionToFollowRequest(
         event.targetUserId,

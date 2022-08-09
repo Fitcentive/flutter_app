@@ -141,7 +141,7 @@ class NotificationsViewState extends State<NotificationsView> {
           style: const TextStyle(fontSize: 14),
         ),
         subtitle: Text(
-          DateFormat("hh:mm      yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          DateFormat("hh:mm a     yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
         ),
       );
@@ -197,7 +197,7 @@ class NotificationsViewState extends State<NotificationsView> {
 
   _generateActionButton(bool isApproveButton, AppNotification notification, String requestingUserId) {
     return CircleAvatar(
-      radius: 11.5,
+      radius: 9.5,
       backgroundColor: isApproveButton ? Colors.teal : Colors.redAccent,
       child: Center(
         child: IconButton(
