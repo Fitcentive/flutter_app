@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
@@ -38,6 +39,11 @@ class BodyTypePreferencesViewState extends State<BodyTypePreferencesView> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> bodyTypesList = List.empty(growable: true);
+    ConstantUtils.bodyTypes.forEach((bodyType, imageAsset) => bodyTypesList.addAll([
+      _createCheckbox(bodyType),
+      _imageView(imageAsset)
+    ]));
     return SingleChildScrollView(
       child: Container(
         margin: const EdgeInsets.fromLTRB(10, 10, 10, 75),
@@ -49,12 +55,7 @@ class BodyTypePreferencesViewState extends State<BodyTypePreferencesView> {
               WidgetUtils.spacer(5),
               const Text("Select all that apply", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(20),
-              _createCheckbox("Lean"),
-              _imageView("assets/images/lean_body_type.png"),
-              _createCheckbox("Hybrid"),
-              _imageView("assets/images/hybrid_body_type.png"),
-              _createCheckbox("Bulky"),
-              _imageView("assets/images/bulky_body_type.png"),
+              ...bodyTypesList,
             ],
           ),
         ),

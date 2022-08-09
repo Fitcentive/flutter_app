@@ -45,6 +45,7 @@ class DaysPreferencesViewState extends State<DaysPreferencesView> {
 
   @override
   Widget build(BuildContext context) {
+    final days = ConstantUtils.days.map((day) => _createCheckbox(day)).toList();
     return SingleChildScrollView(
       child: Container(
         margin: const EdgeInsets.fromLTRB(10, 10, 10, 75),
@@ -56,13 +57,7 @@ class DaysPreferencesViewState extends State<DaysPreferencesView> {
               WidgetUtils.spacer(5),
               const Text("Select all that apply", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(20),
-              _createCheckbox("Sunday"),
-              _createCheckbox("Monday"),
-              _createCheckbox("Tuesday"),
-              _createCheckbox("Wednesday"),
-              _createCheckbox("Thursday"),
-              _createCheckbox("Friday"),
-              _createCheckbox("Saturday"),
+              ...days,
               WidgetUtils.spacer(20),
               const Text("How many hours a week are you willing to commit?", style: TextStyle(fontSize: 20),),
               WidgetUtils.spacer(5),

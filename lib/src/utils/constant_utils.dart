@@ -9,4 +9,47 @@ class ConstantUtils {
   static const int defaultMaximumAge = 100;
 
   static const double defaultSelectedHoursPerWeek = 4.0;
+
+  static const List<String> activityTypes = [
+    "Walking",
+    "Running",
+    "Hiking",
+    "Biking",
+    "Rock Climbing",
+    "Swimming",
+    "Football",
+    "Basketball",
+    "Lifting Weights",
+    "Hockey",
+  ];
+
+  static const List<String> days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  static const List<String> genders = [
+    "Male",
+    "Female",
+    "Other",
+  ];
+
+  static const List<String> fitnessGoals = [
+    "Lose Weight",
+    "Gain Muscle",
+    "Improve Cardio",
+    "Strength Training",
+    "Keeping Active",
+  ];
+
+  static const Map<String, String> bodyTypes = {
+    "Lean": "assets/images/lean_body_type.png",
+    "Hybrid": "assets/images/hybrid_body_type.png",
+    "Bulky": "assets/images/bulky_body_type.png",
+  };
 }

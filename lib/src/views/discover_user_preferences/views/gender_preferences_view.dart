@@ -53,6 +53,7 @@ class GenderPreferencesViewState extends State<GenderPreferencesView> {
 
   @override
   Widget build(BuildContext context) {
+    final genders = ConstantUtils.genders.map((g) => _createCheckbox(g)).toList();
     return SingleChildScrollView(
       child: Container(
         margin: const EdgeInsets.fromLTRB(10, 50, 10, 75),
@@ -64,9 +65,7 @@ class GenderPreferencesViewState extends State<GenderPreferencesView> {
               WidgetUtils.spacer(5),
               const Text("Select all that apply", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(20),
-              _createCheckbox("Male"),
-              _createCheckbox("Female"),
-              _createCheckbox("Other"),
+              ...genders,
               WidgetUtils.spacer(50),
               const Text("What is your age preference?", style: TextStyle(fontSize: 20),),
               WidgetUtils.spacer(10),
