@@ -12,6 +12,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
 import 'package:flutter_app/src/views/discover_home/discover_home_view.dart';
@@ -150,9 +151,11 @@ class HomePageState extends State<HomePage> {
   }
 
   _updateAppBadgeIfPossible() async {
-    final isSupported = await FlutterAppBadger.isAppBadgeSupported();
-    if (isSupported) {
-      FlutterAppBadger.updateBadgeCount(unreadNotificationCount);
+    if (DeviceUtils.isMobileDevice()) {
+      final isSupported = await FlutterAppBadger.isAppBadgeSupported();
+      if (isSupported) {
+        FlutterAppBadger.updateBadgeCount(unreadNotificationCount);
+      }
     }
   }
 

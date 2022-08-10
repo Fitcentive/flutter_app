@@ -10,10 +10,12 @@ abstract class SelectedPostEvent extends Equatable {
 }
 
 class FetchSelectedPost extends SelectedPostEvent {
+  final String currentUserId;
   final String postId;
 
   const FetchSelectedPost({
-    required this.postId
+    required this.currentUserId,
+    required this.postId,
   });
 
   @override

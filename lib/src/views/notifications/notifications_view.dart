@@ -173,10 +173,22 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
+  // Default to current user in case not available, to maintain backwards compatibility
+  String _getPostCreatorId(AppNotification notification) {
+    try {
+      final id = notification.data['postCreatorId'];
+      return id;
+    } catch (e) {
+      return widget.currentUserProfile.userId;
+    }
+  }
+
   Widget _generateUserCommentedOnPostNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String requestingUserId = notification.data['commentingUser'];
     final String postId = notification.data['postId'];
+    final String postCreatorId = _getPostCreatorId(notification);
     final PublicUserProfile? commentingUserProfile = userProfileMap[requestingUserId];
+    final PublicUserProfile postCreatorUserProfile = userProfileMap[postCreatorId] ?? widget.currentUserProfile;
     return ListTile(
       onTap: () async {
         _goToSelectedPost(postId);
@@ -196,7 +208,7 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
       title: Text(
-        "${_getUserFirstAndLastName(commentingUserProfile)} commented on your post",
+        _getCommentNotificationText(commentingUserProfile!, postCreatorUserProfile),
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Text(
@@ -204,6 +216,15 @@ class NotificationsViewState extends State<NotificationsView> {
         style: const TextStyle(fontSize: 10),
       ),
     );
+  }
+
+  _getCommentNotificationText(PublicUserProfile commentingUserProfile, PublicUserProfile postCreatorUserProfile) {
+    if (postCreatorUserProfile.userId == widget.currentUserProfile.userId) {
+      return "${_getUserFirstAndLastName(commentingUserProfile)} commented on your post";
+    }
+    else {
+      return "${_getUserFirstAndLastName(commentingUserProfile)} commented on ${_getUserFirstAndLastName(postCreatorUserProfile)}'s post";
+    }
   }
 
   Widget _generateUserFollowRequestNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {

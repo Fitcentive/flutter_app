@@ -51,7 +51,7 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     final postComments = await socialMediaRepository.getCommentsForPost(event.postId, accessToken);
     final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.postId], accessToken);
 
-    final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments);
+    final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId);
     final List<PublicUserProfile> userProfileDetails =
     await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
@@ -64,10 +64,11 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     ));
   }
 
-  List<String> _getRelevantUserIdsFromComments(List<SocialPostComment> comments) {
-    return comments
+  List<String> _getRelevantUserIdsFromComments(List<SocialPostComment> comments, String currentUserId) {
+    final commenters = comments
         .map((e) => e.userId)
-        .toSet()
-        .toList();
+        .toSet();
+    commenters.add(currentUserId);
+    return commenters.toList();
   }
 }

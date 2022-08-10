@@ -42,7 +42,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
             final now = DateTime.now().toUtc();
             final jsonBody = {
               ...n.data,
-              'isRequestApproved': event.isApproved,
+              'isApproved': event.isApproved,
             };
             return AppNotification(
                 id: n.id,
@@ -105,6 +105,19 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .map((e) => e.data['commentingUser'] as String)
         .toSet()
         .toList();
+    final postCreatorUsers = notifications
+        .where((element) => element.notificationType == "UserCommentedOnPost")
+        .map((e) {
+          try {
+            final v = e.data['postCreatorId'] as String;
+            return v;
+          } catch (e) {
+            return null;
+          }
+        })
+        .whereType<String>()
+        .toSet()
+        .toList();
     final userLikedPostNotificationUsers = notifications
         .where((element) => element.notificationType == "UserLikedPost")
         .map((e) => e.data['likingUser'] as String)
@@ -114,7 +127,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     final userIdList = [
       ...userFollowRequestNotificationUsers,
       ...userCommentedOnPostNotificationUsers,
-      ...userLikedPostNotificationUsers
+      ...userLikedPostNotificationUsers,
+      ...postCreatorUsers
     ];
     return userIdList.toSet().toList();
   }

@@ -68,7 +68,12 @@ class SelectedPostViewState extends State<SelectedPostView> {
     super.initState();
 
     _selectedPostBloc = BlocProvider.of<SelectedPostBloc>(context);
-    _selectedPostBloc.add(FetchSelectedPost(postId: widget.currentPostId));
+    _selectedPostBloc.add(
+        FetchSelectedPost(
+            postId: widget.currentPostId,
+            currentUserId: widget.currentUserProfile.userId
+        )
+    );
   }
 
   @override
