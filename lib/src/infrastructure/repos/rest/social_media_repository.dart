@@ -219,7 +219,7 @@ class SocialMediaRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final post =  SocialPost.fromJson(jsonResponse);
       return post;
     } else {

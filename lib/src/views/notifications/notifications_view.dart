@@ -141,9 +141,10 @@ class NotificationsViewState extends State<NotificationsView> {
   }
 
   Widget _generateUserLikedPostNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
-    final String requestingUserId = notification.data['likingUser'];
+    final List<dynamic> likingUserIdsDynamic = notification.data['likingUsers'];
+    final List<String> likingUserIds = likingUserIdsDynamic.map((e) => e as String).toList();
     final String postId = notification.data['postId'];
-    final PublicUserProfile? likingUserProfile = userProfileMap[requestingUserId];
+    final PublicUserProfile? likingUserProfile = userProfileMap[likingUserIds.first];
     return ListTile(
       onTap: () async {
         _goToSelectedPost(postId);
@@ -163,7 +164,7 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
       title: Text(
-        "${_getUserFirstAndLastName(likingUserProfile)} liked your post",
+        _getLikeNotificationText(likingUserProfile, likingUserIds.length),
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Text(
@@ -171,6 +172,21 @@ class NotificationsViewState extends State<NotificationsView> {
         style: const TextStyle(fontSize: 10),
       ),
     );
+  }
+
+  _getLikeNotificationText(
+      PublicUserProfile? likingUserProfile,
+      int numberOfLikers
+      ) {
+    if (numberOfLikers == 1) {
+      return "${_getUserFirstAndLastName(likingUserProfile)} liked your post";
+    }
+    else if (numberOfLikers == 2) {
+      return "${_getUserFirstAndLastName(likingUserProfile)} and ${numberOfLikers - 1} other person liked your post";
+    }
+    else {
+      return "${_getUserFirstAndLastName(likingUserProfile)} and ${numberOfLikers - 1} others liked your post";
+    }
   }
 
   // Default to current user in case not available, to maintain backwards compatibility
@@ -184,10 +200,11 @@ class NotificationsViewState extends State<NotificationsView> {
   }
 
   Widget _generateUserCommentedOnPostNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
-    final String requestingUserId = notification.data['commentingUser'];
+    final List<dynamic> commentingUserIdsDynamic = notification.data['commentingUsers'];
+    final List<String> commentingUserIds = commentingUserIdsDynamic.map((e) => e as String).toList();
     final String postId = notification.data['postId'];
     final String postCreatorId = _getPostCreatorId(notification);
-    final PublicUserProfile? commentingUserProfile = userProfileMap[requestingUserId];
+    final PublicUserProfile? commentingUserProfile = userProfileMap[commentingUserIds.first];
     final PublicUserProfile postCreatorUserProfile = userProfileMap[postCreatorId] ?? widget.currentUserProfile;
     return ListTile(
       onTap: () async {
@@ -208,7 +225,7 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
       title: Text(
-        _getCommentNotificationText(commentingUserProfile!, postCreatorUserProfile),
+        _getCommentNotificationText(commentingUserProfile!, postCreatorUserProfile, commentingUserIds.length),
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Text(
@@ -218,12 +235,34 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  _getCommentNotificationText(PublicUserProfile commentingUserProfile, PublicUserProfile postCreatorUserProfile) {
-    if (postCreatorUserProfile.userId == widget.currentUserProfile.userId) {
-      return "${_getUserFirstAndLastName(commentingUserProfile)} commented on your post";
+  _getCommentNotificationText(
+      PublicUserProfile commentingUserProfile,
+      PublicUserProfile postCreatorUserProfile,
+      int numberOfLikers
+  ) {
+    if (numberOfLikers == 1) {
+      if (postCreatorUserProfile.userId == widget.currentUserProfile.userId) {
+        return "${_getUserFirstAndLastName(commentingUserProfile)} commented on your post";
+      }
+      else {
+        return "${_getUserFirstAndLastName(commentingUserProfile)} commented on ${_getUserFirstAndLastName(postCreatorUserProfile)}'s post";
+      }
+    }
+    else if (numberOfLikers == 2) {
+      if (postCreatorUserProfile.userId == widget.currentUserProfile.userId) {
+        return "${_getUserFirstAndLastName(commentingUserProfile)} and 1 other person commented on your post";
+      }
+      else {
+        return "${_getUserFirstAndLastName(commentingUserProfile)} and 1 other person commented on ${_getUserFirstAndLastName(postCreatorUserProfile)}'s post";
+      }
     }
     else {
-      return "${_getUserFirstAndLastName(commentingUserProfile)} commented on ${_getUserFirstAndLastName(postCreatorUserProfile)}'s post";
+      if (postCreatorUserProfile.userId == widget.currentUserProfile.userId) {
+        return "${_getUserFirstAndLastName(commentingUserProfile)} and ${numberOfLikers - 1} others commented on your post";
+      }
+      else {
+        return "${_getUserFirstAndLastName(commentingUserProfile)} and ${numberOfLikers - 1} others commented on ${_getUserFirstAndLastName(postCreatorUserProfile)}'s post";
+      }
     }
   }
 

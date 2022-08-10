@@ -102,7 +102,11 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .toList();
     final userCommentedOnPostNotificationUsers = notifications
         .where((element) => element.notificationType == "UserCommentedOnPost")
-        .map((e) => e.data['commentingUser'] as String)
+        .map((e) {
+          final List<dynamic> data = e.data['commentingUsers'];
+          return data.map((e) => e as String);
+        })
+        .expand((element) => element)
         .toSet()
         .toList();
     final postCreatorUsers = notifications
@@ -120,7 +124,11 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .toList();
     final userLikedPostNotificationUsers = notifications
         .where((element) => element.notificationType == "UserLikedPost")
-        .map((e) => e.data['likingUser'] as String)
+        .map((e) {
+          final List<dynamic> data = e.data['likingUsers'];
+          return data.map((e) => e as String);
+        })
+        .expand((element) => element)
         .toSet()
         .toList();
 
