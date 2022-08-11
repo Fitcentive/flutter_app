@@ -243,19 +243,34 @@ class SelectedPostViewState extends State<SelectedPostView> {
     );
   }
 
+  _goToUserProfile(PublicUserProfile? userProfile) {
+    if (userProfile != null) {
+      Navigator.pushAndRemoveUntil(
+          context,
+          UserProfileView.route(userProfile, widget.currentUserProfile),
+              (route) => true
+      );
+    }
+  }
+
   _commentListItem(SocialPostComment comment, PublicUserProfile? userProfile) {
     return ListTile(
       onTap: () {
         KeyboardUtils.hideKeyboard(context);
       },
-      leading: CircleAvatar(
-        radius: 30,
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: ImageUtils.getUserProfileImage(userProfile, 100, 100),
+      leading: InkWell(
+        onTap: () {
+          _goToUserProfile(userProfile);
+        },
+        child: CircleAvatar(
+          radius: 30,
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              image: ImageUtils.getUserProfileImage(userProfile, 100, 100),
+            ),
           ),
         ),
       ),
