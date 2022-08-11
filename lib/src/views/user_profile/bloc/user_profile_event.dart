@@ -143,15 +143,6 @@ class ApplyUserDecisionToFollowRequest extends UserProfileEvent {
   ];
 }
 
-class ViewCommentsForSelectedPost extends UserProfileEvent {
-  final String postId;
-
-  const ViewCommentsForSelectedPost({required this.postId});
-
-  @override
-  List<Object> get props => [postId];
-}
-
 class GetChatRoom extends UserProfileEvent {
   final String targetUserId;
 

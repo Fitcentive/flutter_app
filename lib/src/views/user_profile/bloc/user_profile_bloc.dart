@@ -30,7 +30,6 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     on<LikePostForUser>(_likePostForUser);
     on<RemoveUserFromCurrentUserFollowers>(_removeOtherUserFromCurrentUserFollowers);
     on<ApplyUserDecisionToFollowRequest>(_applyUserDecisionToFollowRequest);
-    on<ViewCommentsForSelectedPost>(_viewCommentsForSelectedPost);
     on<GetChatRoom>(_getChatRoom);
   }
 
@@ -57,13 +56,6 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       }
     }
 
-  }
-
-  void _viewCommentsForSelectedPost(ViewCommentsForSelectedPost event, Emitter<UserProfileState> emit) async {
-    final currentState = state;
-    if (currentState is RequiredDataResolved) {
-      emit(currentState.copyWith(newPostId: event.postId, chatRoomId: currentState.chatRoomId));
-    }
   }
 
   void _likePostForUser(LikePostForUser event, Emitter<UserProfileState> emit) async {

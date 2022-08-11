@@ -25,13 +25,13 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
   }
 
   void _addNewComment(AddNewComment event, Emitter<SelectedPostState> emit) async {
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await socialMediaRepository.addCommentToPost(event.postId, event.userId, event.comment, accessToken!);
     final currentState = state;
     if (currentState is SelectedPostLoaded) {
       emit(const SelectedPostLoading());
       emit(currentState.copyWithNewCommentAdded(newComment: event.comment, userId: event.userId));
     }
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await socialMediaRepository.addCommentToPost(event.postId, event.userId, event.comment, accessToken!);
   }
 
   void _unlikePostForUser(UnlikePostForUser event, Emitter<SelectedPostState> emit) async {
@@ -51,7 +51,7 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     final postComments = await socialMediaRepository.getCommentsForPost(event.postId, accessToken);
     final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.postId], accessToken);
 
-    final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId);
+    final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId, fetchedPost.userId);
     final List<PublicUserProfile> userProfileDetails =
     await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
@@ -64,11 +64,16 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     ));
   }
 
-  List<String> _getRelevantUserIdsFromComments(List<SocialPostComment> comments, String currentUserId) {
+  List<String> _getRelevantUserIdsFromComments(
+      List<SocialPostComment> comments,
+      String currentUserId,
+      String postCreatorId
+  ) {
     final commenters = comments
         .map((e) => e.userId)
         .toSet();
     commenters.add(currentUserId);
+    commenters.add(postCreatorId);
     return commenters.toList();
   }
 }

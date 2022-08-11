@@ -13,11 +13,10 @@ import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_event.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
-import 'package:flutter_app/src/views/shared_components/comments_list/comments_list.dart';
+import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class NewsFeedView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -51,8 +50,6 @@ class NewsFeedViewState extends State<NewsFeedView> {
   List<SocialPost> postsState = List.empty();
   List<PostsWithLikedUserIds> likedUsersForPosts = List.empty();
 
-  final PanelController _panelController = PanelController();
-
   @override
   void initState() {
     super.initState();
@@ -73,25 +70,9 @@ class NewsFeedViewState extends State<NewsFeedView> {
     return BlocBuilder<NewsFeedBloc, NewsFeedState>(
         builder: (context, state) {
           return Scaffold(
-            body: SlidingUpPanel(
-              controller: _panelController,
-              minHeight: 0,
-              panel: _generateSlidingPanel(state),
-              body: _newsfeedListView(state),
-            ),
+            body: _newsfeedListView(state),
           );
         });
-  }
-
-  _generateSlidingPanel(NewsFeedState state) {
-    if (state is NewsFeedDataReady) {
-      return CommentsListView.withBloc(
-        key: Key(state.selectedPostId ?? "null"),
-        postId: state.selectedPostId,
-        currentUserId: state.user.user.id
-      );
-    }
-    return const Text("Bad State");
   }
 
   _newsfeedListView(NewsFeedState state) {
@@ -268,8 +249,11 @@ class NewsFeedViewState extends State<NewsFeedView> {
               padding: const EdgeInsets.all(2.5),
               child: ElevatedButton(
                   onPressed: () {
-                    _newsFeedBloc.add(ViewCommentsForSelectedPost(postId: post.postId));
-                    _panelController.animatePanelToPosition(1.0, duration: const Duration(milliseconds: 250));
+                    Navigator.pushAndRemoveUntil(
+                          context,
+                          SelectedPostView.route(widget.currentUserProfile, post.postId),
+                          (route) => true
+                    );
                   },
                   child: const Text(
                     "Comment",

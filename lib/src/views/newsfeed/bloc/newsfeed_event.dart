@@ -33,12 +33,3 @@ class UnlikePostForUser extends NewsFeedEvent {
   @override
   List<Object> get props => [userId, postId];
 }
-
-class ViewCommentsForSelectedPost extends NewsFeedEvent {
-  final String postId;
-
-  const ViewCommentsForSelectedPost({required this.postId});
-
-  @override
-  List<Object> get props => [postId];
-}

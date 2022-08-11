@@ -133,83 +133,12 @@ class SelectedPostViewState extends State<SelectedPostView> {
                   WidgetUtils.spacer(5),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 50, maxHeight: 75),
-                      child: _createAddCommentView(),
-                    ),
+                    child: _createAddCommentView(widget.currentUserProfile),
                   )
                 ]
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  _addCommentDialog() {
-    return GestureDetector(
-      onTap: () {
-        KeyboardUtils.hideKeyboard(context);
-      },
-      child: AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 300),
-          child: Scaffold(
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              title: const Text("Add Comment", style: TextStyle(color: Colors.teal),),
-            ),
-            body: Align(
-              alignment: Alignment.bottomLeft,
-              child: TextField(
-                onChanged: (text) {
-                  setState(() {
-                    if (text.trim().isNotEmpty) {
-                      newUserComment = text;
-                    }
-                    else {
-                      newUserComment = null;
-                    }
-                  });
-                },
-                decoration: const InputDecoration(
-                    hintText: "Write a comment..."
-                ),
-                controller: _textEditingController,
-                expands: true,
-                minLines: null,
-                maxLines: null,
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          Row(
-            children: [
-              ElevatedButton(
-                  onPressed: () {
-                    if (_textEditingController.value.text.trim().isEmpty) {
-                      newUserComment = null;
-                      _textEditingController.text = "";
-                    }
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Cancel")
-              ),
-              const Spacer(),
-              ElevatedButton(
-                  onPressed: () {
-                    _onSubmitButtonPressed();
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Post")
-              )
-            ],
-          )
-        ],
       ),
     );
   }
@@ -230,7 +159,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
     }
   }
 
-  _createAddCommentView() {
+  _createAddCommentView(PublicUserProfile? currentUserProfile) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
@@ -238,23 +167,42 @@ class SelectedPostViewState extends State<SelectedPostView> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          InkWell(
-            onTap: () {
-              showDialog(context: context, builder: (context) {
-                return _addCommentDialog();
-              });
-            },
-            child: FittedBox(
-              fit:BoxFit.fitHeight,
-              child:  Container(
-                  width: ScreenUtils.getScreenWidth(context) * 0.6,
-                  padding: const EdgeInsets.all(15),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      newUserComment ?? "Write a comment...",
-                    ),
-                  )
+          WidgetUtils.spacer(5),
+          CircleAvatar(
+            radius: 20,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: ImageUtils.getUserProfileImage(currentUserProfile, 100, 100),
+              ),
+            ),
+          ),
+          WidgetUtils.spacer(5),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 7.5),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 150),
+                child: TextField(
+                  controller: _textEditingController,
+                  onChanged: (text) {
+                    setState(() {
+                      if (text.trim().isNotEmpty) {
+                        newUserComment = text;
+                      }
+                      else {
+                        newUserComment = null;
+                      }
+                    });
+                  },
+                  maxLines: null,
+                  decoration: const InputDecoration.collapsed(
+                    hintText: 'Share your thoughts here...',
+                    hintStyle: TextStyle(fontSize: 15)
+                  ),
+                ),
               ),
             ),
           ),
@@ -297,6 +245,9 @@ class SelectedPostViewState extends State<SelectedPostView> {
 
   _commentListItem(SocialPostComment comment, PublicUserProfile? userProfile) {
     return ListTile(
+      onTap: () {
+        KeyboardUtils.hideKeyboard(context);
+      },
       leading: CircleAvatar(
         radius: 30,
         child: Container(

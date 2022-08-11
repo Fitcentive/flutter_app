@@ -44,6 +44,7 @@ class CommentsListView extends StatefulWidget {
   }
 }
 
+// This is currently not being used
 class CommentsListViewState extends State<CommentsListView> {
 
   late final CommentsListBloc _commentsListBloc;

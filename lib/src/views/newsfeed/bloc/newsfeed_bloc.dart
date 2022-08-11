@@ -21,14 +21,6 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
     on<NewsFeedFetchRequested>(_newsFeedFetchRequested);
     on<LikePostForUser>(_likePostForUser);
     on<UnlikePostForUser>(_unlikePostForUser);
-    on<ViewCommentsForSelectedPost>(_viewCommentsForSelectedPost);
-  }
-
-  void _viewCommentsForSelectedPost(ViewCommentsForSelectedPost event, Emitter<NewsFeedState> emit) async {
-    final currentState = state;
-    if (currentState is NewsFeedDataReady) {
-      emit(currentState.copyWith(newPostId: event.postId));
-    }
   }
 
   void _likePostForUser(LikePostForUser event, Emitter<NewsFeedState> emit) async {

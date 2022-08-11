@@ -11,6 +11,7 @@ import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/comments_list/comments_list.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_bloc.dart';
@@ -18,7 +19,6 @@ import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart'
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class UserProfileView extends StatefulWidget {
   static const String routeName = "user/profile";
@@ -59,8 +59,6 @@ class UserProfileViewState extends State<UserProfileView> {
 
   List<SocialPost>? postsState = List.empty();
   List<PostsWithLikedUserIds>? likedUsersForPosts = List.empty();
-
-  final PanelController _panelController = PanelController();
 
   @override
   void initState() {
@@ -106,12 +104,7 @@ class UserProfileViewState extends State<UserProfileView> {
         },
         child: BlocBuilder<UserProfileBloc, UserProfileState>(builder: (context, state) {
           if (state is RequiredDataResolved) {
-            return SlidingUpPanel(
-              controller: _panelController,
-              minHeight: 0,
-              panel: _generateSlidingPanel(state),
-              body: _buildUserProfilePage(state),
-            );
+            return _buildUserProfilePage(state);
           } else {
             return const Center(
               child: CircularProgressIndicator(color: Colors.teal),
@@ -325,8 +318,11 @@ class UserProfileViewState extends State<UserProfileView> {
               padding: const EdgeInsets.all(2.5),
               child: ElevatedButton(
                   onPressed: () {
-                    _userProfileBloc.add(ViewCommentsForSelectedPost(postId: post.postId));
-                    _panelController.animatePanelToPosition(1.0, duration: const Duration(milliseconds: 250));
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        SelectedPostView.route(widget.currentUserProfile, post.postId),
+                            (route) => true
+                    );
                   },
                   child: const Text(
                     "Comment",
