@@ -12,9 +12,9 @@ import 'package:http/http.dart' as http;
 class UserRepository {
   static const String BASE_URL = "https://api.vid.app/api/user";
 
-  Future<List<PublicUserProfile>> searchForUsers(String searchQuery, int limit, String accessToken) async {
+  Future<List<PublicUserProfile>> searchForUsers(String searchQuery, String accessToken, int limit, int offset) async {
     final response = await http.post(
-        Uri.parse("$BASE_URL/public/search?limit=$limit"),
+        Uri.parse("$BASE_URL/public/search?limit=$limit&offset=$offset"),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken'

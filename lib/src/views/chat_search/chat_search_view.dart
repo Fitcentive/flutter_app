@@ -5,11 +5,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_bloc.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_event.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_state.dart';
+import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -50,12 +52,10 @@ class ChatSearchView extends StatefulWidget {
 }
 
 class ChatSearchViewState extends State<ChatSearchView> {
-
   late final ChatSearchBloc _chatSearchBloc;
 
   final _searchTextController = TextEditingController();
   final _suggestionsController = SuggestionsBoxController();
-  final _scrollController = ScrollController();
 
   Timer? _debounce;
 
@@ -124,60 +124,29 @@ class ChatSearchViewState extends State<ChatSearchView> {
     if (state is ChatSearchResultsLoaded) {
       return state.userData.isEmpty
           ? const Expanded(child: Center(child: Text('No Results')))
-          : Expanded(child: _userResultsList(state.userData));
+          : Expanded(
+              child: UserResultsList(
+                userProfiles: state.userData,
+                currentUserProfile: widget.currentUserProfile,
+                fetchMoreResultsCallback: _fetchMoreResultsCallback,
+                doesNextPageExist: state.doesNextPageExist,
+              )
+          );
+          // : Expanded(child: _userResultsList(state.userData));
     } else {
       return const Center(child: Text("Error: Something went wrong"));
     }
   }
 
-  _userResultsList(List<PublicUserProfile> userProfiles) {
-    return Column(
-      children: [
-        ListTile(
-          title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
-          trailing: Text(userProfiles.length.toString(), style: const TextStyle(color: Colors.teal)),
-        ),
-        Expanded(child: _searchResults(userProfiles))
-      ],
-    );
-  }
-
-  Widget _searchResults(List<PublicUserProfile> items) {
-    return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      controller: _scrollController,
-      itemCount: items.length,
-      itemBuilder: (BuildContext context, int index) {
-        if (index >= items.length) {
-          return const Center(child: CircularProgressIndicator());
-        } else {
-          return _userSearchResultItem(items[index]);
-        }
-      },
-    );
-  }
-
-  Widget _userSearchResultItem(PublicUserProfile userProfile) {
-    return ListTile(
-      title: Text("${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""}",
-          style: const TextStyle(fontWeight: FontWeight.w500)),
-      trailing: const Text(""),
-      subtitle: Text(userProfile.username ?? ""),
-      leading: CircleAvatar(
-        radius: 30,
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: ImageUtils.getUserProfileImage(userProfile, 100, 100),
-          ),
-        ),
-      ),
-      onTap: () {
-        _chatSearchBloc.add(GetChatRoom(targetUserProfile: userProfile));
-      },
-    );
+  _fetchMoreResultsCallback() {
+    final currentState = _chatSearchBloc.state;
+    if (currentState is ChatSearchResultsLoaded) {
+      _chatSearchBloc.add(FetchMoreResultsForSameQuery(
+        query: currentState.query,
+        limit: ConstantUtils.DEFAULT_LIMIT,
+        offset: currentState.userData.length,
+      ));
+    }
   }
 
   _openUserChatView(String roomId, PublicUserProfile targetUserProfile) {
@@ -215,13 +184,21 @@ class ChatSearchViewState extends State<ChatSearchView> {
                   suffixIcon: IconButton(
                     onPressed: () {
                       _suggestionsController.close();
-                      _chatSearchBloc.add(const ChatSearchQueryChanged(query: ""));
+                      _chatSearchBloc.add(const ChatSearchQueryChanged(
+                          query: "",
+                          limit: ConstantUtils.DEFAULT_LIMIT,
+                          offset: ConstantUtils.DEFAULT_OFFSET
+                      ));
                     },
                     icon: const Icon(Icons.close),
                   ))),
           suggestionsCallback: (text)  {
             if (text.isNotEmpty) {
-              _chatSearchBloc.add(ChatSearchQueryChanged(query: text));
+              _chatSearchBloc.add(ChatSearchQueryChanged(
+                  query: text,
+                  limit: ConstantUtils.DEFAULT_LIMIT,
+                  offset: ConstantUtils.DEFAULT_OFFSET,
+              ));
             }
             return List.empty();
           },

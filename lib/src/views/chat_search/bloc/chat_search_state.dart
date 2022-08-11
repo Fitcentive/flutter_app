@@ -28,14 +28,16 @@ class ChatSearchResultsLoading extends ChatSearchState {
 class ChatSearchResultsLoaded extends ChatSearchState {
   final String query;
   final List<PublicUserProfile> userData;
+  final bool doesNextPageExist;
 
   const ChatSearchResultsLoaded({
     required this.query,
     required this.userData,
+    required this.doesNextPageExist,
   });
 
   @override
-  List<Object?> get props => [query, userData];
+  List<Object?> get props => [query, userData, doesNextPageExist];
 }
 
 class ChatSearchResultsError extends ChatSearchState {

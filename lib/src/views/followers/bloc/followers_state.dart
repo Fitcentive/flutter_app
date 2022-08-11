@@ -24,12 +24,16 @@ class FollowersDataLoading extends FollowersState {
 }
 
 class FollowersDataLoaded extends FollowersState {
-
   final String userId;
   final List<PublicUserProfile> userProfiles;
+  final bool doesNextPageExist;
 
-  const FollowersDataLoaded({required this.userId, required this.userProfiles});
+  const FollowersDataLoaded({
+    required this.userId,
+    required this.userProfiles,
+    required this.doesNextPageExist
+  });
 
   @override
-  List<Object> get props => [userId, userProfiles];
+  List<Object> get props => [userId, userProfiles, doesNextPageExist];
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/following/bloc/following_bloc.dart';
 import 'package:flutter_app/src/views/following/bloc/following_event.dart';
 import 'package:flutter_app/src/views/following/bloc/following_state.dart';
@@ -48,7 +49,13 @@ class FollowingUsersViewState extends State<FollowingUsersView> {
 
     final authState = _authenticationBloc.state;
     if (authState is AuthSuccessUserUpdateState) {
-      _followingBloc.add(FetchFollowingUsersRequested(userId: authState.authenticatedUser.user.id));
+      _followingBloc.add(
+          FetchFollowingUsersRequested(
+              userId: authState.authenticatedUser.user.id,
+              limit: ConstantUtils.DEFAULT_LIMIT,
+              offset: ConstantUtils.DEFAULT_OFFSET
+          )
+      );
     }
   }
 
@@ -63,7 +70,7 @@ class FollowingUsersViewState extends State<FollowingUsersView> {
       body: BlocBuilder<FollowingBloc, FollowingState>(builder: (context, state) {
         if (state is FollowingUsersDataLoaded) {
           return state.userProfiles.isEmpty ? const Center(child: Text('No Results'))
-              : _generateUserResultsList(state.userProfiles);
+              : _generateUserResultsList(state);
         } else {
           return const Center(
             child: CircularProgressIndicator(color: Colors.teal),
@@ -73,17 +80,44 @@ class FollowingUsersViewState extends State<FollowingUsersView> {
     );
   }
 
-  _generateUserResultsList(List<PublicUserProfile> profiles) {
+  _generateUserResultsList(FollowingUsersDataLoaded state) {
     return RefreshIndicator(
       onRefresh: _pullRefresh,
-      child: UserResultsList(userProfiles: profiles, currentUserProfile: widget.currentUserProfile),
+      child: UserResultsList(
+          userProfiles: state.userProfiles,
+          currentUserProfile: widget.currentUserProfile,
+          fetchMoreResultsCallback: _fetchMoreResultsCallback,
+          doesNextPageExist: state.doesNextPageExist,
+      ),
     );
+  }
+
+  _fetchMoreResultsCallback() {
+    final currentAuthState = _authenticationBloc.state;
+    final currentFollowingState = _followingBloc.state;
+
+    if (currentAuthState is AuthSuccessUserUpdateState &&
+        currentFollowingState is FollowingUsersDataLoaded) {
+      _followingBloc.add(
+          FetchFollowingUsersRequested(
+              userId: currentAuthState.authenticatedUser.user.id,
+              limit: ConstantUtils.DEFAULT_LIMIT,
+              offset: currentFollowingState.userProfiles.length
+          )
+      );
+    }
   }
 
   Future<void> _pullRefresh() async {
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
-      _followingBloc.add(FetchFollowingUsersRequested(userId: currentAuthState.authenticatedUser.user.id));
+      _followingBloc.add(
+          ReFetchFollowingUsersRequested(
+              userId: currentAuthState.authenticatedUser.user.id,
+              limit: ConstantUtils.DEFAULT_LIMIT,
+              offset: ConstantUtils.DEFAULT_OFFSET
+          )
+      );
     }
   }
 

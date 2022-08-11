@@ -26,6 +26,9 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
   @override
   bool wantKeepAlive = true;
 
+  static const int DEFAULT_LIMIT = 20;
+  static const int DEFAULT_OFFSET = 0;
+
   late final SearchBloc _searchBloc;
   late final UserRepository _userRepository;
   late final FlutterSecureStorage _flutterSecureStorage;
@@ -105,7 +108,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                   const limit = 5;
                   final accessToken =
                       await _flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-                  return await _userRepository.searchForUsers(pattern, limit, accessToken!);
+                  return await _userRepository.searchForUsers(pattern, accessToken!, limit, DEFAULT_OFFSET);
                 } else {
                   return List.empty();
                 }
@@ -164,7 +167,9 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
               : Expanded(
                   child: UserResultsList(
                     userProfiles: state.userData,
-                    currentUserProfile: widget.currentUserProfile
+                    currentUserProfile: widget.currentUserProfile,
+                    fetchMoreResultsCallback: _fetchMoreResultsCallback,
+                    doesNextPageExist: state.doesNextPageExist,
                 )
               );
         } else {
@@ -174,7 +179,26 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
     );
   }
 
+  _fetchMoreResultsCallback() {
+    final currentState = _searchBloc.state;
+    if (currentState is SearchResultsLoaded) {
+      _searchBloc.add(
+          SearchQuerySubmitted(
+              query: currentState.query,
+              limit: DEFAULT_LIMIT,
+              offset: currentState.userData.length
+          )
+      );
+    }
+  }
+
   void startFreshSearch(String searchQuery) {
-    _searchBloc.add(SearchQuerySubmitted(query: searchQuery));
+    _searchBloc.add(
+        SearchQuerySubmitted(
+          query: searchQuery,
+          limit: DEFAULT_LIMIT,
+          offset: DEFAULT_OFFSET
+        )
+    );
   }
 }

@@ -37,11 +37,16 @@ class SearchResultsLoading extends SearchState {
 class SearchResultsLoaded extends SearchState {
   final String query;
   final List<PublicUserProfile> userData;
+  final bool doesNextPageExist;
 
-  const SearchResultsLoaded({required this.query, required this.userData});
+  const SearchResultsLoaded({
+    required this.query,
+    required this.userData,
+    required this.doesNextPageExist,
+  });
 
   @override
-  List<Object> get props => [query, userData];
+  List<Object> get props => [query, userData, doesNextPageExist];
 }
 
 class SearchResultsError extends SearchState {

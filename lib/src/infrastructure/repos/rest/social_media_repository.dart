@@ -60,9 +60,9 @@ class SocialMediaRepository {
     }
   }
 
-  Future<List<PublicUserProfile>> fetchUserFollowers(String userId, String accessToken) async {
+  Future<List<PublicUserProfile>> fetchUserFollowers(String userId, String accessToken, int limit, int offset) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/user/$userId/followers"),
+      Uri.parse("$BASE_URL/user/$userId/followers?skip=$offset&limit=$limit"),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken'
@@ -79,9 +79,9 @@ class SocialMediaRepository {
     }
   }
 
-  Future<List<PublicUserProfile>> fetchUserFollowing(String userId, String accessToken) async {
+  Future<List<PublicUserProfile>> fetchUserFollowing(String userId, String accessToken, int limit, int offset) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/user/$userId/following"),
+      Uri.parse("$BASE_URL/user/$userId/following?skip=$offset&limit=$limit"),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken'

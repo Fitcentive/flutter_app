@@ -18,11 +18,17 @@ class SearchQueryChanged extends SearchEvent {
 
 class SearchQuerySubmitted extends SearchEvent {
   final String query;
+  final int limit;
+  final int offset;
 
-  const SearchQuerySubmitted({required this.query});
+  const SearchQuerySubmitted({
+    required this.query,
+    required this.limit,
+    required this.offset,
+  });
 
   @override
-  List<Object?> get props => [query];
+  List<Object?> get props => [query, limit, offset];
 }
 
 class SearchQueryReset extends SearchEvent {
