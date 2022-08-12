@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -14,6 +17,7 @@ import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
+import 'package:flutter_app/src/views/shared_components/social_posts_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -42,10 +46,15 @@ class NewsFeedView extends StatefulWidget {
 }
 
 class NewsFeedViewState extends State<NewsFeedView> {
+  static const double _scrollThreshold = 400.0;
+
   late final NewsFeedBloc _newsFeedBloc;
   late final AuthenticationBloc _authenticationBloc;
 
   final TextEditingController _textController = TextEditingController();
+
+  Timer? _debounce;
+  final _scrollController = ScrollController();
 
   List<SocialPost> postsState = List.empty();
   List<PostsWithLikedUserIds> likedUsersForPosts = List.empty();
@@ -61,8 +70,76 @@ class NewsFeedViewState extends State<NewsFeedView> {
 
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
-      _newsFeedBloc.add(NewsFeedFetchRequested(user: currentAuthState.authenticatedUser));
+      _newsFeedBloc.add(
+          NewsFeedFetchRequested(
+              user: currentAuthState.authenticatedUser,
+              createdBefore: DateTime.now().millisecondsSinceEpoch,
+              limit: ConstantUtils.DEFAULT_NEWSFEED_LIMIT
+          )
+      );
     }
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _pullRefresh() async {
+    final currentAuthState = _authenticationBloc.state;
+    if (currentAuthState is AuthSuccessUserUpdateState) {
+      _newsFeedBloc.add(
+          NewsFeedReFetchRequested(
+              user: currentAuthState.authenticatedUser,
+              createdBefore: DateTime.now().millisecondsSinceEpoch,
+              limit: ConstantUtils.DEFAULT_NEWSFEED_LIMIT
+          )
+      );
+    }
+  }
+
+  Future<void> _fetchMoreResults() async {
+    final currentAuthState = _authenticationBloc.state;
+    if (currentAuthState is AuthSuccessUserUpdateState) {
+      _newsFeedBloc.add(
+          NewsFeedFetchRequested(
+              user: currentAuthState.authenticatedUser,
+              createdBefore: postsState.last.createdAt.add(DateTime.now().timeZoneOffset).millisecondsSinceEpoch,
+              limit: ConstantUtils.DEFAULT_NEWSFEED_LIMIT
+          )
+      );
+    }
+  }
+
+
+  Future<void> _likeOrUnlikePost(SocialPost post,  PostsWithLikedUserIds likedUserIds) async {
+    List<String> newLikedUserIdsForCurrentPost = likedUserIds.userIds;
+    final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.currentUserProfile.userId);
+
+    if (hasUserAlreadyLikedPost) {
+      _newsFeedBloc.add(UnlikePostForUser(userId: widget.currentUserProfile.userId, postId: post.postId));
+    } else {
+      _newsFeedBloc.add(LikePostForUser(userId: widget.currentUserProfile.userId, postId: post.postId));
+    }
+
+    setState(() {
+      if (hasUserAlreadyLikedPost) {
+        newLikedUserIdsForCurrentPost.remove(widget.currentUserProfile.userId);
+      }
+      else {
+        newLikedUserIdsForCurrentPost.add(widget.currentUserProfile.userId);
+      }
+      likedUsersForPosts = likedUsersForPosts.map((e) {
+        if (e.postId == post.postId) {
+          return PostsWithLikedUserIds(e.postId, newLikedUserIdsForCurrentPost);
+        } else {
+          return e;
+        }
+      }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -75,6 +152,33 @@ class NewsFeedViewState extends State<NewsFeedView> {
         });
   }
 
+  _newsFeedList(NewsFeedDataReady state) {
+    return SocialPostsList(
+        currentUserProfile: widget.currentUserProfile,
+        posts: postsState,
+        userIdProfileMap: state.userIdProfileMap,
+        likedUserIds: likedUsersForPosts,
+        doesNextPageExist: state.doesNextPageExist,
+        fetchMoreResultsCallback: _fetchMoreResults,
+        refreshCallback: _pullRefresh,
+        buttonInteractionCallback: _likeOrUnlikePost
+    );
+  }
+
+  void _onScroll() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if(_scrollController.hasClients) {
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        final currentScroll = _scrollController.position.pixels;
+
+        if (maxScroll - currentScroll <= _scrollThreshold) {
+          _fetchMoreResults();
+        }
+      }
+    });
+  }
+
   _newsfeedListView(NewsFeedState state) {
     if (state is NewsFeedDataReady) {
       if (state.posts.isNotEmpty) {
@@ -82,34 +186,24 @@ class NewsFeedViewState extends State<NewsFeedView> {
         likedUsersForPosts = state.postsWithLikedUserIds;
         return RefreshIndicator(
           onRefresh: () async {
-            _newsFeedBloc.add(NewsFeedFetchRequested(user: state.user));
+            _pullRefresh();
           },
-          child: ListView.builder(
-            itemCount: postsState.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == 0) {
-                return Column(
-                  children: [
-                    _addNewPostView(),
-                    _separation(),
-                  ],
-                );
-              }
-              if (index >= postsState.length + 1) {
-                return const Center(child: CircularProgressIndicator());
-              } else {
-                final usersWhoLikedPost = likedUsersForPosts
-                    .firstWhere((element) => element.postId == postsState[index - 1].postId);
-                return _newsFeedListItem(postsState[index - 1], state.userIdProfileMap, usersWhoLikedPost);
-              }
-            },
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              children: [
+                _addNewPostView(),
+                _separation(),
+                _newsFeedList(state)
+              ],
+            ),
           ),
         );
       }
       else {
         return RefreshIndicator(
           onRefresh: () async {
-            _newsFeedBloc.add(NewsFeedFetchRequested(user: state.user));
+            _pullRefresh();
           },
           child: ListView(
             children: [
@@ -133,183 +227,6 @@ class NewsFeedViewState extends State<NewsFeedView> {
           padding: const EdgeInsets.all(30),
           child: const Text("Awfully quiet here...."),
         )
-    );
-  }
-
-  _userHeader(PublicUserProfile? publicUser) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () {
-            Navigator.pushAndRemoveUntil(context, UserProfileView.route(publicUser!, widget.currentUserProfile), (route) => true);
-          },
-          child: CircleAvatar(
-            radius: 30,
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: ImageUtils.getUserProfileImage(publicUser, 100, 100),
-              ),
-            ),
-          ),
-        ),
-        WidgetUtils.spacer(20),
-        Text(
-          StringUtils.getUserNameFromUserProfile(publicUser),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        )
-      ],
-    );
-  }
-
-  _userPostText(SocialPost post) {
-    return Row(
-      children: [
-        Expanded(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-              child: Text(post.text),
-            )
-        )
-      ],
-    );
-  }
-
-
-
-  _getLikesAndComments(SocialPost post, PostsWithLikedUserIds likedUserIds) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)),
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: Text("${post.numberOfComments} comments"),
-          ),
-        )
-      ],
-    );
-  }
-
-  _getPostActionButtons(SocialPost post, PostsWithLikedUserIds likedUserIds) {
-    return Row(
-      children: [
-        Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(2.5),
-              child: ElevatedButton.icon(
-                  icon: likedUserIds.userIds.contains(widget.currentUserProfile.userId) ?
-                            const Icon(Icons.thumb_down) : const Icon(Icons.thumb_up),
-                  onPressed: () {
-                    List<String> newLikedUserIdsForCurrentPost = likedUserIds.userIds;
-                    final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.currentUserProfile.userId);
-
-                    if (hasUserAlreadyLikedPost) {
-                      _newsFeedBloc.add(UnlikePostForUser(userId: widget.currentUserProfile.userId, postId: post.postId));
-                    } else {
-                      _newsFeedBloc.add(LikePostForUser(userId: widget.currentUserProfile.userId, postId: post.postId));
-                    }
-
-                    setState(() {
-                      if (hasUserAlreadyLikedPost) {
-                        newLikedUserIdsForCurrentPost.remove(widget.currentUserProfile.userId);
-                      }
-                      else {
-                        newLikedUserIdsForCurrentPost.add(widget.currentUserProfile.userId);
-                      }
-                      likedUsersForPosts = likedUsersForPosts.map((e) {
-                        if (e.postId == post.postId) {
-                          return PostsWithLikedUserIds(e.postId, newLikedUserIdsForCurrentPost);
-                        } else {
-                          return e;
-                        }
-                      }).toList();
-                    });
-                  },
-                  label: Text(likedUserIds.userIds.contains(widget.currentUserProfile.userId) ? "Unlike" : "Like",
-                    style: const TextStyle(
-                        fontSize: 12
-                    ),
-                  )
-              ),
-            )
-        ),
-        Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(2.5),
-              child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                          context,
-                          SelectedPostView.route(widget.currentUserProfile, post.postId),
-                          (route) => true
-                    );
-                  },
-                  child: const Text(
-                    "Comment",
-                    style: TextStyle(
-                        fontSize: 12
-                    ),
-                  )
-              ),
-            )
-        ),
-        Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(2.5),
-              child: ElevatedButton(
-                  onPressed: () {},
-                  child: const Text(
-                    "Share",
-                    style: TextStyle(
-                        fontSize: 12
-                    ),
-                  )
-              ),
-            )
-        ),
-      ],
-    );
-  }
-
-  Widget _newsFeedListItem(
-      SocialPost post,
-      Map<String, PublicUserProfile> userIdProfileMap,
-      PostsWithLikedUserIds likedUserIds
-  ) {
-    final publicUser = userIdProfileMap[post.userId];
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Card(
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: WidgetUtils.skipNulls(
-                  [
-                    _userHeader(publicUser),
-                    WidgetUtils.spacer(10),
-                    _userPostText(post),
-                    WidgetUtils.spacer(5),
-                    WidgetUtils.generatePostImageIfExists(post.photoUrl),
-                    WidgetUtils.spacer(5),
-                    _getLikesAndComments(post, likedUserIds),
-                    _getPostActionButtons(post, likedUserIds),
-                  ]
-              ),
-            ),
-          ),
-      ),
     );
   }
 

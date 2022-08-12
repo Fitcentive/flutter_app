@@ -7,11 +7,32 @@ abstract class NewsFeedEvent extends Equatable {
 
 class NewsFeedFetchRequested extends NewsFeedEvent {
   final AuthenticatedUser user;
+  final int createdBefore;
+  final int limit;
 
-  const NewsFeedFetchRequested({required this.user});
+  const NewsFeedFetchRequested({
+    required this.user,
+    required this.createdBefore,
+    required this.limit
+  });
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [user, createdBefore, limit];
+}
+
+class NewsFeedReFetchRequested extends NewsFeedEvent {
+  final AuthenticatedUser user;
+  final int createdBefore;
+  final int limit;
+
+  const NewsFeedReFetchRequested({
+    required this.user,
+    required this.createdBefore,
+    required this.limit
+  });
+
+  @override
+  List<Object> get props => [user, createdBefore, limit];
 }
 
 class LikePostForUser extends NewsFeedEvent {

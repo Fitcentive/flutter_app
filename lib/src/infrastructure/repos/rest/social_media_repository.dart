@@ -132,8 +132,8 @@ class SocialMediaRepository {
     }
   }
 
-  Future<List<SocialPost>> getNewsfeedForUser(String userId,String accessToken) async {
-    final response = await http.get(Uri.parse("$BASE_URL/user/$userId/newsfeed"),
+  Future<List<SocialPost>> getNewsfeedForUser(String userId, String accessToken, int createdBefore, int limit) async {
+    final response = await http.get(Uri.parse("$BASE_URL/user/$userId/newsfeed?createdBefore=$createdBefore&limit=$limit"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 

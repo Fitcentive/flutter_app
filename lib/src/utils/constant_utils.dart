@@ -1,5 +1,6 @@
 class ConstantUtils {
   static const int DEFAULT_LIMIT = 20;
+  static const int DEFAULT_NEWSFEED_LIMIT = 10;
   static const int DEFAULT_OFFSET = 0;
 
   static const List<String> genderTypes = ['Male', 'Female', 'Other'];
