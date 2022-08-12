@@ -63,23 +63,18 @@ class SocialPostsListState extends State<SocialPostsList> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        widget.refreshCallback();
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: widget.doesNextPageExist ? widget.posts.length + 1 : widget.posts.length,
+      controller: _scrollController,
+      itemBuilder: (BuildContext context, int index) {
+        if (index >= widget.posts.length) {
+          return const Center(child: CircularProgressIndicator());
+        } else {
+          final usersWhoLikedPost = widget.likedUserIds.firstWhere((element) => element.postId == widget.posts[index].postId);
+          return _newsFeedListItem(widget.posts[index], widget.userIdProfileMap, usersWhoLikedPost);
+        }
       },
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: widget.doesNextPageExist ? widget.posts.length + 1 : widget.posts.length,
-        controller: _scrollController,
-        itemBuilder: (BuildContext context, int index) {
-          if (index >= widget.posts.length) {
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            final usersWhoLikedPost = widget.likedUserIds.firstWhere((element) => element.postId == widget.posts[index].postId);
-            return _newsFeedListItem(widget.posts[index], widget.userIdProfileMap, usersWhoLikedPost);
-          }
-        },
-      ),
     );
   }
 

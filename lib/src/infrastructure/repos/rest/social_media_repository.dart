@@ -254,13 +254,13 @@ class SocialMediaRepository {
     }
   }
 
-  Future<List<SocialPost>> getPostsForUser(String userId,String accessToken) async {
-    final response = await http.get(Uri.parse("$BASE_URL/user/$userId/post"),
+  Future<List<SocialPost>> getPostsForUser(String userId, String accessToken, int createdBefore, int limit) async {
+    final response = await http.get(Uri.parse("$BASE_URL/user/$userId/post?createdBefore=$createdBefore&limit=$limit"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final posts = jsonResponse.map((e) => SocialPost.fromJson(e)).toList();
       return posts;
     } else {

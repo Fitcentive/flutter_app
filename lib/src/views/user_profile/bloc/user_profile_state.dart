@@ -38,18 +38,22 @@ class RequiredDataResolved extends UserProfileState {
   final String? selectedPostId;
   final String? chatRoomId;
 
+  final bool doesNextPageExist;
+
   const RequiredDataResolved({
     required this.userFollowStatus,
     required this.currentUser,
     required this.userPosts,
     required this.usersWhoLikedPosts,
     required this.selectedPostId,
-    required this.chatRoomId
+    required this.chatRoomId,
+    required this.doesNextPageExist,
   });
 
   RequiredDataResolved copyWith({
     required String? newPostId,
     required String? chatRoomId,
+    required bool doesNextPageExist,
   }) {
     return RequiredDataResolved(
         userFollowStatus: userFollowStatus,
@@ -57,7 +61,8 @@ class RequiredDataResolved extends UserProfileState {
         userPosts: userPosts,
         usersWhoLikedPosts: usersWhoLikedPosts,
         selectedPostId: newPostId,
-        chatRoomId: chatRoomId
+        chatRoomId: chatRoomId,
+        doesNextPageExist: doesNextPageExist,
     );
   }
 

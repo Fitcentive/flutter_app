@@ -14,22 +14,56 @@ abstract class UserProfileEvent extends Equatable {
 class FetchRequiredData extends UserProfileEvent {
   final AuthenticatedUser currentUser;
   final String userId;
+  final int createdBefore;
+  final int limit;
 
-  const FetchRequiredData({required this.userId, required this.currentUser});
+  const FetchRequiredData({
+    required this.userId,
+    required this.currentUser,
+    required this.createdBefore,
+    required this.limit,
+  });
 
   @override
-  List<Object?> get props => [userId, currentUser];
+  List<Object?> get props => [userId, currentUser, createdBefore, limit];
 }
 
 class FetchUserPostsData extends UserProfileEvent {
   final UserFollowStatus userFollowStatus;
   final AuthenticatedUser currentUser;
   final String userId;
+  final int createdBefore;
+  final int limit;
 
-  const FetchUserPostsData({required this.userFollowStatus, required this.userId, required this.currentUser});
+  const FetchUserPostsData({
+    required this.userFollowStatus,
+    required this.userId,
+    required this.currentUser,
+    required this.createdBefore,
+    required this.limit,
+  });
 
   @override
-  List<Object?> get props => [userFollowStatus, userId, currentUser];
+  List<Object?> get props => [userFollowStatus, userId, currentUser, createdBefore, limit];
+}
+
+class ReFetchUserPostsData extends UserProfileEvent {
+  final UserFollowStatus userFollowStatus;
+  final AuthenticatedUser currentUser;
+  final String userId;
+  final int createdBefore;
+  final int limit;
+
+  const ReFetchUserPostsData({
+    required this.userFollowStatus,
+    required this.userId,
+    required this.currentUser,
+    required this.createdBefore,
+    required this.limit,
+  });
+
+  @override
+  List<Object?> get props => [userFollowStatus, userId, currentUser, createdBefore, limit];
 }
 
 class RequestToFollowUser extends UserProfileEvent {
