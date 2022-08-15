@@ -94,6 +94,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
         widget.likedUsersForCurrentPost != null && widget.userIdProfileMap != null) {
       _selectedPostBloc.add(
           PostAlreadyProvidedByParent(
+            currentUserId: widget.currentUserProfile.userId,
             currentPost: widget.currentPost!,
             currentPostComments: widget.currentPostComments!,
             likedUsersForCurrentPost: widget.likedUsersForCurrentPost!,

@@ -53,6 +53,20 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
         postWithLikedUserIds: event.likedUsersForCurrentPost,
         userProfileMap: event.userIdProfileMap
     ));
+
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final postComments = await socialMediaRepository.getCommentsForPost(event.currentPost.postId, accessToken!);
+    final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.currentPost.postId], accessToken);
+    final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId, event.currentPost.userId);
+    final List<PublicUserProfile> userProfileDetails =
+    await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
+    final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+    emit(SelectedPostLoaded(
+        post: event.currentPost,
+        comments: postComments,
+        postWithLikedUserIds: likedUsersForPostIds.first,
+        userProfileMap: userIdProfileMap
+    ));
   }
 
   void _fetchSelectedPost(FetchSelectedPost event, Emitter<SelectedPostState> emit) async {

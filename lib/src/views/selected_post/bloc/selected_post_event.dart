@@ -27,12 +27,14 @@ class FetchSelectedPost extends SelectedPostEvent {
 }
 
 class PostAlreadyProvidedByParent extends SelectedPostEvent {
+  final String currentUserId;
   final SocialPost currentPost;
   final List<SocialPostComment> currentPostComments;
   final PostsWithLikedUserIds likedUsersForCurrentPost;
   final Map<String, PublicUserProfile> userIdProfileMap;
 
   const PostAlreadyProvidedByParent({
+    required this.currentUserId,
     required this.currentPost,
     required this.currentPostComments,
     required this.likedUsersForCurrentPost,
@@ -40,7 +42,13 @@ class PostAlreadyProvidedByParent extends SelectedPostEvent {
   });
 
   @override
-  List<Object> get props => [currentPost, currentPostComments, likedUsersForCurrentPost, userIdProfileMap];
+  List<Object> get props => [
+    currentPost,
+    currentPostComments,
+    likedUsersForCurrentPost,
+    userIdProfileMap,
+    currentUserId
+  ];
 }
 
 class LikePostForUser extends SelectedPostEvent {
