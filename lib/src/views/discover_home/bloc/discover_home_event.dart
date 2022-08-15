@@ -17,6 +17,17 @@ class FetchUserDiscoverData extends DiscoverHomeEvent {
   List<Object?> get props => [userId];
 }
 
+
+class FetchMoreDiscoveredUsers extends DiscoverHomeEvent {
+  final String userId;
+
+  const FetchMoreDiscoveredUsers(this.userId);
+
+  @override
+  List<Object?> get props => [userId];
+}
+
+
 class RemoveUserFromListOfDiscoveredUsers extends DiscoverHomeEvent {
   final String currentUserId;
   final String discoveredUserId;

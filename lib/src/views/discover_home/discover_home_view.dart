@@ -40,18 +40,40 @@ class DiscoverHomeView extends StatefulWidget {
 }
 
 class DiscoverHomeViewState extends State<DiscoverHomeView> {
+  static const double _scrollThreshold = 200.0;
   final PanelController _panelController = PanelController();
 
   late final DiscoverHomeBloc _discoverHomeBloc;
   List<PublicUserProfile> discoveredUserProfiles = List.empty(growable: true);
+  final _scrollController = ScrollController();
 
   String? selectedUserId;
+  bool isDataBeingRequested = false;
 
   @override
   void initState() {
     super.initState();
     _discoverHomeBloc = BlocProvider.of<DiscoverHomeBloc>(context);
     _discoverHomeBloc.add(FetchUserDiscoverData(widget.currentUserProfile.userId));
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if(_scrollController.hasClients) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
+
+      if (maxScroll - currentScroll <= _scrollThreshold && !isDataBeingRequested) {
+        isDataBeingRequested = true;
+        _discoverHomeBloc.add(FetchMoreDiscoveredUsers(widget.currentUserProfile.userId));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -72,6 +94,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
         child: BlocBuilder<DiscoverHomeBloc, DiscoverHomeState>(
           builder: (context, state) {
             if (state is DiscoverUserDataFetched) {
+                isDataBeingRequested = false;
                 discoveredUserProfiles = state.discoveredUserProfiles;
                 selectedUserId ??= discoveredUserProfiles.isNotEmpty ? discoveredUserProfiles.first.userId : null;
                 if (discoveredUserProfiles.isEmpty) {
@@ -122,17 +145,27 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
           ),
           WidgetUtils.spacer(5),
           SizedBox(
-            height: ScreenUtils.getScreenHeight(context) * 0.6,
-            child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: discoveredUserProfiles.length,
-                itemBuilder: (context, index) {
-                  return _userSearchResultItem(discoveredUserProfiles[index]);
-                }
-            ),
+            height: ScreenUtils.getScreenHeight(context),
+            child: _userResultsList(state),
           ),
         ],
       ),
+    );
+  }
+
+  _userResultsList(DiscoverUserDataFetched state) {
+    return ListView.builder(
+        controller: _scrollController,
+        shrinkWrap: true,
+        itemCount: state.doesNextPageExist ? discoveredUserProfiles.length + 1 : discoveredUserProfiles.length,
+        itemBuilder: (context, index) {
+          if (index >= discoveredUserProfiles.length) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          else {
+            return _userSearchResultItem(discoveredUserProfiles[index]);
+          }
+        }
     );
   }
 

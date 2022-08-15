@@ -21,15 +21,22 @@ class DiscoverUserDataFetched extends DiscoverHomeState {
   final UserFitnessPreferences? fitnessPreferences;
   final UserPersonalPreferences? personalPreferences;
   final List<PublicUserProfile> discoveredUserProfiles;
-
+  final bool doesNextPageExist;
 
   const DiscoverUserDataFetched({
     this.discoveryPreferences,
     this.fitnessPreferences,
     this.personalPreferences,
     required this.discoveredUserProfiles,
+    required this.doesNextPageExist,
   });
 
   @override
-  List<Object?> get props => [discoveryPreferences, fitnessPreferences, personalPreferences, discoveredUserProfiles];
+  List<Object?> get props => [
+    discoveryPreferences,
+    fitnessPreferences,
+    personalPreferences,
+    discoveredUserProfiles,
+    doesNextPageExist
+  ];
 }

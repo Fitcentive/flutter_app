@@ -47,9 +47,9 @@ class DiscoverRepository {
   }
 
 
-  Future<List<PublicUserProfile>> getDiscoveredUserProfiles(String userId, String accessToken) async {
+  Future<List<PublicUserProfile>> getDiscoveredUserProfiles(String userId, String accessToken, limit, offset) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/user/$userId/discovered-users"),
+      Uri.parse("$BASE_URL/user/$userId/discovered-users?limit=$limit&offset=$offset"),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken'
