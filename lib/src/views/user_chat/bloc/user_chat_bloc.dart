@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/websocket/typing_started_payload.dart';
 import 'package:flutter_app/src/models/websocket/typing_stopped_payload.dart';
 import 'package:flutter_app/src/models/websocket/web_socket_event.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_event.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,6 +29,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     required this.secureStorage,
   }) : super(const UserChatStateInitial()) {
     on<ConnectWebsocketAndFetchHistoricalChats>(_fetchHistoricalChats);
+    on<FetchMoreChatData>(_fetchMoreChatData);
     on<AddMessageToChatRoom>(_addMessageToChatRoom);
     on<UpdateIncomingMessageIntoChatRoom>(_updateIncomingMessageIntoChatRoom);
     on<CurrentUserTypingStarted>(_currentUserTypingStarted);
@@ -92,16 +94,40 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     });
   }
 
+  void _fetchMoreChatData(FetchMoreChatData event, Emitter<UserChatState> emit) async {
+    final currentState = state;
+    if (currentState is HistoricalChatsFetched && currentState.doesNextPageExist) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final chatMessages = (await chatRepository.getMessagesForRoom(event.roomId, accessToken!, event.sentBefore, ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT))
+          .map((chatMessage) => chatMessage.copyWithLocalTime())
+          .toList();
+      final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
+      final completeMessages = [...chatMessages, ...currentState.messages];
+      emit(HistoricalChatsFetched(
+          roomId: event.roomId,
+          messages: completeMessages,
+          doesNextPageExist: doesNextPageExist
+      ));
+    }
+  }
+
   void _fetchHistoricalChats(ConnectWebsocketAndFetchHistoricalChats event, Emitter<UserChatState> emit) async {
     emit(const HistoricalChatsLoading());
 
     _initializeWebsocketConnections(event.roomId, event.currentUserId);
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final chatMessages = (await chatRepository.getMessagesForRoom(event.roomId, accessToken!))
+    const limit = 50;
+    final sentBefore = DateTime.now().millisecondsSinceEpoch;
+    final chatMessages = (await chatRepository.getMessagesForRoom(event.roomId, accessToken!, sentBefore, limit))
         .map((chatMessage) => chatMessage.copyWithLocalTime())
         .toList();
+    final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
 
-    emit(HistoricalChatsFetched(roomId: event.roomId, messages: chatMessages));
+    emit(HistoricalChatsFetched(
+        roomId: event.roomId,
+        messages: chatMessages,
+        doesNextPageExist: doesNextPageExist
+    ));
   }
 
   void _addCurrentUserStartedTypingEventToChannel(String roomId, String userId) {
@@ -159,7 +185,11 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           )
       );
       emit(const HistoricalChatsLoading());
-      emit(HistoricalChatsFetched(roomId: currentState.roomId, messages: updatedMessages));
+      emit(HistoricalChatsFetched(
+          roomId: currentState.roomId,
+          messages: updatedMessages,
+          doesNextPageExist: currentState.doesNextPageExist,
+      ));
     }
   }
 
@@ -181,7 +211,11 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           )
       );
       emit(const HistoricalChatsLoading());
-      emit(HistoricalChatsFetched(roomId: currentState.roomId, messages: updatedMessages));
+      emit(HistoricalChatsFetched(
+          roomId: currentState.roomId,
+          messages: updatedMessages,
+          doesNextPageExist: currentState.doesNextPageExist,
+      ));
     }
   }
 
@@ -191,7 +225,11 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
       final updatedMessages = currentState.messages;
       updatedMessages.removeWhere((element) => element.id == userTypingMessageId);
       emit(const HistoricalChatsLoading());
-      emit(HistoricalChatsFetched(roomId: currentState.roomId, messages: updatedMessages));
+      emit(HistoricalChatsFetched(
+          roomId: currentState.roomId,
+          messages: updatedMessages,
+          doesNextPageExist: currentState.doesNextPageExist,
+      ));
     }
   }
 

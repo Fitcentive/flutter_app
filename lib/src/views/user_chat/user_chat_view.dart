@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -66,6 +67,7 @@ class UserChatView extends StatefulWidget {
 }
 
 class UserChatViewState extends State<UserChatView> {
+  static const int scrollThreshold = 400;
 
   late final types.User _currentUser;
   late final types.User _otherUser;
@@ -79,9 +81,14 @@ class UserChatViewState extends State<UserChatView> {
 
   late final UserChatBloc _userChatBloc;
 
+  Timer? _debounce;
+  final _scrollController = ScrollController();
+
   @override
   void dispose() {
     _userChatBloc.dispose();
+    // todo - disposing leads to exception upon leaving this screen, why?
+    // _scrollController.dispose();
     super.dispose();
   }
 
@@ -108,6 +115,7 @@ class UserChatViewState extends State<UserChatView> {
         currentUserId: widget.currentUserProfile.userId
     ));
 
+    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -154,6 +162,7 @@ class UserChatViewState extends State<UserChatView> {
             _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
 
             return Chat(
+              scrollController: _scrollController,
               messages: _previousMessages,
               onTextChanged: _handleTextChanged,
               onAttachmentPressed: _handleAttachmentPressed,
@@ -362,5 +371,24 @@ class UserChatViewState extends State<UserChatView> {
         )
     );
   }
+
+  void _onScroll() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if(_scrollController.hasClients) {
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        final currentScroll = _scrollController.position.pixels;
+
+        if (maxScroll - currentScroll <= scrollThreshold) {
+          _userChatBloc.add(FetchMoreChatData(
+              roomId: widget.currentRoomId,
+              currentUserId: widget.currentUserProfile.userId,
+              sentBefore: _previousMessages.last.createdAt!
+          ));
+        }
+      }
+    });
+  }
+
 
 }

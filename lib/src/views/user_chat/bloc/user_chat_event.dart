@@ -17,6 +17,21 @@ class ConnectWebsocketAndFetchHistoricalChats extends UserChatEvent {
   List<Object?> get props => [roomId, currentUserId];
 }
 
+class FetchMoreChatData extends UserChatEvent {
+  final String roomId;
+  final String currentUserId;
+  final int sentBefore;
+
+  const FetchMoreChatData({
+    required this.roomId,
+    required this.currentUserId,
+    required this.sentBefore,
+  });
+
+  @override
+  List<Object?> get props => [roomId, currentUserId, sentBefore];
+}
+
 class AddMessageToChatRoom extends UserChatEvent {
   final String roomId;
   final String userId;

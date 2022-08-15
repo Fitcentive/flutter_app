@@ -50,9 +50,9 @@ class ChatRepository {
     }
   }
 
-  Future<List<ChatMessage>> getMessagesForRoom(String roomId, String accessToken) async {
+  Future<List<ChatMessage>> getMessagesForRoom(String roomId, String accessToken, int sentBefore, int limit) async {
     final response = await http.get(
-        Uri.parse("$BASE_URL/room/$roomId/messages"),
+        Uri.parse("$BASE_URL/room/$roomId/messages?sent_before=$sentBefore&limit=$limit"),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken'

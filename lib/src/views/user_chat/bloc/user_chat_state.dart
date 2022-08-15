@@ -27,10 +27,14 @@ class HistoricalChatsLoading extends UserChatState {
 class HistoricalChatsFetched extends UserChatState {
   final String roomId;
   final List<ChatMessage> messages;
+  final bool doesNextPageExist;
 
-
-  const HistoricalChatsFetched({required this.roomId, required this.messages});
+  const HistoricalChatsFetched({
+    required this.roomId,
+    required this.messages,
+    required this.doesNextPageExist,
+  });
 
   @override
-  List<Object?> get props => [roomId, messages];
+  List<Object?> get props => [roomId, messages, doesNextPageExist];
 }
