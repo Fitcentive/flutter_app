@@ -144,8 +144,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
             ),
           ),
           WidgetUtils.spacer(5),
-          SizedBox(
-            height: ScreenUtils.getScreenHeight(context),
+          Expanded(
             child: _userResultsList(state),
           ),
         ],
@@ -154,18 +153,21 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
   }
 
   _userResultsList(DiscoverUserDataFetched state) {
-    return ListView.builder(
-        controller: _scrollController,
-        shrinkWrap: true,
-        itemCount: state.doesNextPageExist ? discoveredUserProfiles.length + 1 : discoveredUserProfiles.length,
-        itemBuilder: (context, index) {
-          if (index >= discoveredUserProfiles.length) {
-            return const Center(child: CircularProgressIndicator());
+    return Scrollbar(
+      controller: _scrollController,
+      child: ListView.builder(
+          controller: _scrollController,
+          shrinkWrap: true,
+          itemCount: state.doesNextPageExist ? discoveredUserProfiles.length + 1 : discoveredUserProfiles.length,
+          itemBuilder: (context, index) {
+            if (index >= discoveredUserProfiles.length) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            else {
+              return _userSearchResultItem(discoveredUserProfiles[index]);
+            }
           }
-          else {
-            return _userSearchResultItem(discoveredUserProfiles[index]);
-          }
-        }
+      ),
     );
   }
 

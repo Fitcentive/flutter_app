@@ -85,11 +85,7 @@ class NotificationsViewState extends State<NotificationsView> {
             else {
               return Padding(
                 padding: const EdgeInsets.all(5),
-                child: ListView.builder(
-                    itemCount: state.notifications.length,
-                    itemBuilder: (context, index) {
-                      return _generateNotificationListItem(state.notifications[index], state.userProfileMap);
-                    }),
+                child: _generateNotificationListView(state),
               );
             }
           } else {
@@ -99,6 +95,16 @@ class NotificationsViewState extends State<NotificationsView> {
           }
         }),
       ),
+    );
+  }
+
+  _generateNotificationListView(NotificationsLoaded state) {
+    return Scrollbar(
+      child: ListView.builder(
+          itemCount: state.notifications.length,
+          itemBuilder: (context, index) {
+            return _generateNotificationListItem(state.notifications[index], state.userProfileMap);
+          }),
     );
   }
 

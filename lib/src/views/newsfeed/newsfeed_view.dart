@@ -188,14 +188,17 @@ class NewsFeedViewState extends State<NewsFeedView> {
           onRefresh: () async {
             _pullRefresh();
           },
-          child: SingleChildScrollView(
+          child: Scrollbar(
             controller: _scrollController,
-            child: Column(
-              children: [
-                _addNewPostView(),
-                _separation(),
-                _newsFeedList(state)
-              ],
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                children: [
+                  _addNewPostView(),
+                  _separation(),
+                  _newsFeedList(state)
+                ],
+              ),
             ),
           ),
         );

@@ -61,17 +61,20 @@ class UserResultsListState extends State<UserResultsList> {
 
   Widget _searchResults(List<PublicUserProfile> items) {
     isDataBeingRequested = false;
-    return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
+    return Scrollbar(
       controller: _scrollController,
-      itemCount: widget.doesNextPageExist ? items.length + 1 : items.length,
-      itemBuilder: (BuildContext context, int index) {
-        if (index >= items.length) {
-          return const Center(child: CircularProgressIndicator());
-        } else {
-          return _userSearchResultItem(items[index]);
-        }
-      },
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        controller: _scrollController,
+        itemCount: widget.doesNextPageExist ? items.length + 1 : items.length,
+        itemBuilder: (BuildContext context, int index) {
+          if (index >= items.length) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            return _userSearchResultItem(items[index]);
+          }
+        },
+      ),
     );
   }
 

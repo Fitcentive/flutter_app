@@ -139,22 +139,25 @@ class UserProfileViewState extends State<UserProfileView> {
   Widget _buildUserProfilePage(RequiredDataResolved state) {
     return RefreshIndicator(
       onRefresh: _pullRefresh,
-      child: SingleChildScrollView(
+      child: Scrollbar(
         controller: _scrollController,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: WidgetUtils.skipNulls([
-            _userFirstAndLastName(),
-            const Padding(padding: EdgeInsets.all(15)),
-            _userAvatar(),
-            const Padding(padding: EdgeInsets.all(10)),
-            _userUsername(widget.userProfile.username),
-            const Padding(padding: EdgeInsets.all(10)),
-            _messageUserButtonOpt(state),
-            _followUserButtonOpt(state),
-            _removeUserFromFollowersButtonOpt(state),
-            _showUserPostsIfRequired(state)
-          ]),
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: WidgetUtils.skipNulls([
+              _userFirstAndLastName(),
+              const Padding(padding: EdgeInsets.all(15)),
+              _userAvatar(),
+              const Padding(padding: EdgeInsets.all(10)),
+              _userUsername(widget.userProfile.username),
+              const Padding(padding: EdgeInsets.all(10)),
+              _messageUserButtonOpt(state),
+              _followUserButtonOpt(state),
+              _removeUserFromFollowersButtonOpt(state),
+              _showUserPostsIfRequired(state)
+            ]),
+          ),
         ),
       ),
     );

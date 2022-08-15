@@ -119,46 +119,48 @@ class ChatHomeViewState extends State<ChatHomeView> {
   _chatList(UserRoomsLoaded state) {
     return RefreshIndicator(
         onRefresh: _pullRefresh,
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: state.rooms.length,
-          itemBuilder: (context, index) {
-            final currentChatRoom = state.rooms[index];
-            final otherUserInChatRoom = currentChatRoom
-                .userIds
-                .firstWhere(
-                    (element) => element != widget.currentUserProfile.userId,
-                orElse: () => widget.currentUserProfile.userId
-            );
-            final otherUserProfile = state.userIdProfileMap[otherUserInChatRoom];
+        child: Scrollbar(
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: state.rooms.length,
+            itemBuilder: (context, index) {
+              final currentChatRoom = state.rooms[index];
+              final otherUserInChatRoom = currentChatRoom
+                  .userIds
+                  .firstWhere(
+                      (element) => element != widget.currentUserProfile.userId,
+                  orElse: () => widget.currentUserProfile.userId
+              );
+              final otherUserProfile = state.userIdProfileMap[otherUserInChatRoom];
 
-            return ListTile(
-                title: Text(
-                  StringUtils.getUserNameFromUserProfile(otherUserProfile),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600
-                  ),
-                ),
-                subtitle: Text(currentChatRoom.mostRecentMessage),
-                leading: GestureDetector(
-                  onTap: () async {
-                    _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
-                  },
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: ImageUtils.getUserProfileImage(otherUserProfile, 100, 100),
+              return ListTile(
+                  title: Text(
+                    StringUtils.getUserNameFromUserProfile(otherUserProfile),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600
                     ),
                   ),
-                ),
-                onTap: () {
-                  _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
-                }
-            );
-          }
-      ),
+                  subtitle: Text(currentChatRoom.mostRecentMessage),
+                  leading: GestureDetector(
+                    onTap: () async {
+                      _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
+                    },
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: ImageUtils.getUserProfileImage(otherUserProfile, 100, 100),
+                      ),
+                    ),
+                  ),
+                  onTap: () {
+                    _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
+                  }
+              );
+            }
+          ),
+        ),
     );
   }
 
