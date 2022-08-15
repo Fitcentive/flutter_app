@@ -57,8 +57,8 @@ class UserProfileView extends StatefulWidget {
 class UserProfileViewState extends State<UserProfileView> {
   static const double _scrollThreshold = 400.0;
 
-  Timer? _debounce;
   final _scrollController = ScrollController();
+  bool isRequestingMoreData = false;
 
   late final UserProfileBloc _userProfileBloc;
   late final AuthenticationBloc _authenticationBloc;
@@ -124,6 +124,7 @@ class UserProfileViewState extends State<UserProfileView> {
         },
         child: BlocBuilder<UserProfileBloc, UserProfileState>(builder: (context, state) {
           if (state is RequiredDataResolved) {
+            isRequestingMoreData = false;
             return _buildUserProfilePage(state);
           } else {
             return const Center(
@@ -173,17 +174,15 @@ class UserProfileViewState extends State<UserProfileView> {
   }
 
   void _onScroll() {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      if(_scrollController.hasClients) {
-        final maxScroll = _scrollController.position.maxScrollExtent;
-        final currentScroll = _scrollController.position.pixels;
+    if(_scrollController.hasClients) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
 
-        if (maxScroll - currentScroll <= _scrollThreshold) {
-          _fetchMoreResults();
-        }
+      if (maxScroll - currentScroll <= _scrollThreshold && !isRequestingMoreData) {
+        isRequestingMoreData = true;
+        _fetchMoreResults();
       }
-    });
+    }
   }
 
 

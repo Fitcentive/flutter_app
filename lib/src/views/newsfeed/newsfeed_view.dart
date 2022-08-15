@@ -53,8 +53,8 @@ class NewsFeedViewState extends State<NewsFeedView> {
 
   final TextEditingController _textController = TextEditingController();
 
-  Timer? _debounce;
   final _scrollController = ScrollController();
+  bool isRequestingMoreData = false;
 
   List<SocialPost> postsState = List.empty();
   List<PostsWithLikedUserIds> likedUsersForPosts = List.empty();
@@ -167,21 +167,20 @@ class NewsFeedViewState extends State<NewsFeedView> {
   }
 
   void _onScroll() {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      if(_scrollController.hasClients) {
-        final maxScroll = _scrollController.position.maxScrollExtent;
-        final currentScroll = _scrollController.position.pixels;
+    if(_scrollController.hasClients) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
 
-        if (maxScroll - currentScroll <= _scrollThreshold) {
-          _fetchMoreResults();
-        }
+      if (maxScroll - currentScroll <= _scrollThreshold && !isRequestingMoreData) {
+        isRequestingMoreData = true;
+        _fetchMoreResults();
       }
-    });
+    }
   }
 
   _newsfeedListView(NewsFeedState state) {
     if (state is NewsFeedDataReady) {
+      isRequestingMoreData = false;
       if (state.posts.isNotEmpty) {
         postsState = state.posts;
         likedUsersForPosts = state.postsWithLikedUserIds;
