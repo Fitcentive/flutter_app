@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/search/bloc/search_bloc.dart';
 import 'package:flutter_app/src/views/search/bloc/search_event.dart';
@@ -25,9 +26,6 @@ class UserSearchView extends StatefulWidget {
 class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveClientMixin {
   @override
   bool wantKeepAlive = true;
-
-  static const int DEFAULT_LIMIT = 20;
-  static const int DEFAULT_OFFSET = 0;
 
   late final SearchBloc _searchBloc;
   late final UserRepository _userRepository;
@@ -81,7 +79,9 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
               textFieldConfiguration: TextFieldConfiguration(
                   onSubmitted: (value) {
                     _searchTextController.text = value.toString();
-                    startFreshSearch(_searchTextController.value.text);
+                    if (value.trim().isNotEmpty) {
+                      startFreshSearch(value.trim());
+                    }
                   },
                   autocorrect: false,
                   onTap: () => _suggestionsController.toggle(),
@@ -103,13 +103,18 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                         icon: const Icon(Icons.close),
                       ))),
               suggestionsCallback: (pattern) async {
-                _searchBloc.add(SearchQueryChanged(query: pattern));
-                if (shouldShow) {
-                  const limit = 5;
-                  final accessToken =
-                      await _flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-                  return await _userRepository.searchForUsers(pattern, accessToken!, limit, DEFAULT_OFFSET);
-                } else {
+                if (pattern.trim().isNotEmpty) {
+                  _searchBloc.add(SearchQueryChanged(query: pattern));
+                  if (shouldShow) {
+                    const limit = 5;
+                    final accessToken =
+                    await _flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+                    return await _userRepository.searchForUsers(pattern.trim(), accessToken!, limit, ConstantUtils.DEFAULT_OFFSET);
+                  } else {
+                    return List.empty();
+                  }
+                }
+                else {
                   return List.empty();
                 }
               },
@@ -185,7 +190,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
       _searchBloc.add(
           SearchQuerySubmitted(
               query: currentState.query,
-              limit: DEFAULT_LIMIT,
+              limit: ConstantUtils.DEFAULT_LIMIT,
               offset: currentState.userData.length
           )
       );
@@ -196,8 +201,8 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
     _searchBloc.add(
         SearchQuerySubmitted(
           query: searchQuery,
-          limit: DEFAULT_LIMIT,
-          offset: DEFAULT_OFFSET
+          limit: ConstantUtils.DEFAULT_LIMIT,
+          offset: ConstantUtils.DEFAULT_OFFSET
         )
     );
   }

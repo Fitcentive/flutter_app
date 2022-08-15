@@ -193,7 +193,7 @@ class ChatSearchViewState extends State<ChatSearchView> {
                     icon: const Icon(Icons.close),
                   ))),
           suggestionsCallback: (text)  {
-            if (text.isNotEmpty) {
+            if (text.trim().isNotEmpty) {
               _chatSearchBloc.add(ChatSearchQueryChanged(
                   query: text,
                   limit: ConstantUtils.DEFAULT_LIMIT,

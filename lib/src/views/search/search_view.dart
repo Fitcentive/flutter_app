@@ -32,8 +32,6 @@ class SearchView extends StatefulWidget {
 
 class SearchViewState extends State<SearchView> with SingleTickerProviderStateMixin {
 
-  late final SearchBloc _searchBloc;
-
   late final TabController _tabController;
 
   static const int MAX_TABS = 2;
@@ -50,7 +48,6 @@ class SearchViewState extends State<SearchView> with SingleTickerProviderStateMi
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: MAX_TABS);
-    _searchBloc = BlocProvider.of<SearchBloc>(context);
   }
 
   @override

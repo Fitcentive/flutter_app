@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -32,8 +30,8 @@ class UserResultsList extends StatefulWidget {
 class UserResultsListState extends State<UserResultsList> {
   static const double _scrollThreshold = 200.0;
 
-  Timer? _debounce;
   final _scrollController = ScrollController();
+  bool isDataBeingRequested = false;
 
   @override
   void initState() {
@@ -62,6 +60,7 @@ class UserResultsListState extends State<UserResultsList> {
   }
 
   Widget _searchResults(List<PublicUserProfile> items) {
+    isDataBeingRequested = false;
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       controller: _scrollController,
@@ -104,17 +103,15 @@ class UserResultsListState extends State<UserResultsList> {
   }
 
   void _onScroll() {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      if(_scrollController.hasClients) {
-        final maxScroll = _scrollController.position.maxScrollExtent;
-        final currentScroll = _scrollController.position.pixels;
+    if(_scrollController.hasClients ) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
 
-        if (maxScroll - currentScroll <= _scrollThreshold) {
-          widget.fetchMoreResultsCallback();
-        }
+      if (maxScroll - currentScroll <= _scrollThreshold && !isDataBeingRequested) {
+        isDataBeingRequested = true;
+        widget.fetchMoreResultsCallback();
       }
-    });
+    }
   }
 
 }

@@ -68,11 +68,11 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
   }
 
   void _searchQueryChanged(ChatSearchQueryChanged event, Emitter<ChatSearchState> emit) async {
-    if (event.query.isNotEmpty) {
+    if (event.query.trim().isNotEmpty) {
       emit(ChatSearchResultsLoading(query: event.query));
       try {
         final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-        final results = await userRepository.searchForUsers(event.query, accessToken!, event.limit, event.offset);
+        final results = await userRepository.searchForUsers(event.query.trim(), accessToken!, event.limit, event.offset);
         final doesNextPageExist = results.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
         emit(ChatSearchResultsLoaded(query: event.query, userData: results, doesNextPageExist: doesNextPageExist ));
       } catch (ex) {
