@@ -3,6 +3,7 @@ import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
+import 'package:flutter_app/src/models/social/social_post_comment.dart';
 
 abstract class NewsFeedState extends Equatable {
   const NewsFeedState();
@@ -28,6 +29,7 @@ class NewsFeedDataReady extends NewsFeedState {
   final List<SocialPost> posts;
   final List<PostsWithLikedUserIds> postsWithLikedUserIds;
   final Map<String, PublicUserProfile> userIdProfileMap;
+  final Map<String, List<SocialPostComment>> postIdCommentsMap;
   final String? selectedPostId;
   final bool doesNextPageExist;
 
@@ -38,6 +40,7 @@ class NewsFeedDataReady extends NewsFeedState {
     required this.userIdProfileMap,
     required this.selectedPostId,
     required this.doesNextPageExist,
+    required this.postIdCommentsMap,
   });
 
   NewsFeedDataReady copyWith({
@@ -49,11 +52,20 @@ class NewsFeedDataReady extends NewsFeedState {
         posts: posts,
         postsWithLikedUserIds: postsWithLikedUserIds,
         userIdProfileMap: userIdProfileMap,
+        postIdCommentsMap: postIdCommentsMap,
         selectedPostId: newPostId,
         doesNextPageExist: doesNextPageExist,
     );
   }
 
   @override
-  List<Object?> get props => [user, posts, postsWithLikedUserIds, userIdProfileMap, selectedPostId, doesNextPageExist];
+  List<Object?> get props => [
+    user,
+    posts,
+    postsWithLikedUserIds,
+    userIdProfileMap,
+    selectedPostId,
+    doesNextPageExist,
+    postIdCommentsMap
+  ];
 }

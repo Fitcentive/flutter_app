@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
+import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/models/user_follow_status.dart';
 
 abstract class UserProfileState extends Equatable {
@@ -34,6 +36,8 @@ class RequiredDataResolved extends UserProfileState {
   final UserFollowStatus userFollowStatus;
   final List<SocialPost>? userPosts;
   final List<PostsWithLikedUserIds>? usersWhoLikedPosts;
+  final Map<String, List<SocialPostComment>>? postIdCommentsMap;
+  final Map<String, PublicUserProfile>? userIdProfileMap;
 
   final String? selectedPostId;
   final String? chatRoomId;
@@ -45,6 +49,8 @@ class RequiredDataResolved extends UserProfileState {
     required this.currentUser,
     required this.userPosts,
     required this.usersWhoLikedPosts,
+    required this.postIdCommentsMap,
+    required this.userIdProfileMap,
     required this.selectedPostId,
     required this.chatRoomId,
     required this.doesNextPageExist,
@@ -57,9 +63,11 @@ class RequiredDataResolved extends UserProfileState {
   }) {
     return RequiredDataResolved(
         userFollowStatus: userFollowStatus,
+        userIdProfileMap: userIdProfileMap,
         currentUser: currentUser,
         userPosts: userPosts,
         usersWhoLikedPosts: usersWhoLikedPosts,
+        postIdCommentsMap: postIdCommentsMap,
         selectedPostId: newPostId,
         chatRoomId: chatRoomId,
         doesNextPageExist: doesNextPageExist,
@@ -67,7 +75,16 @@ class RequiredDataResolved extends UserProfileState {
   }
 
   @override
-  List<Object?> get props => [userFollowStatus, currentUser, userPosts, usersWhoLikedPosts, selectedPostId, chatRoomId];
+  List<Object?> get props => [
+    userFollowStatus,
+    currentUser,
+    userPosts,
+    usersWhoLikedPosts,
+    selectedPostId,
+    chatRoomId,
+    postIdCommentsMap,
+    userIdProfileMap,
+  ];
 }
 
 class GoToUserChatView extends UserProfileState {

@@ -1,4 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
+import 'package:flutter_app/src/models/social/social_post.dart';
+import 'package:flutter_app/src/models/social/social_post_comment.dart';
 
 abstract class SelectedPostEvent extends Equatable {
 
@@ -19,7 +23,24 @@ class FetchSelectedPost extends SelectedPostEvent {
   });
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [currentUserId, postId];
+}
+
+class PostAlreadyProvidedByParent extends SelectedPostEvent {
+  final SocialPost currentPost;
+  final List<SocialPostComment> currentPostComments;
+  final PostsWithLikedUserIds likedUsersForCurrentPost;
+  final Map<String, PublicUserProfile> userIdProfileMap;
+
+  const PostAlreadyProvidedByParent({
+    required this.currentPost,
+    required this.currentPostComments,
+    required this.likedUsersForCurrentPost,
+    required this.userIdProfileMap
+  });
+
+  @override
+  List<Object> get props => [currentPost, currentPostComments, likedUsersForCurrentPost, userIdProfileMap];
 }
 
 class LikePostForUser extends SelectedPostEvent {

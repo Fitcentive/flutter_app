@@ -7,7 +7,6 @@ import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
-import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/selected_post/bloc/selected_post_bloc.dart';
@@ -23,14 +22,29 @@ class SelectedPostView extends StatefulWidget {
 
   final PublicUserProfile currentUserProfile;
   final String currentPostId;
+  final SocialPost? currentPost;
+  final List<SocialPostComment>? currentPostComments;
+  final PostsWithLikedUserIds? likedUsersForCurrentPost;
+  final Map<String, PublicUserProfile>? userIdProfileMap;
 
   const SelectedPostView({
     Key? key,
     required this.currentUserProfile,
     required this.currentPostId,
+    this.currentPost,
+    this.currentPostComments,
+    this.likedUsersForCurrentPost,
+    this.userIdProfileMap
   }): super(key: key);
 
-  static Route route(PublicUserProfile currentUserProfile, String currentPostId) => MaterialPageRoute(
+  static Route route({
+    required PublicUserProfile currentUserProfile,
+    required String currentPostId,
+    SocialPost? currentPost,
+    List<SocialPostComment>? currentPostComments,
+    PostsWithLikedUserIds? likedUsersForCurrentPost,
+    Map<String, PublicUserProfile>? userIdProfileMap,
+  }) => MaterialPageRoute(
     settings: const RouteSettings(
         name: routeName
     ),
@@ -43,7 +57,14 @@ class SelectedPostView extends StatefulWidget {
               secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
             )),
       ],
-      child: SelectedPostView(currentUserProfile: currentUserProfile, currentPostId: currentPostId),
+      child: SelectedPostView(
+                currentUserProfile: currentUserProfile,
+                currentPostId: currentPostId,
+                currentPost: currentPost,
+                currentPostComments: currentPostComments,
+                likedUsersForCurrentPost: likedUsersForCurrentPost,
+                userIdProfileMap: userIdProfileMap,
+            ),
     ),
   );
 
@@ -68,12 +89,26 @@ class SelectedPostViewState extends State<SelectedPostView> {
     super.initState();
 
     _selectedPostBloc = BlocProvider.of<SelectedPostBloc>(context);
-    _selectedPostBloc.add(
-        FetchSelectedPost(
-            postId: widget.currentPostId,
-            currentUserId: widget.currentUserProfile.userId
-        )
-    );
+
+    if (widget.currentPost != null && widget.currentPostComments != null &&
+        widget.likedUsersForCurrentPost != null && widget.userIdProfileMap != null) {
+      _selectedPostBloc.add(
+          PostAlreadyProvidedByParent(
+            currentPost: widget.currentPost!,
+            currentPostComments: widget.currentPostComments!,
+            likedUsersForCurrentPost: widget.likedUsersForCurrentPost!,
+            userIdProfileMap: widget.userIdProfileMap!
+          )
+      );
+    }
+    else {
+      _selectedPostBloc.add(
+          FetchSelectedPost(
+              postId: widget.currentPostId,
+              currentUserId: widget.currentUserProfile.userId
+          )
+      );
+    }
   }
 
   @override

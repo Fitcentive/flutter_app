@@ -19,6 +19,7 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     required this.secureStorage,
   }) : super(const SelectedPostStateInitial()) {
     on<FetchSelectedPost>(_fetchSelectedPost);
+    on<PostAlreadyProvidedByParent>(_postAlreadyProvidedByParent);
     on<UnlikePostForUser>(_unlikePostForUser);
     on<LikePostForUser>(_likePostForUser);
     on<AddNewComment>(_addNewComment);
@@ -42,6 +43,16 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
   void _likePostForUser(LikePostForUser event, Emitter<SelectedPostState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.likePostForUser(event.postId, event.currentUserId, accessToken!);
+  }
+
+  // We reload comments async to be up to date
+  void _postAlreadyProvidedByParent(PostAlreadyProvidedByParent event, Emitter<SelectedPostState> emit) async {
+    emit(SelectedPostLoaded(
+        post: event.currentPost,
+        comments: event.currentPostComments,
+        postWithLikedUserIds: event.likedUsersForCurrentPost,
+        userProfileMap: event.userIdProfileMap
+    ));
   }
 
   void _fetchSelectedPost(FetchSelectedPost event, Emitter<SelectedPostState> emit) async {

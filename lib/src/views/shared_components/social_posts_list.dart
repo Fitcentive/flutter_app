@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
+import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -17,6 +18,7 @@ class SocialPostsList extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final List<SocialPost> posts;
   final Map<String, PublicUserProfile> userIdProfileMap;
+  final Map<String, List<SocialPostComment>> postIdCommentsMap;
   final List<PostsWithLikedUserIds> likedUserIds;
   final bool doesNextPageExist;
 
@@ -34,6 +36,7 @@ class SocialPostsList extends StatefulWidget {
     required this.fetchMoreResultsCallback,
     required this.refreshCallback,
     required this.buttonInteractionCallback,
+    required this.postIdCommentsMap,
   }): super(key: key);
 
   @override
@@ -201,8 +204,14 @@ class SocialPostsListState extends State<SocialPostsList> {
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
                         context,
-                        SelectedPostView.route(widget.currentUserProfile, post.postId),
-                            (route) => true
+                        SelectedPostView.route(
+                            currentUserProfile: widget.currentUserProfile,
+                            currentPostId: post.postId,
+                            currentPost: post,
+                            currentPostComments: widget.postIdCommentsMap[post.postId],
+                            likedUsersForCurrentPost: widget.likedUserIds.firstWhere((element) => element.postId == post.postId),
+                            userIdProfileMap: widget.userIdProfileMap
+                        ), (route) => true
                     );
                   },
                   child: const Text(

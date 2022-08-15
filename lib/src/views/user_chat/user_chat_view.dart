@@ -82,13 +82,9 @@ class UserChatViewState extends State<UserChatView> {
 
   late final UserChatBloc _userChatBloc;
 
-  final _scrollController = ScrollController();
-
   @override
   void dispose() {
     _userChatBloc.dispose();
-    // todo - disposing leads to exception upon leaving this screen, why?
-    // _scrollController.dispose();
     super.dispose();
   }
 
@@ -115,7 +111,6 @@ class UserChatViewState extends State<UserChatView> {
         currentUserId: widget.currentUserProfile.userId
     ));
 
-    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -164,9 +159,7 @@ class UserChatViewState extends State<UserChatView> {
 
             // todo - Add loading indicator when more chats are fetched
             return Scrollbar(
-              controller: _scrollController,
               child: Chat(
-                scrollController: _scrollController,
                 messages: _previousMessages,
                 onTextChanged: _handleTextChanged,
                 onAttachmentPressed: _handleAttachmentPressed,
@@ -176,6 +169,16 @@ class UserChatViewState extends State<UserChatView> {
                 showUserAvatars: true,
                 showUserNames: true,
                 user: _currentUser,
+                onEndReached: () async {
+                  if (!isRequestingMoreData) {
+                    isRequestingMoreData = true;
+                    _userChatBloc.add(FetchMoreChatData(
+                        roomId: widget.currentRoomId,
+                        currentUserId: widget.currentUserProfile.userId,
+                        sentBefore: _previousMessages.last.createdAt!
+                    ));
+                  }
+                },
               ),
             );
           }
@@ -376,22 +379,5 @@ class UserChatViewState extends State<UserChatView> {
         )
     );
   }
-
-  void _onScroll() {
-    if(_scrollController.hasClients) {
-      final maxScroll = _scrollController.position.maxScrollExtent;
-      final currentScroll = _scrollController.position.pixels;
-
-      if (maxScroll - currentScroll <= scrollThreshold && !isRequestingMoreData) {
-        isRequestingMoreData = true;
-        _userChatBloc.add(FetchMoreChatData(
-            roomId: widget.currentRoomId,
-            currentUserId: widget.currentUserProfile.userId,
-            sentBefore: _previousMessages.last.createdAt!
-        ));
-      }
-    }
-  }
-
 
 }
