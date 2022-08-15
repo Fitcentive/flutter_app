@@ -67,12 +67,13 @@ class UserChatView extends StatefulWidget {
 }
 
 class UserChatViewState extends State<UserChatView> {
-  static const int scrollThreshold = 400;
+  static const int scrollThreshold = 600;
 
   late final types.User _currentUser;
   late final types.User _otherUser;
 
   bool isDraftMessageEmpty = true;
+  bool isRequestingMoreData = false;
 
   final joinRef = const Uuid().v4();
 
@@ -81,7 +82,6 @@ class UserChatViewState extends State<UserChatView> {
 
   late final UserChatBloc _userChatBloc;
 
-  Timer? _debounce;
   final _scrollController = ScrollController();
 
   @override
@@ -146,6 +146,7 @@ class UserChatViewState extends State<UserChatView> {
       body: BlocBuilder<UserChatBloc, UserChatState>(
         builder: (context, state) {
           if (state is HistoricalChatsFetched) {
+            isRequestingMoreData = false;
             _previousMessages = List<types.Message>.from(state.messages.map((msg) => types.TextMessage(
               author: msg.senderId == widget.currentUserProfile.userId ? _currentUser : _otherUser,
               createdAt: msg.createdAt.millisecondsSinceEpoch,
@@ -161,17 +162,21 @@ class UserChatViewState extends State<UserChatView> {
             // todo - need server side sorting?
             _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
 
-            return Chat(
-              scrollController: _scrollController,
-              messages: _previousMessages,
-              onTextChanged: _handleTextChanged,
-              onAttachmentPressed: _handleAttachmentPressed,
-              onMessageTap: _handleMessageTap,
-              onPreviewDataFetched: _handlePreviewDataFetched,
-              onSendPressed: _handleSendPressed,
-              showUserAvatars: true,
-              showUserNames: true,
-              user: _currentUser,
+            // todo - Add loading indicator when more chats are fetched
+            return Scrollbar(
+              controller: _scrollController,
+              child: Chat(
+                scrollController: _scrollController,
+                messages: _previousMessages,
+                onTextChanged: _handleTextChanged,
+                onAttachmentPressed: _handleAttachmentPressed,
+                onMessageTap: _handleMessageTap,
+                onPreviewDataFetched: _handlePreviewDataFetched,
+                onSendPressed: _handleSendPressed,
+                showUserAvatars: true,
+                showUserNames: true,
+                user: _currentUser,
+              ),
             );
           }
           else {
@@ -373,21 +378,19 @@ class UserChatViewState extends State<UserChatView> {
   }
 
   void _onScroll() {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      if(_scrollController.hasClients) {
-        final maxScroll = _scrollController.position.maxScrollExtent;
-        final currentScroll = _scrollController.position.pixels;
+    if(_scrollController.hasClients) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
 
-        if (maxScroll - currentScroll <= scrollThreshold) {
-          _userChatBloc.add(FetchMoreChatData(
-              roomId: widget.currentRoomId,
-              currentUserId: widget.currentUserProfile.userId,
-              sentBefore: _previousMessages.last.createdAt!
-          ));
-        }
+      if (maxScroll - currentScroll <= scrollThreshold && !isRequestingMoreData) {
+        isRequestingMoreData = true;
+        _userChatBloc.add(FetchMoreChatData(
+            roomId: widget.currentRoomId,
+            currentUserId: widget.currentUserProfile.userId,
+            sentBefore: _previousMessages.last.createdAt!
+        ));
       }
-    });
+    }
   }
 
 
