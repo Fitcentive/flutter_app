@@ -74,10 +74,19 @@ class HomePageState extends State<HomePage> {
   static const String chat = 'Chat';
   static const String logout = 'Logout';
 
+  static const bottomBarToAppDrawerItemMap = {
+    0: newsFeed,
+    1: discover,
+    2: chat,
+    3: notifications
+  };
+
   final logger = Logger("HomePageState");
 
   late String selectedMenuItem;
   late int unreadNotificationCount;
+
+  int selectedBottomBarIndex = 0;
 
   UserProfile? userProfile;
 
@@ -178,36 +187,98 @@ class HomePageState extends State<HomePage> {
                   _updateAppBadgeIfPossible();
                 }
                 return Scaffold(
-                  appBar: AppBar(
-                    title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
-                    iconTheme: const IconThemeData(color: Colors.teal),
-                    actions: <Widget>[
-                      IconButton(
-                        icon: const Icon(
-                          Icons.search,
-                          color: Colors.teal,
-                        ),
-                        onPressed: () {
-                          _updateBloc(search);
-                        },
-                      )
-                    ],
-                  ),
-                  drawer: Drawer(
-                    child: Column(
-                      children: [
-                        _drawerHeader(),
-                        Expanded(child: _menuDrawerListItems()),
-                        const Divider(),
-                        _bottomAlignedButtons(),
-                      ],
-                    ),
-                  ),
+                  appBar: _appBar(),
+                  drawer: _drawer(),
                   body: _generateBody(selectedMenuItem),
+                  bottomNavigationBar: _bottomNavigationBar(),
                 );
               });
         },
       ),
+    );
+  }
+
+  _bottomNavigationBar() {
+    final Widget notificationIcon;
+    if (unreadNotificationCount != 0) {
+      notificationIcon = Badge(
+        alignment: Alignment.topRight,
+        badgeContent: Text(unreadNotificationCount.toString(), style: const TextStyle(color: Colors.white)),
+        padding: const EdgeInsets.all(4),
+        child: const Icon(Icons.notifications),
+      );
+    }
+    else {
+      notificationIcon = const Icon(Icons.notifications);
+    }
+    return BottomNavigationBar(
+      items: <BottomNavigationBarItem>[
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.newspaper),
+          label: 'News Feed',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.explore),
+          label: 'Discover',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.chat),
+          label: 'Chat',
+        ),
+        BottomNavigationBarItem(
+          icon: notificationIcon,
+          label: 'Notifications',
+        ),
+      ],
+      currentIndex: selectedBottomBarIndex,
+      selectedItemColor: Colors.teal,
+      onTap: (selectedItemIndex) {
+        if (selectedItemIndex != selectedBottomBarIndex) {
+          final currentState = _authenticationBloc.state;
+          if (currentState is AuthSuccessUserUpdateState) {
+            _menuNavigationBloc.add(
+                MenuItemChosen(
+                    selectedMenuItem: bottomBarToAppDrawerItemMap[selectedItemIndex]!,
+                    currentUserId: currentState.authenticatedUser.user.id
+                )
+            );
+            setState(() {
+              selectedBottomBarIndex = selectedItemIndex;
+            });
+          }
+        }
+      },
+    );
+  }
+
+  _drawer() {
+    return Drawer(
+      child: Column(
+        children: [
+          _drawerHeader(),
+          Expanded(child: _menuDrawerListItems()),
+          const Divider(),
+          _bottomAlignedButtons(),
+        ],
+      ),
+    );
+  }
+
+  _appBar() {
+    return AppBar(
+      title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
+      iconTheme: const IconThemeData(color: Colors.teal),
+      actions: <Widget>[
+        IconButton(
+          icon: const Icon(
+            Icons.search,
+            color: Colors.teal,
+          ),
+          onPressed: () {
+            _updateBloc(search);
+          },
+        )
+      ],
     );
   }
 
