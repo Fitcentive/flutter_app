@@ -212,6 +212,8 @@ class HomePageState extends State<HomePage> {
       notificationIcon = const Icon(Icons.notifications);
     }
     return BottomNavigationBar(
+      unselectedItemColor: Theme.of(context).primaryTextTheme.bodyText2?.color!,
+      selectedItemColor: Theme.of(context).primaryColor,
       items: <BottomNavigationBarItem>[
         const BottomNavigationBarItem(
           icon: Icon(Icons.newspaper),
@@ -231,7 +233,6 @@ class HomePageState extends State<HomePage> {
         ),
       ],
       currentIndex: selectedBottomBarIndex,
-      selectedItemColor: Colors.teal,
       onTap: (selectedItemIndex) {
         if (selectedItemIndex != selectedBottomBarIndex) {
           final currentState = _authenticationBloc.state;

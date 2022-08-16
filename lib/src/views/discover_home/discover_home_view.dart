@@ -258,6 +258,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
           _actionButton("Update Preferences", () {
             _navigateToDiscoverUserPreferences(state);
           }),
+          WidgetUtils.spacer(5),
           _actionButton("Discover Buddies", () {
             _navigateToDiscoverRecommendations();
           }),
