@@ -65,6 +65,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       RestoreAuthSuccessState event,
       Emitter<AuthenticationState> emit
       ) async {
+    // We cancel existing timer to refresh access token and force refresh it now
+    // This is done so that stale user data from previous trigger do not get reused in the refresh call
     _setUpRefreshAccessTokenTrigger(event.tokens, event.user);
     emit(AuthSuccessState(authenticatedUser: event.user));
   }
@@ -104,6 +106,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   void _authenticatedUserDataUpdated(
       AuthenticatedUserDataUpdated event,
       Emitter<AuthenticationState> emit) async {
+    _forceRefreshAccessToken(event.user);
     emit(AuthSuccessUserUpdateState(authenticatedUser: event.user));
   }
 
@@ -137,6 +140,11 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     _refreshAccessTokenTimer = Timer(Duration(seconds: authTokens.expiresIn - 60), () {
       add(RefreshAccessTokenRequested(user: user));
     });
+  }
+
+  void _forceRefreshAccessToken(AuthenticatedUser user) {
+    _refreshAccessTokenTimer?.cancel();
+    add(RefreshAccessTokenRequested(user: user));
   }
 
   Future<AuthenticatedUser> _storeTokensAndGetAuthenticatedUser(AuthTokens authTokens, String authRealm) async {
