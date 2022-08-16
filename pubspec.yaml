@@ -67,6 +67,8 @@ dependencies:
   gauges: ^1.0.0
   badges: ^2.0.3
   flutter_app_badger: ^1.4.0
+  image_cropper: ^3.0.0
+  universal_io: ^2.0.4
 
 dev_dependencies:
   flutter_test:
