@@ -91,7 +91,7 @@ class UserResultsListState extends State<UserResultsList> {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            image: ImageUtils.getUserProfileImage(userProfile, 100, 100),
+            image: ImageUtils.getUserProfileImage(userProfile, 500, 500),
           ),
         ),
       ),

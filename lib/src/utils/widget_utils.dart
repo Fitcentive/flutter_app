@@ -15,7 +15,7 @@ class WidgetUtils {
         height: 300,
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
-          image: ImageUtils.getImage(postImageUrl, 300, 300),
+          image: ImageUtils.getImage(postImageUrl, 500, 500),
         ),
       );
     }
