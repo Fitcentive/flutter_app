@@ -41,9 +41,9 @@ class NotificationRepository {
     }
   }
 
-  Future<List<AppNotification>> fetchUserNotifications(String userId, String accessToken) async {
+  Future<List<AppNotification>> fetchUserNotifications(String userId, String accessToken, int limit, int offset) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/$userId/notifications"),
+      Uri.parse("$BASE_URL/$userId/notifications?limit=$limit&offset=$offset"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
     if (response.statusCode == HttpStatus.ok) {

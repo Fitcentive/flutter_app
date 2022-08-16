@@ -32,13 +32,15 @@ class NotificationsLoaded extends NotificationsState {
   final AuthenticatedUser user;
   final List<AppNotification> notifications;
   final Map<String, PublicUserProfile> userProfileMap;
+  final bool doesNextPageExist;
 
   const NotificationsLoaded({
     required this.notifications,
     required this.user,
     required this.userProfileMap,
+    required this.doesNextPageExist,
   });
 
   @override
-  List<Object> get props => [notifications, userProfileMap, user];
+  List<Object> get props => [notifications, userProfileMap, user, doesNextPageExist];
 }

@@ -41,6 +41,11 @@ class NotificationsView extends StatefulWidget {
 }
 
 class NotificationsViewState extends State<NotificationsView> {
+  static const double _scrollThreshold = 200.0;
+
+  final _scrollController = ScrollController();
+  bool isDataBeingRequested = false;
+
   late final NotificationsBloc _notificationsBloc;
   late final AuthenticationBloc _authenticationBloc;
 
@@ -53,6 +58,28 @@ class NotificationsViewState extends State<NotificationsView> {
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
       _notificationsBloc.add(FetchNotifications(user: currentAuthState.authenticatedUser));
+    }
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if(_scrollController.hasClients ) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
+
+      if (maxScroll - currentScroll <= _scrollThreshold && !isDataBeingRequested) {
+        final currentAuthState = _authenticationBloc.state;
+        if (currentAuthState is AuthSuccessUserUpdateState) {
+          isDataBeingRequested = true;
+          _notificationsBloc.add(FetchNotifications(user: currentAuthState.authenticatedUser));
+        }
+      }
     }
   }
 
@@ -78,6 +105,7 @@ class NotificationsViewState extends State<NotificationsView> {
         onRefresh: _pullRefresh,
         child: BlocBuilder<NotificationsBloc, NotificationsState>(builder: (context, state) {
           if (state is NotificationsLoaded) {
+            isDataBeingRequested = false;
             _markNotificationsAsRead(state);
             if (state.notifications.isEmpty) {
               return const Center(child: Text('No Results'));
@@ -98,12 +126,18 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
+  // SCrollbar?
   _generateNotificationListView(NotificationsLoaded state) {
     return Scrollbar(
       child: ListView.builder(
-          itemCount: state.notifications.length,
+          controller: _scrollController,
+          itemCount: state.doesNextPageExist ? state.notifications.length + 1 : state.notifications.length,
           itemBuilder: (context, index) {
-            return _generateNotificationListItem(state.notifications[index], state.userProfileMap);
+            if (index >= state.notifications.length) {
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              return _generateNotificationListItem(state.notifications[index], state.userProfileMap);
+            }
           }),
     );
   }
@@ -111,7 +145,7 @@ class NotificationsViewState extends State<NotificationsView> {
   Future<void> _pullRefresh() async {
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
-      _notificationsBloc.add(FetchNotifications(user: currentAuthState.authenticatedUser));
+      _notificationsBloc.add(ReFetchNotifications(user: currentAuthState.authenticatedUser));
     }
   }
 

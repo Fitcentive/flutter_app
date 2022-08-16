@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_event.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,6 +25,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     required this.secureStorage,
   }) : super(const NotificationsInitial()) {
     on<FetchNotifications>(_fetchNotifications);
+    on<ReFetchNotifications>(_reFetchNotifications);
     on<NotificationInteractedWith>(_notificationInteractedWith);
     on<MarkNotificationsAsRead>(_markNotificationsAsRead);
   }
@@ -64,7 +66,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         emit(NotificationsLoaded(
             notifications: newNotifications,
             user: currentState.user,
-            userProfileMap: currentState.userProfileMap
+            userProfileMap: currentState.userProfileMap,
+            doesNextPageExist: currentState.doesNextPageExist
         ));
       }
 
@@ -80,18 +83,81 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     }
   }
 
-  void _fetchNotifications(FetchNotifications event, Emitter<NotificationsState> emit) async {
+  void _reFetchNotifications(ReFetchNotifications event, Emitter<NotificationsState> emit) async {
     emit(const NotificationsLoading());
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final List<AppNotification> notifications =
-        await notificationsRepository.fetchUserNotifications(event.user.user.id, accessToken!);
+    await notificationsRepository.fetchUserNotifications(
+        event.user.user.id, accessToken!,
+        ConstantUtils.DEFAULT_LIMIT,
+        ConstantUtils.DEFAULT_OFFSET
+    );
 
     final List<String> userIdsFromNotificationSources = _getRelevantUserIdsFromNotifications(notifications);
     final List<PublicUserProfile> userProfileDetails =
-        await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
+    await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+    final doesNextPageExist = notifications.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
 
-    emit(NotificationsLoaded(notifications: notifications, user: event.user, userProfileMap: userIdProfileMap));
+    emit(NotificationsLoaded(
+        notifications: notifications,
+        user: event.user,
+        userProfileMap: userIdProfileMap,
+        doesNextPageExist: doesNextPageExist
+    ));
+  }
+
+  void _fetchNotifications(FetchNotifications event, Emitter<NotificationsState> emit) async {
+    final currentState = state;
+    if (currentState is NotificationsInitial) {
+      emit(const NotificationsLoading());
+      final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
+      final List<AppNotification> notifications =
+      await notificationsRepository.fetchUserNotifications(
+          event.user.user.id, accessToken!,
+          ConstantUtils.DEFAULT_LIMIT,
+          ConstantUtils.DEFAULT_OFFSET
+      );
+
+      final List<String> userIdsFromNotificationSources = _getRelevantUserIdsFromNotifications(notifications);
+      final List<PublicUserProfile> userProfileDetails =
+      await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
+      final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+      final doesNextPageExist = notifications.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
+
+      emit(NotificationsLoaded(
+              notifications: notifications,
+              user: event.user,
+              userProfileMap: userIdProfileMap,
+              doesNextPageExist: doesNextPageExist
+          ));
+    }
+    else if (currentState is NotificationsLoaded && currentState.doesNextPageExist) {
+      final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
+      final List<AppNotification> notifications =
+      await notificationsRepository.fetchUserNotifications(
+          event.user.user.id, accessToken!,
+          ConstantUtils.DEFAULT_LIMIT,
+          currentState.notifications.length
+      );
+
+      final List<String> userIdsFromNotificationSources = _getRelevantUserIdsFromNotifications(notifications);
+      final List<PublicUserProfile> userProfileDetails =
+      await userRepository.getPublicUserProfiles(userIdsFromNotificationSources, accessToken);
+      final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+      final doesNextPageExist = notifications.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
+
+      final completeNotifications = [...currentState.notifications, ...notifications];
+      final completeUserIdProfileMap = {...currentState.userProfileMap, ...userIdProfileMap};
+
+      emit(NotificationsLoaded(
+          notifications: completeNotifications,
+          user: event.user,
+          userProfileMap: completeUserIdProfileMap,
+          doesNextPageExist: doesNextPageExist
+      ));
+    }
+    
   }
 
   List<String> _getRelevantUserIdsFromNotifications(List<AppNotification> notifications) {
