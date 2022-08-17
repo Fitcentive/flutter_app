@@ -84,6 +84,7 @@ class RequiredDataResolved extends UserProfileState {
     chatRoomId,
     postIdCommentsMap,
     userIdProfileMap,
+    doesNextPageExist,
   ];
 }
 

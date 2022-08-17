@@ -7,15 +7,16 @@ part 'chat_message_push_notification_metadata.g.dart';
 class ChatMessagePushNotificationMetadata extends Equatable {
   final String targetUserId;
   final String sendingUserId;
+  final String sendingUserPhotoUrl;
   final String type;
   final String roomId;
 
-  const ChatMessagePushNotificationMetadata(this.targetUserId, this.sendingUserId, this.type, this.roomId);
+  const ChatMessagePushNotificationMetadata(this.targetUserId, this.sendingUserId, this.sendingUserPhotoUrl, this.type, this.roomId);
 
   factory ChatMessagePushNotificationMetadata.fromJson(Map<String, dynamic> json) => _$ChatMessagePushNotificationMetadataFromJson(json);
 
   Map<String, dynamic> toJson() => _$ChatMessagePushNotificationMetadataToJson(this);
 
   @override
-  List<Object> get props => [targetUserId, sendingUserId, type, roomId];
+  List<Object> get props => [targetUserId, sendingUserId, sendingUserPhotoUrl, type, roomId];
 }

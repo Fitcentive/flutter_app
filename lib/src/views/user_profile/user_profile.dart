@@ -439,6 +439,7 @@ class UserProfileViewState extends State<UserProfileView> {
                       label: const Text("Approve",
                           style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
                     )),
+                    WidgetUtils.spacer(5),
                     Expanded(
                         child: ElevatedButton.icon(
                       icon: const Icon(Icons.close),

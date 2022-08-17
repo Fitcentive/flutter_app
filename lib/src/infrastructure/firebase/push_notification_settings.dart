@@ -7,12 +7,18 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/notification/push_notification_metadata.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/chat_message_push_notification_metadata.dart';
+import 'package:flutter_app/src/models/push/user_follow_request_push_notification_metadata.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
+import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:universal_io/io.dart';
+import 'package:http/http.dart' as http;
 
 class PushNotificationSettings {
 
@@ -27,11 +33,34 @@ class PushNotificationSettings {
     importance: Importance.max,
   );
 
-  static const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('food');
+  static const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
   static const IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
 
   static const InitializationSettings initializationSettings =
   InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+
+  static _openRequestingUserProfileView(
+      context,
+      FlutterSecureStorage secureStorage,
+      UserRepository userRepository,
+      String payload
+  ) async {
+    final notificationMetadata = UserFollowRequestPushNotificationMetadata.fromJson(jsonDecode(payload));
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final userProfiles = await userRepository.getPublicUserProfiles(
+        [notificationMetadata.requestingUserId, notificationMetadata.targetUserId],
+        accessToken!
+    );
+    final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfiles) (e).userId : e };
+    final currentUserProfile = userIdProfileMap[notificationMetadata.targetUserId];
+    final otherUserProfile = userIdProfileMap[notificationMetadata.requestingUserId];
+
+    Navigator.pushAndRemoveUntil(
+        context,
+        UserProfileView.route(otherUserProfile!, currentUserProfile!),
+            (route) => true
+    );
+  }
 
   static _openUserChatView(
       BuildContext context,
@@ -122,35 +151,124 @@ class PushNotificationSettings {
     }
   }
 
+  static Future<String> _downloadAndSaveFile(String url, String fileName) async {
+    const fallback = "https://images.freeimages.com/images/large-previews/4ba/healthy-food-1327899.jpg";
+
+    final directory = await getApplicationDocumentsDirectory();
+    final String filePath = '${directory.path}/$fileName';
+    http.Response response;
+    try {
+      response = await http.get(Uri.parse(url));
+    } catch (e) {
+      response = await http.get(Uri.parse(fallback));
+    }
+
+    final File file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+    return filePath;
+  }
+
+  static _handleShowingNotification(RemoteNotification? notification, String imageUrl, String payload) async {
+    final String largeIconPath = await _downloadAndSaveFile(imageUrl, 'largeIcon');
+    final String bigPicturePath = await _downloadAndSaveFile(imageUrl, 'bigPicture');
+
+    final BigPictureStyleInformation bigPictureStyleInformation = BigPictureStyleInformation(
+      FilePathAndroidBitmap(bigPicturePath),
+      largeIcon: FilePathAndroidBitmap(largeIconPath),
+      hideExpandedLargeIcon: false,
+      contentTitle: notification?.title,
+      summaryText: notification?.body,
+    );
+
+    AndroidNotification? android = notification?.android;
+    final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        channel.id,
+        channel.name,
+        channelDescription: channel.description,
+        icon: android?.smallIcon,
+        largeIcon: FilePathAndroidBitmap(largeIconPath),
+        styleInformation: bigPictureStyleInformation
+    );
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    if (notification != null) {
+      flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          platformChannelSpecifics,
+          payload: payload
+      );
+    }
+  }
+
   // todo - This code does not consider iOS, will have to refactor when that bridge is crossed
-  static reactToNotification(RemoteMessage? remoteMessage) {
-    if (remoteMessage != null) {
+  static reactToNotification(RemoteMessage? remoteMessage) async {
+    if (remoteMessage != null && DeviceUtils.isMobileDevice()) {
       RemoteNotification? notification = remoteMessage.notification;
-      AndroidNotification? android = remoteMessage.notification?.android;
-      if (notification != null) {
-        flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channelDescription: channel.description,
-                icon: android?.smallIcon,
+      final jsonPayload = jsonEncode(remoteMessage.data);
+      final pushNotificationMetadata = PushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
+
+      switch(pushNotificationMetadata.type) {
+        case "chat_message":
+          final notificationMetadata = ChatMessagePushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
+          _handleShowingNotification(notification, notificationMetadata.sendingUserPhotoUrl, jsonPayload);
+          break;
+
+        case "user_follow_request":
+          final notificationMetadata = UserFollowRequestPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
+          _handleShowingNotification(notification, notificationMetadata.requestingUserPhotoUrl, jsonPayload);
+          break;
+
+        default:
+          break;
+      }
+    }
+    else {
+      // Dumb it down for web implementation (no image)
+      if (remoteMessage != null) {
+        RemoteNotification? notification = remoteMessage.notification;
+        AndroidNotification? android = remoteMessage.notification?.android;
+        if (notification != null) {
+          flutterLocalNotificationsPlugin.show(
+              notification.hashCode,
+              notification.title,
+              notification.body,
+              NotificationDetails(
+                android: AndroidNotificationDetails(
+                  channel.id,
+                  channel.name,
+                  channelDescription: channel.description,
+                  icon: android?.smallIcon,
+                ),
               ),
-            ),
-          payload: jsonEncode(remoteMessage.data).toString()
-        );
+              payload: jsonEncode(remoteMessage.data).toString()
+          );
+        }
       }
     }
   }
 
-  static _handleNotificationsReceivedWhenAppInBackground() {
-    // For handling notification when the app is in background
-    // but not terminated
+  // When auto delivered push notification is selected, this callback is invoked
+  static _handleNotificationsReceivedWhenAppInBackground(BuildContext context) {
+    final userRepository = RepositoryProvider.of<UserRepository>(context);
+    final secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
+
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      reactToNotification(message);
+    // reactToNotification(message);
+      final pushNotificationMetadata = PushNotificationMetadata.fromJson(message.data);
+      switch(pushNotificationMetadata.type) {
+        case "user_follow_request":
+          _openRequestingUserProfileView(context, secureStorage, userRepository, jsonEncode(message.data));
+          break;
+
+        case "chat_message":
+          _openUserChatView(context, secureStorage, userRepository, jsonEncode(message.data));
+          break;
+
+        default:
+          break;
+      }
     });
   }
 
@@ -160,19 +278,16 @@ class PushNotificationSettings {
     reactToNotification(initialMessage);
   }
 
-  // todo - double displaying of notifications?
-  //        consider turning off local notifications plugin / re-reading overlay support method
-  //        might have to switch to data notifications instead of notification type
-  //        as we are showing it explicitly instead of the system doing it
   static setupFirebasePushNotifications(BuildContext context, FirebaseMessaging messaging) async {
     await _setUpFlutterLocalNotifications(context);
     final NotificationSettings settings = await _requestPermissionsIfNeeded(messaging);
     await _subscribeToNotificationsIfAllowed(settings);
-    await _handleNotificationsReceivedWhenAppInBackground();
+    await _handleNotificationsReceivedWhenAppInBackground(context);
     await _checkForInitialMessage();
   }
 }
 
+// Unclear if this is even required, kept here for future reference
 Future _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  PushNotificationSettings.reactToNotification(message);
+  // PushNotificationSettings.reactToNotification(message);
 }
