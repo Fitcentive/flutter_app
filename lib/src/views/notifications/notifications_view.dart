@@ -168,7 +168,7 @@ class NotificationsViewState extends State<NotificationsView> {
           context,
           UserProfileView.route(userProfile, widget.currentUserProfile),
               (route) => true
-      );
+      ).then((value) => _pullRefresh());
     }
   }
 
