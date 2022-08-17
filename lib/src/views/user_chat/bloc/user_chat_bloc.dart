@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
@@ -24,6 +25,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   final joinRef = const Uuid().v4();
   final userTypingMessageId = const Uuid().v4();
 
+  Timer? _heartbeatTimer;
+
   UserChatBloc({
     required this.chatRepository,
     required this.secureStorage,
@@ -36,6 +39,22 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     on<CurrentUserTypingStopped>(_currentUserTypingStopped);
     on<OtherUserTypingStarted>(_otherUserTypingStarted);
     on<OtherUserTypingStopped>(_otherUserTypingStopped);
+  }
+
+  _setUpHeartbeats(String roomId, String currentUserId) {
+    _heartbeatTimer = Timer(const Duration(seconds: 30), () {
+      _chatRoomChannel.sink.add(jsonEncode({
+        "topic": "chat_room:$roomId",
+        "event": "ping",
+        "payload": {
+          "user_id": currentUserId
+        },
+        "join_ref": joinRef,
+        "ref": const Uuid().v4()
+      }));
+
+      _setUpHeartbeats(roomId, currentUserId);
+    });
   }
 
   _initializeWebsocketConnections(String roomId, String currentUserId) async {
@@ -55,6 +74,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
       "join_ref": joinRef,
       "ref": const Uuid().v4()
     }));
+
+    _setUpHeartbeats(roomId, currentUserId);
 
     _chatRoomChannel.stream.listen((event) {
       final decodedJson = jsonDecode(event);
@@ -243,5 +264,6 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
   void dispose() {
     _chatRoomChannel.sink.close();
+    _heartbeatTimer?.cancel();
   }
 }
