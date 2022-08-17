@@ -19,9 +19,13 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Login', style: TextStyle(color: Colors.teal),)),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: LoginForm(),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: LoginForm(),
+          ),
+        ),
       ),
     );
   }
