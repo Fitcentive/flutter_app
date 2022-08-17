@@ -331,6 +331,13 @@ class HomePageState extends State<HomePage> {
               currentUserId: currentState.authenticatedUser.user.id
           )
       );
+      if (bottomBarToAppDrawerItemMap.values.contains(selectedItem)) {
+        setState(() {
+          selectedBottomBarIndex =
+              bottomBarToAppDrawerItemMap.keys.firstWhere((k) => bottomBarToAppDrawerItemMap[k] == selectedItem);
+        });
+      }
+
     }
   }
 
