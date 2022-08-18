@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
@@ -19,6 +20,9 @@ class ProfileInfoView extends StatefulWidget {
 }
 
 class ProfileInfoViewState extends State<ProfileInfoView> {
+  static const EARLIEST_YEAR = 1970;
+  static const LATEST_YEAR = 2050;
+
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   late final CompleteProfileBloc _completeProfileBloc;
@@ -48,33 +52,37 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: const Alignment(0, -1 / 3),
-      child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-              builder: (context, state) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Tell us a little more about yourself",
-                      style: appTheme.textTheme.headline6,
-                    ),
-                    const Padding(padding: EdgeInsets.all(20)),
-                    _nameInput("First Name"),
-                    const Padding(padding: EdgeInsets.all(6)),
-                    _nameInput("Last Name"),
-                    const Padding(padding: EdgeInsets.all(20)),
-                    Text("Gender", style: appTheme.textTheme.headline6),
-                    _genderPicker(),
-                    WidgetUtils.spacer(15),
-                    Text("Date of birth", style: appTheme.textTheme.headline6),
-                    const Padding(padding: EdgeInsets.all(6)),
-                    _datePickerButton(),
-                  ],
-                );
-              })),
+    return Center(
+      child: SingleChildScrollView(
+        child: Align(
+          alignment: const Alignment(0, -1 / 3),
+          child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
+                  builder: (context, state) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "Tell us a little more about yourself",
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                        const Padding(padding: EdgeInsets.all(20)),
+                        _nameInput("First Name"),
+                        const Padding(padding: EdgeInsets.all(6)),
+                        _nameInput("Last Name"),
+                        const Padding(padding: EdgeInsets.all(20)),
+                        Text("Gender", style: Theme.of(context).textTheme.headline6,),
+                        _genderPicker(),
+                        WidgetUtils.spacer(15),
+                        Text("Date of birth", style: Theme.of(context).textTheme.headline6,),
+                        const Padding(padding: EdgeInsets.all(6)),
+                        _datePickerButton(),
+                      ],
+                    );
+                  })),
+        ),
+      ),
     );
   }
 
@@ -117,11 +125,18 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
       onPressed: () async {
         if (currentState is ProfileInfoModified) {
           final selectedDate = await showDatePicker(
+            builder: (BuildContext context, Widget? child) {
+              return Theme(
+                  data: ThemeData(primarySwatch: Colors.teal),
+
+                  child: child!
+              );
+            },
             context: context,
             initialEntryMode: DatePickerEntryMode.calendarOnly,
             initialDate: DateTime.parse(currentState.dateOfBirth.value),
-            firstDate: DateTime(1970),
-            lastDate: DateTime(2050),
+            firstDate: DateTime(EARLIEST_YEAR),
+            lastDate: DateTime(LATEST_YEAR),
           );
           _completeProfileBloc.add(ProfileInfoChanged(
               user: currentState.user,
@@ -145,6 +160,9 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
     return BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
       builder: (context, state) {
         return TextField(
+            inputFormatters: [
+              UpperCaseTextFormatter(),
+            ],
             controller: key == "First Name" ? _firstNameController : _lastNameController,
             key: Key('completeProfileForm_${key}_textField'),
             onChanged: (name) {

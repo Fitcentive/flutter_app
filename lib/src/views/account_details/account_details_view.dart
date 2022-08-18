@@ -12,6 +12,7 @@ import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
+import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_bloc.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_event.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_state.dart';
@@ -378,6 +379,9 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
 
   _nameField(String key, AccountDetailsState state) {
     return TextField(
+        inputFormatters: [
+          UpperCaseTextFormatter(),
+        ],
         controller: key == "First Name" ? _firstNameController : _lastNameController,
         key: Key('accountDetailsForm_${key}_textField'),
         onChanged: (name) {

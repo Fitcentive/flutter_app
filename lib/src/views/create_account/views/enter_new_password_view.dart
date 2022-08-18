@@ -39,7 +39,7 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
           children: [
             Text(
               "Enter a new password",
-              style: appTheme.textTheme.headline6,
+              style: Theme.of(context).textTheme.headline6,
             ),
             const Padding(padding: EdgeInsets.all(12)),
             _passwordWidget(),

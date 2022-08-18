@@ -1,6 +1,6 @@
 import 'package:formz/formz.dart';
 
-enum UsernameValidationError { empty, tooShort }
+enum UsernameValidationError { empty, tooShort, badCharacters }
 
 class Username extends FormzInput<String, UsernameValidationError> {
   const Username.pure() : super.pure('');
@@ -17,6 +17,9 @@ class Username extends FormzInput<String, UsernameValidationError> {
     }
     else if (value.length < 4) {
       return UsernameValidationError.tooShort;
+    }
+    else if (value.contains(" ")) {
+      return UsernameValidationError.badCharacters;
     }
     else {
       return null;

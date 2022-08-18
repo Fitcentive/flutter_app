@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
-import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CompleteProfileTermsAndConditionsView extends StatelessWidget {
@@ -10,27 +9,30 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: const Alignment(0, -1 / 3),
-      child: Padding(
-          padding: EdgeInsets.all(12),
-          child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
-              builder: (context, state) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Please review and accept the terms and conditions",
-                      style: appTheme.textTheme.headline6,
-                    ),
-                    const Padding(padding: EdgeInsets.all(20)),
-                    _createCheckBox(
-                        "I have read and accept to the terms and conditions", "termsAndConditions", context),
-                    // const Padding(paddingx: EdgeInsets.all(12)),
-                    _createCheckBox("I would like to subscribe to marketing emails", "marketingEmails", context),
-                  ],
-                );
-              })),
+    return Center(
+      child: SingleChildScrollView(
+        child: Align(
+          alignment: const Alignment(0, -1 / 3),
+          child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
+                  builder: (context, state) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "Please review and accept the terms and conditions",
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                        const Padding(padding: EdgeInsets.all(20)),
+                        _createCheckBox("I have read and accept to the terms and conditions", "termsAndConditions", context),
+                        // const Padding(padding: EdgeInsets.all(12)),
+                        _createCheckBox("I would like to subscribe to marketing emails", "marketingEmails", context),
+                      ],
+                    );
+                  })),
+        ),
+      ),
     );
   }
 
@@ -38,7 +40,7 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
     return CheckboxListTile(
       title: Text(
         title,
-        style: appTheme.textTheme.subtitle1,
+        style: Theme.of(context).textTheme.subtitle1,
       ),
       value: _getCheckboxValue(key, context),
       onChanged: (newValue) {

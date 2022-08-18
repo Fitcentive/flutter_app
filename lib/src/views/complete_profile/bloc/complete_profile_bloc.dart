@@ -75,8 +75,13 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
       ) async {
     final currentState = state;
     if (currentState is UsernameModified) {
+      emit(LocationInfoModified(
+          user: event.user,
+          selectedCoordinates: LocationUtils.defaultLocation,
+          radius: 1000
+      ));
       final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
-      final updateUser = UpdateUserPatch(accountStatus: "LocationRadiusRequired", username: event.username);
+      final updateUser = UpdateUserPatch(accountStatus: "LocationRadiusRequired", username: event.username.trim());
       final updatedUser = await userRepository.updateUserPatch(event.user.user.id, updateUser, accessToken!);
       final updatedAuthenticatedUser = AuthenticatedUser(
           user: updatedUser,
@@ -105,7 +110,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     if (currentState is UsernameModified) {
       if (newStatus.isValid) {
         final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
-        final doesUsernameExistAlready = await userRepository.checkIfUsernameExists(event.username, event.user.user.id, accessToken!);
+        final doesUsernameExistAlready = await userRepository.checkIfUsernameExists(event.username.trim(), event.user.user.id, accessToken!);
         emit(currentState.copyWith(
             status: newStatus,
             username: username,
@@ -120,9 +125,10 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
 
   void _profileInfoSubmitted(ProfileInfoSubmitted event,
       Emitter<CompleteProfileState> emit,) async {
+    emit(UsernameModified(user: event.user));
     final updateUserProfile = UpdateUserProfile(
-        firstName: event.firstName,
-        lastName: event.lastName,
+        firstName: event.firstName.trim(),
+        lastName: event.lastName.trim(),
         dateOfBirth: DateFormat('yyyy-MM-dd').format(event.dateOfBirth),
         gender: event.gender
     );
@@ -162,6 +168,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
 
   void _termsAndConditionsSubmitted(CompleteProfileTermsAndConditionsSubmitted event,
       Emitter<CompleteProfileState> emit,) async {
+    emit(ProfileInfoModified(user: event.user));
     final updateAgreements = UpdateUserAgreements(
         termsAndConditionsAccepted: event.termsAndConditions,
         subscribeToEmails: event.marketingEmails

@@ -1,4 +1,15 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.isEmpty ? "" : (newValue.text.length == 1 ? "${newValue.text[0].toUpperCase()}" : "${newValue.text[0].toUpperCase()}${newValue.text.substring(1)}"),
+      selection: newValue.selection,
+    );
+  }
+}
 
 class StringUtils {
 

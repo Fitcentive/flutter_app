@@ -36,22 +36,26 @@ class SelectUsernameViewState extends State<SelectUsernameView> {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: const Alignment(0, -1 / 3),
-      child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                "Enter your preferred username",
-                style: appTheme.textTheme.headline6,
-              ),
-              const Padding(padding: EdgeInsets.all(12)),
-              _usernameInput(),
-              const Padding(padding: EdgeInsets.all(12)),
-            ],
-          )),
+    return Center(
+      child: SingleChildScrollView(
+        child: Align(
+          alignment: const Alignment(0, -1 / 3),
+          child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    "Enter your preferred username",
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                  const Padding(padding: EdgeInsets.all(12)),
+                  _usernameInput(),
+                  const Padding(padding: EdgeInsets.all(12)),
+                ],
+              )),
+        ),
+      ),
     );
   }
 

@@ -21,7 +21,7 @@ class TermsAndConditionsView extends StatelessWidget {
                   children: [
                     Text(
                       "Almost there... Just one more thing",
-                      style: appTheme.textTheme.headline6,
+                      style: Theme.of(context).textTheme.headline6,
                     ),
                     const Padding(padding: EdgeInsets.all(20)),
                     _createCheckBox("I have read and accept to the terms and conditions", "termsAndConditions", context),
@@ -37,7 +37,7 @@ class TermsAndConditionsView extends StatelessWidget {
     return CheckboxListTile(
       title: Text(
         title,
-        style: appTheme.textTheme.subtitle1,
+        style: Theme.of(context).textTheme.subtitle1,
       ),
       value: _getCheckboxValue(key, context),
       onChanged: (newValue) {

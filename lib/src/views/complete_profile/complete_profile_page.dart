@@ -184,12 +184,7 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
             const CompleteProfileTermsAndConditionsView(),
             const ProfileInfoView(),
             const SelectUsernameView(),
-            ProvideLocationView(
-                longitude: LocationUtils.defaultLocation.longitude,
-                latitude: LocationUtils.defaultLocation.latitude,
-                radius: LocationUtils.defaultRadius.toDouble(),
-                updateBlocState: _updateBlocState,
-            ),
+            _provideLocationView(),
           ],
         );
         if (state is InitialState) {
@@ -210,6 +205,19 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
     );
   }
 
+  _provideLocationView() {
+    return Center(
+      child: SingleChildScrollView(
+        child: ProvideLocationView(
+          longitude: LocationUtils.defaultLocation.longitude,
+          latitude: LocationUtils.defaultLocation.latitude,
+          radius: LocationUtils.defaultRadius.toDouble(),
+          updateBlocState: _updateBlocState,
+        ),
+      ),
+    );
+  }
+  
   _updateBlocState(LatLng coordinates, int radius) {
     final currentState = _completeProfileBloc.state;
     if (currentState is LocationInfoModified) {
