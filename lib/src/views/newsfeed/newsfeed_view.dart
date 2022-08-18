@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
@@ -8,7 +9,6 @@ import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
-import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_post/create_new_post_view.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_bloc.dart';
@@ -16,7 +16,6 @@ import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_event.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
-import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/social_posts_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,6 +54,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
 
   final _scrollController = ScrollController();
   bool isRequestingMoreData = false;
+  bool _isFloatingButtonVisible = true;
 
   List<SocialPost> postsState = List.empty();
   List<PostsWithLikedUserIds> likedUsersForPosts = List.empty();
@@ -148,8 +148,27 @@ class NewsFeedViewState extends State<NewsFeedView> {
         builder: (context, state) {
           return Scaffold(
             body: _newsfeedListView(state),
+            floatingActionButton: _animatedButton(),
           );
         });
+  }
+
+  _animatedButton() {
+    return AnimatedOpacity(
+      opacity: _isFloatingButtonVisible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      child: Visibility(
+        visible: _isFloatingButtonVisible,
+        child: FloatingActionButton(
+          onPressed: () {
+            _goToCreateNewPostView();
+          },
+          tooltip: 'Share your thoughts!',
+          backgroundColor: Colors.teal,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+      ),
+    );
   }
 
   _newsFeedList(NewsFeedDataReady state) {
@@ -174,6 +193,23 @@ class NewsFeedViewState extends State<NewsFeedView> {
       if (maxScroll - currentScroll <= _scrollThreshold && !isRequestingMoreData) {
         isRequestingMoreData = true;
         _fetchMoreResults();
+      }
+
+      // Handle floating action button visibility
+      if(_scrollController.position.userScrollDirection == ScrollDirection.reverse){
+        if(_isFloatingButtonVisible == true) {
+          setState((){
+            _isFloatingButtonVisible = false;
+          });
+        }
+      } else {
+        if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+          if (_isFloatingButtonVisible == false) {
+            setState(() {
+              _isFloatingButtonVisible = true;
+            });
+          }
+        }
       }
     }
   }
@@ -280,7 +316,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
           WidgetUtils.spacer(10),
           GestureDetector(
             onTap: () {
-              Navigator.pushAndRemoveUntil(context, CreateNewPostView.route(widget.currentUserProfile), (route) => true);
+              _goToCreateNewPostView();
             },
             child: Card(
                 shape: RoundedRectangleBorder(
@@ -297,5 +333,9 @@ class NewsFeedViewState extends State<NewsFeedView> {
         ],
       ),
     );
+  }
+
+  _goToCreateNewPostView() {
+    Navigator.pushAndRemoveUntil(context, CreateNewPostView.route(widget.currentUserProfile), (route) => true);
   }
 }
