@@ -105,7 +105,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     if (currentState is UsernameModified) {
       if (newStatus.isValid) {
         final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
-        final doesUsernameExistAlready = await userRepository.checkIfUsernameExists(event.username, accessToken!);
+        final doesUsernameExistAlready = await userRepository.checkIfUsernameExists(event.username, event.user.user.id, accessToken!);
         emit(currentState.copyWith(
             status: newStatus,
             username: username,

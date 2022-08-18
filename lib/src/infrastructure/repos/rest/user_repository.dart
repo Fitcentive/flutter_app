@@ -74,9 +74,9 @@ class UserRepository {
     }
   }
 
-  Future<bool> checkIfUsernameExists(String username, String accessToken) async {
+  Future<bool> checkIfUsernameExists(String username, String userId, String accessToken) async {
     final response = await http
-        .head(Uri.parse("$BASE_URL/username?username=$username"), headers: {'Authorization': 'Bearer $accessToken'});
+        .head(Uri.parse("$BASE_URL/$userId/username?username=$username"), headers: {'Authorization': 'Bearer $accessToken'});
     if (response.statusCode == HttpStatus.ok) {
       return true;
     } else if (response.statusCode == HttpStatus.notFound) {
