@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_account/create_account_page.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
@@ -64,6 +65,8 @@ class LoginFormState extends State<LoginForm> {
             _createAccountButton(),
             const Padding(padding: EdgeInsets.all(30)),
             _googleLoginButton(),
+            WidgetUtils.spacer(5),
+            _appleLoginButton(),
           ],
         ),
       ),
@@ -83,6 +86,23 @@ class LoginFormState extends State<LoginForm> {
               .add(const SignInWithOidcEvent(provider: OidcProviderInfo.GOOGLE_AUTH_PROVIDER));
         },
         child: const Text('Login with Google', style: TextStyle(fontSize: 20, color: Colors.white)),
+      ),
+    );
+  }
+
+  _appleLoginButton() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () {
+          context
+              .read<AuthenticationBloc>()
+              .add(const SignInWithOidcEvent(provider: OidcProviderInfo.APPLE_AUTH_PROVIDER));
+        },
+        child: const Text('Login with Apple', style: TextStyle(fontSize: 20, color: Colors.white)),
       ),
     );
   }

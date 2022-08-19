@@ -16,7 +16,8 @@ class AuthenticationRepository {
   static const String BASE_URL = "https://api.vid.app/api/auth";
 
   static final Map<String, OidcProviderInfo> providerToDetailsMap = {
-    OidcProviderInfo.GOOGLE_AUTH_PROVIDER: OidcProviderInfo.googleOidcProviderInfo()
+    OidcProviderInfo.GOOGLE_AUTH_PROVIDER: OidcProviderInfo.googleOidcProviderInfo(),
+    OidcProviderInfo.APPLE_AUTH_PROVIDER: OidcProviderInfo.appleOidcProviderInfo()
   };
 
   final logger = Logger('AuthenticationRepository');
@@ -88,6 +89,7 @@ class AuthenticationRepository {
     }
     else {
       // todo - move the constants to config
+      // todo - add apple config here better, or avoid this situation altogether
       final url = Uri.https('api.vid.app', '/auth/realms/GoogleAuth/protocol/openid-connect/auth', {
         'response_type': 'code',
         'client_id': oidcProviderInfo!.clientId,
