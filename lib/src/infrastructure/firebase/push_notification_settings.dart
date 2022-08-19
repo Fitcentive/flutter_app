@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
@@ -33,11 +34,25 @@ class PushNotificationSettings {
     importance: Importance.max,
   );
 
-  static const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
-  static const IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
-
-  static const InitializationSettings initializationSettings =
-  InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+  static void onDidReceiveLocalNotification(BuildContext context, int id, String title, String body, String payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text('Ok'),
+            onPressed: () async {
+              // do something here
+            },
+          )
+        ],
+      ),
+    );
+  }
 
   static _openRequestingUserProfileView(
       context,
@@ -97,11 +112,28 @@ class PushNotificationSettings {
     );
   }
 
+  static _getSettings(BuildContext context) {
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings(
+        onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) {
+          onDidReceiveLocalNotification(context, id, title ?? "", body ?? "", payload ?? "");
+        }
+    );
+
+    final InitializationSettings initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS
+    );
+    return initializationSettings;
+  }
+
   static Future<void> _setUpFlutterLocalNotifications(BuildContext context) async {
     final userRepository = RepositoryProvider.of<UserRepository>(context);
     final secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
 
-    await flutterLocalNotificationsPlugin.initialize(PushNotificationSettings.initializationSettings,
+    final initializationSettings = _getSettings(context);
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String? payload) async {
           if (payload != null) {
             final pushNotificationMetadata = PushNotificationMetadata.fromJson(jsonDecode(payload));
@@ -202,7 +234,6 @@ class PushNotificationSettings {
     }
   }
 
-  // todo - This code does not consider iOS, will have to refactor when that bridge is crossed
   static reactToNotification(RemoteMessage? remoteMessage) async {
     if (remoteMessage != null && DeviceUtils.isMobileDevice()) {
       RemoteNotification? notification = remoteMessage.notification;
@@ -212,12 +243,16 @@ class PushNotificationSettings {
       switch(pushNotificationMetadata.type) {
         case "chat_message":
           final notificationMetadata = ChatMessagePushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
-          _handleShowingNotification(notification, notificationMetadata.sendingUserPhotoUrl, jsonPayload);
+          if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
+            _handleShowingNotification(notification, notificationMetadata.sendingUserPhotoUrl, jsonPayload);
+          }
           break;
 
         case "user_follow_request":
           final notificationMetadata = UserFollowRequestPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
-          _handleShowingNotification(notification, notificationMetadata.requestingUserPhotoUrl, jsonPayload);
+          if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
+            _handleShowingNotification(notification, notificationMetadata.requestingUserPhotoUrl, jsonPayload);
+          }
           break;
 
         default:
