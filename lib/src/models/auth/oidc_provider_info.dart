@@ -28,14 +28,19 @@ class OidcProviderInfo {
   final String clientId;
   final String keycloakIdpHint;
   final AuthorizationServiceConfiguration serviceConfiguration;
+  final String webHost;
+  final String webAuthUrl;
 
-  const OidcProviderInfo(
-      {required this.authRealm,
-      required this.discoverUri,
-      required this.redirectUri,
-      required this.clientId,
-      required this.keycloakIdpHint,
-      required this.serviceConfiguration});
+  const OidcProviderInfo({
+    required this.authRealm,
+    required this.discoverUri,
+    required this.redirectUri,
+    required this.clientId,
+    required this.keycloakIdpHint,
+    required this.serviceConfiguration,
+    required this.webHost,
+    required this.webAuthUrl,
+  });
 
   factory OidcProviderInfo.googleOidcProviderInfo() => OidcProviderInfo(
         authRealm: GOOGLE_AUTH_PROVIDER,
@@ -46,7 +51,9 @@ class OidcProviderInfo {
         serviceConfiguration: const AuthorizationServiceConfiguration(
             authorizationEndpoint: "https://api.vid.app/auth/realms/GoogleAuth/protocol/openid-connect/auth",
             tokenEndpoint: "https://api.vid.app/auth/realms/GoogleAuth/protocol/openid-connect/token"
-        )
+        ),
+        webHost: 'api.vid.app',
+        webAuthUrl: '/auth/realms/GoogleAuth/protocol/openid-connect/auth'
       );
 
   factory OidcProviderInfo.appleOidcProviderInfo() => OidcProviderInfo(
@@ -58,6 +65,8 @@ class OidcProviderInfo {
       serviceConfiguration: const AuthorizationServiceConfiguration(
           authorizationEndpoint: "https://api.vid.app/auth/realms/AppleAuth/protocol/openid-connect/auth",
           tokenEndpoint: "https://api.vid.app/auth/realms/AppleAuth/protocol/openid-connect/token"
-      )
+      ),
+      webHost: 'api.vid.app',
+      webAuthUrl: '/auth/realms/AppleAuth/protocol/openid-connect/auth'
   );
 }

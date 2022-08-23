@@ -88,11 +88,9 @@ class AuthenticationRepository {
       );
     }
     else {
-      // todo - move the constants to config
-      // todo - add apple config here better, or avoid this situation altogether
-      final url = Uri.https('api.vid.app', '/auth/realms/GoogleAuth/protocol/openid-connect/auth', {
+      final url = Uri.https(oidcProviderInfo!.webHost, oidcProviderInfo.webAuthUrl, {
         'response_type': 'code',
-        'client_id': oidcProviderInfo!.clientId,
+        'client_id': oidcProviderInfo.clientId,
         'redirect_uri': oidcProviderInfo.redirectUri,
         'scope': 'openid profile email',
         "kc_idp_hint": oidcProviderInfo.keycloakIdpHint,

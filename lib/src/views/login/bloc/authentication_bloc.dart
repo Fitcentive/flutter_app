@@ -130,7 +130,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       Emitter<AuthenticationState> emit,) async {
     final authTokens = await authenticationRepository.oidcLogin(providerRealm: event.provider);
     final authenticatedUser = await _storeTokensAndGetAuthenticatedUser(authTokens, event.provider);
-    await chatRepository.upsertChatUser(authTokens.accessToken);
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await chatRepository.upsertChatUser(accessToken!);
     _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
     emit(AuthSuccessState(authenticatedUser: authenticatedUser));
   }

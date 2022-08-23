@@ -314,20 +314,22 @@ class NewsFeedViewState extends State<NewsFeedView> {
             ),
           ),
           WidgetUtils.spacer(10),
-          GestureDetector(
-            onTap: () {
-              _goToCreateNewPostView();
-            },
-            child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-                child: Container(
-                    padding: const EdgeInsets.all(15),
-                    child: const Center(
-                      child: Text("Share something with your community"),
-                    )
-                )
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                _goToCreateNewPostView();
+              },
+              child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Container(
+                      padding: const EdgeInsets.all(15),
+                      child: const Center(
+                        child: Text("Share something with your community"),
+                      )
+                  )
+              ),
             ),
           )
         ],

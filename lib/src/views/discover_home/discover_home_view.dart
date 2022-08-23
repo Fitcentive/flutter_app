@@ -268,16 +268,18 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
   }
 
   _actionButton(String text, VoidCallback onTap) {
-    return ElevatedButton(
-        style: ButtonStyle(
-          padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
-                (Set<MaterialState> states) {
-              return const EdgeInsets.all(10);
-            },
+    return FittedBox(
+      child: ElevatedButton(
+          style: ButtonStyle(
+            padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
+                  (Set<MaterialState> states) {
+                return const EdgeInsets.all(10);
+              },
+            ),
           ),
-        ),
-        onPressed: onTap,
-        child: Text(text, textAlign: TextAlign.center,)
+          onPressed: onTap,
+          child: Text(text, textAlign: TextAlign.center,)
+      ),
     );
   }
 
