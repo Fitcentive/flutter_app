@@ -46,7 +46,12 @@ class TransportPreferenceViewState extends State<TransportPreferenceView> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("What is your preferred mode of transport?", style: TextStyle(fontSize: 20),),
+            const Center(
+                child: FittedBox(
+                    child: Text("What is your preferred mode of transport?", style: TextStyle(fontSize: 20),
+                    )
+                )
+            ),
             WidgetUtils.spacer(20),
             _transportModePicker()
           ],

@@ -47,7 +47,12 @@ class GoalsPreferencesViewState extends State<GoalsPreferencesView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("What are your goals?", style: TextStyle(fontSize: 20),),
+              const Center(
+                  child: FittedBox(
+                      child: Text("What are your goals?", style: TextStyle(fontSize: 20),
+                      )
+                  )
+              ),
               WidgetUtils.spacer(5),
               const Text("Select all that apply", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(20),

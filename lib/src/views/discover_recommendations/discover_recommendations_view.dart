@@ -280,14 +280,16 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
           padding: const EdgeInsets.fromLTRB(0, 35, 0, 0),
           child: WidgetUtils.render180DegreeGauge(score),
         ),
-        Align(
-          alignment: Alignment.centerRight,
-          child:  Column(
-            children: [
-              const Text("Match score", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),),
-              WidgetUtils.spacer(5),
-              Text(score.toStringAsFixed(2), textAlign: TextAlign.center, style: const TextStyle(fontSize: 10),),
-            ],
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child:  Column(
+              children: [
+                const Text("Match score", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),),
+                WidgetUtils.spacer(5),
+                Text(score.toStringAsFixed(2), textAlign: TextAlign.center, style: const TextStyle(fontSize: 10),),
+              ],
+            ),
           ),
         ),
       ],

@@ -52,7 +52,14 @@ class LocationPreferenceViewState extends State<LocationPreferenceView> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text("Tell us where you would like to find fitness buddies", style: TextStyle(fontSize: 16),),
+        Center(
+            child: FittedBox(
+                child: Container(
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: const Text("Tell us where you would like to find fitness buddies", style: TextStyle(fontSize: 16),)
+                )
+            )
+        ),
         WidgetUtils.spacer(10),
         ProvideLocationView(
           latitude: locationViewLatitude,

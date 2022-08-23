@@ -51,7 +51,12 @@ class BodyTypePreferencesViewState extends State<BodyTypePreferencesView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("What body types do you prefer?", style: TextStyle(fontSize: 20),),
+              const Center(
+                  child: FittedBox(
+                      child: Text("What body types do you prefer?", style: TextStyle(fontSize: 20),
+                      )
+                  )
+              ),
               WidgetUtils.spacer(5),
               const Text("Select all that apply", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(20),

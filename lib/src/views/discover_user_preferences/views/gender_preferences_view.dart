@@ -61,7 +61,12 @@ class GenderPreferencesViewState extends State<GenderPreferencesView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Whom would you prefer to connect with?", style: TextStyle(fontSize: 20),),
+              const Center(
+                  child: FittedBox(
+                      child: Text("Whom would you prefer to connect with?", style: TextStyle(fontSize: 20),
+                      )
+                  )
+              ),
               WidgetUtils.spacer(5),
               const Text("Select all that apply", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(20),

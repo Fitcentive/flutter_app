@@ -47,7 +47,12 @@ class ActivityPreferencesViewState extends State<ActivityPreferencesView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Which of these activities do you enjoy?", style: TextStyle(fontSize: 20),),
+              const Center(
+                  child: FittedBox(
+                      child: Text("Which of these activities do you enjoy?", style: TextStyle(fontSize: 20),
+                      )
+                  )
+              ),
               WidgetUtils.spacer(5),
               const Text("Select all that apply", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(20),

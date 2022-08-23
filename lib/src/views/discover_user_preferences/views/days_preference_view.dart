@@ -53,13 +53,23 @@ class DaysPreferencesViewState extends State<DaysPreferencesView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("What days are you available?", style: TextStyle(fontSize: 20),),
+              const Center(
+                  child: FittedBox(
+                      child: Text("What days are you available?", style: TextStyle(fontSize: 20),
+                      )
+                  )
+              ),
               WidgetUtils.spacer(5),
               const Text("Select all that apply", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(20),
               ...days,
               WidgetUtils.spacer(20),
-              const Text("How many hours a week are you willing to commit?", style: TextStyle(fontSize: 20),),
+              const Center(
+                  child: FittedBox(
+                      child: Text("How many hours a week are you willing to commit?", style: TextStyle(fontSize: 20),
+                      )
+                  )
+              ),
               WidgetUtils.spacer(5),
               const Text("This can be changed later", style: TextStyle(fontSize: 15),),
               WidgetUtils.spacer(10),
