@@ -22,6 +22,14 @@ class OidcProviderInfo {
       'https://api.vid.app/auth/realms/AppleAuth/.well-known/openid-configuration';
   static String APPLE_OIDC_CLIENT_ID = DeviceUtils.isMobileDevice() ? 'mobileapp' : 'webapp';
 
+  static const String FACEBOOK_AUTH_PROVIDER = "FacebookAuth";
+  static String FACEBOOK_OIDC_REDIRECT_URI =
+  DeviceUtils.isMobileDevice() ? 'io.fitcentive.fitcentive://oidc-callback' : 'http://localhost:5555/auth.html';
+  static const String FACEBOOK_KEYCLOAK_IDP_HINT = 'facebook';
+  static const String FACEBOOK_OIDC_DISCOVER_URI =
+      'https://api.vid.app/auth/realms/FacebookAuth/.well-known/openid-configuration';
+  static String FACEBOOK_OIDC_CLIENT_ID = DeviceUtils.isMobileDevice() ? 'mobileapp' : 'webapp';
+
   final String authRealm;
   final String discoverUri;
   final String redirectUri;
@@ -68,5 +76,20 @@ class OidcProviderInfo {
       ),
       webHost: 'api.vid.app',
       webAuthUrl: '/auth/realms/AppleAuth/protocol/openid-connect/auth'
+  );
+
+
+  factory OidcProviderInfo.facebookOidcProviderInfo() => OidcProviderInfo(
+      authRealm: FACEBOOK_AUTH_PROVIDER,
+      discoverUri: FACEBOOK_OIDC_DISCOVER_URI,
+      redirectUri: FACEBOOK_OIDC_REDIRECT_URI,
+      clientId: FACEBOOK_OIDC_CLIENT_ID,
+      keycloakIdpHint: FACEBOOK_KEYCLOAK_IDP_HINT,
+      serviceConfiguration: const AuthorizationServiceConfiguration(
+          authorizationEndpoint: "https://api.vid.app/auth/realms/FacebookAuth/protocol/openid-connect/auth",
+          tokenEndpoint: "https://api.vid.app/auth/realms/FacebookAuth/protocol/openid-connect/token"
+      ),
+      webHost: 'api.vid.app',
+      webAuthUrl: '/auth/realms/FacebookAuth/protocol/openid-connect/auth'
   );
 }

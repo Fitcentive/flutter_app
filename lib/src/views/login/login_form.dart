@@ -67,6 +67,8 @@ class LoginFormState extends State<LoginForm> {
             _googleLoginButton(),
             WidgetUtils.spacer(5),
             _appleLoginButton(),
+            WidgetUtils.spacer(5),
+            _facebookLoginButton(),
           ],
         ),
       ),
@@ -103,6 +105,23 @@ class LoginFormState extends State<LoginForm> {
               .add(const SignInWithOidcEvent(provider: OidcProviderInfo.APPLE_AUTH_PROVIDER));
         },
         child: const Text('Login with Apple', style: TextStyle(fontSize: 20, color: Colors.white)),
+      ),
+    );
+  }
+
+  _facebookLoginButton() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () {
+          context
+              .read<AuthenticationBloc>()
+              .add(const SignInWithOidcEvent(provider: OidcProviderInfo.FACEBOOK_AUTH_PROVIDER));
+        },
+        child: const Text('Login with Facebook', style: TextStyle(fontSize: 20, color: Colors.white)),
       ),
     );
   }

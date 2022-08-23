@@ -30,13 +30,18 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() async {
-  const String PROXY_IP = "192.168.2.25";
-  // const String PROXY_IP = "192.168.0.10";
-
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform
   );
+  await _initializeProxy();
+  runApp(const App());
+}
+
+_initializeProxy() async {
+  const String PROXY_IP = "192.168.2.25";
+  // const String PROXY_IP = "192.168.0.10";
+
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   if (kDebugMode) {
     if (DeviceUtils.isMobileDevice()) {
@@ -57,7 +62,6 @@ void main() async {
       }
     }
   }
-  runApp(const App());
 }
 
 class App extends StatelessWidget {

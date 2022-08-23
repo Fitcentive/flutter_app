@@ -17,7 +17,8 @@ class AuthenticationRepository {
 
   static final Map<String, OidcProviderInfo> providerToDetailsMap = {
     OidcProviderInfo.GOOGLE_AUTH_PROVIDER: OidcProviderInfo.googleOidcProviderInfo(),
-    OidcProviderInfo.APPLE_AUTH_PROVIDER: OidcProviderInfo.appleOidcProviderInfo()
+    OidcProviderInfo.APPLE_AUTH_PROVIDER: OidcProviderInfo.appleOidcProviderInfo(),
+    OidcProviderInfo.FACEBOOK_AUTH_PROVIDER: OidcProviderInfo.facebookOidcProviderInfo(),
   };
 
   final logger = Logger('AuthenticationRepository');
@@ -59,12 +60,15 @@ class AuthenticationRepository {
     final oidcProviderInfo = providerToDetailsMap[providerRealm];
 
     if (DeviceUtils.isMobileDevice()) {
+      // Force logout before retrying in case of facebook - https://developers.facebook.com/docs/facebook-login/guides/advanced/re-authentication
+      // Cannot seem to logout otherwise hence we using `preferEphemeralSession = true`
       final AuthorizationResponse? authorizationResponse = await appAuth.authorize(AuthorizationRequest(
           oidcProviderInfo!.clientId, oidcProviderInfo.redirectUri,
           serviceConfiguration: oidcProviderInfo.serviceConfiguration,
           discoveryUrl: oidcProviderInfo.discoverUri,
           scopes: ['openid', 'profile', 'email'],
           promptValues: ["login"],
+          preferEphemeralSession: providerRealm == OidcProviderInfo.FACEBOOK_AUTH_PROVIDER ? true : false,
           additionalParameters: {
             "kc_idp_hint": oidcProviderInfo.keycloakIdpHint,
           }));
