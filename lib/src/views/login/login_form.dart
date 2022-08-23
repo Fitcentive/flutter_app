@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_account/create_account_page.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/reset_password/reset_password_page.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:formz/formz.dart';
 
 class LoginForm extends StatefulWidget {
@@ -78,50 +80,44 @@ class LoginFormState extends State<LoginForm> {
   _googleLoginButton() {
     return Align(
       alignment: Alignment.bottomCenter,
-      child: ElevatedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-        ),
+      child: SignInButton(
+        DeviceUtils.isDarkMode(context) ? Buttons.Google : Buttons.GoogleDark,
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
         onPressed: () {
           context
               .read<AuthenticationBloc>()
               .add(const SignInWithOidcEvent(provider: OidcProviderInfo.GOOGLE_AUTH_PROVIDER));
         },
-        child: const Text('Login with Google', style: TextStyle(fontSize: 20, color: Colors.white)),
-      ),
+      )
     );
   }
 
   _appleLoginButton() {
     return Align(
       alignment: Alignment.bottomCenter,
-      child: ElevatedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-        ),
+      child: SignInButton(
+        DeviceUtils.isDarkMode(context) ? Buttons.Apple : Buttons.AppleDark,
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
         onPressed: () {
           context
               .read<AuthenticationBloc>()
               .add(const SignInWithOidcEvent(provider: OidcProviderInfo.APPLE_AUTH_PROVIDER));
         },
-        child: const Text('Login with Apple', style: TextStyle(fontSize: 20, color: Colors.white)),
-      ),
+      )
     );
   }
 
   _facebookLoginButton() {
     return Align(
       alignment: Alignment.bottomCenter,
-      child: ElevatedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-        ),
+      child: SignInButton(
+        DeviceUtils.isDarkMode(context) ? Buttons.FacebookNew : Buttons.Facebook,
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
         onPressed: () {
           context
               .read<AuthenticationBloc>()
               .add(const SignInWithOidcEvent(provider: OidcProviderInfo.FACEBOOK_AUTH_PROVIDER));
         },
-        child: const Text('Login with Facebook', style: TextStyle(fontSize: 20, color: Colors.white)),
       ),
     );
   }
