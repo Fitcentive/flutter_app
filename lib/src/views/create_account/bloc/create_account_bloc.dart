@@ -1,6 +1,6 @@
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/models/login/email_verification_token.dart';
-import 'package:flutter_app/src/models/login/password.dart';
+import 'package:flutter_app/src/models/login/new_password.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
@@ -72,8 +72,8 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
   }
 
   void _passwordChanged(PasswordChanged event, Emitter<CreateAccountState> emit) async {
-    final password = Password.dirty(event.password);
-    final passwordConfirmation = Password.dirty(event.passwordConfirmation);
+    final password = NewPassword.dirty(event.password);
+    final passwordConfirmation = NewPassword.dirty(event.passwordConfirmation);
 
     final currentState = state;
 

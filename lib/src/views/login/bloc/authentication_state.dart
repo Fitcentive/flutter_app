@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
-import 'package:flutter_app/src/models/login/password.dart';
+import 'package:flutter_app/src/models/login/login_password.dart';
+import 'package:flutter_app/src/models/login/new_password.dart';
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:formz/formz.dart';
 
@@ -18,17 +19,17 @@ class AuthCredentialsModified extends AuthenticationState {
   const AuthCredentialsModified({
     this.status = FormzStatus.pure,
     this.username = const Email.pure(),
-    this.password = const Password.pure(),
+    this.password = const LoginPassword.pure(),
   });
 
   final FormzStatus status;
   final Email username;
-  final Password password;
+  final LoginPassword password;
 
   AuthCredentialsModified copyWith({
     FormzStatus? status,
     Email? username,
-    Password? password,
+    LoginPassword? password,
   }) {
     return AuthCredentialsModified(
       status: status ?? this.status,

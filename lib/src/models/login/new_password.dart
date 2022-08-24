@@ -1,18 +1,18 @@
 import 'package:formz/formz.dart';
 
-enum PasswordValidationError { empty, tooWeak }
+enum NewPasswordValidationError { empty, tooWeak }
 
-class Password extends FormzInput<String, PasswordValidationError> {
-  const Password.pure() : super.pure('');
-  const Password.dirty([String value = '']) : super.dirty(value);
+class NewPassword extends FormzInput<String, NewPasswordValidationError> {
+  const NewPassword.pure() : super.pure('');
+  const NewPassword.dirty([String value = '']) : super.dirty(value);
 
   @override
-  PasswordValidationError? validator(String? value) {
+  NewPasswordValidationError? validator(String? value) {
     if (value?.isEmpty ?? false) {
-      return PasswordValidationError.empty;
+      return NewPasswordValidationError.empty;
     }
     else {
-      return value?.isNotEmpty == true && isPasswordValid(value) ? null : PasswordValidationError.tooWeak;
+      return value?.isNotEmpty == true && isPasswordValid(value) ? null : NewPasswordValidationError.tooWeak;
     }
   }
 

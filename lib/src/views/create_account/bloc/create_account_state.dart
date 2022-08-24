@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/models/login/email_verification_token.dart';
-import 'package:flutter_app/src/models/login/password.dart';
+import 'package:flutter_app/src/models/login/new_password.dart';
 import 'package:formz/formz.dart';
 
 abstract class CreateAccountState extends Equatable {
@@ -103,22 +103,22 @@ class PasswordModified extends CreateAccountState {
     required this.email,
     required this.token,
     this.status = FormzStatus.pure,
-    this.password = const Password.pure(),
-    this.passwordConfirmation = const Password.pure(),
+    this.password = const NewPassword.pure(),
+    this.passwordConfirmation = const NewPassword.pure(),
   });
 
   final FormzStatus status;
   final String email;
   final String token;
-  final Password password;
-  final Password passwordConfirmation;
+  final NewPassword password;
+  final NewPassword passwordConfirmation;
 
   bool doPasswordMatch() => password == passwordConfirmation;
 
   PasswordModified copyWith({
     FormzStatus? status,
-    Password? password,
-    Password? passwordConfirmation,
+    NewPassword? password,
+    NewPassword? passwordConfirmation,
   }) {
     return PasswordModified(
         email: email,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/models/login/password.dart';
-import 'package:flutter_app/src/models/login/password.dart';
+import 'package:flutter_app/src/models/login/new_password.dart';
+import 'package:flutter_app/src/models/login/new_password.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
@@ -134,12 +134,12 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
   _getErrorText(String key, PasswordModified state) {
     if (key == "password") {
       return state.password.invalid ?
-        (state.password.error == PasswordValidationError.tooWeak ? 'Password too weak' : 'Invalid password') : null;
+        (state.password.error == NewPasswordValidationError.tooWeak ? 'Password too weak' : 'Invalid password') : null;
     }
     else {
       if (state.doPasswordMatch()) {
         return state.passwordConfirmation.invalid ?
-          (state.passwordConfirmation.error == PasswordValidationError.tooWeak ? 'Password too weak' : 'Invalid password') : null;
+          (state.passwordConfirmation.error == NewPasswordValidationError.tooWeak ? 'Password too weak' : 'Invalid password') : null;
       }
       else {
         return 'passwords do not match!';

@@ -6,7 +6,7 @@ import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
-import 'package:flutter_app/src/models/login/password.dart';
+import 'package:flutter_app/src/models/login/login_password.dart';
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/authentication_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
@@ -207,7 +207,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   void _initiateAuthenticationFlow(InitiateAuthenticationFlow event,
       Emitter<AuthenticationState> emit,) async {
     final username = event.username.isEmpty ? const Email.pure() : Email.dirty(event.username);
-    final password = event.password.isEmpty ? const Password.pure() : Password.dirty(event.password);
+    final password = event.password.isEmpty ? const LoginPassword.pure() : LoginPassword.dirty(event.password);
     final status = Formz.validate([username, password]);
     emit(AuthCredentialsModified(status: status, username: username, password: password));
   }
@@ -227,7 +227,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
   void _onPasswordChanged(LoginPasswordChanged event,
       Emitter<AuthenticationState> emit,) {
-    final password = Password.dirty(event.password);
+    final password = LoginPassword.dirty(event.password);
     final currentState = state;
 
     if (currentState is AuthCredentialsModified) {
