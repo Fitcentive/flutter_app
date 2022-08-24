@@ -21,9 +21,7 @@ import 'package:logging/logging.dart';
 
 import 'authentication_event.dart';
 
-// todo - strategy for handling exceptions thrown
-// todo - increase access token expiration duration in keycloak
-// todo - refresh token gets updated along with access token, user never forced to logout. Verify background refreshes when app not in use
+// Note - refresh token gets updated along with access token, user never forced to logout
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
   final AuthenticationRepository authenticationRepository;
   final NotificationRepository notificationRepository;

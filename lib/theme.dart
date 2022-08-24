@@ -298,5 +298,4 @@ final ThemeData darkTheme = ThemeData.dark().copyWith(
  *
  */
 
-
-// todo - make this primary colour #ff009688
+// Primary colour candidate - #ff009688

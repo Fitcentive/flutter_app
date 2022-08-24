@@ -19,6 +19,13 @@ class InitialState extends CreateAccountState {
   List<Object> get props => [];
 }
 
+class AccountBeingCreated extends CreateAccountState {
+  const AccountBeingCreated();
+
+  @override
+  List<Object> get props => [];
+}
+
 class EmailAddressModified extends CreateAccountState {
   const EmailAddressModified({
     this.status = FormzStatus.pure,

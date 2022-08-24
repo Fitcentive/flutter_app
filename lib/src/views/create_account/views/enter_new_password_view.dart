@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/login/password.dart';
+import 'package:flutter_app/src/models/login/password.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
-import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class EnterNewPasswordView extends StatefulWidget {
 
@@ -16,12 +18,21 @@ class EnterNewPasswordView extends StatefulWidget {
 }
 
 class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
+  static const String passwordRules = """
+  ### Password rules
+  - At least one uppercase character
+  - At least one lowercase character
+  - At least one digit
+  - At least one special character
+  - At least 8 characters in length
+  """;
+  
   bool _isObscurePasswordField = true;
   bool _isObscurePasswordConfirmationField = true;
 
   final focusNode = FocusNode();
 
-  // todo - do not use requestFocus https://stackoverflow.com/questions/44991968/how-can-i-dismiss-the-on-screen-keyboard
+
   @override
   void initState() {
     super.initState();
@@ -30,23 +41,28 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: const Alignment(0, -1 / 3),
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Enter a new password",
-              style: Theme.of(context).textTheme.headline6,
-            ),
-            const Padding(padding: EdgeInsets.all(12)),
-            _passwordWidget(),
-            const Padding(padding: EdgeInsets.all(12)),
-            _passwordConfirmationWidget(),
-            const Padding(padding: EdgeInsets.all(12)),
+    return Center(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Enter a new password",
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              const Padding(padding: EdgeInsets.all(12)),
+              _passwordWidget(),
+              const Padding(padding: EdgeInsets.all(12)),
+              _passwordConfirmationWidget(),
+              const Padding(padding: EdgeInsets.all(12)),
+              const SizedBox(
+                height: 200,
+                child: Markdown(data: passwordRules)
+              ),
           ],
+          ),
         ),
       ),
     );
@@ -117,11 +133,13 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
 
   _getErrorText(String key, PasswordModified state) {
     if (key == "password") {
-      return state.password.invalid ? 'invalid password' : null;
+      return state.password.invalid ?
+        (state.password.error == PasswordValidationError.tooWeak ? 'Password too weak' : 'Invalid password') : null;
     }
     else {
       if (state.doPasswordMatch()) {
-        return state.passwordConfirmation.invalid ? 'invalid password' : null;
+        return state.passwordConfirmation.invalid ?
+          (state.passwordConfirmation.error == PasswordValidationError.tooWeak ? 'Password too weak' : 'Invalid password') : null;
       }
       else {
         return 'passwords do not match!';

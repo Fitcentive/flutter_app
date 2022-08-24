@@ -84,8 +84,6 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                 padding: const EdgeInsets.all(10),
                 child: ElevatedButton(
                   onPressed: () {
-                    // todo - like button working, add likers as part of post response directly (wont scale)
-                    // todo - comment button, think about scaling strategy again
                     final state = _createNewPostBloc.state;
                     if (state is PostDetailsModified && state.status.isValid) {
                       _createNewPostBloc.add(

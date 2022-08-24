@@ -42,8 +42,8 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
     if (doesUserExist) {
       emit(EmailAddressAlreadyInUse(event.email));
     } else {
-      await userRepository.requestNewEmailVerificationToken(event.email);
       emit(VerificationTokenModified(email: event.email));
+      await userRepository.requestNewEmailVerificationToken(event.email);
     }
   }
 
@@ -104,6 +104,7 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
     CreateNewAccountRequested event,
     Emitter<CreateAccountState> emit,
   ) async {
+    emit(const AccountBeingCreated());
     await userRepository.createNewUser(
         event.email, event.verificationToken.toUpperCase(), event.termsAndConditions, event.marketingEmails);
     await userRepository.resetUserPassword(event.email, event.password, event.verificationToken.toUpperCase());

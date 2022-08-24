@@ -70,6 +70,7 @@ dependencies:
   image_cropper: ^3.0.0
   universal_io: ^2.0.4
   flutter_signin_button: ^2.0.0
+  flutter_markdown: ^0.6.10+4
 
 dev_dependencies:
   flutter_test:

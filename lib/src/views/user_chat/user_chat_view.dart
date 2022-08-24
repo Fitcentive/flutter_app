@@ -154,10 +154,9 @@ class UserChatViewState extends State<UserChatView> {
               _previousMessages.insert(0, msg);
             }
 
-            // todo - need server side sorting?
+            // todo -  this could be a problem at scale
             _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
 
-            // todo - Add loading indicator when more chats are fetched
             return Scrollbar(
               child: Chat(
                 messages: _previousMessages,

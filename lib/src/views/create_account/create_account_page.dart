@@ -148,16 +148,23 @@ class CreateAccountPageState extends State<CreateAccountPage> {
         }
       },
       child: BlocBuilder<CreateAccountBloc, CreateAccountState>(builder: (context, state) {
-        return PageView(
-          controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: const [
-            EnterNewEmailView(),
-            EnterVerificationTokenView(),
-            EnterNewPasswordView(),
-            TermsAndConditionsView(),
-          ],
-        );
+        if (state is AccountBeingCreated) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        else {
+          return PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: const [
+              EnterNewEmailView(),
+              EnterVerificationTokenView(),
+              EnterNewPasswordView(),
+              TermsAndConditionsView(),
+            ],
+          );
+        }
       }),
     );
   }

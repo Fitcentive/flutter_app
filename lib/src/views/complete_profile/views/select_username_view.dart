@@ -79,7 +79,6 @@ class SelectUsernameViewState extends State<SelectUsernameView> {
     );
   }
 
-  // todo - add suffix icon here on the basis
   InputDecoration _getDecoration(CompleteProfileState state) {
     if (state is UsernameModified) {
       return InputDecoration(

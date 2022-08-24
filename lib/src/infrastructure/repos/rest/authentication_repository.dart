@@ -85,8 +85,7 @@ class AuthenticationRepository {
           result!.accessToken!,
           result.refreshToken!,
           DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch),
-          // todo - this has to be replaced with refresh token expiry time
-          DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch),
+          DateTimeUtils.secondsBetweenNowAndEpochTime(result.accessTokenExpirationDateTime!.millisecondsSinceEpoch), // dummy, not used
           result.tokenType!,
           result.scopes!.join(" ")
       );
