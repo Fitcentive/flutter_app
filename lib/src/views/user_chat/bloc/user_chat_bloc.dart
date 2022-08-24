@@ -62,7 +62,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
     // wss works because we allow for unverified certificates in development mode
     _chatRoomChannel = WebSocketChannel.connect(
-      Uri.parse('wss://api.vid.app/api/chat/socket/websocket?token=${accessToken!}'),
+      Uri.parse('wss://${ConstantUtils.API_HOSTNAME}/api/chat/socket/websocket?token=${accessToken!}'),
     );
 
     _chatRoomChannel.sink.add(jsonEncode({

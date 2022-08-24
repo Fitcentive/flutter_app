@@ -3,11 +3,12 @@ import 'dart:io';
 
 import 'package:flutter_app/src/models/notification/app_notification.dart';
 import 'package:flutter_app/src/models/push/notification_device.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
 class NotificationRepository {
-  static const String BASE_URL = "https://api.vid.app/api/notification";
+  static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/notification";
 
   final logger = Logger("NotificationRepository");
 

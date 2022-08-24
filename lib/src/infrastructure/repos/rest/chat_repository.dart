@@ -5,11 +5,12 @@ import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 
 import 'package:http/http.dart' as http;
 
 class ChatRepository {
-  static const String BASE_URL = "https://api.vid.app/api/chat";
+  static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/chat";
 
   Future<void> upsertChatUser(String accessToken) async {
     final response = await http.post(

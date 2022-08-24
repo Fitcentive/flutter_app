@@ -6,11 +6,12 @@ import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/models/user_follow_status.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 
 import 'package:http/http.dart' as http;
 
 class SocialMediaRepository {
-  static const String BASE_URL = "https://api.vid.app/api/social";
+  static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/social";
 
   Future<void> requestToFollowUser(String currentUserId, String targetUserId, String accessToken) async {
     final response = await http.post(Uri.parse("$BASE_URL/user/$currentUserId/follow/$targetUserId/request"),

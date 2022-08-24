@@ -7,10 +7,11 @@ import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart'
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:http/http.dart' as http;
 
 class DiscoverRepository {
-  static const String BASE_URL = "https://api.vid.app/api/discover";
+  static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/discover";
 
   Future<void> removeDiscoveredUser(String userId, String discoveredUserId, String accessToken) async {
     final response = await http.delete(

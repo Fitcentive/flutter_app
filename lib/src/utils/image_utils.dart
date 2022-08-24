@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 
 class ImageUtils {
-  static const String imageBaseUrl = "https://api.vid.app/api/gateway/image";
+  static const String imageBaseUrl = "${ConstantUtils.API_HOST_URL}/api/gateway/image";
 
   static DecorationImage? getUserProfileImage(PublicUserProfile? profile, int width, int height) {
     final photoUrlOpt = profile?.photoUrl;

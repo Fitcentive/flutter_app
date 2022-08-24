@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:http/http.dart' as http;
 
 class ImageRepository {
-  static const String BASE_URL = "https://api.vid.app/api/gateway/image/upload";
+  static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/gateway/image/upload";
 
   Future<String> uploadImage(String filePath, Uint8List rawImage, String accessToken) async {
     var request = http.MultipartRequest('POST', Uri.parse("$BASE_URL/$filePath"))

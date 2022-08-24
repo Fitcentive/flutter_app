@@ -6,11 +6,12 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 
 import 'package:http/http.dart' as http;
 
 class UserRepository {
-  static const String BASE_URL = "https://api.vid.app/api/user";
+  static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/user";
 
   Future<List<PublicUserProfile>> searchForUsers(String searchQuery, String accessToken, int limit, int offset) async {
     final response = await http.post(

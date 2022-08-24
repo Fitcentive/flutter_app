@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
@@ -13,7 +14,7 @@ import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 
 class AuthenticationRepository {
-  static const String BASE_URL = "https://api.vid.app/api/auth";
+  static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/auth";
 
   static final Map<String, OidcProviderInfo> providerToDetailsMap = {
     OidcProviderInfo.GOOGLE_AUTH_PROVIDER: OidcProviderInfo.googleOidcProviderInfo(),
