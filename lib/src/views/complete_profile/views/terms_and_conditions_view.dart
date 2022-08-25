@@ -1,8 +1,11 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CompleteProfileTermsAndConditionsView extends StatelessWidget {
   const CompleteProfileTermsAndConditionsView({Key? key}) : super(key: key);
@@ -39,15 +42,61 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
 
   _createCheckBox(String title, String key, BuildContext context) {
     return CheckboxListTile(
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.subtitle1,
-      ),
+      title: _getTitleText(title, key, context),
       value: _getCheckboxValue(key, context),
       onChanged: (newValue) {
         _onCheckBoxChanged(key, newValue ?? false, context);
       },
     );
+  }
+
+  _getTitleText(String title, String key, BuildContext context) {
+    if (key == "termsAndConditions") {
+      final parts = title.split("terms and conditions");
+      return RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: parts.first,
+                style: Theme.of(context).textTheme.subtitle1,
+              ),
+              TextSpan(
+                text: "terms and conditions",
+                style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                recognizer: TapGestureRecognizer()..onTap = () {
+                  launchUrl(Uri.parse(ConstantUtils.TERMS_AND_CONDITIONS_URL));
+                }
+              ),
+            ]
+          )
+      );
+    }
+    else if (key == "privacyPolicy") {
+      final parts = title.split("privacy policy");
+      return RichText(
+          text: TextSpan(
+              children: [
+                TextSpan(
+                  text: parts.first,
+                  style: Theme.of(context).textTheme.subtitle1,
+                ),
+                TextSpan(
+                    text: "privacy policy",
+                    style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                    recognizer: TapGestureRecognizer()..onTap = () {
+                      launchUrl(Uri.parse(ConstantUtils.PRIVACY_POLICY_URL));
+                    }
+                ),
+              ]
+          )
+      );
+    }
+    else {
+      return Text(
+        title,
+        style: Theme.of(context).textTheme.subtitle1,
+      );
+    }
   }
 
   _onCheckBoxChanged(String text, bool checkBoxState, BuildContext context) {

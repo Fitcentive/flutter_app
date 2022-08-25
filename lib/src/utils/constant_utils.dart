@@ -2,6 +2,9 @@ class ConstantUtils {
   static const String API_HOST_URL = "https://api.vid.app";
   static const String API_HOSTNAME = "api.vid.app";
 
+  static const String TERMS_AND_CONDITIONS_URL = "https://www.freeprivacypolicy.com/live/3271adda-a8ba-42dd-b593-42da288a6ba8";
+  static const String PRIVACY_POLICY_URL = "https://www.freeprivacypolicy.com/live/3271adda-a8ba-42dd-b593-42da288a6ba8";
+
   static const int DEFAULT_LIMIT = 20;
   static const int DEFAULT_NEWSFEED_LIMIT = 10;
   static const int DEFAULT_CHAT_MESSAGES_LIMIT = 50;
