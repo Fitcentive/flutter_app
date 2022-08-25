@@ -23,10 +23,11 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
                         Text(
                           "Please review and accept the terms and conditions",
                           style: Theme.of(context).textTheme.headline6,
+                          textAlign: TextAlign.center,
                         ),
                         const Padding(padding: EdgeInsets.all(20)),
                         _createCheckBox("I have read and accept to the terms and conditions", "termsAndConditions", context),
-                        // const Padding(padding: EdgeInsets.all(12)),
+                        _createCheckBox("I have read and accept the privacy policy", "privacyPolicy", context),
                         _createCheckBox("I would like to subscribe to marketing emails", "marketingEmails", context),
                       ],
                     );
@@ -54,12 +55,27 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
     if (currentState is CompleteProfileTermsAndConditionsModified) {
       if (text == "termsAndConditions") {
         context.read<CompleteProfileBloc>().add(CompleteProfileTermsAndConditionsChanged(
-            user: currentState.user, termsAndConditions: checkBoxState, marketingEmails: currentState.marketingEmails));
-      } else {
+            user: currentState.user,
+            termsAndConditions: checkBoxState,
+            marketingEmails: currentState.marketingEmails,
+            privacyPolicy: currentState.privacyPolicy
+        ));
+      }
+      else if (text == "privacyPolicy") {
         context.read<CompleteProfileBloc>().add(CompleteProfileTermsAndConditionsChanged(
             user: currentState.user,
             termsAndConditions: currentState.termsAndConditions,
-            marketingEmails: checkBoxState));
+            marketingEmails: currentState.marketingEmails,
+            privacyPolicy: checkBoxState
+        ));
+      }
+      else {
+        context.read<CompleteProfileBloc>().add(CompleteProfileTermsAndConditionsChanged(
+            user: currentState.user,
+            termsAndConditions: currentState.termsAndConditions,
+            marketingEmails: checkBoxState,
+            privacyPolicy: currentState.privacyPolicy
+        ));
       }
     }
   }
@@ -67,7 +83,9 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
   _getCheckboxValue(String text, BuildContext context) {
     final currentState = context.read<CompleteProfileBloc>().state;
     if (currentState is CompleteProfileTermsAndConditionsModified) {
-      return text == "termsAndConditions" ? currentState.termsAndConditions : currentState.marketingEmails;
+      return text == "termsAndConditions" ? currentState.termsAndConditions : (
+          text == "privacyPolicy" ? currentState.privacyPolicy : currentState.marketingEmails
+      );
     } else {
       return false;
     }

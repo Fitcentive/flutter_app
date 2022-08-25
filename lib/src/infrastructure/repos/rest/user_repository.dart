@@ -35,8 +35,13 @@ class UserRepository {
   }
 
   Future<User> createNewUser(
-      String email, String verificationToken, bool termsAndConditions, bool subscribeToEmails) async {
-    final response = await http.post(Uri.parse("$BASE_URL"),
+      String email,
+      String verificationToken,
+      bool termsAndConditions,
+      bool subscribeToEmails,
+      bool privacyPolicy
+  ) async {
+    final response = await http.post(Uri.parse(BASE_URL),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -44,6 +49,7 @@ class UserRepository {
           "email": email,
           "verificationToken": verificationToken,
           "termsAndConditionsAccepted": termsAndConditions,
+          "privacyPolicyAccepted": privacyPolicy,
           "subscribeToEmails": subscribeToEmails,
         }));
 
@@ -59,6 +65,7 @@ class UserRepository {
       String userId, UpdateUserAgreements userAgreements, String accessToken) async {
     final jsonBody = {
       'termsAndConditionsAccepted': userAgreements.termsAndConditionsAccepted,
+      'privacyPolicyAccepted': userAgreements.privacyPolicyAccepted,
       'subscribeToEmails': userAgreements.subscribeToEmails,
     };
     final response = await http.patch(Uri.parse("$BASE_URL/$userId/agreements"),

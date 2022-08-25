@@ -27,28 +27,32 @@ class CompleteProfileTermsAndConditionsModified extends CompleteProfileState {
   final AuthenticatedUser user;
   final bool termsAndConditions;
   final bool marketingEmails;
+  final bool privacyPolicy;
 
   const CompleteProfileTermsAndConditionsModified({
     required this.user,
     required this.termsAndConditions,
-    required this.marketingEmails
+    required this.marketingEmails,
+    required this.privacyPolicy
   });
 
-  bool isValidState() => termsAndConditions;
+  bool isValidState() => termsAndConditions && privacyPolicy;
 
   CompleteProfileTermsAndConditionsModified copyWith({
     bool? termsAndConditions,
     bool? marketingEmails,
+    bool? privacyPolicy,
   }) {
     return CompleteProfileTermsAndConditionsModified(
       user: user,
       termsAndConditions: termsAndConditions ?? this.termsAndConditions,
       marketingEmails: marketingEmails ?? this.marketingEmails,
+      privacyPolicy: privacyPolicy ?? this.privacyPolicy,
     );
   }
 
   @override
-  List<Object> get props => [termsAndConditions, marketingEmails];
+  List<Object> get props => [termsAndConditions, marketingEmails, privacyPolicy];
 
 }
 

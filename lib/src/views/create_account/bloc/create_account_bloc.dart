@@ -30,7 +30,9 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
         password: event.password,
         verificationToken: event.verificationToken,
         termsAndConditions: event.termsAndConditions,
-        marketingEmails: event.marketingEmails));
+        marketingEmails: event.marketingEmails,
+        privacyPolicy: event.privacyPolicy,
+    ));
   }
 
   void _emailAddressEnteredForVerification(
@@ -67,7 +69,8 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
         password: event.password,
         verificationToken: event.verificationToken,
         termsAndConditions: false,
-        marketingEmails: false
+        marketingEmails: false,
+        privacyPolicy: false,
     ));
   }
 
@@ -106,7 +109,12 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
   ) async {
     emit(const AccountBeingCreated());
     await userRepository.createNewUser(
-        event.email, event.verificationToken.toUpperCase(), event.termsAndConditions, event.marketingEmails);
+        event.email,
+        event.verificationToken.toUpperCase(),
+        event.termsAndConditions,
+        event.marketingEmails,
+        event.privacyPolicy
+    );
     await userRepository.resetUserPassword(event.email, event.password, event.verificationToken.toUpperCase());
     emit(const AccountCreatedSuccessfully());
   }

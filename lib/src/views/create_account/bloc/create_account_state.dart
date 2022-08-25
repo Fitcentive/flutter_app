@@ -139,20 +139,23 @@ class TermsAndConditionsModified extends CreateAccountState {
   final String verificationToken;
   final bool termsAndConditions;
   final bool marketingEmails;
+  final bool privacyPolicy;
 
   const TermsAndConditionsModified({
     required this.email,
     required this.password,
     required this.verificationToken,
     required this.termsAndConditions,
-    required this.marketingEmails
+    required this.marketingEmails,
+    required this.privacyPolicy
   });
 
-  bool isValidState() => termsAndConditions;
+  bool isValidState() => termsAndConditions && privacyPolicy;
 
   TermsAndConditionsModified copyWith({
     bool? termsAndConditions,
     bool? marketingEmails,
+    bool? privacyPolicy,
   }) {
     return TermsAndConditionsModified(
         email: email,
@@ -160,11 +163,12 @@ class TermsAndConditionsModified extends CreateAccountState {
         verificationToken: verificationToken,
         termsAndConditions: termsAndConditions ?? this.termsAndConditions,
         marketingEmails: marketingEmails ?? this.marketingEmails,
+        privacyPolicy: privacyPolicy ?? this.privacyPolicy,
     );
   }
 
   @override
-  List<Object> get props => [email, password, verificationToken, termsAndConditions, marketingEmails];
+  List<Object> get props => [email, password, verificationToken, termsAndConditions, marketingEmails, privacyPolicy];
 
 }
 

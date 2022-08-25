@@ -131,7 +131,9 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
       _completeProfileBloc.add(CompleteProfileTermsAndConditionsSubmitted(
           user: currentState.user,
           termsAndConditions: currentState.termsAndConditions,
-          marketingEmails: currentState.marketingEmails));
+          marketingEmails: currentState.marketingEmails,
+          privacyPolicy: currentState.privacyPolicy
+      ));
     } else if (currentState is ProfileInfoModified && currentState.status.isValid) {
       _completeProfileBloc.add(ProfileInfoSubmitted(
           user: currentState.user,
@@ -174,7 +176,6 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
             Navigator.pushAndRemoveUntil<void>(context, HomePage.route(), (route) => false);
           }
         });
-
       },
       child: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(builder: (context, state) {
         final pageView = PageView(

@@ -95,6 +95,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
         password: currentState.password,
         termsAndConditions: currentState.termsAndConditions,
         marketingEmails: currentState.marketingEmails,
+        privacyPolicy: currentState.privacyPolicy,
       ));
     }
     return null;

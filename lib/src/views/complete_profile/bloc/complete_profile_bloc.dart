@@ -171,7 +171,8 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     emit(ProfileInfoModified(user: event.user));
     final updateAgreements = UpdateUserAgreements(
         termsAndConditionsAccepted: event.termsAndConditions,
-        subscribeToEmails: event.marketingEmails
+        subscribeToEmails: event.marketingEmails,
+        privacyPolicyAccepted: event.privacyPolicy,
     );
     const updateUser = UpdateUserPatch(accountStatus: "ProfileInfoRequired");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
@@ -191,7 +192,11 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
   void _termsAndConditionsChanged(CompleteProfileTermsAndConditionsChanged event,
       Emitter<CompleteProfileState> emit,) async {
     emit(CompleteProfileTermsAndConditionsModified(
-        user: event.user, termsAndConditions: event.termsAndConditions, marketingEmails: event.marketingEmails));
+        user: event.user,
+        termsAndConditions: event.termsAndConditions,
+        marketingEmails: event.marketingEmails,
+        privacyPolicy: event.privacyPolicy,
+    ));
   }
 
   void _initialEvent(InitialEvent event,
@@ -199,7 +204,11 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     switch (event.user.user.accountStatus) {
       case "TermsAndConditionsRequired":
         emit(CompleteProfileTermsAndConditionsModified(
-            user: event.user, termsAndConditions: false, marketingEmails: false));
+            user: event.user,
+            termsAndConditions: false,
+            marketingEmails: false,
+            privacyPolicy: false,
+        ));
         break;
       case "ProfileInfoRequired":
         emit(ProfileInfoModified(user: event.user));

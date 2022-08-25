@@ -12,6 +12,9 @@ class UserAgreements extends Equatable {
   final bool termsAndConditionsAccepted;
 
   @JsonKey(required: true)
+  final bool privacyPolicyAccepted;
+
+  @JsonKey(required: true)
   final bool subscribeToEmails;
 
   @JsonKey(required: true)
@@ -20,7 +23,14 @@ class UserAgreements extends Equatable {
   @JsonKey(required: true)
   final DateTime updatedAt;
 
-  const UserAgreements(this.userId, this.termsAndConditionsAccepted, this.subscribeToEmails, this.createdAt, this.updatedAt);
+  const UserAgreements(
+      this.userId,
+      this.termsAndConditionsAccepted,
+      this.privacyPolicyAccepted,
+      this.subscribeToEmails,
+      this.createdAt,
+      this.updatedAt
+  );
 
   factory UserAgreements.fromJson(Map<String, dynamic> json) => _$UserAgreementsFromJson(json);
 
@@ -30,6 +40,7 @@ class UserAgreements extends Equatable {
   List<Object?> get props => [
     userId,
     termsAndConditionsAccepted,
+    privacyPolicyAccepted,
     subscribeToEmails,
     createdAt,
     updatedAt,
@@ -39,12 +50,18 @@ class UserAgreements extends Equatable {
 class UpdateUserAgreements extends Equatable {
   final bool? termsAndConditionsAccepted;
   final bool? subscribeToEmails;
+  final bool? privacyPolicyAccepted;
 
-  const UpdateUserAgreements({this.termsAndConditionsAccepted, this.subscribeToEmails});
+  const UpdateUserAgreements({
+    this.termsAndConditionsAccepted,
+    this.privacyPolicyAccepted,
+    this.subscribeToEmails
+  });
 
   @override
   List<Object?> get props => [
     termsAndConditionsAccepted,
+    privacyPolicyAccepted,
     subscribeToEmails,
   ];
 }

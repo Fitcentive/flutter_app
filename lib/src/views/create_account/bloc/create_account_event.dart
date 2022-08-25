@@ -73,16 +73,19 @@ class TermsAndConditionsChanged extends CreateAccountEvent {
   final String verificationToken;
   final bool termsAndConditions;
   final bool marketingEmails;
+  final bool privacyPolicy;
 
-  const TermsAndConditionsChanged(
-      {required this.email,
-      required this.password,
-      required this.verificationToken,
-      required this.termsAndConditions,
-      required this.marketingEmails});
+  const TermsAndConditionsChanged({
+    required this.email,
+    required this.password,
+    required this.verificationToken,
+    required this.termsAndConditions,
+    required this.marketingEmails,
+    required this.privacyPolicy,
+  });
 
   @override
-  List<Object> get props => [email, password, verificationToken, termsAndConditions, marketingEmails];
+  List<Object> get props => [email, password, verificationToken, termsAndConditions, marketingEmails, privacyPolicy];
 }
 
 class CreateNewAccountRequested extends CreateAccountEvent {
@@ -91,6 +94,7 @@ class CreateNewAccountRequested extends CreateAccountEvent {
   final String password;
   final bool termsAndConditions;
   final bool marketingEmails;
+  final bool privacyPolicy;
 
   const CreateNewAccountRequested({
     required this.email,
@@ -98,8 +102,9 @@ class CreateNewAccountRequested extends CreateAccountEvent {
     required this.password,
     required this.termsAndConditions,
     required this.marketingEmails,
+    required this.privacyPolicy,
   });
 
   @override
-  List<Object> get props => [email, verificationToken, password, termsAndConditions, marketingEmails];
+  List<Object> get props => [email, verificationToken, password, termsAndConditions, marketingEmails, privacyPolicy];
 }

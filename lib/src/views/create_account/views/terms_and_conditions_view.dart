@@ -13,7 +13,7 @@ class TermsAndConditionsView extends StatelessWidget {
     return Align(
       alignment: const Alignment(0, -1 / 3),
       child: Padding(
-          padding: EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12),
           child: BlocBuilder<CreateAccountBloc, CreateAccountState>(
               builder: (context, state) {
                 return Column(
@@ -25,7 +25,7 @@ class TermsAndConditionsView extends StatelessWidget {
                     ),
                     const Padding(padding: EdgeInsets.all(20)),
                     _createCheckBox("I have read and accept to the terms and conditions", "termsAndConditions", context),
-                    // const Padding(paddingx: EdgeInsets.all(12)),
+                    _createCheckBox("I have read and accept the privacy policy", "privacyPolicy", context),
                     _createCheckBox("I would like to subscribe to marketing emails", "marketingEmails", context),
                   ],
                 );
@@ -55,14 +55,29 @@ class TermsAndConditionsView extends StatelessWidget {
             password: currentState.password,
             verificationToken: currentState.verificationToken,
             termsAndConditions: checkBoxState,
-            marketingEmails: currentState.marketingEmails));
-      } else {
+            marketingEmails: currentState.marketingEmails,
+            privacyPolicy: currentState.privacyPolicy
+        ));
+      }
+      else if (text == "privacyPolicy"){
         context.read<CreateAccountBloc>().add(TermsAndConditionsChanged(
             email: currentState.email,
             password: currentState.password,
             verificationToken: currentState.verificationToken,
             termsAndConditions: currentState.termsAndConditions,
-            marketingEmails: checkBoxState));
+            marketingEmails: currentState.marketingEmails,
+            privacyPolicy: checkBoxState,
+        ));
+      }
+      else {
+        context.read<CreateAccountBloc>().add(TermsAndConditionsChanged(
+            email: currentState.email,
+            password: currentState.password,
+            verificationToken: currentState.verificationToken,
+            termsAndConditions: currentState.termsAndConditions,
+            marketingEmails: checkBoxState,
+            privacyPolicy: currentState.privacyPolicy
+        ));
       }
     }
   }
@@ -70,7 +85,9 @@ class TermsAndConditionsView extends StatelessWidget {
   _getCheckboxValue(String text, BuildContext context) {
     final currentState = context.read<CreateAccountBloc>().state;
     if (currentState is TermsAndConditionsModified) {
-      return text == "termsAndConditions" ? currentState.termsAndConditions : currentState.marketingEmails;
+      return text == "termsAndConditions" ? currentState.termsAndConditions : (
+        text == "privacyPolicy" ? currentState.privacyPolicy : currentState.marketingEmails
+      );
     } else {
       return false;
     }

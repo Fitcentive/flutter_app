@@ -22,24 +22,34 @@ class CompleteProfileTermsAndConditionsChanged extends CompleteProfileEvent {
   final AuthenticatedUser user;
   final bool termsAndConditions;
   final bool marketingEmails;
+  final bool privacyPolicy;
 
-  const CompleteProfileTermsAndConditionsChanged(
-      {required this.user, required this.termsAndConditions, required this.marketingEmails});
+  const CompleteProfileTermsAndConditionsChanged({
+    required this.user,
+    required this.termsAndConditions,
+    required this.marketingEmails,
+    required this.privacyPolicy
+  });
 
   @override
-  List<Object> get props => [user, termsAndConditions, marketingEmails];
+  List<Object> get props => [user, termsAndConditions, marketingEmails, privacyPolicy];
 }
 
 class CompleteProfileTermsAndConditionsSubmitted extends CompleteProfileEvent {
   final AuthenticatedUser user;
   final bool termsAndConditions;
   final bool marketingEmails;
+  final bool privacyPolicy;
 
-  const CompleteProfileTermsAndConditionsSubmitted(
-      {required this.user, required this.termsAndConditions, required this.marketingEmails});
+  const CompleteProfileTermsAndConditionsSubmitted({
+    required this.user,
+    required this.termsAndConditions,
+    required this.marketingEmails,
+    required this.privacyPolicy,
+  });
 
   @override
-  List<Object> get props => [user, termsAndConditions, marketingEmails];
+  List<Object> get props => [user, termsAndConditions, marketingEmails, privacyPolicy];
 }
 
 class ProfileInfoChanged extends CompleteProfileEvent {
