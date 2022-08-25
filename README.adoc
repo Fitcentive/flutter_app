@@ -1,0 +1,71 @@
+= Fitcentive flutter app
+
+A cross-platform flutter application targeting Android/iOS/Web to allow people to discover and connect with others with similar fitness interests in their area
+
+== Pre-requisites
+1. MITM proxy (for testing on physical devices)
+    - MITM proxy is used as an intercept to API calls to resolve local DNS entry for `api.vid.app`
+    - MITM proxy is also useful to inspect and replay network calls
+2. Flutter 2.12+
+3. Dart
+4. Access to a physical device or Android emulator or iOS simulator
+
+== Run app on iOS Simulator
+1. `open -a Simulator.app`
+2. `flutter run` - select the right device to run on
+3. Wait for application to build and enjoy!
+
+== Run app on Android Emulator
+1. `emulator -avd Pixel_5_API_30` - substitute `Pixel_5_API_30` with emulator device name
+2. `flutter run` - select the right device to run on
+3. Wait for application to build and enjoy!
+
+== Run app on Chrome
+1. 'flutter run -d chrome'
+2. Wait for application to build and enjoy!
+
+== Run app on iOS device
+1. Connect your iOS device to your computer
+    - You might have to trust the computer/allow USB debugging
+2. Navigate to the directory where you have your `mkcert` certificate generated and start the MITM proxy
+    - `brew install mitmproxy`
+    - `mitmweb --listen-port=8888 --certs "[*.vid.app]=rootCA.pem" --ssl-insecure`
+3. `flutter run` - select the right device to run on
+4. Wait for application to build and enjoy!
+
+== Run app on Android device
+1. Connect your Android device to your computer
+    - You might have to allow USB debugging
+    - Ensure developer mode is turned on
+2. Navigate to the directory where you have your `mkcert` certificate generated and start the MITM proxy
+    - `brew install mitmproxy`
+    - `mitmweb --listen-port=8888 --certs "[*.vid.app]=rootCA.pem" --ssl-insecure`
+3. `flutter run` - select the right device to run on
+4. Wait for application to build and enjoy!
+
+
+=== Note
+
+1. The generated SSL certificate might need explicit trusting by you on your browser for the first time
+2. For the certificate to be accepted on Android or iOS devices, you have to import the certificate into the device and trust it manually
+    - For Android or iOS, copy the `rootCA.pem` or `rootCA.der` file generated in step 1 into the device filesystem. Then, follow device specific instructions to trust the certificate
+    - One might require conversion of `.pem` to `.der` or vice versa - make sure you use the right format (conversion is easy via a quick search)
+    - `openssl x509 -inform PEM -outform DER -in rootCA.pem -out rootCA.der`
+3. **Push notifications** are only available on **physical iOS devices**
+    - They are not available on the simulators
+    - They also require a paid Apple developer subscription
+    - Push notifications are available on all Android devices (physical and virtual)
+4. OAuth login is only available on **virtual devices** and **web app**
+    - This is because the (local) DNS name `api.vid.app` does not resolve on the physical device browsers due to it not being registered in the global DNS records
+    - https://ngrok.com/[ngrok] can be used as a stopgap to test this functionality on physical devices
+
+'''
+
+=== Known limitations
+
+1. Flutter web app Facebook OAuth login does not prompt user to select account/login each time
+    - Prompt only appears upon first login
+    - Subsequent logins assume user context is the same as currently logged in Facebook user context
+    - To switch user context for Facebook OAuth login, you must log out of Facebook directly first
+    - Limitation does not exist on mobile apps
+
