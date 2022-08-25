@@ -57,7 +57,7 @@ class TermsAndConditionsView extends StatelessWidget {
                   style: Theme.of(context).textTheme.subtitle1,
                 ),
                 TextSpan(
-                    text: "terms and conditions",
+                    text: "Terms and Conditions",
                     style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
                     recognizer: TapGestureRecognizer()..onTap = () {
                       launchUrl(Uri.parse(ConstantUtils.TERMS_AND_CONDITIONS_URL));
@@ -68,7 +68,7 @@ class TermsAndConditionsView extends StatelessWidget {
       );
     }
     else if (key == "privacyPolicy") {
-      final parts = title.split("privacy policy");
+      final parts = title.split("Privacy Policy");
       return RichText(
           text: TextSpan(
               children: [

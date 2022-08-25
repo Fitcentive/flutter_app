@@ -1,5 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_account/create_account_page.dart';
@@ -11,6 +13,7 @@ import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:formz/formz.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginForm extends StatefulWidget {
   @override
@@ -51,29 +54,62 @@ class LoginFormState extends State<LoginForm> {
           _passwordController.clear();
         }
       },
-      child: Align(
-        alignment: const Alignment(0, -1 / 3),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _usernameInput(),
-            const Padding(padding: EdgeInsets.all(12)),
-            _passwordInput(),
-            const Padding(padding: EdgeInsets.all(12)),
-            _resetPasswordButton(),
-            const Padding(padding: EdgeInsets.all(6)),
-            _loginButton(),
-            const Padding(padding: EdgeInsets.all(6)),
-            _createAccountButton(),
-            const Padding(padding: EdgeInsets.all(30)),
-            _googleLoginButton(),
-            WidgetUtils.spacer(5),
-            _appleLoginButton(),
-            WidgetUtils.spacer(5),
-            _facebookLoginButton(),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _usernameInput(),
+          const Padding(padding: EdgeInsets.all(12)),
+          _passwordInput(),
+          const Padding(padding: EdgeInsets.all(12)),
+          _resetPasswordButton(),
+          const Padding(padding: EdgeInsets.all(6)),
+          _loginButton(),
+          const Padding(padding: EdgeInsets.all(6)),
+          _createAccountButton(),
+          const Padding(padding: EdgeInsets.all(30)),
+          _googleLoginButton(),
+          WidgetUtils.spacer(5),
+          _appleLoginButton(),
+          WidgetUtils.spacer(5),
+          _facebookLoginButton(),
+          WidgetUtils.spacer(25),
+          _termsOfService(),
+          WidgetUtils.spacer(5),
+          _privacyPolicy(),
+        ],
       ),
+    );
+  }
+
+  _termsOfService() {
+    return RichText(
+        text: TextSpan(
+            children: [
+              TextSpan(
+                  text: "Terms and Conditions",
+                  style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                  recognizer: TapGestureRecognizer()..onTap = () {
+                    launchUrl(Uri.parse(ConstantUtils.TERMS_AND_CONDITIONS_URL));
+                  }
+              ),
+            ]
+        )
+    );
+  }
+
+  _privacyPolicy() {
+    return RichText(
+        text: TextSpan(
+            children: [
+              TextSpan(
+                  text: "Privacy Policy",
+                  style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                  recognizer: TapGestureRecognizer()..onTap = () {
+                    launchUrl(Uri.parse(ConstantUtils.PRIVACY_POLICY_URL));
+                  }
+              ),
+            ]
+        )
     );
   }
 
