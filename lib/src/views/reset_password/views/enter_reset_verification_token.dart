@@ -37,7 +37,7 @@ class EnterResetVerificationTokenViewState extends State<EnterResetVerificationT
           children: <Widget>[
             Text(
               "Enter the verification token you received via email",
-              style: appTheme.textTheme.headline6,
+              style: Theme.of(context).textTheme.headline6,
             ),
             const Padding(padding: EdgeInsets.all(12)),
             BlocBuilder<ResetPasswordBloc, ResetPasswordState>(

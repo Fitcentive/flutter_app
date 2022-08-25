@@ -20,7 +20,7 @@ class EnterEmailAddressView extends StatelessWidget {
             children: <Widget>[
               Text(
                 "Enter the email address associated with your account",
-                style: appTheme.textTheme.headline6,
+                style: Theme.of(context).textTheme.headline6,
               ),
               const Padding(padding: EdgeInsets.all(12)),
               _emailInput(),
