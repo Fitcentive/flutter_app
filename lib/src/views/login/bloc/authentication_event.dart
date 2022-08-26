@@ -11,22 +11,22 @@ abstract class AuthenticationEvent extends Equatable {
 
 class InitiateAuthenticationFlow extends AuthenticationEvent {
 
-  final String username;
+  final String email;
   final String password;
 
-  const InitiateAuthenticationFlow({required this.username, required this.password});
+  const InitiateAuthenticationFlow({required this.email, required this.password});
 
   @override
-  List<Object> get props => [username, password];
+  List<Object> get props => [email, password];
 }
 
-class LoginUsernameChanged extends AuthenticationEvent {
-  const LoginUsernameChanged(this.username);
+class LoginEmailChanged extends AuthenticationEvent {
+  const LoginEmailChanged(this.email);
 
-  final String username;
+  final String email;
 
   @override
-  List<Object> get props => [username];
+  List<Object> get props => [email];
 }
 
 class LoginPasswordChanged extends AuthenticationEvent {

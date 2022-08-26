@@ -18,12 +18,12 @@ class AuthInitialState extends AuthenticationState {}
 class AuthCredentialsModified extends AuthenticationState {
   const AuthCredentialsModified({
     this.status = FormzStatus.pure,
-    this.username = const Email.pure(),
+    this.email = const Email.pure(),
     this.password = const LoginPassword.pure(),
   });
 
   final FormzStatus status;
-  final Email username;
+  final Email email;
   final LoginPassword password;
 
   AuthCredentialsModified copyWith({
@@ -33,13 +33,13 @@ class AuthCredentialsModified extends AuthenticationState {
   }) {
     return AuthCredentialsModified(
       status: status ?? this.status,
-      username: username ?? this.username,
+      email: username ?? this.email,
       password: password ?? this.password,
     );
   }
 
   @override
-  List<Object> get props => [status, username, password];
+  List<Object> get props => [status, email, password];
 }
 
 class AuthLoadingState extends AuthenticationState {

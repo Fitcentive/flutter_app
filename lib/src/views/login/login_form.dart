@@ -23,7 +23,7 @@ class LoginForm extends StatefulWidget {
 }
 
 class LoginFormState extends State<LoginForm> {
-  final TextEditingController _usernameController = TextEditingController(text: '');
+  final TextEditingController _emailController = TextEditingController(text: '');
   final TextEditingController _passwordController = TextEditingController(text: '');
 
   bool _isObscure = true;
@@ -33,7 +33,7 @@ class LoginFormState extends State<LoginForm> {
     super.initState();
     final currentAuthState = context.read<AuthenticationBloc>().state;
     if (currentAuthState is AuthInitialState) {
-      context.read<AuthenticationBloc>().add(const InitiateAuthenticationFlow(username: "", password: ""));
+      context.read<AuthenticationBloc>().add(const InitiateAuthenticationFlow(email: "", password: ""));
     }
   }
 
@@ -49,7 +49,7 @@ class LoginFormState extends State<LoginForm> {
             );
           context
               .read<AuthenticationBloc>()
-              .add(InitiateAuthenticationFlow(username: _usernameController.text, password: ""));
+              .add(InitiateAuthenticationFlow(email: _emailController.text, password: ""));
           // _usernameController.clear();
           _passwordController.clear();
         }
@@ -57,7 +57,7 @@ class LoginFormState extends State<LoginForm> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _usernameInput(),
+          _emailInput(),
           const Padding(padding: EdgeInsets.all(12)),
           _passwordInput(),
           const Padding(padding: EdgeInsets.all(12)),
@@ -158,18 +158,18 @@ class LoginFormState extends State<LoginForm> {
     );
   }
 
-  _usernameInput() {
+  _emailInput() {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(
       builder: (context, state) {
         return TextField(
-            controller: _usernameController,
+            controller: _emailController,
             key: const Key('loginForm_usernameInput_textField'),
             onChanged: (username) {
-              context.read<AuthenticationBloc>().add(LoginUsernameChanged(username));
+              context.read<AuthenticationBloc>().add(LoginEmailChanged(username));
             },
             decoration: InputDecoration(
-              labelText: 'username',
-              errorText: (state is AuthCredentialsModified) && state.username.invalid ? 'invalid username' : null,
+              labelText: 'Email',
+              errorText: (state is AuthCredentialsModified) && state.email.invalid ? 'Invalid email' : null,
             ));
       },
     );
@@ -196,8 +196,8 @@ class LoginFormState extends State<LoginForm> {
                 });
               },
             ),
-            labelText: 'password',
-            errorText: (state is AuthCredentialsModified) && state.password.invalid ? 'invalid password' : null,
+            labelText: 'Password',
+            errorText: (state is AuthCredentialsModified) && state.password.invalid ? 'Invalid password' : null,
           ),
         );
       },
@@ -243,7 +243,7 @@ class LoginFormState extends State<LoginForm> {
                 if (state is AuthCredentialsModified && state.status.isValid) {
                   return context
                       .read<AuthenticationBloc>()
-                      .add(SignInWithEmailEvent(email: state.username.value, password: state.password.value));
+                      .add(SignInWithEmailEvent(email: state.email.value, password: state.password.value));
                 }
               });
         }

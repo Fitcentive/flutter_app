@@ -61,7 +61,7 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
                 style: Theme.of(context).textTheme.subtitle1,
               ),
               TextSpan(
-                text: "terms and conditions",
+                text: "Terms and Conditions",
                 style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
                 recognizer: TapGestureRecognizer()..onTap = () {
                   launchUrl(Uri.parse(ConstantUtils.TERMS_AND_CONDITIONS_URL));
@@ -81,7 +81,7 @@ class CompleteProfileTermsAndConditionsView extends StatelessWidget {
                   style: Theme.of(context).textTheme.subtitle1,
                 ),
                 TextSpan(
-                    text: "privacy policy",
+                    text: "Privacy Policy",
                     style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
                     recognizer: TapGestureRecognizer()..onTap = () {
                       launchUrl(Uri.parse(ConstantUtils.PRIVACY_POLICY_URL));

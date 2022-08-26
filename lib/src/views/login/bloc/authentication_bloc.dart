@@ -45,7 +45,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     required this.authUserStreamRepository
   }) : super(AuthInitialState()) {
     on<SignInWithEmailEvent>(_signInWithEmail);
-    on<LoginUsernameChanged>(_onUsernameChanged);
+    on<LoginEmailChanged>(_onUsernameChanged);
     on<LoginPasswordChanged>(_onPasswordChanged);
     on<InitiateAuthenticationFlow>(_initiateAuthenticationFlow);
     on<SignInWithOidcEvent>(_signInWithOidc);
@@ -206,15 +206,15 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
   void _initiateAuthenticationFlow(InitiateAuthenticationFlow event,
       Emitter<AuthenticationState> emit,) async {
-    final username = event.username.isEmpty ? const Email.pure() : Email.dirty(event.username);
+    final username = event.email.isEmpty ? const Email.pure() : Email.dirty(event.email);
     final password = event.password.isEmpty ? const LoginPassword.pure() : LoginPassword.dirty(event.password);
     final status = Formz.validate([username, password]);
-    emit(AuthCredentialsModified(status: status, username: username, password: password));
+    emit(AuthCredentialsModified(status: status, email: username, password: password));
   }
 
-  void _onUsernameChanged(LoginUsernameChanged event,
+  void _onUsernameChanged(LoginEmailChanged event,
       Emitter<AuthenticationState> emit,) {
-    final username = Email.dirty(event.username);
+    final username = Email.dirty(event.email);
     final currentState = state;
 
     if (currentState is AuthCredentialsModified) {
@@ -233,7 +233,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     if (currentState is AuthCredentialsModified) {
       emit(currentState.copyWith(
         password: password,
-        status: Formz.validate([password, currentState.username]),
+        status: Formz.validate([password, currentState.email]),
       ));
     }
   }
