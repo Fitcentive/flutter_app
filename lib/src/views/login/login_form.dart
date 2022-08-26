@@ -53,6 +53,13 @@ class LoginFormState extends State<LoginForm> {
           // _usernameController.clear();
           _passwordController.clear();
         }
+        if (state is AuthConflictState) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(content: Text('User with email already exists! Login with password!')),
+            );
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -66,7 +73,7 @@ class LoginFormState extends State<LoginForm> {
           _loginButton(),
           const Padding(padding: EdgeInsets.all(6)),
           _createAccountButton(),
-          const Padding(padding: EdgeInsets.all(30)),
+          WidgetUtils.spacer(20),
           _googleLoginButton(),
           WidgetUtils.spacer(5),
           _appleLoginButton(),

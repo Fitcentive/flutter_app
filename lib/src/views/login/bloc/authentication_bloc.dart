@@ -124,14 +124,22 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     }
   }
 
-  void _signInWithOidc(SignInWithOidcEvent event,
-      Emitter<AuthenticationState> emit,) async {
+  void _signInWithOidc(
+      SignInWithOidcEvent event,
+      Emitter<AuthenticationState> emit
+  ) async {
     final authTokens = await authenticationRepository.oidcLogin(providerRealm: event.provider);
-    final authenticatedUser = await _storeTokensAndGetAuthenticatedUser(authTokens, event.provider);
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await chatRepository.upsertChatUser(accessToken!);
-    _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
-    emit(AuthSuccessState(authenticatedUser: authenticatedUser));
+    // We use a try catch block because we can run into OIDC login failures when a user uses the same email they used for NativeAuth, for OAuth
+    try {
+      emit(const AuthLoadingState());
+      final authenticatedUser = await _storeTokensAndGetAuthenticatedUser(authTokens, event.provider);
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      await chatRepository.upsertChatUser(accessToken!);
+      _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
+      emit(AuthSuccessState(authenticatedUser: authenticatedUser));
+    } catch (e) {
+      emit(AuthConflictState());
+    }
   }
 
   // Refresh auth token 60 seconds before expiry

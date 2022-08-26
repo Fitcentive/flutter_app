@@ -71,3 +71,5 @@ class AuthSuccessUserUpdateState extends AuthenticationState {
 class UnauthorizedState extends AuthenticationState {}
 
 class AuthFailureState extends AuthenticationState {}
+
+class AuthConflictState extends AuthenticationState {}
