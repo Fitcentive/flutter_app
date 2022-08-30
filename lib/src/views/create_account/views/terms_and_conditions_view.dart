@@ -68,7 +68,7 @@ class TermsAndConditionsView extends StatelessWidget {
       );
     }
     else if (key == "privacyPolicy") {
-      final parts = title.split("Privacy Policy");
+      final parts = title.split("privacy policy");
       return RichText(
           text: TextSpan(
               children: [
@@ -77,7 +77,7 @@ class TermsAndConditionsView extends StatelessWidget {
                   style: Theme.of(context).textTheme.subtitle1,
                 ),
                 TextSpan(
-                    text: "privacy policy",
+                    text: "Privacy Policy",
                     style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
                     recognizer: TapGestureRecognizer()..onTap = () {
                       launchUrl(Uri.parse(ConstantUtils.PRIVACY_POLICY_URL));

@@ -18,6 +18,7 @@ import 'package:flutter_app/src/views/account_details/bloc/account_details_event
 import 'package:flutter_app/src/views/account_details/bloc/account_details_state.dart';
 import 'package:flutter_app/src/views/discovery_radius/discovery_radius_view.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -201,6 +202,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                   _fullLengthRowElement(_genderField(state)),
                   _spacer(6),
                   _fullLengthRowElement(_locationWidget()),
+                  _spacer(12),
+                  _deleteAccountButton(),
                   _spacer(40),
                 ],
               ),
@@ -208,6 +211,21 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           );
         }),
       ),
+    );
+  }
+
+  _deleteAccountButton() {
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+      ),
+      onPressed: () async {
+        final authState = _authenticationBloc.state;
+        if (authState is AuthSuccessUserUpdateState) {
+          _authenticationBloc.add(AccountDeletionRequested(user: authState.authenticatedUser));
+        }
+      },
+      child: const Text("Delete Account", style: TextStyle(fontSize: 15, color: Colors.white)),
     );
   }
 
@@ -289,7 +307,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
               gender: state.gender,
             ));
           }
-          }
+        }
       },
       child: const Text("Save", style: TextStyle(fontSize: 15, color: Colors.white)),
     );

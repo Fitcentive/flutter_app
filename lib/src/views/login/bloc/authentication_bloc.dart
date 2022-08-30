@@ -53,26 +53,29 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<AuthenticatedUserDataUpdated>(_authenticatedUserDataUpdated);
     on<RefreshAccessTokenRequested>(_refreshAccessTokenRequested);
     on<RestoreAuthSuccessState>(_restoreAuthSuccessState);
+    on<AccountDeletionRequested>(_accountDeletionRequested);
 
     _authenticatedUserSubscription = authUserStreamRepository.authenticatedUser.listen((newUser) {
       add(AuthenticatedUserDataUpdated(user: newUser));
     });
   }
 
-  void _restoreAuthSuccessState(
-      RestoreAuthSuccessState event,
-      Emitter<AuthenticationState> emit
-      ) async {
+  void _accountDeletionRequested(AccountDeletionRequested event, Emitter<AuthenticationState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await userRepository.deleteUserData(event.user.user.id, accessToken!);
+    print("Account deletion now complete");
+    _signOutWorkflow(event.user.user.id, event.user.authProvider);
+    emit(AuthInitialState());
+  }
+
+  void _restoreAuthSuccessState(RestoreAuthSuccessState event, Emitter<AuthenticationState> emit) async {
     // We cancel existing timer to refresh access token and force refresh it now
     // This is done so that stale user data from previous trigger do not get reused in the refresh call
     _setUpRefreshAccessTokenTrigger(event.tokens, event.user);
     emit(AuthSuccessState(authenticatedUser: event.user));
   }
 
-  void _refreshAccessTokenRequested(
-      RefreshAccessTokenRequested event,
-      Emitter<AuthenticationState> emit
-      ) async {
+  void _refreshAccessTokenRequested(RefreshAccessTokenRequested event, Emitter<AuthenticationState> emit) async {
     logger.info("Attempting to refresh the access token");
     final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
     final refreshToken = await secureStorage.read(key: event.user.authTokens.refreshTokenSecureStorageKey);
@@ -101,16 +104,12 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     }
   }
 
-  void _authenticatedUserDataUpdated(
-      AuthenticatedUserDataUpdated event,
-      Emitter<AuthenticationState> emit) async {
+  void _authenticatedUserDataUpdated(AuthenticatedUserDataUpdated event, Emitter<AuthenticationState> emit) async {
     _forceRefreshAccessToken(event.user);
     emit(AuthSuccessUserUpdateState(authenticatedUser: event.user));
   }
 
-  void _signInWithEmail(
-      SignInWithEmailEvent event,
-      Emitter<AuthenticationState> emit,) async {
+  void _signInWithEmail(SignInWithEmailEvent event, Emitter<AuthenticationState> emit) async {
     try {
       emit(const AuthLoadingState());
       final authTokens = await authenticationRepository.basicLogIn(username: event.email, password: event.password);
@@ -124,10 +123,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     }
   }
 
-  void _signInWithOidc(
-      SignInWithOidcEvent event,
-      Emitter<AuthenticationState> emit
-  ) async {
+  void _signInWithOidc(SignInWithOidcEvent event, Emitter<AuthenticationState> emit) async {
     final authTokens = await authenticationRepository.oidcLogin(providerRealm: event.provider);
     // We use a try catch block because we can run into OIDC login failures when a user uses the same email they used for NativeAuth, for OAuth
     try {
@@ -196,32 +192,34 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   }
 
   void _signOut(SignOutEvent event, Emitter<AuthenticationState> emit) async {
-    _refreshAccessTokenTimer?.cancel();
-    final accessToken = await secureStorage.read(key: event.user.authTokens.accessTokenSecureStorageKey);
-    final refreshToken = await secureStorage.read(key: event.user.authTokens.refreshTokenSecureStorageKey);
-    await authenticationRepository.logout(
-      accessToken: accessToken!,
-      refreshToken: refreshToken!,
-      authRealm: event.user.authProvider,
-    );
-    final registrationToken = await FirebaseMessaging.instance.getToken();
-    await notificationRepository.unregisterDeviceToken(event.user.user.id, registrationToken!, accessToken);
-
-    await secureStorage.delete(key: event.user.authTokens.accessTokenSecureStorageKey);
-    await secureStorage.delete(key: event.user.authTokens.refreshTokenSecureStorageKey);
+    _signOutWorkflow(event.user.user.id, event.user.authProvider);
     emit(AuthInitialState());
   }
 
-  void _initiateAuthenticationFlow(InitiateAuthenticationFlow event,
-      Emitter<AuthenticationState> emit,) async {
+  void _signOutWorkflow(String userId, String authProvider) async {
+    _refreshAccessTokenTimer?.cancel();
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final refreshToken = await secureStorage.read(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY);
+    await authenticationRepository.logout(
+      accessToken: accessToken!,
+      refreshToken: refreshToken!,
+      authRealm: authProvider,
+    );
+    final registrationToken = await FirebaseMessaging.instance.getToken();
+    await notificationRepository.unregisterDeviceToken(userId, registrationToken!, accessToken);
+
+    await secureStorage.delete(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await secureStorage.delete(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY);
+  }
+
+  void _initiateAuthenticationFlow(InitiateAuthenticationFlow event, Emitter<AuthenticationState> emit,) async {
     final username = event.email.isEmpty ? const Email.pure() : Email.dirty(event.email);
     final password = event.password.isEmpty ? const LoginPassword.pure() : LoginPassword.dirty(event.password);
     final status = Formz.validate([username, password]);
     emit(AuthCredentialsModified(status: status, email: username, password: password));
   }
 
-  void _onUsernameChanged(LoginEmailChanged event,
-      Emitter<AuthenticationState> emit,) {
+  void _onUsernameChanged(LoginEmailChanged event, Emitter<AuthenticationState> emit,) {
     final username = Email.dirty(event.email);
     final currentState = state;
 
@@ -233,8 +231,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     }
   }
 
-  void _onPasswordChanged(LoginPasswordChanged event,
-      Emitter<AuthenticationState> emit,) {
+  void _onPasswordChanged(LoginPasswordChanged event, Emitter<AuthenticationState> emit,) {
     final password = LoginPassword.dirty(event.password);
     final currentState = state;
 

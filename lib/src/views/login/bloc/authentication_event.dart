@@ -99,3 +99,13 @@ class SignOutEvent extends AuthenticationEvent {
   @override
   List<Object> get props => [user];
 }
+
+
+class AccountDeletionRequested extends AuthenticationEvent {
+  final AuthenticatedUser user;
+
+  const AccountDeletionRequested({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}

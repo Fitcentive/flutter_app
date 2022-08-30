@@ -367,4 +367,16 @@ class UserRepository {
       return null;
     }
   }
+
+  Future<void> deleteUserData(String userId, String accessToken) async {
+    final response =
+      await http.delete(Uri.parse("$BASE_URL/$userId"), headers: {"Authorization": "Bearer $accessToken"});
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    } else {
+      throw Exception(
+          "deleteUserData: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 }

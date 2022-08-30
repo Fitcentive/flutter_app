@@ -39,8 +39,10 @@ void main() async {
 }
 
 _initializeProxy() async {
-  const String PROXY_IP = "192.168.2.25";
-  // const String PROXY_IP = "192.168.0.10";
+  // const String PROXY_IP = "192.168.2.25"; // 119
+  // const String PROXY_IP = "192.168.0.10"; // 137
+  const String PROXY_IP = "192.168.29.93"; // Velachery
+
 
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   if (kDebugMode) {
