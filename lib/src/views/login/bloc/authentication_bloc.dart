@@ -61,9 +61,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   }
 
   void _accountDeletionRequested(AccountDeletionRequested event, Emitter<AuthenticationState> emit) async {
+    emit(const AccountDeletionInProgressState());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await userRepository.deleteUserData(event.user.user.id, accessToken!);
-    print("Account deletion now complete");
     _signOutWorkflow(event.user.user.id, event.user.authProvider);
     emit(AuthInitialState());
   }

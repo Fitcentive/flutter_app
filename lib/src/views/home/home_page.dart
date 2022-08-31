@@ -14,6 +14,7 @@ import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
 import 'package:flutter_app/src/views/discover_home/discover_home_view.dart';
 import 'package:flutter_app/src/views/newsfeed/newsfeed_view.dart';
@@ -498,11 +499,29 @@ class HomePageState extends State<HomePage> {
           return _oldStuff();
       }
     }
+    else if (authState is AccountDeletionInProgressState) {
+      return _accountDeletionInProgressView();
+    }
     else {
       return const Center(
         child: Text("Bad State"),
       );
     }
+  }
+
+  _accountDeletionInProgressView() {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          children: [
+            const CircularProgressIndicator(),
+            WidgetUtils.spacer(10),
+            const Text("Please wait, your account is being deleted....", textAlign: TextAlign.center,),
+            const Text("You will be logged out once this operation completed", textAlign: TextAlign.center,),
+          ],
+        ),
+      ),
+    );
   }
 
   _oldStuff() {

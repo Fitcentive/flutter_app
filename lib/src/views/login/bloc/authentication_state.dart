@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/login/login_password.dart';
-import 'package:flutter_app/src/models/login/new_password.dart';
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:formz/formz.dart';
 
@@ -45,6 +44,14 @@ class AuthCredentialsModified extends AuthenticationState {
 class AuthLoadingState extends AuthenticationState {
 
   const AuthLoadingState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class AccountDeletionInProgressState extends AuthenticationState {
+
+  const AccountDeletionInProgressState();
 
   @override
   List<Object> get props => [];
