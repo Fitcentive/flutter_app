@@ -510,13 +510,14 @@ class HomePageState extends State<HomePage> {
   }
 
   _accountDeletionInProgressView() {
-    return Scaffold(
-      body: Center(
+    return Center(
+      child: SingleChildScrollView(
         child: Column(
           children: [
             const CircularProgressIndicator(),
             WidgetUtils.spacer(10),
             const Text("Please wait, your account is being deleted....", textAlign: TextAlign.center,),
+            WidgetUtils.spacer(5),
             const Text("You will be logged out once this operation completed", textAlign: TextAlign.center,),
           ],
         ),
