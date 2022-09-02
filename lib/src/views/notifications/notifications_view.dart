@@ -383,7 +383,7 @@ class NotificationsViewState extends State<NotificationsView> {
 
   String _getUserFirstAndLastName(PublicUserProfile? userProfile) {
     if (userProfile == null) {
-      return "A user";
+      return "Deleted user";
     }
     else {
       return "${userProfile.firstName} ${userProfile.lastName}";

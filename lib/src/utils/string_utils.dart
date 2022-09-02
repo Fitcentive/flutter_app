@@ -17,7 +17,7 @@ class StringUtils {
     if (publicUserProfile != null) {
       return "${publicUserProfile.firstName} ${publicUserProfile.lastName}";
     }
-    return "";
+    return "Deleted User";
   }
 
   static getNumberOfLikesOnPostText(String currentUserId, List<String> likedUserIds) {

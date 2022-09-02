@@ -63,4 +63,6 @@ class ConstantUtils {
     "Hybrid": "assets/images/hybrid_body_type.png",
     "Bulky": "assets/images/bulky_body_type.png",
   };
+
+  static const String staticDeletedUserId = "aaaaaaaa-aaaa-8bbb-8bbb-aaaaaaaaaaaa";
 }

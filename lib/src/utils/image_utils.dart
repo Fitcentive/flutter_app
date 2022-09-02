@@ -11,7 +11,9 @@ class ImageUtils {
       return DecorationImage(
           image: NetworkImage("$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}"), fit: BoxFit.fitHeight);
     } else {
-      return null;
+      return const DecorationImage(
+          image: AssetImage("assets/images/deleted_user_avatar.png")
+      );
     }
   }
 

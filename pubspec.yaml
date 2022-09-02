@@ -115,6 +115,7 @@ flutter:
     - assets/images/lean_body_type.png
     - assets/images/hybrid_body_type.png
     - assets/images/bulky_body_type.png
+    - assets/images/deleted_user_avatar.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
