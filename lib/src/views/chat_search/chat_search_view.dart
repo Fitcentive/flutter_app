@@ -126,6 +126,8 @@ class ChatSearchViewState extends State<ChatSearchView> {
           ? const Expanded(child: Center(child: Text('No Results')))
           : Expanded(
               child: UserResultsList(
+                shouldTapGoToChatRoom: true,
+                goToChatRoomCallBack: _goToChatRoomCallback,
                 userProfiles: state.userData,
                 currentUserProfile: widget.currentUserProfile,
                 fetchMoreResultsCallback: _fetchMoreResultsCallback,
@@ -147,6 +149,10 @@ class ChatSearchViewState extends State<ChatSearchView> {
         offset: currentState.userData.length,
       ));
     }
+  }
+
+  _goToChatRoomCallback(PublicUserProfile targetUserProfile) {
+    _chatSearchBloc.add(GetChatRoom(targetUserProfile: targetUserProfile));
   }
 
   _openUserChatView(String roomId, PublicUserProfile targetUserProfile) {

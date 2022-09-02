@@ -64,3 +64,10 @@ class PostSubmissionFailure extends CreateNewPostState {
   @override
   List<Object?> get props => [error];
 }
+
+class PostSubmittedButNotYetConfirmed extends CreateNewPostState {
+  const PostSubmittedButNotYetConfirmed();
+
+  @override
+  List<Object?> get props => [];
+}

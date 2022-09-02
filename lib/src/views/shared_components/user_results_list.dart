@@ -4,17 +4,22 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 
 typedef FetchMoreResultsCallback = void Function();
+typedef GoToChatRoomCallBack = void Function(PublicUserProfile targetUserProfile);
 
 class UserResultsList extends StatefulWidget {
 
   final List<PublicUserProfile> userProfiles;
   final PublicUserProfile currentUserProfile;
   final bool doesNextPageExist;
+  final bool shouldTapGoToChatRoom;
 
   final FetchMoreResultsCallback fetchMoreResultsCallback;
+  final GoToChatRoomCallBack? goToChatRoomCallBack;
 
   const UserResultsList({
     Key? key,
+    this.shouldTapGoToChatRoom = false,
+    this.goToChatRoomCallBack,
     required this.userProfiles,
     required this.currentUserProfile,
     required this.doesNextPageExist,
@@ -96,11 +101,16 @@ class UserResultsListState extends State<UserResultsList> {
         ),
       ),
       onTap: () {
-        Navigator.pushAndRemoveUntil(
-            context,
-            UserProfileView.route(userProfile, widget.currentUserProfile),
-                (route) => true
-        );
+        if (widget.shouldTapGoToChatRoom) {
+          widget.goToChatRoomCallBack!(userProfile);
+        }
+        else {
+          Navigator.pushAndRemoveUntil(
+              context,
+              UserProfileView.route(userProfile, widget.currentUserProfile),
+                  (route) => true
+          );
+        }
       },
     );
   }

@@ -48,6 +48,7 @@ class CreateNewPostBloc extends Bloc<CreateNewPostEvent, CreateNewPostState> {
 
   void _postSubmitted(PostSubmitted event, Emitter<CreateNewPostState> emit) async {
     try {
+      emit(const PostSubmittedButNotYetConfirmed());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       String? postPhotoUrl;
       if (event.selectedImage != null) {
