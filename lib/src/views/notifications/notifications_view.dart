@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
@@ -245,6 +246,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final String postId = notification.data['postId'];
     final String postCreatorId = _getPostCreatorId(notification);
     final PublicUserProfile? commentingUserProfile = userProfileMap[commentingUserIds.first];
+    final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
     final PublicUserProfile postCreatorUserProfile = userProfileMap[postCreatorId] ?? widget.currentUserProfile;
     return ListTile(
       onTap: () async {
@@ -265,7 +267,7 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
       title: Text(
-        _getCommentNotificationText(commentingUserProfile!, postCreatorUserProfile, commentingUserIds.length),
+        _getCommentNotificationText(commentingUserProfile ?? staticDeletedUserProfile!, postCreatorUserProfile, commentingUserIds.length),
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Text(

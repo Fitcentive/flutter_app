@@ -202,7 +202,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       ...userFollowRequestNotificationUsers,
       ...userCommentedOnPostNotificationUsers,
       ...userLikedPostNotificationUsers,
-      ...postCreatorUsers
+      ...postCreatorUsers,
+      ConstantUtils.staticDeletedUserId,
     ];
     return userIdList.toSet().toList();
   }
