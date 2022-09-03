@@ -21,7 +21,7 @@ A cross-platform flutter application targeting Android/iOS/Web to allow people t
 3. Wait for application to build and enjoy!
 
 == Run app on Chrome
-1. 'flutter run -d chrome'
+1. `flutter run -d chrome`
 2. Wait for application to build and enjoy!
 
 == Run app on iOS device
