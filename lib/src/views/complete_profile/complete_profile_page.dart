@@ -188,7 +188,7 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
             _provideLocationView(),
           ],
         );
-        if (state is InitialState) {
+        if (state is InitialState || state is DataLoadingState) {
           return const Center(
             child: CircularProgressIndicator(color: Colors.teal),
           );

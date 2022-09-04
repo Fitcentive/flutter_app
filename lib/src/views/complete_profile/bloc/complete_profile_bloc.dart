@@ -39,6 +39,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
   }
 
   void _locationInfoSubmitted(LocationInfoSubmitted event, Emitter<CompleteProfileState> emit) async {
+    emit(const DataLoadingState());
     final updateUserProfile = UpdateUserProfile(
         locationCenter: Coordinates(event.coordinates.latitude, event.coordinates.longitude),
         locationRadius: event.radius
@@ -62,17 +63,11 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     emit(LocationInfoModified(user: event.user, selectedCoordinates: event.coordinates, radius: event.radius));
   }
 
-  void _forceUpdateAuthState(
-      ForceUpdateAuthState event,
-      Emitter<CompleteProfileState> emit
-      ) async {
+  void _forceUpdateAuthState(ForceUpdateAuthState event, Emitter<CompleteProfileState> emit) async {
     authUserStreamRepository.newUser(event.user);
   }
 
-  void _usernameSubmitted(
-      UsernameSubmitted event,
-      Emitter<CompleteProfileState> emit
-      ) async {
+  void _usernameSubmitted(UsernameSubmitted event, Emitter<CompleteProfileState> emit) async {
     final currentState = state;
     if (currentState is UsernameModified) {
       emit(LocationInfoModified(
@@ -99,10 +94,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     }
   }
 
-  void _usernameChanged(
-      UsernameChanged event,
-      Emitter<CompleteProfileState> emit
-      ) async {
+  void _usernameChanged(UsernameChanged event, Emitter<CompleteProfileState> emit) async {
     final username = Username.dirty(event.username);
     final currentState = state;
     final newStatus = Formz.validate([username]);
@@ -123,8 +115,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     }
   }
 
-  void _profileInfoSubmitted(ProfileInfoSubmitted event,
-      Emitter<CompleteProfileState> emit,) async {
+  void _profileInfoSubmitted(ProfileInfoSubmitted event, Emitter<CompleteProfileState> emit,) async {
     emit(UsernameModified(user: event.user));
     final updateUserProfile = UpdateUserProfile(
         firstName: event.firstName.trim(),
@@ -147,8 +138,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     emit(UsernameModified(user: updatedAuthenticatedUser));
   }
 
-  void _profileInfoChanged(ProfileInfoChanged event,
-      Emitter<CompleteProfileState> emit,) async {
+  void _profileInfoChanged(ProfileInfoChanged event, Emitter<CompleteProfileState> emit,) async {
     final firstName = Name.dirty(event.firstName);
     final lastname = Name.dirty(event.lastName);
     final dateOfBirth = DateOfBirth.dirty(DateFormat('yyyy-MM-dd').format(event.dateOfBirth));
@@ -166,8 +156,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     }
   }
 
-  void _termsAndConditionsSubmitted(CompleteProfileTermsAndConditionsSubmitted event,
-      Emitter<CompleteProfileState> emit,) async {
+  void _termsAndConditionsSubmitted(CompleteProfileTermsAndConditionsSubmitted event, Emitter<CompleteProfileState> emit,) async {
     emit(ProfileInfoModified(user: event.user));
     final updateAgreements = UpdateUserAgreements(
         termsAndConditionsAccepted: event.termsAndConditions,
@@ -189,8 +178,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     emit(ProfileInfoModified(user: updatedAuthenticatedUser));
   }
 
-  void _termsAndConditionsChanged(CompleteProfileTermsAndConditionsChanged event,
-      Emitter<CompleteProfileState> emit,) async {
+  void _termsAndConditionsChanged(CompleteProfileTermsAndConditionsChanged event, Emitter<CompleteProfileState> emit,) async {
     emit(CompleteProfileTermsAndConditionsModified(
         user: event.user,
         termsAndConditions: event.termsAndConditions,
@@ -199,8 +187,7 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
     ));
   }
 
-  void _initialEvent(InitialEvent event,
-      Emitter<CompleteProfileState> emit,) async {
+  void _initialEvent(InitialEvent event, Emitter<CompleteProfileState> emit,) async {
     switch (event.user.user.accountStatus) {
       case "TermsAndConditionsRequired":
         emit(CompleteProfileTermsAndConditionsModified(

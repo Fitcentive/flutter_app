@@ -23,6 +23,14 @@ class InitialState extends CompleteProfileState {
 
 }
 
+class DataLoadingState extends CompleteProfileState {
+  const DataLoadingState();
+
+  @override
+  List<Object> get props => [];
+
+}
+
 class CompleteProfileTermsAndConditionsModified extends CompleteProfileState {
   final AuthenticatedUser user;
   final bool termsAndConditions;
