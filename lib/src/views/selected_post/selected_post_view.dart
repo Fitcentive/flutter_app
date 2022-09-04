@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
@@ -337,7 +338,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
               child: Text(
-                DateFormat("hh:mm a      yyyy-MM-dd").format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
+                DateFormat(ConstantUtils.timestampFormat).format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
                 style: const TextStyle(
                     fontSize: 10
                 ),

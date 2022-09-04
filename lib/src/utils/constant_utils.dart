@@ -65,4 +65,6 @@ class ConstantUtils {
   };
 
   static const String staticDeletedUserId = "aaaaaaaa-aaaa-8bbb-8bbb-aaaaaaaaaaaa";
+
+  static const String timestampFormat = "hh:mm a     yyyy-MM-dd";
 }

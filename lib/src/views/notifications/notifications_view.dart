@@ -209,8 +209,9 @@ class NotificationsViewState extends State<NotificationsView> {
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Text(
-        DateFormat("hh:mm a     yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+        DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
         style: const TextStyle(fontSize: 10),
+        textAlign: TextAlign.right,
       ),
     );
   }
@@ -271,8 +272,9 @@ class NotificationsViewState extends State<NotificationsView> {
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Text(
-        DateFormat("hh:mm a     yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+        DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
         style: const TextStyle(fontSize: 10),
+        textAlign: TextAlign.right,
       ),
     );
   }
@@ -339,8 +341,9 @@ class NotificationsViewState extends State<NotificationsView> {
           style: const TextStyle(fontSize: 14),
         ),
         subtitle: Text(
-          DateFormat("hh:mm a     yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
+          textAlign: TextAlign.right,
         ),
       );
     }
@@ -367,8 +370,9 @@ class NotificationsViewState extends State<NotificationsView> {
           style: const TextStyle(fontSize: 14),
         ),
         subtitle: Text(
-          DateFormat("hh:mm a      yyyy-MM-dd").format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
+          textAlign: TextAlign.right,
         ),
         trailing: notification.isInteractive ? Column(
           mainAxisSize: MainAxisSize.min,

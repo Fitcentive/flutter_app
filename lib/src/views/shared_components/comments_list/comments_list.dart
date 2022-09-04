@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
@@ -329,7 +330,7 @@ class CommentsListViewState extends State<CommentsListView> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                 child: Text(
-                  DateFormat("hh:mm a      yyyy-MM-dd").format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
+                  DateFormat(ConstantUtils.timestampFormat).format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
                   style: const TextStyle(
                       fontSize: 10
                   ),
