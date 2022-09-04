@@ -8,6 +8,7 @@ import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/liked_users/liked_users_view.dart';
 import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
@@ -153,7 +154,14 @@ class SocialPostsListState extends State<SocialPostsList> {
     );
   }
 
-
+  _showLikedUsers(List<String> userIds) {
+    showDialog(context: context, builder: (context) {
+      return Dialog(
+        insetPadding: const EdgeInsets.fromLTRB(25, 75, 25, 75),
+        child: LikedUsersView.withBloc(widget.currentUserProfile, userIds),
+      );
+    });
+  }
 
   _getLikesAndComments(SocialPost post, PostsWithLikedUserIds likedUserIds) {
     return Row(
@@ -163,14 +171,26 @@ class SocialPostsListState extends State<SocialPostsList> {
           padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
           child: Align(
             alignment: Alignment.bottomLeft,
-            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)),
+            child: InkWell(
+              onTap: () {
+                _showLikedUsers(likedUserIds.userIds);
+              },
+              child: Text(
+                  StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)
+              ),
+            ),
           ),
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
           child: Align(
             alignment: Alignment.bottomRight,
-            child: Text("${post.numberOfComments} comments"),
+            child: InkWell(
+              onTap: () {
+                _goToSelectedPostView(post);
+              },
+              child: Text("${post.numberOfComments} comments"),
+            ),
           ),
         )
       ],
@@ -202,17 +222,7 @@ class SocialPostsListState extends State<SocialPostsList> {
               padding: const EdgeInsets.all(2.5),
               child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        SelectedPostView.route(
-                            currentUserProfile: widget.currentUserProfile,
-                            currentPostId: post.postId,
-                            currentPost: post,
-                            currentPostComments: widget.postIdCommentsMap[post.postId],
-                            likedUsersForCurrentPost: widget.likedUserIds.firstWhere((element) => element.postId == post.postId),
-                            userIdProfileMap: widget.userIdProfileMap
-                        ), (route) => true
-                    );
+                    _goToSelectedPostView(post);
                   },
                   child: const Text(
                     "Comment",
@@ -241,6 +251,19 @@ class SocialPostsListState extends State<SocialPostsList> {
     );
   }
 
+  _goToSelectedPostView(SocialPost post) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        SelectedPostView.route(
+            currentUserProfile: widget.currentUserProfile,
+            currentPostId: post.postId,
+            currentPost: post,
+            currentPostComments: widget.postIdCommentsMap[post.postId],
+            likedUsersForCurrentPost: widget.likedUserIds.firstWhere((element) => element.postId == post.postId),
+            userIdProfileMap: widget.userIdProfileMap
+        ), (route) => true
+    );
+  }
 
   void _onScroll() {
     if (_debounce?.isActive ?? false) _debounce?.cancel();

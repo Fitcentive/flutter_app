@@ -10,6 +10,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/liked_users/liked_users_view.dart';
 import 'package:flutter_app/src/views/selected_post/bloc/selected_post_bloc.dart';
 import 'package:flutter_app/src/views/selected_post/bloc/selected_post_event.dart';
 import 'package:flutter_app/src/views/selected_post/bloc/selected_post_state.dart';
@@ -406,11 +407,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
               padding: const EdgeInsets.all(2.5),
               child: ElevatedButton(
                   onPressed: () {
-                    _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.ease
-                    );
+                    _goToBottom();
                   },
                   child: const Text(
                     "Comment",
@@ -439,6 +436,23 @@ class SelectedPostViewState extends State<SelectedPostView> {
     );
   }
 
+  _goToBottom() {
+    _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.ease
+    );
+  }
+
+  _showLikedUsers(List<String> userIds) {
+    showDialog(context: context, builder: (context) {
+      return Dialog(
+        insetPadding: const EdgeInsets.fromLTRB(25, 75, 25, 75),
+        child: LikedUsersView.withBloc(widget.currentUserProfile, userIds),
+      );
+    });
+  }
+
   _getLikesAndComments(SocialPost post, PostsWithLikedUserIds likedUserIds) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -447,14 +461,26 @@ class SelectedPostViewState extends State<SelectedPostView> {
           padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
           child: Align(
             alignment: Alignment.bottomLeft,
-            child: Text(StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)),
+            child: InkWell(
+              onTap: () {
+                _showLikedUsers(likedUserIds.userIds);
+              },
+              child: Text(
+                  StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)
+              ),
+            )
           ),
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
           child: Align(
             alignment: Alignment.bottomRight,
-            child: Text("${post.numberOfComments} comments"),
+            child: InkWell(
+              onTap: () {
+                _goToBottom();
+              },
+              child: Text("${post.numberOfComments} comments"),
+            ),
           ),
         )
       ],
