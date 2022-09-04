@@ -70,7 +70,7 @@ class NotificationsViewState extends State<NotificationsView> {
   }
 
   void _onScroll() {
-    if(_scrollController.hasClients ) {
+    if(_scrollController.hasClients) {
       final maxScroll = _scrollController.position.maxScrollExtent;
       final currentScroll = _scrollController.position.pixels;
 
@@ -127,9 +127,9 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  // SCrollbar?
   _generateNotificationListView(NotificationsLoaded state) {
     return Scrollbar(
+      controller: _scrollController,
       child: ListView.builder(
           controller: _scrollController,
           itemCount: state.doesNextPageExist ? state.notifications.length + 1 : state.notifications.length,
