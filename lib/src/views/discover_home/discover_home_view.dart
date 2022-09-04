@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
@@ -11,7 +12,6 @@ import 'package:flutter_app/src/views/discover_home/bloc/discover_home_state.dar
 import 'package:flutter_app/src/views/discover_recommendations/discover_recommendations_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/discover_user_preferences_view.dart';
 import 'package:flutter_app/src/views/discovered_user/discovered_user_view.dart';
-import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -268,18 +268,16 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
   }
 
   _actionButton(String text, VoidCallback onTap) {
-    return FittedBox(
-      child: ElevatedButton(
-          style: ButtonStyle(
-            padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
-                  (Set<MaterialState> states) {
-                return const EdgeInsets.all(10);
-              },
-            ),
+    return ElevatedButton(
+        style: ButtonStyle(
+          padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
+                (Set<MaterialState> states) {
+              return const EdgeInsets.all(10);
+            },
           ),
-          onPressed: onTap,
-          child: Text(text, textAlign: TextAlign.center,)
-      ),
+        ),
+        onPressed: onTap,
+        child: AutoSizeText(text, textAlign: TextAlign.center, maxLines: 1)
     );
   }
 

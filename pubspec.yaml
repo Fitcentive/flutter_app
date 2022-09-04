@@ -72,6 +72,7 @@ dependencies:
   flutter_signin_button: ^2.0.0
   flutter_markdown: ^0.6.10+4
   url_launcher: ^6.1.5
+  auto_size_text: ^3.0.0
 
 dev_dependencies:
   flutter_test:
