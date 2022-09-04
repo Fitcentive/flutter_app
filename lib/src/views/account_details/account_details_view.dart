@@ -220,13 +220,45 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
       ),
       onPressed: () async {
-        final authState = _authenticationBloc.state;
-        if (authState is AuthSuccessUserUpdateState) {
-          _authenticationBloc.add(AccountDeletionRequested(user: authState.authenticatedUser));
-        }
+        showDialog(context: context, builder: (context) {
+          Widget cancelButton = TextButton(
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+            ),
+            onPressed:  () {
+              Navigator.pop(context);
+            },
+            child: const Text("Cancel"),
+          );
+          Widget continueButton = TextButton(
+            onPressed:  () {
+              _performAccountDeletion();
+            },
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+            ),
+            child: const Text("Confirm"),
+          );
+
+          return AlertDialog(
+            title: const Text("Delete Account Confirmation"),
+            content: const Text("Are you sure you want to delete your account? This action is irreversible!"),
+            actions: [
+              cancelButton,
+              continueButton,
+            ],
+          );
+        });
       },
       child: const Text("Delete Account", style: TextStyle(fontSize: 15, color: Colors.white)),
     );
+  }
+  
+  _performAccountDeletion() {
+    final authState = _authenticationBloc.state;
+    if (authState is AuthSuccessUserUpdateState) {
+      _authenticationBloc.add(AccountDeletionRequested(user: authState.authenticatedUser));
+    }
   }
 
   Widget _locationWidget() {

@@ -51,6 +51,7 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
               Text(
                 "Enter a new password",
                 style: Theme.of(context).textTheme.headline6,
+                textAlign: TextAlign.center,
               ),
               const Padding(padding: EdgeInsets.all(12)),
               _passwordWidget(),

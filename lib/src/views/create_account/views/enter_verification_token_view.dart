@@ -38,6 +38,7 @@ class EnterVerificationTokenViewState extends State<EnterVerificationTokenView> 
             Text(
               "Enter the verification token you received via email",
               style: Theme.of(context).textTheme.headline6,
+              textAlign: TextAlign.center,
             ),
             const Padding(padding: EdgeInsets.all(12)),
             BlocBuilder<CreateAccountBloc, CreateAccountState>(
