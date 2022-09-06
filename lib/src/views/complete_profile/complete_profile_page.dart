@@ -92,7 +92,12 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
           return false;
         },
         child: Scaffold(
-          appBar: AppBar(title: const Text('Complete profile', style: TextStyle(color: Colors.teal),)),
+          appBar: AppBar(
+            title: const Text('Complete profile', style: TextStyle(color: Colors.teal),),
+            iconTheme: const IconThemeData(
+              color: Colors.teal,
+            ),
+          ),
           body: _pageViews(),
           floatingActionButton: _nextButton(),
         ));

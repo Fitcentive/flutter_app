@@ -67,6 +67,9 @@ class DiscoveryRadiusViewState extends State<DiscoveryRadiusView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Discovery Radius", style: TextStyle(color: Colors.teal)),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: _onFloatingActionButtonPress,

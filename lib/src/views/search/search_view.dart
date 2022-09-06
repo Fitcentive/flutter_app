@@ -58,6 +58,9 @@ class SearchViewState extends State<SearchView> with SingleTickerProviderStateMi
           length: MAX_TABS,
           child: Scaffold(
             appBar: AppBar(
+              iconTheme: const IconThemeData(
+                color: Colors.teal,
+              ),
               toolbarHeight: 75,
               title: TabBar(
                 labelColor: Colors.teal,

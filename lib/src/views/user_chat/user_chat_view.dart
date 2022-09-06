@@ -119,6 +119,9 @@ class UserChatViewState extends State<UserChatView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -135,7 +138,10 @@ class UserChatViewState extends State<UserChatView> {
             ),
             WidgetUtils.spacer(10),
             Expanded(
-              child: Text(StringUtils.getUserNameFromUserProfile(widget.otherUserProfile)),
+              child: Text(
+                StringUtils.getUserNameFromUserProfile(widget.otherUserProfile),
+                style: const TextStyle(color: Colors.teal),
+              ),
             )
           ],
         ),

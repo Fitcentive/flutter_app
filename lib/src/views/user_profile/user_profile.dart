@@ -109,10 +109,14 @@ class UserProfileViewState extends State<UserProfileView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text(
-        "View Profile",
-        style: TextStyle(color: Colors.teal),
-      )),
+        title: const Text(
+          "View Profile",
+          style: TextStyle(color: Colors.teal),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+      ),
       body: BlocListener<UserProfileBloc, UserProfileState>(
         listener: (context, state) {
           if (state is GoToUserChatView) {

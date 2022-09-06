@@ -57,6 +57,9 @@ class LikedUsersViewState extends State<LikedUsersView> {
               appBar: AppBar(
                 title: const Text('Liked users', style: TextStyle(color: Colors.teal)),
                 automaticallyImplyLeading: false,
+                iconTheme: const IconThemeData(
+                  color: Colors.teal,
+                ),
               ),
               body: _userResultsList(state),
             ),

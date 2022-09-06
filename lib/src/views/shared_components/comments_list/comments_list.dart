@@ -79,11 +79,15 @@ class CommentsListViewState extends State<CommentsListView> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "View Comments",
-            style: TextStyle(color: Colors.teal),
-          )),
+        automaticallyImplyLeading: false,
+        title: const Text(
+          "View Comments",
+          style: TextStyle(color: Colors.teal),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+      ),
       body: BlocBuilder<CommentsListBloc, CommentsListState>(
         builder: (context, state) {
           if (state is CommentsLoaded) {
@@ -132,6 +136,9 @@ class CommentsListViewState extends State<CommentsListView> {
             appBar: AppBar(
               automaticallyImplyLeading: false,
               title: const Text("Add Comment", style: TextStyle(color: Colors.teal),),
+              iconTheme: const IconThemeData(
+                color: Colors.teal,
+              ),
             ),
             body: Align(
               alignment: Alignment.bottomLeft,

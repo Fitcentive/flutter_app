@@ -79,6 +79,9 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                 "Create Post",
                 style: TextStyle(color: Colors.teal)
             ),
+            iconTheme: const IconThemeData(
+              color: Colors.teal,
+            ),
             actions: <Widget>[
               Container(
                 padding: const EdgeInsets.all(10),

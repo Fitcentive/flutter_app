@@ -119,6 +119,9 @@ class SelectedPostViewState extends State<SelectedPostView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("View Post", style: TextStyle(color: Colors.teal),),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
       ),
       body: BlocBuilder<SelectedPostBloc, SelectedPostState>(
         builder: (context, state) {

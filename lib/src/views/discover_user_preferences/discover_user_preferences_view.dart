@@ -94,7 +94,12 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Discover Preferences', style: TextStyle(color: Colors.teal),)),
+      appBar: AppBar(
+        title: const Text('Discover Preferences', style: TextStyle(color: Colors.teal),),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+      ),
       body: _pageViews(),
       floatingActionButton: dynamicActionButtons,
     );

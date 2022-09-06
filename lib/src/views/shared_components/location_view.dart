@@ -90,6 +90,9 @@ class LocationView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("View Location", style: TextStyle(color: Colors.teal),),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
       ),
       body: _renderMap(context),
     );
