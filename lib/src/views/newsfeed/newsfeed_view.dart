@@ -165,7 +165,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
           },
           tooltip: 'Share your thoughts!',
           backgroundColor: Colors.teal,
-          child: const Icon(Icons.add, color: Colors.white),
+          child: const Icon(Icons.create, color: Colors.white),
         ),
       ),
     );

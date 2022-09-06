@@ -208,10 +208,12 @@ class NotificationsViewState extends State<NotificationsView> {
         _getLikeNotificationText(likingUserProfile, likingUserIds.length),
         style: const TextStyle(fontSize: 14),
       ),
-      subtitle: Text(
-        DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
-        style: const TextStyle(fontSize: 10),
-        textAlign: TextAlign.right,
+      subtitle: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Text(
+          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          style: const TextStyle(fontSize: 10),
+        ),
       ),
     );
   }
@@ -271,10 +273,12 @@ class NotificationsViewState extends State<NotificationsView> {
         _getCommentNotificationText(commentingUserProfile ?? staticDeletedUserProfile!, postCreatorUserProfile, commentingUserIds.length),
         style: const TextStyle(fontSize: 14),
       ),
-      subtitle: Text(
-        DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
-        style: const TextStyle(fontSize: 10),
-        textAlign: TextAlign.right,
+      subtitle: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Text(
+          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          style: const TextStyle(fontSize: 10),
+        ),
       ),
     );
   }
@@ -340,10 +344,12 @@ class NotificationsViewState extends State<NotificationsView> {
           titleText,
           style: const TextStyle(fontSize: 14),
         ),
-        subtitle: Text(
-          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
-          style: const TextStyle(fontSize: 10),
-          textAlign: TextAlign.right,
+        subtitle: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+          child: Text(
+            DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+            style: const TextStyle(fontSize: 10),
+          ),
         ),
       );
     }
@@ -369,10 +375,12 @@ class NotificationsViewState extends State<NotificationsView> {
           "${_getUserFirstAndLastName(requestingUserProfile)} has requested to follow you",
           style: const TextStyle(fontSize: 14),
         ),
-        subtitle: Text(
-          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
-          style: const TextStyle(fontSize: 10),
-          textAlign: TextAlign.right,
+        subtitle: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+          child: Text(
+            DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+            style: const TextStyle(fontSize: 10),
+          ),
         ),
         trailing: notification.isInteractive ? Column(
           mainAxisSize: MainAxisSize.min,
