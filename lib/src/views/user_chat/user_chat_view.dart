@@ -69,6 +69,8 @@ class UserChatView extends StatefulWidget {
 class UserChatViewState extends State<UserChatView> {
   static const int scrollThreshold = 600;
 
+  final ScrollController _scrollController = ScrollController();
+
   late final types.User _currentUser;
   late final types.User _otherUser;
 
@@ -158,7 +160,9 @@ class UserChatViewState extends State<UserChatView> {
             _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
 
             return Scrollbar(
+              controller: _scrollController,
               child: Chat(
+                scrollController: _scrollController,
                 messages: _previousMessages,
                 onTextChanged: _handleTextChanged,
                 onAttachmentPressed: _handleAttachmentPressed,
