@@ -32,16 +32,17 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
+      name: "dev-flutter-app",
       options: DefaultFirebaseOptions.currentPlatform
   );
-  await _initializeProxy();
+  // await _initializeProxy();
   runApp(const App());
 }
 
 _initializeProxy() async {
-  // const String PROXY_IP = "192.168.2.25"; // 119
+  const String PROXY_IP = "192.168.2.25"; // 119
   // const String PROXY_IP = "192.168.0.10"; // 137
-  const String PROXY_IP = "192.168.29.93"; // Velachery
+  // const String PROXY_IP = "192.168.29.93"; // Velachery
 
 
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();

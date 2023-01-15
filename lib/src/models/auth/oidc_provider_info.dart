@@ -56,10 +56,10 @@ class OidcProviderInfo {
         clientId: GOOGLE_OIDC_CLIENT_ID,
         keycloakIdpHint: GOOGLE_KEYCLOAK_IDP_HINT,
         serviceConfiguration: const AuthorizationServiceConfiguration(
-            authorizationEndpoint: "${ConstantUtils.API_HOST_URL}/auth/realms/GoogleAuth/protocol/openid-connect/auth",
-            tokenEndpoint: "${ConstantUtils.API_HOST_URL}/auth/realms/GoogleAuth/protocol/openid-connect/token"
+            authorizationEndpoint: "${ConstantUtils.AUTH_HOST_URL}/auth/realms/GoogleAuth/protocol/openid-connect/auth",
+            tokenEndpoint: "${ConstantUtils.AUTH_HOST_URL}/auth/realms/GoogleAuth/protocol/openid-connect/token"
         ),
-        webHost: ConstantUtils.API_HOSTNAME,
+        webHost: ConstantUtils.AUTH_HOSTNAME,
         webAuthUrl: '/auth/realms/GoogleAuth/protocol/openid-connect/auth'
       );
 
@@ -70,10 +70,10 @@ class OidcProviderInfo {
       clientId: APPLE_OIDC_CLIENT_ID,
       keycloakIdpHint: APPLE_KEYCLOAK_IDP_HINT,
       serviceConfiguration: const AuthorizationServiceConfiguration(
-          authorizationEndpoint: "${ConstantUtils.API_HOST_URL}/auth/realms/AppleAuth/protocol/openid-connect/auth",
-          tokenEndpoint: "${ConstantUtils.API_HOST_URL}/auth/realms/AppleAuth/protocol/openid-connect/token"
+          authorizationEndpoint: "${ConstantUtils.AUTH_HOST_URL}/auth/realms/AppleAuth/protocol/openid-connect/auth",
+          tokenEndpoint: "${ConstantUtils.AUTH_HOST_URL}/auth/realms/AppleAuth/protocol/openid-connect/token"
       ),
-      webHost: ConstantUtils.API_HOSTNAME,
+      webHost: ConstantUtils.AUTH_HOSTNAME,
       webAuthUrl: '/auth/realms/AppleAuth/protocol/openid-connect/auth'
   );
 
@@ -85,10 +85,10 @@ class OidcProviderInfo {
       clientId: FACEBOOK_OIDC_CLIENT_ID,
       keycloakIdpHint: FACEBOOK_KEYCLOAK_IDP_HINT,
       serviceConfiguration: const AuthorizationServiceConfiguration(
-          authorizationEndpoint: "${ConstantUtils.API_HOST_URL}/auth/realms/FacebookAuth/protocol/openid-connect/auth",
-          tokenEndpoint: "${ConstantUtils.API_HOST_URL}/auth/realms/FacebookAuth/protocol/openid-connect/token"
+          authorizationEndpoint: "${ConstantUtils.AUTH_HOST_URL}/auth/realms/FacebookAuth/protocol/openid-connect/auth",
+          tokenEndpoint: "${ConstantUtils.AUTH_HOST_URL}/auth/realms/FacebookAuth/protocol/openid-connect/token"
       ),
-      webHost: ConstantUtils.API_HOSTNAME,
+      webHost: ConstantUtils.AUTH_HOSTNAME,
       webAuthUrl: '/auth/realms/FacebookAuth/protocol/openid-connect/auth'
   );
 }

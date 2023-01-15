@@ -14,7 +14,8 @@ import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 
 class AuthenticationRepository {
-  static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/auth";
+  static const String API_BASE_URL = "${ConstantUtils.API_HOST_URL}/api/auth";
+  static const String AUTH_BASE_URL = "${ConstantUtils.AUTH_HOST_URL}/api/auth";
 
   static final Map<String, OidcProviderInfo> providerToDetailsMap = {
     OidcProviderInfo.GOOGLE_AUTH_PROVIDER: OidcProviderInfo.googleOidcProviderInfo(),
@@ -27,7 +28,7 @@ class AuthenticationRepository {
 
   Future<void> createNewSsoUser(String authRealm, String accessToken) async {
     final response = await http
-        .post(Uri.parse("$BASE_URL/realm/$authRealm/user"), headers: {"Authorization": "Bearer $accessToken"});
+        .post(Uri.parse("$API_BASE_URL/realm/$authRealm/user"), headers: {"Authorization": "Bearer $accessToken"});
 
     if (response.statusCode == HttpStatus.created) {
       return;
@@ -38,7 +39,7 @@ class AuthenticationRepository {
   }
 
   Future<void> logout({required String accessToken, required String refreshToken, required String authRealm}) async {
-    var uri = Uri.parse("$BASE_URL/logout/$authRealm");
+    var uri = Uri.parse("$API_BASE_URL/logout/$authRealm");
     final clientId = DeviceUtils.isMobileDevice() ? "mobileapp" : "webapp";
     var request = http.MultipartRequest('POST', uri)
       ..headers["Authorization"] = "Bearer $accessToken"
@@ -133,7 +134,7 @@ class AuthenticationRepository {
     required String password,
   }) async {
     final clientId = DeviceUtils.isMobileDevice() ? "mobileapp" : "webapp";
-    final response = await http.post(Uri.parse("${BASE_URL}/login/basic"), body: {
+    final response = await http.post(Uri.parse("${AUTH_BASE_URL}/login/basic"), body: {
       "username": username,
       "password": password,
       "client_id": clientId,
@@ -155,7 +156,7 @@ class AuthenticationRepository {
     required String providerRealm,
   }) async =>
       _refreshAccessTokenHelper(
-          refreshTokenEndpoint: "$BASE_URL/refresh",
+          refreshTokenEndpoint: "$API_BASE_URL/refresh",
           accessToken: accessToken,
           refreshToken: refreshToken,
           providerRealm: providerRealm
@@ -167,7 +168,7 @@ class AuthenticationRepository {
     required String providerRealm,
   }) async =>
       _refreshAccessTokenHelper(
-          refreshTokenEndpoint: "$BASE_URL/sso/refresh",
+          refreshTokenEndpoint: "$API_BASE_URL/sso/refresh",
           accessToken: accessToken,
           refreshToken: refreshToken,
           providerRealm: providerRealm

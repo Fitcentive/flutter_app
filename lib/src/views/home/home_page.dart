@@ -97,7 +97,7 @@ class HomePageState extends State<HomePage> {
   late NotificationRepository _notificationRepository;
   late FlutterSecureStorage _secureStorage;
 
-  void syncDeviceRegistrationToken() async {
+  void syncFirebaseDeviceRegistrationToken() async {
     final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     LocalDeviceInfo localDeviceInfo;
 
@@ -175,7 +175,7 @@ class HomePageState extends State<HomePage> {
       listener: (context, state) {
         if (state is AuthSuccessUserUpdateState) {
           userProfile = state.authenticatedUser.userProfile;
-          syncDeviceRegistrationToken();
+          syncFirebaseDeviceRegistrationToken();
         }
       },
       child: BlocBuilder<AuthenticationBloc, AuthenticationState>(

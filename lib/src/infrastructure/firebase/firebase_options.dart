@@ -46,37 +46,42 @@ class DefaultFirebaseOptions {
     }
   }
 
+  // Note - download and place/replace .plist/.json files as required in android/ios directories
+  //        find instructions in firebase console under android/ios app settings
+  // Get API key from https://console.cloud.google.com/apis/credentials?authuser=1&orgonly=true&project=fitcentive-dev&supportedpurview=organizationId,folder,project
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBK6_1sXpa-BnTtAZw2uKmVsYuQQoupL7Y',
-    appId: '1:211948202240:web:cce838d44ee7831942ebe5',
-    messagingSenderId: '211948202240',
-    projectId: 'fitcentive-1210',
-    authDomain: 'fitcentive-1210.firebaseapp.com',
-    databaseURL: 'https://fitcentive-1210.firebaseio.com',
-    storageBucket: 'fitcentive-1210.appspot.com',
+    apiKey: 'AIzaSyBLKAtbshtA2-0_Ki_YQKsfUhUAGg0jmMk',
+    appId: '1:823597371065:web:aa8d8365aefaf5c1671568',
+    messagingSenderId: '823597371065',
+    projectId: 'fitcentive-dev',
+    authDomain: 'fitcentive-dev.firebaseapp.com',
+    databaseURL: 'https://fitcentive-dev.firebaseio.com',
+    storageBucket: 'fitcentive-dev.appspot.com',
     measurementId: 'G-MZ4R425SMP',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDT0w9ShI2Q-7G7ixF-JfBXGj8AcKnMDeE',
-    appId: '1:211948202240:android:26e9a4749f0af8a342ebe5',
-    messagingSenderId: '211948202240',
-    projectId: 'fitcentive-1210',
-    databaseURL: 'https://fitcentive-1210.firebaseio.com',
-    storageBucket: 'fitcentive-1210.appspot.com',
+    appId: '1:823597371065:android:cb6e6b9eae41aa5b671568',
+    messagingSenderId: '823597371065',
+    projectId: 'fitcentive-dev',
+    databaseURL: 'https://fitcentive-dev.firebaseio.com',
+    storageBucket: 'fitcentive-dev.appspot.com',
   );
 
+  // Register APNS key in Firebase console project cloud messaging settings
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCyzn-UB4LteGd8wa-wj6zBYs_k7Ks0aYk',
-    appId: '1:211948202240:ios:0bf809f34f80cfa242ebe5',
-    messagingSenderId: '211948202240',
-    projectId: 'fitcentive-1210',
-    databaseURL: 'https://fitcentive-1210.firebaseio.com',
-    storageBucket: 'fitcentive-1210.appspot.com',
-    androidClientId: '211948202240-7vnfnk5bmj5hq5i1e897c02gcljjacd8.apps.googleusercontent.com',
-    iosClientId: '211948202240-3b0pv8dm57t4dpntdoqvge043smn0is6.apps.googleusercontent.com',
+    apiKey: 'AIzaSyCmsVazElmVEZAzbnRpFQHR9dFdK7LMv80',
+    appId: '1:823597371065:ios:16b2b2e46a2456c4671568',
+    messagingSenderId: '823597371065',
+    projectId: 'fitcentive-dev',
+    databaseURL: 'https://fitcentive-dev.firebaseio.com',
+    storageBucket: 'fitcentive-dev.appspot.com',
+    androidClientId: '823597371065-t2lv74id6palhrnl105r2mp90fs6b06a.apps.googleusercontent.com',
+    iosClientId: '823597371065-t2lv74id6palhrnl105r2mp90fs6b06a.apps.googleusercontent.com',
     iosBundleId: 'io.fitcentive.flutterApp',
   );
 
-  static const String vapidKey = "BJ_7Fj08xF9KFTkV5SS7kFoyKUr3MH2nPjNRUVp0sHfCY8bBNlbiLOm_gOSytQDEjTNjMns3S01or9x5Fd5Fdq8";
+  // Create a web push certificate - keyPair is vapidKey
+  static const String vapidKey = "BOmo03Cmmi0JC6g8n1045_Hum3BdHPMZG7wJpm0QUKqDUxd2K-HeEOnUDAB2dz8cp4OmKP27o5Y1I4M66YzICFM";
 }
