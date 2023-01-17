@@ -157,8 +157,8 @@ class UserProfileViewState extends State<UserProfileView> {
               _userUsername(widget.userProfile.username),
               const Padding(padding: EdgeInsets.all(10)),
               _messageUserButtonOpt(state),
-              _followUserButtonOpt(state),
-              _removeUserFromFollowersButtonOpt(state),
+              _friendUserButtonOpt(state),
+              _acceptFriendRequestButtonOpt(state),
               _showUserPostsIfRequired(state)
             ]),
           ),
@@ -197,7 +197,7 @@ class UserProfileViewState extends State<UserProfileView> {
     if (state.userPosts == null) {
       return const SizedBox(
         height: 200,
-        child: Center(child: Text("Follow user to view their posts")),
+        child: Center(child: Text("Friend a user to view their posts")),
       );
     } else if (state.userPosts?.isEmpty ?? true) {
       return const SizedBox(
@@ -314,7 +314,7 @@ class UserProfileViewState extends State<UserProfileView> {
   }
 
   _getBackgroundColours(RequiredDataResolved state) {
-    if (state.userFollowStatus.hasCurrentUserRequestedToFollowOtherUser) {
+    if (state.userFollowStatus.hasCurrentUserRequestedToFriendOtherUser) {
       return MaterialStateProperty.all<Color>(Colors.grey);
     } else {
       return MaterialStateProperty.all<Color>(Colors.teal);
@@ -322,10 +322,10 @@ class UserProfileViewState extends State<UserProfileView> {
   }
 
   _getIcon(RequiredDataResolved state) {
-    if (state.userFollowStatus.hasCurrentUserRequestedToFollowOtherUser) {
+    if (state.userFollowStatus.hasCurrentUserRequestedToFriendOtherUser) {
       return Icons.pending;
     } else {
-      if (state.userFollowStatus.isCurrentUserFollowingOtherUser) {
+      if (state.userFollowStatus.isCurrentUserFriendsWithOtherUser) {
         return Icons.remove;
       } else {
         return Icons.add;
@@ -334,31 +334,31 @@ class UserProfileViewState extends State<UserProfileView> {
   }
 
   _getText(RequiredDataResolved state) {
-    if (state.userFollowStatus.hasCurrentUserRequestedToFollowOtherUser) {
-      return "Requested to follow already";
+    if (state.userFollowStatus.hasCurrentUserRequestedToFriendOtherUser) {
+      return "Friend request already sent!";
     } else {
-      if (state.userFollowStatus.isCurrentUserFollowingOtherUser) {
-        return "Unfollow";
+      if (state.userFollowStatus.isCurrentUserFriendsWithOtherUser) {
+        return "Unfriend";
       } else {
-        return "Follow";
+        return "Add as friend";
       }
     }
   }
 
-  _followUserButtonOnPressed() {
+  _friendUserButtonOnPressed() {
     final currentAuthState = _authenticationBloc.state;
     final currentUserProfileState = _userProfileBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState && currentUserProfileState is RequiredDataResolved) {
-      if (currentUserProfileState.userFollowStatus.isCurrentUserFollowingOtherUser) {
-        _userProfileBloc.add(UnfollowUser(
+      if (currentUserProfileState.userFollowStatus.isCurrentUserFriendsWithOtherUser) {
+        _userProfileBloc.add(UnfriendUser(
             targetUserId: widget.userProfile.userId,
             currentUser: currentAuthState.authenticatedUser,
             userFollowStatus: currentUserProfileState.userFollowStatus,
             userPosts: currentUserProfileState.userPosts,
             usersWhoLikedPosts: currentUserProfileState.usersWhoLikedPosts,
         ));
-      } else if (!currentUserProfileState.userFollowStatus.hasCurrentUserRequestedToFollowOtherUser) {
-        _userProfileBloc.add(RequestToFollowUser(
+      } else if (!currentUserProfileState.userFollowStatus.hasCurrentUserRequestedToFriendOtherUser) {
+        _userProfileBloc.add(RequestToFriendUser(
             targetUserId: widget.userProfile.userId,
             currentUser: currentAuthState.authenticatedUser,
             userFollowStatus: currentUserProfileState.userFollowStatus,
@@ -369,21 +369,8 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
-  _removeUserFromFollowersButtonPressed() {
-    final currentAuthState = _authenticationBloc.state;
-    final currentUserProfileState = _userProfileBloc.state;
-    if (currentAuthState is AuthSuccessUserUpdateState && currentUserProfileState is RequiredDataResolved) {
-      _userProfileBloc.add(RemoveUserFromCurrentUserFollowers(
-          targetUserId: widget.userProfile.userId,
-          currentUser: currentAuthState.authenticatedUser,
-          userFollowStatus: currentUserProfileState.userFollowStatus,
-          userPosts: currentUserProfileState.userPosts,
-          usersWhoLikedPosts: currentUserProfileState.usersWhoLikedPosts,
-      ));
-    }
-  }
 
-  Widget? _followUserButtonOpt(RequiredDataResolved state) {
+  Widget? _friendUserButtonOpt(RequiredDataResolved state) {
     if (state.currentUser.user.id == state.userFollowStatus.otherUserId) {
       return null;
     }
@@ -393,7 +380,7 @@ class UserProfileViewState extends State<UserProfileView> {
           icon: Icon(_getIcon(state)),
           style: ButtonStyle(backgroundColor: _getBackgroundColours(state)),
           onPressed: () {
-            _followUserButtonOnPressed();
+            _friendUserButtonOnPressed();
           },
           label: Text(_getText(state),
               style: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
@@ -403,57 +390,42 @@ class UserProfileViewState extends State<UserProfileView> {
     );
   }
 
-  Widget? _removeUserFromFollowersButtonOpt(RequiredDataResolved state) {
-    if (!state.userFollowStatus.isOtherUserFollowingCurrentUser &&
-        !state.userFollowStatus.hasOtherUserRequestedToFollowCurrentUser) {
+  Widget? _acceptFriendRequestButtonOpt(RequiredDataResolved state) {
+    if (!state.userFollowStatus.isCurrentUserFriendsWithOtherUser &&
+        !state.userFollowStatus.hasOtherUserRequestedToFriendCurrentUser) {
       return null;
-    } else if (state.userFollowStatus.isOtherUserFollowingCurrentUser) {
-      return Column(
-        children: [
-          ElevatedButton.icon(
-            icon: const Icon(Icons.remove),
-            style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.teal)),
-            onPressed: () {
-              _removeUserFromFollowersButtonPressed();
-            },
-            label: const Text("Remove user from followers",
-                style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-          ),
-          WidgetUtils.spacer(5),
-        ],
-      );
-    } else if (state.userFollowStatus.hasOtherUserRequestedToFollowCurrentUser) {
+    } else if (state.userFollowStatus.hasOtherUserRequestedToFriendCurrentUser) {
       return Column(
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: Column(
               children: [
-                Text("${widget.userProfile.firstName} ${widget.userProfile.lastName} has requested to follow you",
+                Text("${widget.userProfile.firstName} ${widget.userProfile.lastName} has sent you a friend request",
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                 Row(
                   children: [
                     Expanded(
                         child: ElevatedButton.icon(
-                      icon: const Icon(Icons.check),
-                      style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.teal)),
-                      onPressed: () {
-                        _applyUserFollowRequestDecision(true);
-                      },
-                      label: const Text("Approve",
-                          style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-                    )),
+                          icon: const Icon(Icons.check),
+                          style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.teal)),
+                          onPressed: () {
+                            _applyUserFriendRequestDecision(true);
+                          },
+                          label: const Text("Approve",
+                              style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                        )),
                     WidgetUtils.spacer(5),
                     Expanded(
                         child: ElevatedButton.icon(
-                      icon: const Icon(Icons.close),
-                      style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent)),
-                      onPressed: () {
-                        _applyUserFollowRequestDecision(false);
-                      },
-                      label: const Text("Deny",
-                          style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-                    )),
+                          icon: const Icon(Icons.close),
+                          style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent)),
+                          onPressed: () {
+                            _applyUserFriendRequestDecision(false);
+                          },
+                          label: const Text("Deny",
+                              style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                        )),
                   ],
                 ),
                 WidgetUtils.spacer(5)
@@ -466,11 +438,11 @@ class UserProfileViewState extends State<UserProfileView> {
     return null;
   }
 
-  _applyUserFollowRequestDecision(bool isFollowRequestApproved) {
+  _applyUserFriendRequestDecision(bool isFollowRequestApproved) {
     final currentAuthState = _authenticationBloc.state;
     final currentUserProfileState = _userProfileBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState && currentUserProfileState is RequiredDataResolved) {
-      _userProfileBloc.add(ApplyUserDecisionToFollowRequest(
+      _userProfileBloc.add(ApplyUserDecisionToFriendRequest(
           targetUserId: widget.userProfile.userId,
           currentUser: currentAuthState.authenticatedUser,
           userFollowStatus: currentUserProfileState.userFollowStatus,

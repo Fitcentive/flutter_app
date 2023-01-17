@@ -4,7 +4,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
-import 'package:flutter_app/src/models/user_follow_status.dart';
+import 'package:flutter_app/src/models/user_friend_status.dart';
 
 abstract class UserProfileState extends Equatable {
 
@@ -33,7 +33,7 @@ class DataLoading extends UserProfileState {
 
 class RequiredDataResolved extends UserProfileState {
   final AuthenticatedUser currentUser;
-  final UserFollowStatus userFollowStatus;
+  final UserFriendStatus userFollowStatus;
   final List<SocialPost>? userPosts;
   final List<PostsWithLikedUserIds>? usersWhoLikedPosts;
   final Map<String, List<SocialPostComment>>? postIdCommentsMap;

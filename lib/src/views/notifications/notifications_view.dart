@@ -6,6 +6,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_bloc.dart';
@@ -152,8 +153,8 @@ class NotificationsViewState extends State<NotificationsView> {
 
   Widget _generateNotificationListItem(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     switch (notification.notificationType) {
-      case "UserFollowRequest":
-        return _generateUserFollowRequestNotification(notification, userProfileMap);
+      case "UserFriendRequest":
+        return _generateUserFriendRequestNotification(notification, userProfileMap);
       case "UserCommentedOnPost":
         return _generateUserCommentedOnPostNotification(notification, userProfileMap);
       case "UserLikedPost":
@@ -223,13 +224,13 @@ class NotificationsViewState extends State<NotificationsView> {
       int numberOfLikers
       ) {
     if (numberOfLikers == 1) {
-      return "${_getUserFirstAndLastName(likingUserProfile)} liked your post";
+      return "${StringUtils.getUserNameFromUserProfile(likingUserProfile)} liked your post";
     }
     else if (numberOfLikers == 2) {
-      return "${_getUserFirstAndLastName(likingUserProfile)} and ${numberOfLikers - 1} other person liked your post";
+      return "${StringUtils.getUserNameFromUserProfile(likingUserProfile)} and ${numberOfLikers - 1} other person liked your post";
     }
     else {
-      return "${_getUserFirstAndLastName(likingUserProfile)} and ${numberOfLikers - 1} others liked your post";
+      return "${StringUtils.getUserNameFromUserProfile(likingUserProfile)} and ${numberOfLikers - 1} others liked your post";
     }
   }
 
@@ -290,38 +291,38 @@ class NotificationsViewState extends State<NotificationsView> {
   ) {
     if (numberOfLikers == 1) {
       if (postCreatorUserProfile.userId == widget.currentUserProfile.userId) {
-        return "${_getUserFirstAndLastName(commentingUserProfile)} commented on your post";
+        return "${StringUtils.getUserNameFromUserProfile(commentingUserProfile)} commented on your post";
       }
       else {
-        return "${_getUserFirstAndLastName(commentingUserProfile)} commented on ${_getUserFirstAndLastName(postCreatorUserProfile)}'s post";
+        return "${StringUtils.getUserNameFromUserProfile(commentingUserProfile)} commented on ${StringUtils.getUserNameFromUserProfile(postCreatorUserProfile)}'s post";
       }
     }
     else if (numberOfLikers == 2) {
       if (postCreatorUserProfile.userId == widget.currentUserProfile.userId) {
-        return "${_getUserFirstAndLastName(commentingUserProfile)} and 1 other person commented on your post";
+        return "${StringUtils.getUserNameFromUserProfile(commentingUserProfile)} and 1 other person commented on your post";
       }
       else {
-        return "${_getUserFirstAndLastName(commentingUserProfile)} and 1 other person commented on ${_getUserFirstAndLastName(postCreatorUserProfile)}'s post";
+        return "${StringUtils.getUserNameFromUserProfile(commentingUserProfile)} and 1 other person commented on ${StringUtils.getUserNameFromUserProfile(postCreatorUserProfile)}'s post";
       }
     }
     else {
       if (postCreatorUserProfile.userId == widget.currentUserProfile.userId) {
-        return "${_getUserFirstAndLastName(commentingUserProfile)} and ${numberOfLikers - 1} others commented on your post";
+        return "${StringUtils.getUserNameFromUserProfile(commentingUserProfile)} and ${numberOfLikers - 1} others commented on your post";
       }
       else {
-        return "${_getUserFirstAndLastName(commentingUserProfile)} and ${numberOfLikers - 1} others commented on ${_getUserFirstAndLastName(postCreatorUserProfile)}'s post";
+        return "${StringUtils.getUserNameFromUserProfile(commentingUserProfile)} and ${numberOfLikers - 1} others commented on ${StringUtils.getUserNameFromUserProfile(postCreatorUserProfile)}'s post";
       }
     }
   }
 
-  Widget _generateUserFollowRequestNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
+  Widget _generateUserFriendRequestNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String requestingUserId = notification.data['requestingUser'];
     final PublicUserProfile? requestingUserProfile = userProfileMap[requestingUserId];
     if (notification.hasBeenInteractedWith) {
       final didUserApproveFollowRequest = notification.data['isApproved'] ?? false;
       final titleText = didUserApproveFollowRequest ?
-      "${_getUserFirstAndLastName(requestingUserProfile)} is now following you" :
-      "You have rejected ${_getUserFirstAndLastName(requestingUserProfile)}'s request to follow you";
+      "${StringUtils.getUserNameFromUserProfile(requestingUserProfile)} is now friends with you" :
+      "You have rejected ${StringUtils.getUserNameFromUserProfile(requestingUserProfile)}'s friend request";
       return ListTile(
         onTap: () async {
           _goToUserProfile(requestingUserProfile);
@@ -372,7 +373,7 @@ class NotificationsViewState extends State<NotificationsView> {
           ),
         ),
         title: Text(
-          "${_getUserFirstAndLastName(requestingUserProfile)} has requested to follow you",
+          "${StringUtils.getUserNameFromUserProfile(requestingUserProfile)} has sent you a friend request",
           style: const TextStyle(fontSize: 14),
         ),
         subtitle: Padding(
@@ -394,16 +395,6 @@ class NotificationsViewState extends State<NotificationsView> {
     }
 
   }
-
-  String _getUserFirstAndLastName(PublicUserProfile? userProfile) {
-    if (userProfile == null) {
-      return "Deleted user";
-    }
-    else {
-      return "${userProfile.firstName} ${userProfile.lastName}";
-    }
-  }
-
 
   _generateActionButton(bool isApproveButton, AppNotification notification, String requestingUserId) {
     return CircleAvatar(

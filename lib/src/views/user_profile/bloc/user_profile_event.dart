@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
-import 'package:flutter_app/src/models/user_follow_status.dart';
+import 'package:flutter_app/src/models/user_friend_status.dart';
 
 abstract class UserProfileEvent extends Equatable {
   const UserProfileEvent();
@@ -29,7 +29,7 @@ class FetchRequiredData extends UserProfileEvent {
 }
 
 class FetchUserPostsData extends UserProfileEvent {
-  final UserFollowStatus userFollowStatus;
+  final UserFriendStatus userFollowStatus;
   final AuthenticatedUser currentUser;
   final String userId;
   final int createdBefore;
@@ -48,7 +48,7 @@ class FetchUserPostsData extends UserProfileEvent {
 }
 
 class ReFetchUserPostsData extends UserProfileEvent {
-  final UserFollowStatus userFollowStatus;
+  final UserFriendStatus userFollowStatus;
   final AuthenticatedUser currentUser;
   final String userId;
   final int createdBefore;
@@ -66,14 +66,14 @@ class ReFetchUserPostsData extends UserProfileEvent {
   List<Object?> get props => [userFollowStatus, userId, currentUser, createdBefore, limit];
 }
 
-class RequestToFollowUser extends UserProfileEvent {
+class RequestToFriendUser extends UserProfileEvent {
   final AuthenticatedUser currentUser;
   final String targetUserId;
-  final UserFollowStatus userFollowStatus;
+  final UserFriendStatus userFollowStatus;
   final List<SocialPost>? userPosts;
   final List<PostsWithLikedUserIds>? usersWhoLikedPosts;
 
-  const RequestToFollowUser({
+  const RequestToFriendUser({
     required this.targetUserId,
     required this.currentUser,
     required this.userFollowStatus,
@@ -85,14 +85,14 @@ class RequestToFollowUser extends UserProfileEvent {
   List<Object?> get props => [targetUserId, currentUser, userFollowStatus, userPosts, usersWhoLikedPosts];
 }
 
-class UnfollowUser extends UserProfileEvent {
+class UnfriendUser extends UserProfileEvent {
   final AuthenticatedUser currentUser;
   final String targetUserId;
-  final UserFollowStatus userFollowStatus;
+  final UserFriendStatus userFollowStatus;
   final List<SocialPost>? userPosts;
   final List<PostsWithLikedUserIds>? usersWhoLikedPosts;
 
-  const UnfollowUser({
+  const UnfriendUser({
     required this.targetUserId,
     required this.currentUser,
     required this.userFollowStatus,
@@ -130,34 +130,15 @@ class UnlikePostForUser extends UserProfileEvent {
   List<Object?> get props => [postId, currentUser];
 }
 
-class RemoveUserFromCurrentUserFollowers extends UserProfileEvent {
+class ApplyUserDecisionToFriendRequest extends UserProfileEvent {
   final AuthenticatedUser currentUser;
   final String targetUserId;
-  final UserFollowStatus userFollowStatus;
-  final List<SocialPost>? userPosts;
-  final List<PostsWithLikedUserIds>? usersWhoLikedPosts;
-
-  const RemoveUserFromCurrentUserFollowers({
-    required this.targetUserId,
-    required this.currentUser,
-    required this.userFollowStatus,
-    required this.userPosts,
-    required this.usersWhoLikedPosts,
-  });
-
-  @override
-  List<Object?> get props => [targetUserId, currentUser, userFollowStatus, userPosts, usersWhoLikedPosts];
-}
-
-class ApplyUserDecisionToFollowRequest extends UserProfileEvent {
-  final AuthenticatedUser currentUser;
-  final String targetUserId;
-  final UserFollowStatus userFollowStatus;
+  final UserFriendStatus userFollowStatus;
   final bool isFollowRequestApproved;
   final List<SocialPost>? userPosts;
   final List<PostsWithLikedUserIds>? usersWhoLikedPosts;
 
-  const ApplyUserDecisionToFollowRequest({
+  const ApplyUserDecisionToFriendRequest({
     required this.targetUserId,
     required this.currentUser,
     required this.userFollowStatus,

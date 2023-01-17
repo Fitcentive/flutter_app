@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
-import 'package:flutter_app/src/views/followers/bloc/followers_bloc.dart';
-import 'package:flutter_app/src/views/followers/bloc/followers_event.dart';
-import 'package:flutter_app/src/views/followers/bloc/followers_state.dart';
+import 'package:flutter_app/src/views/followers/bloc/friends_bloc.dart';
+import 'package:flutter_app/src/views/followers/bloc/friends_event.dart';
+import 'package:flutter_app/src/views/followers/bloc/friends_state.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class FollowersView extends StatefulWidget {
+class FriendsView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
 
-  const FollowersView({Key? key, required this.currentUserProfile}): super(key: key);
+  const FriendsView({Key? key, required this.currentUserProfile}): super(key: key);
 
   static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
     providers: [
@@ -24,18 +24,18 @@ class FollowersView extends StatefulWidget {
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
-    child: FollowersView(currentUserProfile: currentUserProfile),
+    child: FriendsView(currentUserProfile: currentUserProfile),
   );
 
 
   @override
   State createState() {
-    return FollowersViewState();
+    return FriendsViewState();
   }
 
 }
 
-class FollowersViewState extends State<FollowersView> {
+class FriendsViewState extends State<FriendsView> {
 
   late final FollowersBloc _followersBloc;
   late final AuthenticationBloc _authenticationBloc;
@@ -50,7 +50,7 @@ class FollowersViewState extends State<FollowersView> {
     final authState = _authenticationBloc.state;
     if (authState is AuthSuccessUserUpdateState) {
       _followersBloc.add(
-          FetchFollowersRequested(
+          FetchFriendsRequested(
               userId: authState.authenticatedUser.user.id,
               limit: ConstantUtils.DEFAULT_LIMIT,
               offset: ConstantUtils.DEFAULT_OFFSET
@@ -68,7 +68,7 @@ class FollowersViewState extends State<FollowersView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocBuilder<FollowersBloc, FollowersState>(builder: (context, state) {
-        if (state is FollowersDataLoaded) {
+        if (state is FriendsDataLoaded) {
           return state.userProfiles.isEmpty ? const Center(child: Text('No Results'))
               : _generateUserResultsList(state);
         } else {
@@ -80,7 +80,7 @@ class FollowersViewState extends State<FollowersView> {
     );
   }
 
-  _generateUserResultsList(FollowersDataLoaded state) {
+  _generateUserResultsList(FriendsDataLoaded state) {
     return RefreshIndicator(
         onRefresh: _pullRefresh,
         child: UserResultsList(
@@ -97,9 +97,9 @@ class FollowersViewState extends State<FollowersView> {
     final currentFollowingState = _followersBloc.state;
 
     if (currentAuthState is AuthSuccessUserUpdateState &&
-        currentFollowingState is FollowersDataLoaded) {
+        currentFollowingState is FriendsDataLoaded) {
       _followersBloc.add(
-          FetchFollowersRequested(
+          FetchFriendsRequested(
               userId: currentAuthState.authenticatedUser.user.id,
               limit: ConstantUtils.DEFAULT_LIMIT,
               offset: currentFollowingState.userProfiles.length
@@ -112,7 +112,7 @@ class FollowersViewState extends State<FollowersView> {
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
       _followersBloc.add(
-          ReFetchFollowersRequested(
+          ReFetchFriendsRequested(
               userId: currentAuthState.authenticatedUser.user.id,
               limit: ConstantUtils.DEFAULT_LIMIT,
               offset: ConstantUtils.DEFAULT_OFFSET

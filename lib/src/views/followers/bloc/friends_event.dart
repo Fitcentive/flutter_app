@@ -1,15 +1,15 @@
 import 'package:equatable/equatable.dart';
 
-abstract class FollowingEvent extends Equatable {
-  const FollowingEvent();
+abstract class FriendsEvent extends Equatable {
+  const FriendsEvent();
 }
 
-class ReFetchFollowingUsersRequested extends FollowingEvent {
+class FetchFriendsRequested extends FriendsEvent {
   final String userId;
   final int limit;
   final int offset;
 
-  const ReFetchFollowingUsersRequested({
+  const FetchFriendsRequested({
     required this.userId,
     required this.limit,
     required this.offset,
@@ -19,12 +19,12 @@ class ReFetchFollowingUsersRequested extends FollowingEvent {
   List<Object> get props => [userId, limit, offset];
 }
 
-class FetchFollowingUsersRequested extends FollowingEvent {
+class ReFetchFriendsRequested extends FriendsEvent {
   final String userId;
   final int limit;
   final int offset;
 
-  const FetchFollowingUsersRequested({
+  const ReFetchFriendsRequested({
     required this.userId,
     required this.limit,
     required this.offset,

@@ -5,7 +5,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
-import 'package:flutter_app/src/models/user_follow_status.dart';
+import 'package:flutter_app/src/models/user_friend_status.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 
 import 'package:http/http.dart' as http;
@@ -13,8 +13,8 @@ import 'package:http/http.dart' as http;
 class SocialMediaRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/social";
 
-  Future<void> requestToFollowUser(String currentUserId, String targetUserId, String accessToken) async {
-    final response = await http.post(Uri.parse("$BASE_URL/user/$currentUserId/follow/$targetUserId/request"),
+  Future<void> requestToFriendUser(String currentUserId, String targetUserId, String accessToken) async {
+    final response = await http.post(Uri.parse("$BASE_URL/user/$currentUserId/friend/$targetUserId/request"),
         headers: {"Authorization": "Bearer $accessToken"});
 
     if (response.statusCode == HttpStatus.accepted) {
@@ -25,14 +25,14 @@ class SocialMediaRepository {
     }
   }
 
-  Future<UserFollowStatus> getUserFollowStatus(
+  Future<UserFriendStatus> getUserFriendStatus(
       String requestingUserId, String targetUserId, String accessToken) async {
-    final response = await http.get(Uri.parse("$BASE_URL/user/$requestingUserId/follow-status/$targetUserId"),
+    final response = await http.get(Uri.parse("$BASE_URL/user/$requestingUserId/friend-status/$targetUserId"),
         headers: {"Authorization": "Bearer $accessToken"});
 
     if (response.statusCode == HttpStatus.ok) {
       final jsonResponse = jsonDecode(response.body);
-      final userFollowStatus = UserFollowStatus.fromJson(jsonResponse);
+      final userFollowStatus = UserFriendStatus.fromJson(jsonResponse);
       return userFollowStatus;
     } else {
       throw Exception(
@@ -40,13 +40,13 @@ class SocialMediaRepository {
     }
   }
 
-  Future<void> applyUserDecisionToFollowRequest(
+  Future<void> applyUserDecisionToFriendRequest(
       String requestingUserId, String targetUserId, bool isRequestApproved, String accessToken) async {
     final jsonBody = {
       'isRequestApproved': isRequestApproved,
     };
     final response = await http.post(
-        Uri.parse("$BASE_URL/user/$targetUserId/follow/$requestingUserId"),
+        Uri.parse("$BASE_URL/user/$targetUserId/friend/$requestingUserId"),
         headers: {
           'Content-type': 'application/json',
           "Authorization": "Bearer $accessToken",
@@ -61,9 +61,9 @@ class SocialMediaRepository {
     }
   }
 
-  Future<List<PublicUserProfile>> fetchUserFollowers(String userId, String accessToken, int limit, int offset) async {
+  Future<List<PublicUserProfile>> fetchUserFriends(String userId, String accessToken, int limit, int offset) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/user/$userId/followers?skip=$offset&limit=$limit"),
+      Uri.parse("$BASE_URL/user/$userId/friends?skip=$offset&limit=$limit"),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken'
@@ -80,45 +80,9 @@ class SocialMediaRepository {
     }
   }
 
-  Future<List<PublicUserProfile>> fetchUserFollowing(String userId, String accessToken, int limit, int offset) async {
-    final response = await http.get(
-      Uri.parse("$BASE_URL/user/$userId/following?skip=$offset&limit=$limit"),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken'
-      },
-    );
-
-    if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
-      final publicUserProfiles = jsonResponse.map((e) => PublicUserProfile.fromJson(e)).toList();
-      return publicUserProfiles;
-    } else {
-      throw Exception(
-          "fetchUserFollowing: Received bad response with status: ${response.statusCode} and body ${response.body}");
-    }
-  }
-
-  Future<void> unfollowUser(String currentUserId, String targetUserId, String accessToken) async {
+  Future<void> unfriendUser(String currentUserId, String targetUserId, String accessToken) async {
     final response = await http.post(
-      Uri.parse("$BASE_URL/user/$currentUserId/unfollow/$targetUserId"),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken'
-      },
-    );
-
-    if (response.statusCode == HttpStatus.ok) {
-      return;
-    } else {
-      throw Exception(
-          "fetchUserFollowing: Received bad response with status: ${response.statusCode} and body ${response.body}");
-    }
-  }
-
-  Future<void> removeFollowingUser(String currentUserId, String followingUserId, String accessToken) async {
-    final response = await http.post(
-      Uri.parse("$BASE_URL/user/$currentUserId/follow/$followingUserId/remove"),
+      Uri.parse("$BASE_URL/user/$currentUserId/unfriend/$targetUserId"),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken'

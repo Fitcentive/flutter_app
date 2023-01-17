@@ -8,7 +8,7 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/notification/push_notification_metadata.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/chat_message_push_notification_metadata.dart';
-import 'package:flutter_app/src/models/push/user_follow_request_push_notification_metadata.dart';
+import 'package:flutter_app/src/models/push/user_friend_request_push_notification_metadata.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
@@ -60,7 +60,7 @@ class PushNotificationSettings {
       UserRepository userRepository,
       String payload
   ) async {
-    final notificationMetadata = UserFollowRequestPushNotificationMetadata.fromJson(jsonDecode(payload));
+    final notificationMetadata = UserFriendRequestPushNotificationMetadata.fromJson(jsonDecode(payload));
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final userProfiles = await userRepository.getPublicUserProfiles(
         [notificationMetadata.requestingUserId, notificationMetadata.targetUserId],
@@ -249,7 +249,7 @@ class PushNotificationSettings {
           break;
 
         case "user_follow_request":
-          final notificationMetadata = UserFollowRequestPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
+          final notificationMetadata = UserFriendRequestPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
           if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
             _handleShowingNotification(notification, notificationMetadata.requestingUserPhotoUrl, jsonPayload);
           }

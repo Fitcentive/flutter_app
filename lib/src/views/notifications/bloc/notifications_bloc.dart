@@ -36,7 +36,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   void _notificationInteractedWith(NotificationInteractedWith event, Emitter<NotificationsState> emit) async {
-    if (event.notification.isInteractive && event.notification.notificationType == "UserFollowRequest") {
+    if (event.notification.isInteractive && event.notification.notificationType == "UserFriendRequest") {
       final currentState = state;
       if (currentState is NotificationsLoaded) {
         final newNotifications = currentState.notifications.map((n) {
@@ -72,7 +72,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       }
 
       final accessToken = await secureStorage.read(key: event.targetUser.authTokens.accessTokenSecureStorageKey);
-      await socialMediaRepository.applyUserDecisionToFollowRequest(
+      await socialMediaRepository.applyUserDecisionToFriendRequest(
           event.requestingUserId,
           event.targetUser.user.id,
           event.isApproved,
@@ -161,8 +161,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   List<String> _getRelevantUserIdsFromNotifications(List<AppNotification> notifications) {
-    final userFollowRequestNotificationUsers = notifications
-        .where((element) => element.notificationType == "UserFollowRequest")
+    final userFriendRequestNotificationUsers = notifications
+        .where((element) => element.notificationType == "UserFriendRequest")
         .map((e) => e.data['requestingUser'] as String)
         .toSet()
         .toList();
@@ -199,7 +199,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .toList();
 
     final userIdList = [
-      ...userFollowRequestNotificationUsers,
+      ...userFriendRequestNotificationUsers,
       ...userCommentedOnPostNotificationUsers,
       ...userLikedPostNotificationUsers,
       ...postCreatorUsers,

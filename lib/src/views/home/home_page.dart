@@ -19,8 +19,7 @@ import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
 import 'package:flutter_app/src/views/discover_home/discover_home_view.dart';
 import 'package:flutter_app/src/views/newsfeed/newsfeed_view.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
-import 'package:flutter_app/src/views/followers/followers_view.dart';
-import 'package:flutter_app/src/views/following/following_view.dart';
+import 'package:flutter_app/src/views/followers/friends_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
@@ -69,8 +68,7 @@ class HomePageState extends State<HomePage> {
   static const String notifications = 'Notifications';
   static const String discover = 'Discover';
   static const String search = 'Search';
-  static const String followers = 'Followers';
-  static const String following = 'Following';
+  static const String friends = 'Friends';
   static const String newsFeed = 'News Feed';
   static const String chat = 'Chat';
   static const String logout = 'Logout';
@@ -448,8 +446,7 @@ class HomePageState extends State<HomePage> {
         _generateListTile(notifications),
         _generateListTile(search),
         _generateListTile(discover),
-        _generateListTile(followers),
-        _generateListTile(following),
+        _generateListTile(friends),
         _generateListTile(newsFeed),
         _generateListTile(chat),
       ],
@@ -485,10 +482,8 @@ class HomePageState extends State<HomePage> {
           return NotificationsView.withBloc(publicUserProfile);
         case "Search":
           return SearchView.withBloc(publicUserProfile);
-        case "Followers":
-          return FollowersView.withBloc(publicUserProfile);
-        case "Following":
-          return FollowingUsersView.withBloc(publicUserProfile);
+        case "Friends":
+          return FriendsView.withBloc(publicUserProfile);
         case "News Feed":
           return NewsFeedView.withBloc(publicUserProfile);
         case "Chat":

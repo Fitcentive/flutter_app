@@ -6,29 +6,29 @@ abstract class FollowersState extends Equatable {
   const FollowersState();
 }
 
-class FollowersStateInitial extends FollowersState {
-  const FollowersStateInitial();
+class FriendsStateInitial extends FollowersState {
+  const FriendsStateInitial();
 
   @override
   List<Object> get props => [];
 }
 
-class FollowersDataLoading extends FollowersState {
+class FriendsDataLoading extends FollowersState {
 
   final String userId;
 
-  const FollowersDataLoading({required this.userId});
+  const FriendsDataLoading({required this.userId});
 
   @override
   List<Object> get props => [userId];
 }
 
-class FollowersDataLoaded extends FollowersState {
+class FriendsDataLoaded extends FollowersState {
   final String userId;
   final List<PublicUserProfile> userProfiles;
   final bool doesNextPageExist;
 
-  const FollowersDataLoaded({
+  const FriendsDataLoaded({
     required this.userId,
     required this.userProfiles,
     required this.doesNextPageExist
