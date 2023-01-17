@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: web
+  name: flutter-web-app
+  labels:
+    app: flutter-web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flutter-web-app
+  template:
+    metadata:
+      labels:
+        app: flutter-web-app
+    spec:
+      containers:
+        - name: flutter-web-app
+          image: gcr.io/fitcentive-dev/flutter-web-app:1.0
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 300Mi
+              cpu: "0.3"
+            limits:
+              memory: 500Mi
+              cpu: "0.5"
+          ports:
+            - name: http-port
+              containerPort: 80
+

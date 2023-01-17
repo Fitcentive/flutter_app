@@ -50,6 +50,19 @@
 <body>
 
   <script>
+    // Source: https://codingwithtashi.medium.com/flutter-web-push-notification-with-firebase-cloud-messaging-adc788dc621d
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLKAtbshtA2-0_Ki_YQKsfUhUAGg0jmMk",
+      authDomain: "fitcentive-dev.firebaseapp.com",
+      projectId: "fitcentive-dev",
+      storageBucket: "fitcentive-dev.appspot.com",
+      messagingSenderId: "823597371065",
+      appId: "1:823597371065:web:aa8d8365aefaf5c1671568"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("/firebase-messaging-sw.js");

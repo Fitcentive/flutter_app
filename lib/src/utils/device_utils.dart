@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class DeviceUtils {
   static bool isMobileDevice() {
-    if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
+    if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android)) {
       return true;
     }
     return false;
