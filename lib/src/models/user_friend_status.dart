@@ -28,9 +28,9 @@ class UserFriendStatus extends Equatable {
       this.hasOtherUserRequestedToFriendCurrentUser
   );
 
-  factory UserFriendStatus.fromJson(Map<String, dynamic> json) => _$UserFollowStatusFromJson(json);
+  factory UserFriendStatus.fromJson(Map<String, dynamic> json) => _$UserFriendStatusFromJson(json);
 
-  Map<String, dynamic> toJson() => _$UserFollowStatusToJson(this);
+  Map<String, dynamic> toJson() => _$UserFriendStatusToJson(this);
 
   @override
   List<Object?> get props => [

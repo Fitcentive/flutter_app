@@ -6,7 +6,7 @@ part of 'user_friend_status.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-UserFriendStatus _$UserFollowStatusFromJson(Map<String, dynamic> json) {
+UserFriendStatus _$UserFriendStatusFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
     requiredKeys: const [
@@ -26,7 +26,7 @@ UserFriendStatus _$UserFollowStatusFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$UserFollowStatusToJson(UserFriendStatus instance) =>
+Map<String, dynamic> _$UserFriendStatusToJson(UserFriendStatus instance) =>
     <String, dynamic>{
       'currentUserId': instance.currentUserId,
       'otherUserId': instance.otherUserId,

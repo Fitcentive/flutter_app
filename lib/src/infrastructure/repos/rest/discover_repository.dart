@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter_app/src/models/discover/discover_recommendation.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
+import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -222,6 +223,47 @@ class DiscoverRepository {
     } else {
       throw Exception(
           "upsertUserPersonalPreferences: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<UserGymPreferences> upsertUserGymPreferences(String userId, UserGymPreferencesPost prefs, String accessToken) async {
+    final jsonBody = {
+      'userId': prefs.userId,
+      'gymLocationId': prefs.gymLocationId,
+      'fsqId': prefs.fsqId,
+      'gymName': prefs.gymName,
+      'gymWebsite': prefs.gymWebsite,
+    };
+    final response = await http.post(Uri.parse("$BASE_URL/user/$userId/preferences/gym"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: json.encode(jsonBody)
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final prefs = UserGymPreferences.fromJson(jsonResponse);
+      return prefs;
+    } else {
+      throw Exception(
+          "upsertUserGymPreferences: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<UserGymPreferences?> getUserGymPreferences(String userId, String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/preferences/gym"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final userGymPreferences = UserGymPreferences.fromJson(jsonResponse);
+      return userGymPreferences;
+    } else if (response.statusCode == HttpStatus.notFound) {
+      return null;
+    } else {
+      throw Exception(
+          "getUserGymPreferences: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 }
