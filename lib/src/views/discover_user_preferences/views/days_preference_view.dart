@@ -146,6 +146,8 @@ class DaysPreferencesViewState extends State<DaysPreferencesView> {
         minimumAge: currentState.minimumAge,
         maximumAge: currentState.maximumAge,
         hoursPerWeek: newHoursPerWeek,
+        hasGym: currentState.hasGym,
+        gymLocationId: currentState.gymLocationId,
       ));
       setState(() {
         selectedDays = newDays;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
@@ -13,8 +14,11 @@ import 'package:flutter_app/src/views/discover_user_preferences/views/body_type_
 import 'package:flutter_app/src/views/discover_user_preferences/views/days_preference_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/views/gender_preferences_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/views/goals_preferences_view.dart';
+import 'package:flutter_app/src/views/discover_user_preferences/views/gym_locations_view.dart';
+import 'package:flutter_app/src/views/discover_user_preferences/views/gym_preferences_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/views/location_preference_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/views/transport_preference_view.dart';
+import 'package:flutter_app/src/views/shared_components/search_locations/bloc/search_locations_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -26,6 +30,7 @@ class DiscoverUserPreferencesView extends StatefulWidget {
   final UserFitnessPreferences? fitnessPreferences;
   final UserPersonalPreferences? personalPreferences;
 
+  // todo - add user gym prefs over here too to fetch from persisted API data
   const DiscoverUserPreferencesView({
     Key? key,
     required this.userProfile,
@@ -38,7 +43,8 @@ class DiscoverUserPreferencesView extends StatefulWidget {
       required PublicUserProfile userProfile,
       required UserDiscoveryPreferences? discoveryPreferences,
       required UserFitnessPreferences? fitnessPreferences,
-      required UserPersonalPreferences? personalPreferences}) {
+      required UserPersonalPreferences? personalPreferences
+  }) {
 
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -141,7 +147,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
     if (currentState is UserDiscoverPreferencesModified) {
       final currentPage = _pageController.page;
       if (currentPage != null) {
-        _goToPreviousPageOrNothing(currentPage.toInt());
+        _goToPreviousPageOrNothing(currentPage.toInt(), currentState);
       }
     }
     return null;
@@ -154,7 +160,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
       if (currentPage != null) {
         if (_isPageDataValid(currentPage.toInt(), currentState)) {
           _savePageData(currentPage.toInt(), currentState);
-          _moveToNextPageOrPop(currentPage.toInt());
+          _moveToNextPageOrPop(currentPage.toInt(), currentState);
         }
         else {
           SnackbarUtils.showSnackBar(context, "Please complete the missing fields!");
@@ -164,23 +170,57 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
     return null;
   }
 
-  void _goToPreviousPageOrNothing(int currentPage) {
+  void _goToPreviousPageOrNothing(int currentPage, UserDiscoverPreferencesModified state) {
     if (currentPage != 0) {
-      // Move to previous page if not at first page
-      _pageController.animateToPage(currentPage - 1,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut
-      );
+      if (currentPage == 3) {
+        // Go directly to page1 if page2 isnt needed
+        if (state.hasGym!) {
+          _pageController.animateToPage(2,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut
+          );
+        }
+        else {
+          _pageController.animateToPage(1,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut
+          );
+        }
+      }
+      else {
+        // Move to previous page if not at first page
+        _pageController.animateToPage(currentPage - 1,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut
+        );
+      }
     }
   }
 
-  void _moveToNextPageOrPop(int currentPage) {
-    if (currentPage < 6) {
-      // Move to next page if not at last page
-      _pageController.animateToPage(currentPage + 1,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeIn
-      );
+  void _moveToNextPageOrPop(int currentPage, UserDiscoverPreferencesModified state) {
+    if (currentPage < 8) {
+      // If page == 1, go to page == 3 instead of 2 if user has no gym selected
+      if (currentPage == 1) {
+        if (state.hasGym!) {
+          _pageController.animateToPage(2,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeIn
+          );
+        }
+        else {
+          _pageController.animateToPage(3,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeIn
+          );
+        }
+      }
+      else {
+        // Move to next page if not at last page
+        _pageController.animateToPage(currentPage + 1,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeIn
+        );
+      }
     }
     else {
       // Go back to previous screen
@@ -202,13 +242,30 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
         return;
       case 1:
         _discoverUserPreferencesBloc.add(
+            UserDiscoverGymPreferencesChanged(
+                userProfile: state.userProfile,
+                hasGym: state.hasGym!,
+            )
+        );
+        return;
+      case 2:
+        _discoverUserPreferencesBloc.add(
+            UserDiscoverGymPreferencesChanged(
+              userProfile: state.userProfile,
+              hasGym: state.hasGym!,
+              gymLocationId: state.gymLocationId!
+            )
+        );
+        return;
+      case 3:
+        _discoverUserPreferencesBloc.add(
             UserDiscoverPreferredTransportModePreferencesChanged(
                 userProfile: state.userProfile,
                 preferredTransportMode: state.preferredTransportMode!,
             )
         );
         return;
-      case 2:
+      case 4:
         _discoverUserPreferencesBloc.add(
             UserDiscoverActivityPreferencesChanged(
               userProfile: state.userProfile,
@@ -216,7 +273,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
             )
         );
         return;
-      case 3:
+      case 5:
         _discoverUserPreferencesBloc.add(
             UserDiscoverFitnessGoalsPreferencesChanged(
               userProfile: state.userProfile,
@@ -224,7 +281,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
             )
         );
         return;
-      case 4:
+      case 6:
         _discoverUserPreferencesBloc.add(
             UserDiscoverBodyTypePreferencesChanged(
               userProfile: state.userProfile,
@@ -232,7 +289,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
             )
         );
         return;
-      case 5:
+      case 7:
         _discoverUserPreferencesBloc.add(
             UserDiscoverGenderPreferencesChanged(
               userProfile: state.userProfile,
@@ -242,7 +299,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
             )
         );
         return;
-      case 6:
+      case 8:
         _discoverUserPreferencesBloc.add(
             UserDiscoverDayPreferencesChanged(
               userProfile: state.userProfile,
@@ -262,22 +319,28 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
         // Validate location data
         return state.locationRadius != null && state.locationCenter != null;
       case 1:
+        // Validate gym preference data
+        return state.hasGym != null;
+      case 2:
+      // Validate location data
+        return state.hasGym != null && state.gymLocationId != null;
+      case 3:
         // Validate preferredTransportData
         return state.preferredTransportMode != null;
-      case 2:
+      case 4:
         // Validate activities
         return state.activitiesInterestedIn != null && state.activitiesInterestedIn!.isNotEmpty;
-      case 3:
+      case 5:
         // Validate fitnessGoals
         return state.fitnessGoals != null && state.fitnessGoals!.isNotEmpty;
-      case 4:
+      case 6:
         // Validate body types
         return state.desiredBodyTypes != null && state.desiredBodyTypes!.isNotEmpty;
-      case 5:
+      case 7:
         // Validate personal prefs
         return state.gendersInterestedIn != null && state.gendersInterestedIn!.isNotEmpty
             && state.minimumAge != null && state.maximumAge != null;
-      case 6:
+      case 8:
         // Validate personal prefs
         return state.preferredDays != null && state.preferredDays!.isNotEmpty && state.hoursPerWeek != null;
       default:
@@ -326,6 +389,12 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
                 userProfile: state.userProfile,
                 locationCenter: state.locationCenter,
                 locationRadius: state.locationRadius,
+            ),
+            GymPreferenceView(
+              userProfile: state.userProfile,
+            ),
+            GymLocationsView(
+              userProfile: state.userProfile,
             ),
             TransportPreferenceView(
                 userProfile: state.userProfile,

@@ -9,6 +9,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/authentication_reposit
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -83,6 +84,7 @@ class App extends StatelessWidget {
         RepositoryProvider<NotificationRepository>(create: (context) => NotificationRepository()),
         RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage()),
         RepositoryProvider<AuthenticatedUserStreamRepository>(create: (context) => AuthenticatedUserStreamRepository()),
+        RepositoryProvider<MeetupRepository>(create: (context) => MeetupRepository()),
       ],
       child: MultiBlocProvider(
         providers: [

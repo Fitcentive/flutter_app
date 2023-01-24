@@ -43,6 +43,8 @@ class UserDiscoverPreferencesChanged extends DiscoverUserPreferencesEvent {
   final LatLng? locationCenter;
   final int? locationRadius;
   final String? preferredTransportMode;
+  final bool? hasGym;
+  final String? gymLocationId;
   final List<String>? activitiesInterestedIn;
   final List<String>? fitnessGoals;
   final List<String>? desiredBodyTypes;
@@ -57,6 +59,8 @@ class UserDiscoverPreferencesChanged extends DiscoverUserPreferencesEvent {
     this.locationCenter,
     this.locationRadius,
     this.preferredTransportMode,
+    this.hasGym,
+    this.gymLocationId,
     this.activitiesInterestedIn,
     this.fitnessGoals,
     this.desiredBodyTypes,
@@ -80,6 +84,8 @@ class UserDiscoverPreferencesChanged extends DiscoverUserPreferencesEvent {
     minimumAge,
     maximumAge,
     hoursPerWeek,
+    hasGym,
+    gymLocationId,
   ];
 }
 
@@ -211,5 +217,26 @@ class UserDiscoverDayPreferencesChanged extends DiscoverUserPreferencesEvent {
     userProfile,
     preferredDays,
     hoursPerWeek
+  ];
+}
+
+
+class UserDiscoverGymPreferencesChanged extends DiscoverUserPreferencesEvent {
+  final PublicUserProfile userProfile;
+
+  final String? gymLocationId;
+  final bool hasGym;
+
+  const UserDiscoverGymPreferencesChanged({
+    required this.userProfile,
+    required this.hasGym,
+    this.gymLocationId,
+  });
+
+  @override
+  List<Object?> get props => [
+    userProfile,
+    gymLocationId,
+    hasGym,
   ];
 }

@@ -98,6 +98,8 @@ class ActivityPreferencesViewState extends State<ActivityPreferencesView> {
         minimumAge: currentState.minimumAge,
         maximumAge: currentState.maximumAge,
         hoursPerWeek: currentState.hoursPerWeek,
+        hasGym: currentState.hasGym,
+        gymLocationId: currentState.gymLocationId,
       ));
       setState(() {
         selectedActivities = newSelectedActivities;

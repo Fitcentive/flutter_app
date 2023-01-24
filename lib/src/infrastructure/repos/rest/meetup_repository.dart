@@ -7,18 +7,21 @@ import 'package:flutter_app/src/models/metups/meetup_location.dart';
 import 'package:flutter_app/src/models/spatial/coordinates.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 class MeetupRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/meetup";
 
+  final logger = Logger("MeetupRepository");
+
   Future<List<FourSquareResult>> getGymsAroundLocation(
+      String query,
       Coordinates userCoordinates,
       int userRadiusInMetres,
-      String userId,
       String accessToken
   ) async {
     final response = await http.post(
-      Uri.parse("$BASE_URL/locations?query=gym"),
+      Uri.parse("$BASE_URL/locations?query=$query"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: json.encode({
           "userLocation": {
@@ -33,7 +36,9 @@ class MeetupRepository {
 
     if (response.statusCode == HttpStatus.ok) {
       final List<dynamic> jsonResponse = jsonDecode(response.body);
-      final List<FourSquareResult> results = jsonResponse.map((e) => FourSquareResult.fromJson(e)).toList();
+      final List<FourSquareResult> results = jsonResponse.map((e) {
+        return FourSquareResult.fromJson(e);
+      }).toList();
       return results;
     }
     else {

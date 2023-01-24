@@ -28,6 +28,8 @@ class UserDiscoverPreferencesModified extends DiscoverUserPreferencesState {
   final int? minimumAge;
   final int? maximumAge;
   final double? hoursPerWeek;
+  final bool? hasGym;
+  final String? gymLocationId;
 
 
   const UserDiscoverPreferencesModified({
@@ -35,6 +37,8 @@ class UserDiscoverPreferencesModified extends DiscoverUserPreferencesState {
     this.locationCenter,
     this.locationRadius,
     this.preferredTransportMode,
+    this.hasGym,
+    this.gymLocationId,
     this.activitiesInterestedIn,
     this.fitnessGoals,
     this.desiredBodyTypes,
@@ -58,6 +62,8 @@ class UserDiscoverPreferencesModified extends DiscoverUserPreferencesState {
     minimumAge,
     maximumAge,
     hoursPerWeek,
+    hasGym,
+    gymLocationId,
   ];
 }
 

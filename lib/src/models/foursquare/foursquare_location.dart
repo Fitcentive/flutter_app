@@ -5,11 +5,11 @@ part 'foursquare_location.g.dart';
 
 @JsonSerializable()
 class FourSquareLocation extends Equatable {
-  final String address;
-  final String country;
-  final String formattedAddress;
-  final String locality;
-  final String region;
+  final String? address;
+  final String? country;
+  final String? formattedAddress;
+  final String? locality;
+  final String? region;
 
   const FourSquareLocation(this.address, this.country, this.formattedAddress, this.locality, this.region);
 

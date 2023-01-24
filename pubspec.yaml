@@ -117,6 +117,7 @@ flutter:
     - assets/images/hybrid_body_type.png
     - assets/images/bulky_body_type.png
     - assets/images/deleted_user_avatar.png
+    - assets/icons/gym_location_icon.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

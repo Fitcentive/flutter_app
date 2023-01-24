@@ -8,11 +8,17 @@ part of 'foursquare_hours.dart';
 
 FourSquareHours _$FourSquareHoursFromJson(Map<String, dynamic> json) =>
     FourSquareHours(
-      json['display'] as String,
-      json['isLocalHoliday'] as bool,
-      json['openNow'] as bool,
-      FourSquareRegularHours.fromJson(json['regular'] as Map<String, dynamic>),
-      FourSquareRegularHours.fromJson(json['seasonal'] as Map<String, dynamic>),
+      json['display'] as String?,
+      json['isLocalHoliday'] as bool?,
+      json['openNow'] as bool?,
+      (json['regular'] as List<dynamic>?)
+          ?.map(
+              (e) => FourSquareRegularHours.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      (json['seasonal'] as List<dynamic>?)
+          ?.map((e) =>
+              FourSquareSeasonalHours.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$FourSquareHoursToJson(FourSquareHours instance) =>

@@ -98,6 +98,8 @@ class GoalsPreferencesViewState extends State<GoalsPreferencesView> {
         minimumAge: currentState.minimumAge,
         maximumAge: currentState.maximumAge,
         hoursPerWeek: currentState.hoursPerWeek,
+        hasGym: currentState.hasGym,
+        gymLocationId: currentState.gymLocationId,
       ));
       setState(() {
         selectedGoals = newGoals;

@@ -5,9 +5,9 @@ part 'foursquare_regular_hours.g.dart';
 
 @JsonSerializable()
 class FourSquareRegularHours extends Equatable {
-  final String close;
-  final String day;
-  final String open;
+  final String? close;
+  final String? day;
+  final String? open;
 
   const FourSquareRegularHours(this.close, this.day, this.open);
 

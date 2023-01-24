@@ -27,6 +27,33 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
     on<UserDiscoverBodyTypePreferencesChanged>(_userDiscoverBodyTypePreferencesChanged);
     on<UserDiscoverGenderPreferencesChanged>(_userDiscoverGenderPreferencesChanged);
     on<UserDiscoverDayPreferencesChanged>(_userDiscoverDayPreferencesChanged);
+    on<UserDiscoverGymPreferencesChanged>(_userDiscoverGymPreferencesChanged);
+  }
+
+  void _userDiscoverGymPreferencesChanged(
+      UserDiscoverGymPreferencesChanged event,
+      Emitter<DiscoverUserPreferencesState> emit
+      ) async {
+    final currentState = state;
+    if (currentState is UserDiscoverPreferencesModified) {
+      emit(UserDiscoverPreferencesModified(
+          userProfile: event.userProfile,
+          locationCenter: currentState.locationCenter,
+          locationRadius: currentState.locationRadius,
+          preferredTransportMode: currentState.preferredTransportMode,
+          activitiesInterestedIn: currentState.activitiesInterestedIn,
+          fitnessGoals: currentState.fitnessGoals,
+          desiredBodyTypes: currentState.desiredBodyTypes,
+          gendersInterestedIn: currentState.gendersInterestedIn,
+          preferredDays: currentState.preferredDays,
+          minimumAge: currentState.minimumAge,
+          maximumAge: currentState.maximumAge,
+          hoursPerWeek: currentState.hoursPerWeek,
+          hasGym: event.hasGym,
+          gymLocationId: event.gymLocationId
+      ));
+    }
+
   }
 
   void _userDiscoverPreferencesChanged(
@@ -46,7 +73,9 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
         preferredDays: event.preferredDays,
         minimumAge: event.minimumAge,
         maximumAge: event.maximumAge,
-        hoursPerWeek: event.hoursPerWeek
+        hoursPerWeek: event.hoursPerWeek,
+        hasGym: event.hasGym,
+        gymLocationId: event.gymLocationId
     ));
   }
 
@@ -92,7 +121,9 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           preferredDays: currentState.preferredDays,
           minimumAge: currentState.minimumAge,
           maximumAge: currentState.maximumAge,
-          hoursPerWeek: currentState.hoursPerWeek
+          hoursPerWeek: currentState.hoursPerWeek,
+          hasGym: currentState.hasGym,
+          gymLocationId: currentState.gymLocationId
       ));
     }
   }
@@ -129,7 +160,9 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           preferredDays: currentState.preferredDays,
           minimumAge: currentState.minimumAge,
           maximumAge: currentState.maximumAge,
-          hoursPerWeek: currentState.hoursPerWeek
+          hoursPerWeek: currentState.hoursPerWeek,
+          hasGym: currentState.hasGym,
+          gymLocationId: currentState.gymLocationId
       ));
     }
   }
@@ -153,7 +186,9 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           preferredDays: currentState.preferredDays,
           minimumAge: currentState.minimumAge,
           maximumAge: currentState.maximumAge,
-          hoursPerWeek: currentState.hoursPerWeek
+          hoursPerWeek: currentState.hoursPerWeek,
+          hasGym: currentState.hasGym,
+          gymLocationId: currentState.gymLocationId
       ));
     }
   }
@@ -177,7 +212,9 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           preferredDays: currentState.preferredDays,
           minimumAge: currentState.minimumAge,
           maximumAge: currentState.maximumAge,
-          hoursPerWeek: currentState.hoursPerWeek
+          hoursPerWeek: currentState.hoursPerWeek,
+          hasGym: currentState.hasGym,
+          gymLocationId: currentState.gymLocationId
       ));
     }
   }
@@ -214,7 +251,9 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           preferredDays: currentState.preferredDays,
           minimumAge: currentState.minimumAge,
           maximumAge: currentState.maximumAge,
-          hoursPerWeek: currentState.hoursPerWeek
+          hoursPerWeek: currentState.hoursPerWeek,
+          hasGym: currentState.hasGym,
+          gymLocationId: currentState.gymLocationId
       ));
     }
   }
@@ -238,7 +277,9 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           gendersInterestedIn: event.gendersInterestedIn,
           minimumAge: event.minimumAge,
           maximumAge: event.maximumAge,
-          hoursPerWeek: currentState.hoursPerWeek
+          hoursPerWeek: currentState.hoursPerWeek,
+          hasGym: currentState.hasGym,
+          gymLocationId: currentState.gymLocationId
       ));
     }
   }
@@ -278,6 +319,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           maximumAge: currentState.maximumAge,
           preferredDays: event.preferredDays,
           hoursPerWeek: event.hoursPerWeek,
+          hasGym: currentState.hasGym,
+          gymLocationId: currentState.gymLocationId
       ));
     }
   }

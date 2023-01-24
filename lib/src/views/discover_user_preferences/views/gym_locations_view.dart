@@ -5,46 +5,43 @@ import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_us
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
 import 'package:flutter_app/src/views/shared_components/provide_location_view.dart';
+import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class LocationPreferenceView extends StatefulWidget {
+class GymLocationsView extends StatefulWidget {
   final PublicUserProfile userProfile;
-  final LatLng? locationCenter;
-  final int? locationRadius;
 
-  const LocationPreferenceView({
+  const GymLocationsView({
     Key? key,
     required this.userProfile,
-    required this.locationCenter,
-    required this.locationRadius,
   }): super(key: key);
 
   @override
   State createState() {
-    return LocationPreferenceViewState();
+    return GymLocationsViewState();
   }
 }
 
-class LocationPreferenceViewState extends State<LocationPreferenceView> {
+class GymLocationsViewState extends State<GymLocationsView> {
 
   late final DiscoverUserPreferencesBloc _discoverUserPreferencesBloc;
 
-  late double locationViewLatitude;
-  late double locationViewLongitude;
-  late int locationViewRadius;
+  late double latitude;
+  late double longitude;
+  late int radius;
 
   @override
   void initState() {
     super.initState();
     _discoverUserPreferencesBloc = BlocProvider.of<DiscoverUserPreferencesBloc>(context);
 
-    locationViewLatitude = widget.locationCenter?.latitude ?? widget.userProfile.locationCenter!.latitude;
-    locationViewLongitude = widget.locationCenter?.longitude ?? widget.userProfile.locationCenter!.longitude;
-    locationViewRadius = widget.locationRadius ?? widget.userProfile.locationRadius!;
-
-    // Add initial values to bloc state so that user can simply accept current location as discovery location
-    _updateBlocState(LatLng(locationViewLatitude, locationViewLongitude), locationViewRadius);
+    final currentState = _discoverUserPreferencesBloc.state;
+    if (currentState is UserDiscoverPreferencesModified) {
+      latitude = currentState.locationCenter!.latitude;
+      longitude = currentState.locationCenter!.longitude;
+      radius = currentState.locationRadius!;
+    }
   }
 
   @override
@@ -52,34 +49,23 @@ class LocationPreferenceViewState extends State<LocationPreferenceView> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Center(
-            child: FittedBox(
-                child: Container(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: const Text("Tell us where you would like to find fitness buddies", style: TextStyle(fontSize: 16),)
-                )
-            )
-        ),
-        WidgetUtils.spacer(10),
-        ProvideLocationView(
-          latitude: locationViewLatitude,
-          longitude: locationViewLongitude,
-          radius: locationViewRadius.toDouble(),
-          updateBlocState: _updateBlocState,
-          mapScreenHeightProportion: 0.6,
-          mapControlsHeightProportion: 0.2,
+        SearchLocationsView.withBloc(
+            latitude: latitude,
+            longitude: longitude,
+            radius: radius.toDouble(),
+            updateBlocCallback: () {}
         )
       ],
     );
   }
 
-  _updateBlocState(LatLng coordinates, int radius) {
+  _updateBlocState(String gymLocationId) {
     final currentState = _discoverUserPreferencesBloc.state;
     if (currentState is UserDiscoverPreferencesModified) {
       _discoverUserPreferencesBloc.add(UserDiscoverPreferencesChanged(
           userProfile: widget.userProfile,
-          locationCenter: coordinates,
-          locationRadius: radius,
+          locationCenter: currentState.locationCenter,
+          locationRadius: currentState.locationRadius,
           preferredTransportMode: currentState.preferredTransportMode,
           activitiesInterestedIn: currentState.activitiesInterestedIn,
           fitnessGoals: currentState.fitnessGoals,
@@ -90,7 +76,7 @@ class LocationPreferenceViewState extends State<LocationPreferenceView> {
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: currentState.gymLocationId,
+          gymLocationId: gymLocationId
       ));
     }
   }
