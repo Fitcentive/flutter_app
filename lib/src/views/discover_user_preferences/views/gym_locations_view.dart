@@ -46,16 +46,11 @@ class GymLocationsViewState extends State<GymLocationsView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SearchLocationsView.withBloc(
-            latitude: latitude,
-            longitude: longitude,
-            radius: radius.toDouble(),
-            updateBlocCallback: () {}
-        )
-      ],
+    return SearchLocationsView.withBloc(
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius.toDouble(),
+        updateBlocCallback: _updateBlocState
     );
   }
 

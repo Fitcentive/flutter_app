@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_app/src/models/foursquare/foursquare_result.dart';
+import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/metups/meetup_location.dart';
 import 'package:flutter_app/src/models/spatial/coordinates.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -14,7 +14,7 @@ class MeetupRepository {
 
   final logger = Logger("MeetupRepository");
 
-  Future<List<FourSquareResult>> getGymsAroundLocation(
+  Future<List<Location>> getGymsAroundLocation(
       String query,
       Coordinates userCoordinates,
       int userRadiusInMetres,
@@ -36,8 +36,8 @@ class MeetupRepository {
 
     if (response.statusCode == HttpStatus.ok) {
       final List<dynamic> jsonResponse = jsonDecode(response.body);
-      final List<FourSquareResult> results = jsonResponse.map((e) {
-        return FourSquareResult.fromJson(e);
+      final List<Location> results = jsonResponse.map((e) {
+        return Location.fromJson(e);
       }).toList();
       return results;
     }
