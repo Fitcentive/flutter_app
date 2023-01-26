@@ -20,13 +20,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-typedef UpdateSelectedGymLocationBlocCallback = void Function(String locationId);
+typedef UpdateSelectedGymLocationBlocCallback = void Function(String locationId, String fsqId);
 
 // todo - ensure this is also used when searching for gyms to schedule workouts with
 class SearchLocationsView extends StatefulWidget {
   final double latitude;
   final double longitude;
   final double radiusInMetres;
+
+  final String? initialSelectedLocationId;
+  final String? initialSelectedLocationFsqId;
 
   final UpdateSelectedGymLocationBlocCallback updateBlocState;
 
@@ -38,6 +41,8 @@ class SearchLocationsView extends StatefulWidget {
     required this.latitude,
     required this.longitude,
     required this.radiusInMetres,
+    required this.initialSelectedLocationId,
+    required this.initialSelectedLocationFsqId,
     required this.updateBlocState,
     this.mapScreenHeightProportion = 0.78,
     this.mapControlsHeightProportion = 0.2
@@ -47,6 +52,8 @@ class SearchLocationsView extends StatefulWidget {
     required double latitude,
     required double longitude,
     required double radius,
+    required String? initialSelectedLocationId,
+    required String? initialSelectedLocationFsqId,
     required UpdateSelectedGymLocationBlocCallback updateBlocCallback,
     Key? key,
     }) {
@@ -62,6 +69,8 @@ class SearchLocationsView extends StatefulWidget {
         latitude: latitude,
         longitude: longitude,
         radiusInMetres: radius,
+        initialSelectedLocationId: initialSelectedLocationId,
+        initialSelectedLocationFsqId: initialSelectedLocationFsqId,
         updateBlocState: updateBlocCallback,
       ),
     );
@@ -91,18 +100,19 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   bool shouldCurrentPositionBeUpdatedWithCameraPosition = false;
   int currentSelectedGymIndex = 0;
 
+  bool isInitialSetupOfMap = true;
+
   late LatLng currentCentrePosition;
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
   late BitmapDescriptor customGymLocationIcon;
   late BitmapDescriptor customGymLocationSelectedIcon;
-  CarouselController buttonCarouselController = CarouselController();
+  CarouselController gymsCarouselController = CarouselController();
 
   @override
   void initState() {
     super.initState();
-
     _setupMap();
     _searchLocationsBloc = BlocProvider.of<SearchLocationsBloc>(context);
 
@@ -146,37 +156,81 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SearchLocationsBloc, SearchLocationsState>(
-        builder: (context, state) {
-          return Scaffold(
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                if (state is FetchLocationsAroundCoordinatesLoaded &&
-                    state.coordinates.latitude != currentCentrePosition.latitude &&
-                    state.coordinates.longitude != currentCentrePosition.longitude) {
-                  shouldCameraSnapToMarkers = true;
-                  shouldCurrentPositionBeUpdatedWithCameraPosition = false;
-                  _initiateLocationSearchAroundCoordinates(
-                      currentCentrePosition.latitude,
-                      currentCentrePosition.longitude,
-                      state.locationResults,
-                  );
-                }
-              },
-              backgroundColor: Theme.of(context).primaryColor,
-              child: const Icon(Icons.search, color: Colors.white),
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-            body: Column(
-              children: [
-                _renderHelpText(),
-                WidgetUtils.spacer(2.5),
-                _renderMap(state),
-              ],
-            ),
-          );
-        }
+    return BlocListener<SearchLocationsBloc, SearchLocationsState>(
+      listener: (context, state) {
+        _selectInitialLocation();
+      },
+      child: BlocBuilder<SearchLocationsBloc, SearchLocationsState>(
+          builder: (context, state) {
+            return Scaffold(
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  if (state is FetchLocationsAroundCoordinatesLoaded &&
+                      state.coordinates.latitude != currentCentrePosition.latitude &&
+                      state.coordinates.longitude != currentCentrePosition.longitude) {
+                    shouldCameraSnapToMarkers = true;
+                    shouldCurrentPositionBeUpdatedWithCameraPosition = false;
+                    _initiateLocationSearchAroundCoordinates(
+                        currentCentrePosition.latitude,
+                        currentCentrePosition.longitude,
+                        state.locationResults,
+                    );
+                  }
+                },
+                backgroundColor: Theme.of(context).primaryColor,
+                child: const Icon(Icons.search, color: Colors.white),
+              ),
+              floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+              body: Column(
+                children: [
+                  _renderHelpText(),
+                  WidgetUtils.spacer(2.5),
+                  _renderMap(state),
+                ],
+              ),
+            );
+          }
+      ),
     );
+  }
+
+  _selectInitialLocation() {
+    final currentState = _searchLocationsBloc.state;
+    if (currentState is FetchLocationsAroundCoordinatesLoaded) {
+      // Select previously selected gym, if any
+      // Need to only do this once!
+      setState(() {
+        if (isInitialSetupOfMap) {
+          isInitialSetupOfMap = false;
+          // Returns -1 if initialSelectedLocationId is NOT available
+          // If that is the case, we re-fetch it and add it
+          if (widget.initialSelectedLocationFsqId != null) {
+            final indexOfInitiallySelectedLocationId = currentState.locationResults.indexWhere((element) => element.locationId == widget.initialSelectedLocationId);
+
+            if (indexOfInitiallySelectedLocationId != -1) {
+              currentSelectedGymIndex = indexOfInitiallySelectedLocationId;
+            }
+            else {
+              // Else we re-fetch the specified location and add to results
+              _searchLocationsBloc.add(
+                  FetchLocationsByFsqId(
+                      fsqId: widget.initialSelectedLocationFsqId!,
+                      query: currentState.query,
+                      coordinates: currentState.coordinates,
+                      previousLocationResults: currentState.locationResults,
+                      radiusInMetres: currentState.radiusInMetres
+                  )
+              );
+
+              isInitialSetupOfMap = true;
+            }
+          }
+
+        }
+      });
+      gymsCarouselController.onReady.then((value) => gymsCarouselController.jumpToPage(currentSelectedGymIndex));
+    }
+
   }
 
   _renderHelpText() {
@@ -198,7 +252,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                   location: e.location,
               )
           ).toList(),
-          carouselController: buttonCarouselController,
+          carouselController: gymsCarouselController,
           options: CarouselOptions(
             height: 300,
             // aspectRatio: 16/9,
@@ -209,7 +263,10 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
             enlargeCenterPage: true,
             onPageChanged: (page, reason) async {
               currentSelectedGymIndex = page;
-              widget.updateBlocState(state.locationResults[currentSelectedGymIndex].locationId);
+              widget.updateBlocState(
+                state.locationResults[currentSelectedGymIndex].locationId,
+                state.locationResults[currentSelectedGymIndex].location.fsqId
+              );
 
               // todo - make position marker draggable and simply the whole lock/unlock camera pan flow
               final relevantLocationItem = state.locationResults[currentSelectedGymIndex];
@@ -277,8 +334,8 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                 setState(() {
                   currentSelectedGymIndex = index;
                 });
-                buttonCarouselController.jumpToPage(currentSelectedGymIndex);
-                widget.updateBlocState(location.locationId);
+                gymsCarouselController.jumpToPage(currentSelectedGymIndex);
+                widget.updateBlocState(location.locationId, location.location.fsqId);
             }
           ),
         );

@@ -91,6 +91,7 @@ class LocationPreferenceViewState extends State<LocationPreferenceView> {
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
           gymLocationId: currentState.gymLocationId,
+          gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }

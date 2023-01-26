@@ -14,7 +14,7 @@ class FourSquareResult extends Equatable {
 
   final String fsqId;
   final List<FourSquareCategory> categories;
-  final int distance;
+  final int? distance;
   final FourSquareGeoCodes geocodes;
   final String link;
   final FourSquareLocation location;

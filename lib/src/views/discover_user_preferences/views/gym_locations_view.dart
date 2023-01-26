@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
-import 'package:flutter_app/src/views/shared_components/provide_location_view.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class GymLocationsView extends StatefulWidget {
   final PublicUserProfile userProfile;
+  final bool? doesUserHaveGym;
+  final String? gymLocationId;
+  final String? gymLocationFsqId;
 
   const GymLocationsView({
     Key? key,
     required this.userProfile,
+    required this.doesUserHaveGym,
+    required this.gymLocationId,
+    required this.gymLocationFsqId
   }): super(key: key);
 
   @override
@@ -50,11 +53,13 @@ class GymLocationsViewState extends State<GymLocationsView> {
         latitude: latitude,
         longitude: longitude,
         radius: radius.toDouble(),
+        initialSelectedLocationId: widget.gymLocationId,
+        initialSelectedLocationFsqId: widget.gymLocationFsqId,
         updateBlocCallback: _updateBlocState
     );
   }
 
-  _updateBlocState(String gymLocationId) {
+  _updateBlocState(String gymLocationId, String fsqId) {
     final currentState = _discoverUserPreferencesBloc.state;
     if (currentState is UserDiscoverPreferencesModified) {
       _discoverUserPreferencesBloc.add(UserDiscoverPreferencesChanged(
@@ -71,7 +76,8 @@ class GymLocationsViewState extends State<GymLocationsView> {
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: gymLocationId
+          gymLocationId: gymLocationId,
+          gymLocationFsqId: fsqId,
       ));
     }
   }

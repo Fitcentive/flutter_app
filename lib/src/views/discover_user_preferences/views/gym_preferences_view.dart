@@ -4,18 +4,18 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
-import 'package:flutter_app/src/views/shared_components/provide_location_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 enum RadioOption { yes, no }
 
 class GymPreferenceView extends StatefulWidget {
   final PublicUserProfile userProfile;
+  final bool? doesUserHaveGym;
 
   const GymPreferenceView({
     Key? key,
     required this.userProfile,
+    required this.doesUserHaveGym,
   }): super(key: key);
 
   @override
@@ -35,11 +35,8 @@ class GymPreferenceViewState extends State<GymPreferenceView> {
     super.initState();
     _discoverUserPreferencesBloc = BlocProvider.of<DiscoverUserPreferencesBloc>(context);
 
-    final currentState = _discoverUserPreferencesBloc.state;
-    if (currentState is UserDiscoverPreferencesModified) {
-      selectedOption = (currentState.hasGym ?? false) ? RadioOption.yes : RadioOption.no;
-      _updateBlocState(selectedOption);
-    }
+    selectedOption = (widget.doesUserHaveGym ?? false) ? RadioOption.yes : RadioOption.no;
+    _updateBlocState(selectedOption);
 
   }
 
@@ -109,7 +106,9 @@ class GymPreferenceViewState extends State<GymPreferenceView> {
         minimumAge: currentState.minimumAge,
         maximumAge: currentState.maximumAge,
         hoursPerWeek: currentState.hoursPerWeek,
-        hasGym: radioSelection == RadioOption.yes
+        hasGym: radioSelection == RadioOption.yes,
+        gymLocationId: currentState.gymLocationId,
+        gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }

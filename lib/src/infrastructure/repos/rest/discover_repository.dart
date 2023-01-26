@@ -231,8 +231,6 @@ class DiscoverRepository {
       'userId': prefs.userId,
       'gymLocationId': prefs.gymLocationId,
       'fsqId': prefs.fsqId,
-      'gymName': prefs.gymName,
-      'gymWebsite': prefs.gymWebsite,
     };
     final response = await http.post(Uri.parse("$BASE_URL/user/$userId/preferences/gym"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},

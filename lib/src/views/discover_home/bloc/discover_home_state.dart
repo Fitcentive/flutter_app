@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
+import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 
@@ -20,6 +21,7 @@ class DiscoverUserDataFetched extends DiscoverHomeState {
   final UserDiscoveryPreferences? discoveryPreferences;
   final UserFitnessPreferences? fitnessPreferences;
   final UserPersonalPreferences? personalPreferences;
+  final UserGymPreferences? gymPreferences;
   final List<PublicUserProfile> discoveredUserProfiles;
   final bool doesNextPageExist;
 
@@ -27,6 +29,7 @@ class DiscoverUserDataFetched extends DiscoverHomeState {
     this.discoveryPreferences,
     this.fitnessPreferences,
     this.personalPreferences,
+    this.gymPreferences,
     required this.discoveredUserProfiles,
     required this.doesNextPageExist,
   });
@@ -36,6 +39,7 @@ class DiscoverUserDataFetched extends DiscoverHomeState {
     discoveryPreferences,
     fitnessPreferences,
     personalPreferences,
+    gymPreferences,
     discoveredUserProfiles,
     doesNextPageExist
   ];

@@ -148,6 +148,7 @@ class DaysPreferencesViewState extends State<DaysPreferencesView> {
         hoursPerWeek: newHoursPerWeek,
         hasGym: currentState.hasGym,
         gymLocationId: currentState.gymLocationId,
+        gymLocationFsqId: currentState.gymLocationFsqId,
       ));
       setState(() {
         selectedDays = newDays;

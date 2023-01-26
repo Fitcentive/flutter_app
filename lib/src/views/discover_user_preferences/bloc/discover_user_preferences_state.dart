@@ -30,7 +30,7 @@ class UserDiscoverPreferencesModified extends DiscoverUserPreferencesState {
   final double? hoursPerWeek;
   final bool? hasGym;
   final String? gymLocationId;
-
+  final String? gymLocationFsqId;
 
   const UserDiscoverPreferencesModified({
     required this.userProfile,
@@ -39,6 +39,7 @@ class UserDiscoverPreferencesModified extends DiscoverUserPreferencesState {
     this.preferredTransportMode,
     this.hasGym,
     this.gymLocationId,
+    this.gymLocationFsqId,
     this.activitiesInterestedIn,
     this.fitnessGoals,
     this.desiredBodyTypes,
@@ -64,6 +65,7 @@ class UserDiscoverPreferencesModified extends DiscoverUserPreferencesState {
     hoursPerWeek,
     hasGym,
     gymLocationId,
+    gymLocationFsqId,
   ];
 }
 

@@ -14,6 +14,39 @@ class SearchLocationsBloc extends Bloc<SearchLocationsEvent, SearchLocationsStat
     required this.secureStorage
   }): super(const SearchLocationsStateInitial()) {
     on<FetchLocationsAroundCoordinatesRequested>(_fetchLocationsAroundCoordinatesRequested);
+    on<FetchLocationsByFsqId>(_fetchLocationsByFsqId);
+  }
+
+  void _fetchLocationsByFsqId(
+      FetchLocationsByFsqId event,
+      Emitter<SearchLocationsState> emit
+      ) async {
+    try {
+      emit(
+          FetchLocationsAroundCoordinatesLoading(
+              query: event.query,
+              coordinates: event.coordinates,
+              radiusInMetres: event.radiusInMetres
+          )
+      );
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final result = await meetupRepository.getLocationByFsqId(event.fsqId, accessToken!);
+      emit(
+          FetchLocationsAroundCoordinatesLoaded(
+              query: event.query,
+              locationResults: [...event.previousLocationResults, result],
+              coordinates: event.coordinates,
+              radiusInMetres: event.radiusInMetres
+          )
+      );
+    } catch (ex) {
+      emit(FetchLocationsAroundCoordinatesError(
+          query: event.query,
+          coordinates: event.coordinates,
+          radiusInMetres: event.radiusInMetres,
+          error: ex.toString()
+      ));
+    }
   }
 
   void _fetchLocationsAroundCoordinatesRequested(

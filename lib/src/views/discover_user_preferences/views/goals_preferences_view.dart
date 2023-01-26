@@ -100,6 +100,7 @@ class GoalsPreferencesViewState extends State<GoalsPreferencesView> {
         hoursPerWeek: currentState.hoursPerWeek,
         hasGym: currentState.hasGym,
         gymLocationId: currentState.gymLocationId,
+        gymLocationFsqId: currentState.gymLocationFsqId,
       ));
       setState(() {
         selectedGoals = newGoals;

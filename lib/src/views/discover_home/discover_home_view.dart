@@ -85,7 +85,8 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
           if (currentState is DiscoverUserDataFetched) {
             if (currentState.personalPreferences == null ||
                 currentState.fitnessPreferences == null ||
-                currentState.discoveryPreferences == null
+                currentState.discoveryPreferences == null ||
+                currentState.gymPreferences == null
             ) {
               _navigateToDiscoverUserPreferences(currentState);
             }
@@ -289,6 +290,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
           discoveryPreferences: state.discoveryPreferences,
           fitnessPreferences: state.fitnessPreferences,
           personalPreferences: state.personalPreferences,
+          gymPreferences: state.gymPreferences,
         ), (route) => true
     ).then((value) {
       _discoverHomeBloc.add(FetchUserDiscoverData(widget.currentUserProfile.userId));

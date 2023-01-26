@@ -161,6 +161,7 @@ class GenderPreferencesViewState extends State<GenderPreferencesView> {
         hoursPerWeek: currentState.hoursPerWeek,
         hasGym: currentState.hasGym,
         gymLocationId: currentState.gymLocationId,
+        gymLocationFsqId: currentState.gymLocationFsqId,
       ));
       setState(() {
         selectedGenders = newGenders;

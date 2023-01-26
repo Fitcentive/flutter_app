@@ -52,6 +52,7 @@ class DiscoverHomeBloc extends Bloc<DiscoverHomeEvent, DiscoverHomeState> {
     final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.userId, accessToken!);
     final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.userId, accessToken);
     final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.userId, accessToken);
+    final userGymPreferences = await discoverRepository.getUserGymPreferences(event.userId, accessToken);
     final userProfiles = await discoverRepository.getDiscoveredUserProfiles(
         event.userId,
         accessToken,
@@ -64,6 +65,7 @@ class DiscoverHomeBloc extends Bloc<DiscoverHomeEvent, DiscoverHomeState> {
       discoveryPreferences: userDiscoverPreferences,
       personalPreferences: userPersonalPreferences,
       fitnessPreferences: userFitnessPreferences,
+      gymPreferences: userGymPreferences,
       discoveredUserProfiles: userProfiles,
       doesNextPageExist: doesNextPageExist,
     ));

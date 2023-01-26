@@ -111,6 +111,7 @@ class BodyTypePreferencesViewState extends State<BodyTypePreferencesView> {
         hoursPerWeek: currentState.hoursPerWeek,
         hasGym: currentState.hasGym,
         gymLocationId: currentState.gymLocationId,
+        gymLocationFsqId: currentState.gymLocationFsqId,
       ));
       setState(() {
         selectedBodyTypes = newBodyTypes;

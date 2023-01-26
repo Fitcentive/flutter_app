@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
-import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
@@ -35,7 +34,10 @@ class TransportPreferenceViewState extends State<TransportPreferenceView> {
 
     _discoverUserPreferencesBloc = BlocProvider.of<DiscoverUserPreferencesBloc>(context);
     selectedTransportMode = widget.preferredTransportMethod ?? ConstantUtils.defaultTransport;
-    _updateBlocState(selectedTransportMode);
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _updateBlocState(selectedTransportMode);
+    });
   }
 
   @override
@@ -99,6 +101,7 @@ class TransportPreferenceViewState extends State<TransportPreferenceView> {
         hoursPerWeek: currentState.hoursPerWeek,
         hasGym: currentState.hasGym,
         gymLocationId: currentState.gymLocationId,
+        gymLocationFsqId: currentState.gymLocationFsqId,
       ));
       setState(() {
         selectedTransportMode = transportMode;

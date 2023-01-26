@@ -100,6 +100,7 @@ class ActivityPreferencesViewState extends State<ActivityPreferencesView> {
         hoursPerWeek: currentState.hoursPerWeek,
         hasGym: currentState.hasGym,
         gymLocationId: currentState.gymLocationId,
+        gymLocationFsqId: currentState.gymLocationFsqId,
       ));
       setState(() {
         selectedActivities = newSelectedActivities;

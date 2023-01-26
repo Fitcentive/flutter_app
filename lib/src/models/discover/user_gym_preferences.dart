@@ -8,8 +8,6 @@ class UserGymPreferences extends Equatable {
   final String userId;
   final String? gymLocationId;
   final String? fsqId;
-  final String? gymName;
-  final String? gymWebsite;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -17,8 +15,6 @@ class UserGymPreferences extends Equatable {
       this.userId,
       this.gymLocationId,
       this.fsqId,
-      this.gymName,
-      this.gymWebsite,
       this.createdAt,
       this.updatedAt
   );
@@ -32,8 +28,6 @@ class UserGymPreferences extends Equatable {
     userId,
     gymLocationId,
     fsqId,
-    gymName,
-    gymWebsite,
     createdAt,
     updatedAt,
   ];
@@ -43,15 +37,11 @@ class UserGymPreferencesPost extends Equatable {
   final String userId;
   final String? gymLocationId;
   final String? fsqId;
-  final String? gymName;
-  final String? gymWebsite;
 
   const UserGymPreferencesPost(
       this.userId,
       this.gymLocationId,
       this.fsqId,
-      this.gymName,
-      this.gymWebsite,
       );
 
   @override
@@ -59,7 +49,5 @@ class UserGymPreferencesPost extends Equatable {
     userId,
     gymLocationId,
     fsqId,
-    gymName,
-    gymWebsite,
   ];
 }

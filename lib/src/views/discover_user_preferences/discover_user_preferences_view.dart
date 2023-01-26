@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
+import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
@@ -18,7 +18,6 @@ import 'package:flutter_app/src/views/discover_user_preferences/views/gym_locati
 import 'package:flutter_app/src/views/discover_user_preferences/views/gym_preferences_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/views/location_preference_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/views/transport_preference_view.dart';
-import 'package:flutter_app/src/views/shared_components/search_locations/bloc/search_locations_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -29,21 +28,23 @@ class DiscoverUserPreferencesView extends StatefulWidget {
   final UserDiscoveryPreferences? discoveryPreferences;
   final UserFitnessPreferences? fitnessPreferences;
   final UserPersonalPreferences? personalPreferences;
+  final UserGymPreferences? gymPreferences;
 
-  // todo - add user gym prefs over here too to fetch from persisted API data
   const DiscoverUserPreferencesView({
     Key? key,
     required this.userProfile,
     required this.discoveryPreferences,
     required this.fitnessPreferences,
     required this.personalPreferences,
+    required this.gymPreferences,
   }): super(key: key);
 
   static Route route({
       required PublicUserProfile userProfile,
       required UserDiscoveryPreferences? discoveryPreferences,
       required UserFitnessPreferences? fitnessPreferences,
-      required UserPersonalPreferences? personalPreferences
+      required UserPersonalPreferences? personalPreferences,
+      required UserGymPreferences? gymPreferences
   }) {
 
     return MaterialPageRoute<void>(
@@ -62,7 +63,8 @@ class DiscoverUserPreferencesView extends StatefulWidget {
               userProfile: userProfile,
               discoveryPreferences: discoveryPreferences,
               fitnessPreferences: fitnessPreferences,
-              personalPreferences: personalPreferences
+              personalPreferences: personalPreferences,
+              gymPreferences: gymPreferences
           ),
         )
     );
@@ -92,6 +94,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
       discoveryPreferences: widget.discoveryPreferences,
       fitnessPreferences: widget.fitnessPreferences,
       personalPreferences: widget.personalPreferences,
+      gymPreferences: widget.gymPreferences,
     ));
 
     dynamicActionButtons = _singleFloatingActionButton();
@@ -245,6 +248,8 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
             UserDiscoverGymPreferencesChanged(
                 userProfile: state.userProfile,
                 hasGym: state.hasGym!,
+                gymLocationId: state.gymLocationId,
+                gymLocationFsqId: state.gymLocationFsqId
             )
         );
         return;
@@ -253,7 +258,8 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
             UserDiscoverGymPreferencesChanged(
               userProfile: state.userProfile,
               hasGym: state.hasGym!,
-              gymLocationId: state.gymLocationId!
+              gymLocationId: state.gymLocationId!,
+              gymLocationFsqId: state.gymLocationFsqId!
             )
         );
         return;
@@ -349,7 +355,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
   }
 
   _changeButtonIconIfNeeded(int pageNumber) {
-    if (pageNumber == 6) {
+    if (pageNumber == 8) {
       setState(() {
         floatingActionButtonIcon = const Icon(Icons.save, color: Colors.white);
       });
@@ -375,7 +381,8 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
   }
 
   Widget _pageViews() {
-    return BlocBuilder<DiscoverUserPreferencesBloc, DiscoverUserPreferencesState>(builder: (context, state) {
+    return BlocBuilder<DiscoverUserPreferencesBloc, DiscoverUserPreferencesState>(
+        builder: (context, state) {
       if (state is UserDiscoverPreferencesModified) {
         return PageView(
           controller: _pageController,
@@ -392,9 +399,13 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
             ),
             GymPreferenceView(
               userProfile: state.userProfile,
+              doesUserHaveGym: state.hasGym,
             ),
             GymLocationsView(
               userProfile: state.userProfile,
+              doesUserHaveGym: state.hasGym,
+              gymLocationId: state.gymLocationId,
+              gymLocationFsqId: state.gymLocationFsqId,
             ),
             TransportPreferenceView(
                 userProfile: state.userProfile,

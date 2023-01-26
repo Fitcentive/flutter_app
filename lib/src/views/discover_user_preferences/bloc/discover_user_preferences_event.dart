@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
+import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -17,13 +18,15 @@ class DiscoverUserPreferencesInitial extends DiscoverUserPreferencesEvent {
   final UserDiscoveryPreferences? discoveryPreferences;
   final UserFitnessPreferences? fitnessPreferences;
   final UserPersonalPreferences? personalPreferences;
+  final UserGymPreferences? gymPreferences;
 
 
   const DiscoverUserPreferencesInitial({
     required this.userProfile,
     this.discoveryPreferences,
     this.fitnessPreferences,
-    this.personalPreferences
+    this.personalPreferences,
+    this.gymPreferences
   });
 
   @override
@@ -32,6 +35,7 @@ class DiscoverUserPreferencesInitial extends DiscoverUserPreferencesEvent {
     discoveryPreferences,
     fitnessPreferences,
     personalPreferences,
+    gymPreferences,
   ];
 }
 
@@ -45,6 +49,7 @@ class UserDiscoverPreferencesChanged extends DiscoverUserPreferencesEvent {
   final String? preferredTransportMode;
   final bool? hasGym;
   final String? gymLocationId;
+  final String? gymLocationFsqId;
   final List<String>? activitiesInterestedIn;
   final List<String>? fitnessGoals;
   final List<String>? desiredBodyTypes;
@@ -61,6 +66,7 @@ class UserDiscoverPreferencesChanged extends DiscoverUserPreferencesEvent {
     this.preferredTransportMode,
     this.hasGym,
     this.gymLocationId,
+    this.gymLocationFsqId,
     this.activitiesInterestedIn,
     this.fitnessGoals,
     this.desiredBodyTypes,
@@ -86,6 +92,7 @@ class UserDiscoverPreferencesChanged extends DiscoverUserPreferencesEvent {
     hoursPerWeek,
     hasGym,
     gymLocationId,
+    gymLocationFsqId,
   ];
 }
 
@@ -225,18 +232,21 @@ class UserDiscoverGymPreferencesChanged extends DiscoverUserPreferencesEvent {
   final PublicUserProfile userProfile;
 
   final String? gymLocationId;
+  final String? gymLocationFsqId;
   final bool hasGym;
 
   const UserDiscoverGymPreferencesChanged({
     required this.userProfile,
     required this.hasGym,
     this.gymLocationId,
+    this.gymLocationFsqId,
   });
 
   @override
   List<Object?> get props => [
     userProfile,
     gymLocationId,
+    gymLocationFsqId,
     hasGym,
   ];
 }

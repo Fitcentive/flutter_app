@@ -12,7 +12,7 @@ FourSquareResult _$FourSquareResultFromJson(Map<String, dynamic> json) =>
       (json['categories'] as List<dynamic>)
           .map((e) => FourSquareCategory.fromJson(e as Map<String, dynamic>))
           .toList(),
-      json['distance'] as int,
+      json['distance'] as int?,
       FourSquareGeoCodes.fromJson(json['geocodes'] as Map<String, dynamic>),
       json['link'] as String,
       FourSquareLocation.fromJson(json['location'] as Map<String, dynamic>),

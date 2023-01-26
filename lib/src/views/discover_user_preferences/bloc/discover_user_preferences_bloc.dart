@@ -1,6 +1,7 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
+import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/spatial/coordinates.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
@@ -36,6 +37,34 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
       ) async {
     final currentState = state;
     if (currentState is UserDiscoverPreferencesModified) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+
+      if (!currentState.hasGym!) {
+        final userGymPreferences = UserGymPreferencesPost(
+          event.userProfile.userId,
+          null,
+          null,
+        );
+        await discoverRepository.upsertUserGymPreferences(
+            currentState.userProfile.userId,
+            userGymPreferences,
+            accessToken!
+        );
+      }
+
+      else if (currentState.hasGym! && currentState.gymLocationId != null && currentState.gymLocationFsqId != null) {
+        final userGymPreferences = UserGymPreferencesPost(
+          event.userProfile.userId,
+          event.gymLocationId,
+          event.gymLocationFsqId,
+        );
+        await discoverRepository.upsertUserGymPreferences(
+            currentState.userProfile.userId,
+            userGymPreferences,
+            accessToken!
+        );
+      }
+
       emit(UserDiscoverPreferencesModified(
           userProfile: event.userProfile,
           locationCenter: currentState.locationCenter,
@@ -50,7 +79,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: event.hasGym,
-          gymLocationId: event.gymLocationId
+          gymLocationId: event.gymLocationId,
+          gymLocationFsqId: event.gymLocationFsqId,
       ));
     }
 
@@ -75,7 +105,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
         maximumAge: event.maximumAge,
         hoursPerWeek: event.hoursPerWeek,
         hasGym: event.hasGym,
-        gymLocationId: event.gymLocationId
+        gymLocationId: event.gymLocationId,
+        gymLocationFsqId: event.gymLocationFsqId,
     ));
   }
 
@@ -98,7 +129,10 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
         preferredDays: event.personalPreferences?.preferredDays,
         minimumAge: event.personalPreferences?.minimumAge,
         maximumAge: event.personalPreferences?.maximumAge,
-        hoursPerWeek: event.personalPreferences?.hoursPerWeek
+        hoursPerWeek: event.personalPreferences?.hoursPerWeek,
+        hasGym: event.gymPreferences?.gymLocationId != null,
+        gymLocationId: event.gymPreferences?.gymLocationId,
+        gymLocationFsqId: event.gymPreferences?.fsqId,
     ));
   }
 
@@ -123,7 +157,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: currentState.gymLocationId
+          gymLocationId: currentState.gymLocationId,
+          gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }
@@ -162,7 +197,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: currentState.gymLocationId
+          gymLocationId: currentState.gymLocationId,
+          gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }
@@ -188,7 +224,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: currentState.gymLocationId
+          gymLocationId: currentState.gymLocationId,
+          gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }
@@ -214,7 +251,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: currentState.gymLocationId
+          gymLocationId: currentState.gymLocationId,
+          gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }
@@ -253,7 +291,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: currentState.gymLocationId
+          gymLocationId: currentState.gymLocationId,
+          gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }
@@ -279,7 +318,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           maximumAge: event.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: currentState.gymLocationId
+          gymLocationId: currentState.gymLocationId,
+          gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }
@@ -320,7 +360,8 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           preferredDays: event.preferredDays,
           hoursPerWeek: event.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: currentState.gymLocationId
+          gymLocationId: currentState.gymLocationId,
+          gymLocationFsqId: currentState.gymLocationFsqId,
       ));
     }
   }
