@@ -226,6 +226,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
         otherUserId: userProfile.userId,
         fitnessPreferences: state.fitnessPreferences,
         personalPreferences: state.personalPreferences,
+        gymPreferences: state.gymPreferences,
         key: Key(userProfile.userId + DateTime.now().toString())
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
+import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -13,12 +14,12 @@ import 'package:flutter_app/src/views/shared_components/location_card.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:gauges/gauges.dart';
 
 class DiscoveredUserView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final UserFitnessPreferences? currentUserFitnessPreferences;
   final UserPersonalPreferences? currentUserPersonalPreferences;
+  final UserGymPreferences? currentUserGymPreferences;
   final String otherUserId;
 
   const DiscoveredUserView({
@@ -27,6 +28,7 @@ class DiscoveredUserView extends StatefulWidget {
     required this.otherUserId,
     required this.currentUserFitnessPreferences,
     required this.currentUserPersonalPreferences,
+    required this.currentUserGymPreferences,
   }): super(key: key);
 
   static Widget withBloc({
@@ -34,6 +36,7 @@ class DiscoveredUserView extends StatefulWidget {
     required PublicUserProfile currentUserProfile,
     required UserFitnessPreferences? fitnessPreferences,
     required UserPersonalPreferences? personalPreferences,
+    required UserGymPreferences? gymPreferences,
     required String otherUserId
   }
   ) => MultiBlocProvider(
@@ -50,6 +53,7 @@ class DiscoveredUserView extends StatefulWidget {
       otherUserId: otherUserId,
       currentUserFitnessPreferences: fitnessPreferences,
       currentUserPersonalPreferences: personalPreferences,
+      currentUserGymPreferences: gymPreferences,
       key: key,
     ),
   );
@@ -100,8 +104,9 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _generateUserHeader(state),
-          const Padding(padding: EdgeInsets.all(10)),
+          WidgetUtils.spacer(5),
           _generateUserMatchedAttributes(state),
+          WidgetUtils.spacer(5),
           _generateLocationCard(state.otherUserProfile),
         ],
       ),
@@ -139,18 +144,29 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
         Expanded(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: WidgetUtils.skipNulls([
               _userFirstAndLastName(state.otherUserProfile.firstName ?? "", state.otherUserProfile.lastName ?? ""),
               WidgetUtils.spacer(5),
               _userHoursPerWeek(state.personalPreferences, widget.currentUserPersonalPreferences),
               WidgetUtils.spacer(15),
               _generateDiscoverUserScore(state.discoverScore.toDouble()),
-            ],
+              _generateOptionalGymText(state.gymPreferences),
+            ]),
           ),
         ),
       ],
     );
   }
+
+  _generateOptionalGymText(UserGymPreferences? prefs) {
+    if (prefs != null && prefs.gymLocationId != null && widget.currentUserGymPreferences != null) {
+      if ((widget.currentUserGymPreferences!.gymLocationId ?? "") == prefs.gymLocationId) {
+        const style = TextStyle(fontSize: 12, color: Colors.teal);
+        return const Text("You both go to the same gym!", textAlign: TextAlign.center, style: style);
+      }
+    }
+  }
+
 
   Widget _userHoursPerWeek(
       UserPersonalPreferences? otherUserPersonalPreferences,
@@ -208,8 +224,13 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
   }
 
   Widget _generateUserMatchedAttributes(DiscoveredUserPreferencesFetched state) {
-    return SizedBox(
-      height: 250,
+    return Container(
+      // height: 250,
+      constraints: const BoxConstraints(
+          minHeight: 100,
+          minWidth: double.infinity,
+          maxHeight: 250
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

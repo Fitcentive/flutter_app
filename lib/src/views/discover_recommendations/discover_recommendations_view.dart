@@ -241,8 +241,9 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
         mainAxisSize: MainAxisSize.min,
         children: [
           _generateUserHeader(recommendation),
-          const Padding(padding: EdgeInsets.all(10)),
+          WidgetUtils.spacer(5),
           _generateUserMatchedAttributes(recommendation),
+          WidgetUtils.spacer(5),
           _generateLocationCard(recommendation.user),
         ],
       ),
@@ -265,16 +266,24 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
         Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
+              children: WidgetUtils.skipNulls([
                 _userFirstAndLastName(recommendation.user.firstName ?? "", recommendation.user.lastName ?? ""),
                 WidgetUtils.spacer(5),
                 _userHoursPerWeekOrUsername(recommendation.user, recommendation.matchedAttributes.hoursPerWeek),
-                _generateDiscoverUserScore(recommendation.discoverScore.toDouble())
-              ],
+                _generateDiscoverUserScore(recommendation.discoverScore.toDouble()),
+                _generateOptionalGymText(recommendation)
+              ]),
             ),
         ),
       ],
     );
+  }
+
+  _generateOptionalGymText(DiscoverRecommendation recommendation) {
+    if (recommendation.doesRecommendedUserGoToSameGym) {
+      const style = TextStyle(fontSize: 12, color: Colors.teal);
+      return const Text("You both go to the same gym!", textAlign: TextAlign.center, style: style);
+    }
   }
 
   _generateDiscoverUserScore(double score) {
@@ -302,8 +311,13 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
   }
 
   Widget _generateUserMatchedAttributes(DiscoverRecommendation recommendation) {
-    return SizedBox(
-      height: 250,
+    return Container(
+      // height: 250,
+      constraints: const BoxConstraints(
+          minHeight: 100,
+          minWidth: double.infinity,
+          maxHeight: 250
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

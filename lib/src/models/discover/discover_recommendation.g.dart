@@ -12,7 +12,9 @@ DiscoverRecommendation _$DiscoverRecommendationFromJson(
       PublicUserProfile.fromJson(json['user'] as Map<String, dynamic>),
       json['discoverScore'] as num,
       MatchedAttributes.fromJson(
-          json['matchedAttributes'] as Map<String, dynamic>),
+          json['matchedAttributes'] as Map<String, dynamic>
+      ),
+      json['doesRecommendedUserGoToSameGym'] as bool,
     );
 
 Map<String, dynamic> _$DiscoverRecommendationToJson(
@@ -21,4 +23,5 @@ Map<String, dynamic> _$DiscoverRecommendationToJson(
       'user': instance.user,
       'discoverScore': instance.discoverScore,
       'matchedAttributes': instance.matchedAttributes,
+      'doesRecommendedUserGoToSameGym': instance.doesRecommendedUserGoToSameGym,
     };

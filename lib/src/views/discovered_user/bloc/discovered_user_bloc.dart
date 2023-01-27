@@ -25,6 +25,7 @@ class DiscoveredUserBloc extends Bloc<DiscoveredUserEvent, DiscoveredUserState> 
     final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.otherUserId, accessToken!);
     final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.otherUserId, accessToken);
     final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.otherUserId, accessToken);
+    final userGymPreferences = await discoverRepository.getUserGymPreferences(event.otherUserId, accessToken);
     final otherUserProfile = (await userRepository.getPublicUserProfiles([event.otherUserId], accessToken)).first;
     final discoverScore = await discoverRepository.getUserDiscoverScore(event.currentUserId, event.otherUserId, accessToken);
     emit(DiscoveredUserPreferencesFetched(
@@ -32,7 +33,8 @@ class DiscoveredUserBloc extends Bloc<DiscoveredUserEvent, DiscoveredUserState> 
         personalPreferences: userPersonalPreferences,
         fitnessPreferences: userFitnessPreferences,
         otherUserProfile: otherUserProfile,
-        discoverScore: discoverScore
+        discoverScore: discoverScore,
+        gymPreferences: userGymPreferences
     ));
   }
 }

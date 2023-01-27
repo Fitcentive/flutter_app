@@ -10,13 +10,19 @@ class DiscoverRecommendation extends Equatable {
   final PublicUserProfile user;
   final num discoverScore;
   final MatchedAttributes matchedAttributes;
+  final bool doesRecommendedUserGoToSameGym;
 
-  const DiscoverRecommendation(this.user, this.discoverScore, this.matchedAttributes);
+  const DiscoverRecommendation(
+      this.user,
+      this.discoverScore,
+      this.matchedAttributes,
+      this.doesRecommendedUserGoToSameGym
+  );
 
   factory DiscoverRecommendation.fromJson(Map<String, dynamic> json) => _$DiscoverRecommendationFromJson(json);
 
   Map<String, dynamic> toJson() => _$DiscoverRecommendationToJson(this);
 
   @override
-  List<Object?> get props => [user, discoverScore, matchedAttributes];
+  List<Object?> get props => [user, discoverScore, matchedAttributes, doesRecommendedUserGoToSameGym];
 }
