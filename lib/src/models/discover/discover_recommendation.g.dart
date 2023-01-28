@@ -12,8 +12,7 @@ DiscoverRecommendation _$DiscoverRecommendationFromJson(
       PublicUserProfile.fromJson(json['user'] as Map<String, dynamic>),
       json['discoverScore'] as num,
       MatchedAttributes.fromJson(
-          json['matchedAttributes'] as Map<String, dynamic>
-      ),
+          json['matchedAttributes'] as Map<String, dynamic>),
       json['doesRecommendedUserGoToSameGym'] as bool,
     );
 

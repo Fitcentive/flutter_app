@@ -17,6 +17,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
 import 'package:flutter_app/src/views/discover_home/discover_home_view.dart';
+import 'package:flutter_app/src/views/meetup_home/meetup_home_view.dart';
 import 'package:flutter_app/src/views/newsfeed/newsfeed_view.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
 import 'package:flutter_app/src/views/followers/friends_view.dart';
@@ -70,6 +71,7 @@ class HomePageState extends State<HomePage> {
   static const String search = 'Search';
   static const String friends = 'Friends';
   static const String newsFeed = 'News Feed';
+  static const String meetup = 'Meetup';
   static const String chat = 'Chat';
   static const String logout = 'Logout';
 
@@ -447,6 +449,7 @@ class HomePageState extends State<HomePage> {
         _generateListTile(search),
         _generateListTile(discover),
         _generateListTile(friends),
+        _generateListTile(meetup),
         _generateListTile(newsFeed),
         _generateListTile(chat),
       ],
@@ -490,6 +493,8 @@ class HomePageState extends State<HomePage> {
           return ChatHomeView.withBloc(publicUserProfile);
         case "Discover":
           return DiscoverHomeView.withBloc(publicUserProfile);
+        case "Meetup":
+          return MeetupHomeView.withBloc(publicUserProfile);
         default:
           return _oldStuff();
       }

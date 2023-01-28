@@ -3,7 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_app/src/models/location/location.dart';
-import 'package:flutter_app/src/models/metups/meetup_location.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
+import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
+import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
+import 'package:flutter_app/src/models/meetups/meetup_location.dart';
+import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/spatial/coordinates.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +17,115 @@ class MeetupRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/meetup";
 
   final logger = Logger("MeetupRepository");
+
+  Future<void> deleteMeetupForUser(
+      String meetupId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups/$meetupId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    }
+    else {
+      throw Exception(
+          "getMeetupsForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<Meetup>> getMeetupsForUser(
+      String userId,
+      String accessToken,
+      int limit,
+      int offset
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups?limit=$limit&offset=$offset"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<Meetup> results = jsonResponse.map((e) {
+        return Meetup.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getMeetupsForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<MeetupDecision>> getMeetupDecisions(
+      String meetupId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups/$meetupId/decisions"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<MeetupDecision> results = jsonResponse.map((e) {
+        return MeetupDecision.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getMeetupDecisions: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<MeetupParticipant>> getMeetupParticipants(
+      String meetupId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups/$meetupId/participants"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<MeetupParticipant> results = jsonResponse.map((e) {
+        return MeetupParticipant.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getMeetupParticipants: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<MeetupAvailability>> getMeetupParticipantAvailability(
+      String meetupId,
+      String participantId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups/$meetupId/participants/$participantId/availabilities"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<MeetupAvailability> results = jsonResponse.map((e) {
+        return MeetupAvailability.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getMeetupParticipantAvailability: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 
   Future<Location> getLocationByFsqId(
       String fsqId,
