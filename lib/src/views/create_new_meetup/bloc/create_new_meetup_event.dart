@@ -12,23 +12,23 @@ class NewMeetupChanged extends CreateNewMeetupEvent {
   final DateTime? meetupTime;
   final String? meetupName;
   final String? locationId;
-  final List<String>? meetupParticipants;
+  final List<String> meetupParticipantUserIds;
   final List<MeetupAvailability> currentUserAvailabilities;
 
-  const NewMeetupChanged(
-      this.meetupTime,
-      this.meetupName,
-      this.locationId,
-      this.meetupParticipants,
-      this.currentUserAvailabilities
-      );
+  const NewMeetupChanged({
+    this.meetupTime,
+    this.meetupName,
+    this.locationId,
+    required this.meetupParticipantUserIds,
+    required this.currentUserAvailabilities
+  });
 
   @override
   List<Object?> get props => [
     meetupTime,
     meetupName,
     locationId,
-    meetupParticipants,
+    meetupParticipantUserIds,
     currentUserAvailabilities
   ];
 }

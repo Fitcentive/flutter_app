@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
@@ -6,12 +9,15 @@ import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/create_new_meetup/create_new_meetup_view.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_bloc.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_event.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MeetupHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -45,6 +51,13 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
 
   final _scrollController = ScrollController();
   late final MeetupHomeBloc _meetupHomeBloc;
+
+  late CameraPosition _initialCameraPosition;
+  final Completer<GoogleMapController> _mapController = Completer();
+  MarkerId markerId = const MarkerId("camera_centre_marker_id");
+  CircleId circleId = const CircleId('radius_circle');
+  final Set<Marker> markers = <Marker>{};
+  final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
   @override
   void initState() {
@@ -83,6 +96,12 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       }
 
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -147,6 +166,8 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       List<MeetupDecision> decisions,
       Map<String, PublicUserProfile> userIdProfileMap
   ) {
+    final relevantUserProfiles =
+      userIdProfileMap.values.where((element) => participants.map((e) => e.userId).contains(element.userId)).toList();
     return Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15.0),
@@ -162,7 +183,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
                     [
                       _renderTop(meetup),
                       WidgetUtils.spacer(5),
-                      _renderBottom(meetup, participants, decisions, userIdProfileMap),
+                      _renderBottom(meetup, participants, decisions, relevantUserProfiles),
                     ]
                 ),
               ),
@@ -172,48 +193,98 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     );
   }
 
-  // todo -  need to render 3/5 location and 2/5 2x4 participants w/decisions
-  // and then, create new meetup view
   _renderBottom(
     Meetup meetup,
     List<MeetupParticipant> participants,
     List<MeetupDecision> decisions,
-    Map<String, PublicUserProfile> userIdProfileMap
+    List<PublicUserProfile> userProfiles
   ) {
     return Row(
       children: [
         // This part is supposed to be locations view
         Flexible(
           flex: 3,
-          child: Column(
-            children: [
-              Text(meetup.name ?? "Unnamed meetup", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, ),),
-              Text("${meetup.time?.hour}:${meetup.time?.minute}", style: const TextStyle(fontSize: 12),),
-              Text("${meetup.time?.year}-${meetup.time?.month}-${meetup.time?.day}", style: const TextStyle(fontSize: 12),),
-            ],
-          ),
+          child: _renderMapBox(userProfiles),
         ),
         // This part is supposed to be participant list
         Flexible(
             flex: 2,
-            child: Center(
-              child: Row(
-                children: [
-                  Container(
-                    width: 5,
-                    height: 5,
-                    decoration: const BoxDecoration(
-                      color: Colors.teal,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  Text(meetup.meetupStatus, style: const TextStyle(fontSize: 12),),
-                ],
-              ),
-            )
+            child: _renderParticipantsList(participants, userProfiles, decisions)
         )
       ],
     );
+  }
+
+  _renderParticipantsList(
+      List<MeetupParticipant> participants,
+      List<PublicUserProfile> userProfiles,
+      List<MeetupDecision> decisions) {
+    return const Text("Yet to come....");
+  }
+
+
+  _renderMapBox(List<PublicUserProfile> userProfiles) {
+    _setupMap(userProfiles, context);
+    return GoogleMap(
+        onTap: (_) {
+          // _goToLocationView(userProfile, context);
+        },
+        mapType: MapType.hybrid,
+        mapToolbarEnabled: false,
+        zoomControlsEnabled: false,
+        myLocationButtonEnabled: false,
+        myLocationEnabled: true,
+        markers: markers,
+        circles: Set<Circle>.of(circles.values),
+        initialCameraPosition: _initialCameraPosition,
+        onMapCreated: (GoogleMapController controller) {
+          _mapController.complete(controller);
+        }
+    );
+  }
+
+  void _generateBoundaryCircleForUserProfile(PublicUserProfile profile, BuildContext context) {
+    circles.clear();
+    final Circle circle = Circle(
+      circleId: CircleId(profile.userId),
+      strokeColor: Colors.tealAccent,
+      consumeTapEvents: true,
+      onTap: () {
+        // _goToLocationView(userProfile, context);
+      },
+      fillColor: Colors.teal.withOpacity(0.5),
+      strokeWidth: 5,
+      center: LatLng(profile.locationCenter!.latitude, profile.locationCenter!.longitude),
+      radius: profile.locationRadius!.toDouble(),
+    );
+    circles[circleId] = circle;
+  }
+
+  _setupMap(List<PublicUserProfile> users, BuildContext context) {
+    markers.clear();
+    users.forEach((user) {
+      _generateBoundaryCircleForUserProfile(user, context);
+      markers.add(
+        Marker(
+          markerId: MarkerId(user.userId),
+          position: LatLng(user.locationCenter!.latitude, user.locationCenter!.longitude),
+        ),
+      );
+    });
+
+    _initialCameraPosition = CameraPosition(
+        target: LocationUtils.computeCentroid(markers.toList().map((e) => e.position)),
+        tilt: 0,
+        zoom: LocationUtils.getZoomLevelMini(users.map((e) => e.locationRadius!).reduce(max).toDouble())
+    );
+
+    _snapCameraToMarkers();
+
+  }
+
+  _snapCameraToMarkers() async {
+    final GoogleMapController controller = await _mapController.future;
+    controller.animateCamera(CameraUpdate.newLatLngBounds(LocationUtils.generateBoundsFromMarkers(markers), 50));
   }
 
   _renderTop(Meetup meetup) {
@@ -260,7 +331,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
         visible: _isFloatingButtonVisible,
         child: FloatingActionButton(
           onPressed: () {
-            // _goToCreateNewPostView();
+            _goToCreateNewMeetupView();
           },
           tooltip: 'Create new meetup!',
           backgroundColor: Colors.teal,
@@ -268,5 +339,9 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
         ),
       ),
     );
+  }
+
+  _goToCreateNewMeetupView() {
+    Navigator.pushAndRemoveUntil(context, CreateNewMeetupView.route(widget.currentUserProfile), (route) => true);
   }
 }

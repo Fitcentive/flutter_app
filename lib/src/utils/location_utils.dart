@@ -37,4 +37,32 @@ class LocationUtils {
     zoomLevel = double.parse(zoomLevel.toStringAsFixed(2));
     return zoomLevel;
   }
+
+  static LatLngBounds generateBoundsFromMarkers(Set<Marker> markers) {
+    return _createBounds(markers.map((m) => m.position).toList());
+  }
+
+  static LatLngBounds _createBounds(List<LatLng> positions) {
+    final southwestLat = positions.map((p) => p.latitude).reduce((value, element) => value < element ? value : element); // smallest
+    final southwestLon = positions.map((p) => p.longitude).reduce((value, element) => value < element ? value : element);
+    final northeastLat = positions.map((p) => p.latitude).reduce((value, element) => value > element ? value : element); // biggest
+    final northeastLon = positions.map((p) => p.longitude).reduce((value, element) => value > element ? value : element);
+    return LatLngBounds(
+        southwest: LatLng(southwestLat, southwestLon),
+        northeast: LatLng(northeastLat, northeastLon)
+    );
+  }
+
+  static LatLng computeCentroid(Iterable<LatLng> points) {
+    double latitude = 0;
+    double longitude = 0;
+    int n = points.length;
+
+    for (LatLng point in points) {
+      latitude += point.latitude;
+      longitude += point.longitude;
+    }
+
+    return LatLng(latitude / n, longitude / n);
+  }
 }

@@ -20,7 +20,7 @@ import 'package:flutter_app/src/views/discover_home/discover_home_view.dart';
 import 'package:flutter_app/src/views/meetup_home/meetup_home_view.dart';
 import 'package:flutter_app/src/views/newsfeed/newsfeed_view.dart';
 import 'package:flutter_app/src/views/account_details/account_details_view.dart';
-import 'package:flutter_app/src/views/followers/friends_view.dart';
+import 'package:flutter_app/src/views/friends/friends_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';

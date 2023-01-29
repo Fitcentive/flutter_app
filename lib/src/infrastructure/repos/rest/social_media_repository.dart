@@ -80,6 +80,25 @@ class SocialMediaRepository {
     }
   }
 
+  Future<List<PublicUserProfile>> searchUserFriends(String userId, String query, String accessToken, int limit, int offset) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/search-friends?query=$query&skip=$offset&limit=$limit"),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken'
+      },
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final publicUserProfiles = jsonResponse.map((e) => PublicUserProfile.fromJson(e)).toList();
+      return publicUserProfiles;
+    } else {
+      throw Exception(
+          "searchUserFriends: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<void> unfriendUser(String currentUserId, String targetUserId, String accessToken) async {
     final response = await http.post(
       Uri.parse("$BASE_URL/user/$currentUserId/unfriend/$targetUserId"),

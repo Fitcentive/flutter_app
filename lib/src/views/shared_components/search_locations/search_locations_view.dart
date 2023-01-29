@@ -298,24 +298,9 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
     return null;
   }
 
-  LatLngBounds _bounds(Set<Marker> markers) {
-    return _createBounds(markers.map((m) => m.position).toList());
-  }
-
-  LatLngBounds _createBounds(List<LatLng> positions) {
-    final southwestLat = positions.map((p) => p.latitude).reduce((value, element) => value < element ? value : element); // smallest
-    final southwestLon = positions.map((p) => p.longitude).reduce((value, element) => value < element ? value : element);
-    final northeastLat = positions.map((p) => p.latitude).reduce((value, element) => value > element ? value : element); // biggest
-    final northeastLon = positions.map((p) => p.longitude).reduce((value, element) => value > element ? value : element);
-    return LatLngBounds(
-        southwest: LatLng(southwestLat, southwestLon),
-        northeast: LatLng(northeastLat, northeastLon)
-    );
-  }
-
   _snapCameraToMarkers() async {
     final GoogleMapController controller = await _mapController.future;
-    controller.animateCamera(CameraUpdate.newLatLngBounds(_bounds(markers), 50));
+    controller.animateCamera(CameraUpdate.newLatLngBounds(LocationUtils.generateBoundsFromMarkers(markers), 50));
   }
 
   _renderMap(SearchLocationsState state) {
@@ -345,6 +330,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
         _snapCameraToMarkers();
       }
     }
+
     return SizedBox(
       height: ScreenUtils.getScreenHeight(context) * widget.mapScreenHeightProportion,
       child: Stack(
