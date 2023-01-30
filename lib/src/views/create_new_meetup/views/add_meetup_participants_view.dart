@@ -50,7 +50,9 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _renderParticipantsView(state),
-                      WidgetUtils.spacer(5),
+                      WidgetUtils.spacer(2.5),
+                      Divider(color: Theme.of(context).primaryColor),
+                      WidgetUtils.spacer(2.5),
                       _renderSearchUserSelectView(state),
                     ],
                   ),
@@ -65,7 +67,6 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
           }
         }
     );
-
   }
 
   _renderSearchUserSelectView(MeetupModified state) {
@@ -90,7 +91,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
 
 
   _renderParticipantsView(MeetupModified state) {
-    if (state.participantUserProfiles != null && state.participantUserProfiles.isNotEmpty) {
+    if (state.participantUserProfiles.isNotEmpty) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: state.participantUserProfiles.map((e) => _renderParticipantCircleViewWithCloseButton(e)).toList(),
@@ -99,7 +100,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
     else {
       return Container(
         constraints: const BoxConstraints(
-          minHeight: 50,
+          minHeight: 60,
         ),
         child: Center(
           child: Row(
@@ -113,7 +114,6 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
         ),
       );
     }
-   
   }
 
   Widget _renderParticipantCircleViewWithCloseButton(PublicUserProfile userProfile) {

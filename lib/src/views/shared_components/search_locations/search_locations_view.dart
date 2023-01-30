@@ -11,7 +11,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/shared_components/location_card_view.dart';
+import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/bloc/search_locations_bloc.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/bloc/search_locations_event.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/bloc/search_locations_state.dart';
@@ -247,7 +247,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
       }
       return CarouselSlider(
           items: state.locationResults.map((e) =>
-              LocationCardView(
+              FoursquareLocationCardView(
                   locationId: e.locationId,
                   location: e.location,
               )

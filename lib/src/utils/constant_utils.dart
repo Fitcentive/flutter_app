@@ -13,6 +13,9 @@ class ConstantUtils {
   static const int DEFAULT_CHAT_MESSAGES_LIMIT = 50;
   static const int DEFAULT_OFFSET = 0;
 
+  static const EARLIEST_YEAR = 1970;
+  static const LATEST_YEAR = 2050;
+
   static const List<String> genderTypes = ['Male', 'Female', 'Other'];
   static const String defaultGender = 'Male';
 

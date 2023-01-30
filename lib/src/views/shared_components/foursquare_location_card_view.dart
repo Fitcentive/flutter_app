@@ -8,11 +8,11 @@ import 'package:flutter_app/src/models/foursquare/foursquare_result.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class LocationCardView extends StatefulWidget {
+class FoursquareLocationCardView extends StatefulWidget {
   final FourSquareResult location;
   final String locationId;
 
-  const LocationCardView({
+  const FoursquareLocationCardView({
     super.key,
     required this.locationId,
     required this.location,
@@ -20,11 +20,11 @@ class LocationCardView extends StatefulWidget {
 
   @override
   State createState() {
-    return LocationCardViewState();
+    return FoursquareLocationCardViewState();
   }
 }
 
-class LocationCardViewState extends State<LocationCardView> {
+class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> {
 
   int _current = 0;
   final CarouselController _carouselController = CarouselController();

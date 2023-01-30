@@ -46,6 +46,38 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
     else if (currentState is MeetupModified) {
       final List<PublicUserProfile> userProfiles;
       if (event.meetupParticipantUserIds.isNotEmpty) {
+
+        bool doProfilesAlreadyExistForAll = event
+            .meetupParticipantUserIds
+            .map((element) => currentState.participantUserProfiles.map((e) => e.userId).contains(element))
+            .reduce((value, element) => value && element);
+
+        if (doProfilesAlreadyExistForAll) {
+          emit(MeetupModified(
+            meetupTime: event.meetupTime,
+            meetupName: event.meetupName,
+            locationId: event.locationId,
+            participantUserProfiles: currentState.participantUserProfiles,
+            currentUserAvailabilities: event.currentUserAvailabilities,
+          ));
+        }
+        else {
+          final additionalUserIdsToGetProfilesFor = event
+              .meetupParticipantUserIds
+              .where((meetupParticipantId) => !currentState.participantUserProfiles.map((e) => e.userId).contains(meetupParticipantId))
+              .toList();
+
+          final additionalUserProfiles =
+          await userRepository.getPublicUserProfiles(additionalUserIdsToGetProfilesFor, accessToken!);
+          emit(MeetupModified(
+            meetupTime: event.meetupTime,
+            meetupName: event.meetupName,
+            locationId: event.locationId,
+            participantUserProfiles: {...currentState.participantUserProfiles, ...additionalUserProfiles}.toList(),
+            currentUserAvailabilities: event.currentUserAvailabilities,
+          ));
+        }
+
         userProfiles = await userRepository.getPublicUserProfiles(event.meetupParticipantUserIds, accessToken!);
       }
       else {
@@ -59,36 +91,6 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
         currentUserAvailabilities: event.currentUserAvailabilities,
       ));
 
-
-      // bool doProfilesAlreadyExistForAll = event
-      //     .meetupParticipantUserIds
-      //     .map((element) => currentState.participantUserProfiles.map((e) => e.userId).contains(element))
-      //     .reduce((value, element) => value && element);
-      // if (doProfilesAlreadyExistForAll) {
-      //   emit(MeetupModified(
-      //     meetupTime: event.meetupTime,
-      //     meetupName: event.meetupName,
-      //     locationId: event.locationId,
-      //     participantUserProfiles: currentState.participantUserProfiles,
-      //     currentUserAvailabilities: event.currentUserAvailabilities,
-      //   ));
-      // }
-      // else {
-      //   final additionalUserIdsToGetProfilesFor = event
-      //       .meetupParticipantUserIds
-      //       .where((meetupParticipantId) => !currentState.participantUserProfiles.map((e) => e.userId).contains(meetupParticipantId))
-      //       .toList();
-      //
-      //   final additionalUserProfiles =
-      //     await userRepository.getPublicUserProfiles(additionalUserIdsToGetProfilesFor, accessToken!);
-      //   emit(MeetupModified(
-      //     meetupTime: event.meetupTime,
-      //     meetupName: event.meetupName,
-      //     locationId: event.locationId,
-      //     participantUserProfiles: [...currentState.participantUserProfiles, ...additionalUserProfiles],
-      //     currentUserAvailabilities: event.currentUserAvailabilities,
-      //   ));
-      // }
     }
 
   }

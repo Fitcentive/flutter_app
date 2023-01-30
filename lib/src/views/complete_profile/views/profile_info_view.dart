@@ -20,9 +20,6 @@ class ProfileInfoView extends StatefulWidget {
 }
 
 class ProfileInfoViewState extends State<ProfileInfoView> {
-  static const EARLIEST_YEAR = 1970;
-  static const LATEST_YEAR = 2050;
-
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   late final CompleteProfileBloc _completeProfileBloc;
@@ -128,15 +125,14 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
             builder: (BuildContext context, Widget? child) {
               return Theme(
                   data: ThemeData(primarySwatch: Colors.teal),
-
                   child: child!
               );
             },
             context: context,
             initialEntryMode: DatePickerEntryMode.calendarOnly,
             initialDate: DateTime.parse(currentState.dateOfBirth.value),
-            firstDate: DateTime(EARLIEST_YEAR),
-            lastDate: DateTime(LATEST_YEAR),
+            firstDate: DateTime(ConstantUtils.EARLIEST_YEAR),
+            lastDate: DateTime(ConstantUtils.LATEST_YEAR),
           );
           _completeProfileBloc.add(ProfileInfoChanged(
               user: currentState.user,

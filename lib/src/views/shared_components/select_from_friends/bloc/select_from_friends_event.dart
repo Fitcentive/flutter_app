@@ -19,6 +19,22 @@ class FetchFriendsRequested extends SelectFromFriendsEvent {
   List<Object> get props => [userId, limit, offset];
 }
 
+class ReFetchFriendsRequested extends SelectFromFriendsEvent {
+  final String userId;
+  final int limit;
+  final int offset;
+
+  const ReFetchFriendsRequested({
+    required this.userId,
+    required this.limit,
+    required this.offset,
+  });
+
+  @override
+  List<Object> get props => [userId, limit, offset];
+}
+
+
 class FetchFriendsByQueryRequested extends SelectFromFriendsEvent {
   final String userId;
   final String query;

@@ -244,9 +244,9 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   }
 
   void _generateBoundaryCircleForUserProfile(PublicUserProfile profile, BuildContext context) {
-    circles.clear();
+    final newCircleId = CircleId(profile.userId);
     final Circle circle = Circle(
-      circleId: CircleId(profile.userId),
+      circleId: newCircleId,
       strokeColor: Colors.tealAccent,
       consumeTapEvents: true,
       onTap: () {
@@ -257,11 +257,12 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       center: LatLng(profile.locationCenter!.latitude, profile.locationCenter!.longitude),
       radius: profile.locationRadius!.toDouble(),
     );
-    circles[circleId] = circle;
+    circles[newCircleId] = circle;
   }
 
   _setupMap(List<PublicUserProfile> users, BuildContext context) {
     markers.clear();
+    circles.clear();
     users.forEach((user) {
       _generateBoundaryCircleForUserProfile(user, context);
       markers.add(

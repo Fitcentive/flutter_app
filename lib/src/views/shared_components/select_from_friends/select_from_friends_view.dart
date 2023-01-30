@@ -103,35 +103,24 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
   Widget build(BuildContext context) {
     return BlocListener<SelectFromFriendsBloc, SelectFromFriendsState>(
       listener: (context, state) {
-
+        if (state is FriendsDataLoaded) {
+          if (state.userProfiles.isNotEmpty) {
+            state.userProfiles.forEach((element) {
+              userIdToBoolCheckedMap[element.userId] = userIdToBoolCheckedMap[element.userId] ?? false;
+            });
+          }
+        }
       },
       child: BlocBuilder<SelectFromFriendsBloc, SelectFromFriendsState>(
         builder: (context, state) {
-          if (state is FriendsDataLoaded) {
-            if (state.userProfiles.isEmpty) {
-              return const Center(
-                child: Text("No friends here... get started by discovering people!"),
-              );
-            }
-            else {
-              state.userProfiles.forEach((element) {
-                userIdToBoolCheckedMap[element.userId] = userIdToBoolCheckedMap[element.userId] ?? false;
-              });
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _renderSearchBar(state),
-                  WidgetUtils.spacer(5),
-                  _renderSelectUsersListView(state),
-                ],
-              );
-            }
-          }
-          else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _renderSearchBar(),
+              WidgetUtils.spacer(5),
+              _renderSelectUsersListView(state),
+            ],
+          );
         },
       ),
     );
@@ -160,24 +149,41 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
     }
   }
 
-  _renderSelectUsersListView(FriendsDataLoaded state) {
-    isDataBeingRequested = false;
-    return Scrollbar(
-      controller: _scrollController,
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const AlwaysScrollableScrollPhysics(),
-        controller: _scrollController,
-        itemCount: state.doesNextPageExist ? state.userProfiles.length + 1 : state.userProfiles.length,
-        itemBuilder: (BuildContext context, int index) {
-          if (index >= state.userProfiles.length) {
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            return _userSelectSearchResultItem(state.userProfiles[index]);
-          }
-        },
-      ),
-    );
+  _renderSelectUsersListView(SelectFromFriendsState state) {
+    if (state is FriendsDataLoaded) {
+      isDataBeingRequested = false;
+      if (state.userProfiles.isEmpty) {
+        return const Center(
+          child: Text("No friends here... get started by discovering people!"),
+        );
+      }
+      else {
+        return Scrollbar(
+          controller: _scrollController,
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: const AlwaysScrollableScrollPhysics(),
+            controller: _scrollController,
+            itemCount: state.doesNextPageExist ? state.userProfiles.length + 1 : state.userProfiles.length,
+            itemBuilder: (BuildContext context, int index) {
+              if (index >= state.userProfiles.length) {
+                return const Center(child: CircularProgressIndicator());
+              } else {
+                return _userSelectSearchResultItem(state.userProfiles[index]);
+              }
+            },
+          ),
+        );
+      }
+    }
+    else {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
   }
 
   _userSelectSearchResultItem(PublicUserProfile userProfile) {
@@ -234,7 +240,7 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
     );
   }
 
-  _renderSearchBar(FriendsDataLoaded state) {
+  _renderSearchBar() {
     return Padding(
         padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
         child: TypeAheadField<PublicUserProfile>(
@@ -254,9 +260,9 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
                   suffixIcon: IconButton(
                     onPressed: () {
                       _suggestionsController.close();
-                      _selectFromFriendsBloc.add(FetchFriendsByQueryRequested(
+                      _searchTextController.text = "";
+                      _selectFromFriendsBloc.add(ReFetchFriendsRequested(
                           userId: widget.currentUserProfile.userId,
-                          query: _searchTextController.value.text,
                           limit: ConstantUtils.DEFAULT_LIMIT,
                           offset: ConstantUtils.DEFAULT_OFFSET,
                       ));

@@ -16,12 +16,25 @@ class SelectFromFriendsBloc extends Bloc<SelectFromFriendsEvent, SelectFromFrien
   }): super(const SelectFromFriendsStateInitial()) {
     on<FetchFriendsRequested>(_fetchFriendsRequested);
     on<FetchFriendsByQueryRequested>(_fetchFriendByQueryRequested);
+    on<ReFetchFriendsRequested>(reFetchFriendsRequested);
+  }
+
+  void reFetchFriendsRequested(ReFetchFriendsRequested event, Emitter<SelectFromFriendsState> emit) async {
+    final currentState = state;
+    if (currentState is FriendsDataLoaded) {
+      emit(FriendsDataLoading(userId: event.userId));
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final friends =
+      await socialMediaRepository.fetchUserFriends(event.userId, accessToken!, event.limit, event.offset);
+      final doesNextPageExist = friends.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
+      emit(FriendsDataLoaded(userId: event.userId, userProfiles: friends, doesNextPageExist: doesNextPageExist));
+    }
   }
 
   void _fetchFriendByQueryRequested(FetchFriendsByQueryRequested event, Emitter<SelectFromFriendsState> emit) async {
     final currentState = state;
     if (currentState is FriendsDataLoaded) {
-      emit(FriendsDataLoading(userId: event.userId));
+      // emit(FriendsDataLoading(userId: event.userId));
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final searchResults =
         await socialMediaRepository.searchUserFriends(event.userId, event.query, accessToken!, event.limit, event.offset);

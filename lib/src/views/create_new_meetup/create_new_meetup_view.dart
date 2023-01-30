@@ -7,6 +7,7 @@ import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_b
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_meetup_participants_view.dart';
+import 'package:flutter_app/src/views/create_new_meetup/views/select_meetup_details_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -138,7 +139,12 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
           _moveToNextPageOrPop(currentPage.toInt(), currentState);
         }
         else {
-          SnackbarUtils.showSnackBar(context, "Please complete the missing fields!");
+          if (currentPage == 0) {
+            SnackbarUtils.showSnackBar(context, "Please add at least one participant to the meetup!");
+          }
+          else {
+            SnackbarUtils.showSnackBar(context, "Please complete the missing fields!");
+          }
         }
       }
     }
@@ -173,10 +179,10 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
   void _savePageData(int pageNumber, MeetupModified state) {
     switch (pageNumber) {
       case 0:
-
+        // todo
         return;
       case 1:
-
+        // todo
         return;
       default:
         return;
@@ -238,8 +244,9 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
                   currentUserProfile: widget.currentUserProfile,
                   participantUserIds: state.participantUserProfiles.map((e) => e.userId).toList(),
                 ),
-                Center(
-                  child: Text("KAHOOTED"),
+                SelectMeetupDetailsView(
+                    currentUserProfile: widget.currentUserProfile,
+                    participantUserIds: state.participantUserProfiles.map((e) => e.userId).toList()
                 )
               ],
             );
