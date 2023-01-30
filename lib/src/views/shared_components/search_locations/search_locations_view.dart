@@ -1,4 +1,9 @@
 import 'dart:async';
+import 'dart:math';
+
+import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/color_utils.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -7,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/spatial/coordinates.dart';
+import 'package:flutter_app/src/models/user_profile_with_location.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
@@ -22,39 +28,63 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 typedef UpdateSelectedGymLocationBlocCallback = void Function(String locationId, String fsqId);
 
-// todo - ensure this is also used when searching for gyms to schedule workouts with
+//  todo - refactor this to select multiple users, and return a result somehow? Also add a `route()` method for this
+//  todo - ensure this is also used when searching for gyms to schedule workouts with
+// We need to modify this view to include multiple initial locations perhaps
 class SearchLocationsView extends StatefulWidget {
-  final double latitude;
-  final double longitude;
-  final double radiusInMetres;
+  static const String routeName = 'search-locations';
 
   final String? initialSelectedLocationId;
   final String? initialSelectedLocationFsqId;
+
+  final List<UserProfileWithLocation> userProfilesWithLocations;
 
   final UpdateSelectedGymLocationBlocCallback updateBlocState;
 
   final double mapScreenHeightProportion;
   final double mapControlsHeightProportion;
 
+  final bool isRoute;
+
   const SearchLocationsView({
     Key? key,
-    required this.latitude,
-    required this.longitude,
-    required this.radiusInMetres,
+    required this.userProfilesWithLocations,
     required this.initialSelectedLocationId,
     required this.initialSelectedLocationFsqId,
     required this.updateBlocState,
+    required this.isRoute,
     this.mapScreenHeightProportion = 0.78,
     this.mapControlsHeightProportion = 0.2
   }): super(key: key);
 
-  static Widget withBloc({
-    required double latitude,
-    required double longitude,
-    required double radius,
+  static Route route({
+    required List<UserProfileWithLocation> userProfilesWithLocations,
     required String? initialSelectedLocationId,
     required String? initialSelectedLocationFsqId,
     required UpdateSelectedGymLocationBlocCallback updateBlocCallback,
+    Key? key,
+  }) {
+    return MaterialPageRoute<void>(
+        settings: const RouteSettings(
+            name: routeName
+        ),
+        builder: (_) => SearchLocationsView.withBloc(
+            userProfilesWithLocations: userProfilesWithLocations,
+            initialSelectedLocationId: initialSelectedLocationId,
+            initialSelectedLocationFsqId: initialSelectedLocationFsqId,
+            updateBlocCallback: updateBlocCallback,
+            isRoute: true,
+        )
+    );
+  }
+
+
+  static Widget withBloc({
+    required List<UserProfileWithLocation> userProfilesWithLocations,
+    required String? initialSelectedLocationId,
+    required String? initialSelectedLocationFsqId,
+    required UpdateSelectedGymLocationBlocCallback updateBlocCallback,
+    bool isRoute = false,
     Key? key,
     }) {
     return MultiBlocProvider(
@@ -66,12 +96,11 @@ class SearchLocationsView extends StatefulWidget {
             )),
       ],
       child: SearchLocationsView(
-        latitude: latitude,
-        longitude: longitude,
-        radiusInMetres: radius,
         initialSelectedLocationId: initialSelectedLocationId,
         initialSelectedLocationFsqId: initialSelectedLocationFsqId,
+        userProfilesWithLocations: userProfilesWithLocations,
         updateBlocState: updateBlocCallback,
+        isRoute: isRoute,
       ),
     );
   }
@@ -85,10 +114,9 @@ class SearchLocationsView extends StatefulWidget {
 
 class SearchLocationsViewState extends State<SearchLocationsView> {
   static const String currentLocationMarkerId = "camera_centre_marker_id";
-  static const String circleIdString = "radius_circle";
 
-  MarkerId markerId = const MarkerId(currentLocationMarkerId);
-  CircleId circleId = const CircleId(circleIdString);
+  Map<String, BitmapDescriptor?> userIdToMapMarkerIcon = {};
+  Map<String, Color> userIdToMapMarkerColor = {};
 
   late final SearchLocationsBloc _searchLocationsBloc;
 
@@ -101,8 +129,10 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   int currentSelectedGymIndex = 0;
 
   bool isInitialSetupOfMap = true;
+  List<Color> usedColoursThusFar = [];
 
   late LatLng currentCentrePosition;
+  late double minimumRadiusOfAllInvolved;
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
@@ -113,40 +143,94 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   @override
   void initState() {
     super.initState();
-    _setupMap();
+    _setupColorsForUsers();
+    widget.userProfilesWithLocations.forEach((e) => userIdToMapMarkerIcon[e.currentUserProfile.userId] = null);
+
+    _setupMap(widget.userProfilesWithLocations.map((e) => e.currentUserProfile).toList());
     _searchLocationsBloc = BlocProvider.of<SearchLocationsBloc>(context);
 
-    _initiateLocationSearchAroundCoordinates(widget.latitude, widget.longitude, List.empty());
+    minimumRadiusOfAllInvolved = widget.userProfilesWithLocations.map((e) => e.radiusInMetres).reduce(min);
+
+    // search around centroid of coordinates instead?
+    if (widget.userProfilesWithLocations.isNotEmpty){
+      if (widget.userProfilesWithLocations.length == 1) {
+        _initiateLocationSearchAroundCoordinates(
+            widget.userProfilesWithLocations.first.latitude,
+            widget.userProfilesWithLocations.first.longitude,
+            minimumRadiusOfAllInvolved.toInt(),
+            List.empty()
+        );
+      }
+      else {
+        final latLngPoints = widget.userProfilesWithLocations.map((e) => LatLng(e.latitude, e.longitude));
+        final center = LocationUtils.computeCentroid(latLngPoints);
+        _initiateLocationSearchAroundCoordinates(
+            center.latitude,
+            center.longitude,
+            minimumRadiusOfAllInvolved.toInt(),
+            List.empty()
+        );
+      }
+    }
+
   }
 
-  void _generateBoundaryCircle() {
+  _setupColorsForUsers() {
+    widget.userProfilesWithLocations.map((e) => e.currentUserProfile).forEach((u) {
+      var nextColor = userIdToMapMarkerColor[u.userId];
+
+      if (nextColor == null) {
+        final _random = Random();
+        var nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
+        while (usedColoursThusFar.contains(nextColour)) {
+          nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
+        }
+        userIdToMapMarkerColor[u.userId] = nextColour;
+      }
+    });
+  }
+
+  void _generateCircleAndMarkerForUserProfile(PublicUserProfile profile, BitmapDescriptor markerIcon) {
     circles.clear();
+    final newCircleId = CircleId(profile.userId);
     final Circle circle = Circle(
-      circleId: circleId,
+      circleId: newCircleId,
+      strokeColor: userIdToMapMarkerColor[profile.userId]!,
       consumeTapEvents: false,
-      strokeColor: Colors.tealAccent,
-      fillColor: Colors.teal.withOpacity(0.5),
+      onTap: () {
+        // _goToLocationView(userProfile, context);
+      },
+      fillColor: userIdToMapMarkerColor[profile.userId]!.withOpacity(0.25),
       strokeWidth: 5,
-      center: currentCentrePosition,
-      radius: widget.radiusInMetres,
+      center: LatLng(profile.locationCenter!.latitude, profile.locationCenter!.longitude),
+      radius: profile.locationRadius!.toDouble(),
     );
-    circles[circleId] = circle;
-  }
+    circles[newCircleId] = circle;
 
-  _setupMap() async {
-    currentCentrePosition = LatLng(widget.latitude, widget.longitude);
-    initialCameraPosition =  CameraPosition(
-        target: currentCentrePosition,
-        zoom: LocationUtils.getZoomLevel(widget.radiusInMetres)
-    );
-    _generateBoundaryCircle();
     markers.add(
       Marker(
-        markerId: markerId,
-        position: currentCentrePosition,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure)
+        icon: markerIcon,
+        markerId: MarkerId(profile.userId),
+        position: LatLng(profile.locationCenter!.latitude, profile.locationCenter!.longitude),
       ),
     );
+  }
+
+  _setupMap(List<PublicUserProfile> users) async {
+    markers.clear();
+    users.forEach((user) async {
+      final BitmapDescriptor theCustomMarkerToUse = userIdToMapMarkerIcon[user.userId] ?? await  _generateCustomMarkerForUser(user);
+      _generateCircleAndMarkerForUserProfile(user, theCustomMarkerToUse);
+    });
+
+    currentCentrePosition =
+        LocationUtils.computeCentroid(widget.userProfilesWithLocations.map((e) => LatLng(e.latitude, e.longitude)));
+    initialCameraPosition = CameraPosition(
+        target: currentCentrePosition,
+        tilt: 0,
+        zoom: LocationUtils.getZoomLevel(users.map((e) => e.locationRadius!).reduce(min).toDouble())
+    );
+
     final Uint8List? gymMarkerIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon.png', 100);
     final Uint8List? gymMarkerSelectedIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon_selected.png', 100);
 
@@ -163,6 +247,12 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
       child: BlocBuilder<SearchLocationsBloc, SearchLocationsState>(
           builder: (context, state) {
             return Scaffold(
+              appBar: !widget.isRoute ? null : AppBar(
+                title: const Text('Search Locations', style: TextStyle(color: Colors.teal),),
+                iconTheme: const IconThemeData(
+                  color: Colors.teal,
+                ),
+              ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () {
                   if (state is FetchLocationsAroundCoordinatesLoaded &&
@@ -173,6 +263,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                     _initiateLocationSearchAroundCoordinates(
                         currentCentrePosition.latitude,
                         currentCentrePosition.longitude,
+                        minimumRadiusOfAllInvolved.toInt(),
                         state.locationResults,
                     );
                   }
@@ -180,7 +271,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                 backgroundColor: Theme.of(context).primaryColor,
                 child: const Icon(Icons.search, color: Colors.white),
               ),
-              floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+              floatingActionButtonLocation: !widget.isRoute ? FloatingActionButtonLocation.centerFloat : FloatingActionButtonLocation.endFloat,
               body: Column(
                 children: [
                   _renderHelpText(),
@@ -298,15 +389,16 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
     return null;
   }
 
+  // todo - there is a bug in this somewhat, zoom level does not work too well
   _snapCameraToMarkers() async {
     final GoogleMapController controller = await _mapController.future;
     controller.animateCamera(CameraUpdate.newLatLngBounds(LocationUtils.generateBoundsFromMarkers(markers), 50));
   }
 
   _renderMap(SearchLocationsState state) {
-    _generateBoundaryCircle();
     if (state is FetchLocationsAroundCoordinatesLoaded) {
-      markers.removeWhere((element) => element.markerId.value != currentLocationMarkerId);
+      // Remove all previously created nonUserLocationMarkers
+      markers.removeWhere((element) => state.locationResults.map((e) => e.location.fsqId).contains(element.markerId.value));
       state.locationResults.asMap().forEach((index, location) {
         markers.add(
           Marker(
@@ -373,32 +465,43 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
     );
   }
 
-  _initiateLocationSearchAroundCoordinates(double latitude, double longitude, List<Location> previousLocationResults) {
+  _initiateLocationSearchAroundCoordinates(
+      double latitude,
+      double longitude,
+      int radiusInMetres,
+      List<Location> previousLocationResults
+  ) {
     _searchLocationsBloc.add(
         FetchLocationsAroundCoordinatesRequested(
             query: "gym",
             coordinates: Coordinates(latitude, longitude),
-            radiusInMetres: widget.radiusInMetres.toInt(),
+            radiusInMetres: radiusInMetres,
             previousLocationResults: previousLocationResults
         )
     );
   }
 
-  _onCameraMove(CameraPosition cameraPosition) {
+  _generateCustomMarkerForUser(PublicUserProfile userProfile) async {
+    final fullImageUrl = ImageUtils.getFullImageUrl(userProfile.photoUrl, 96, 96);
+    final request = await http.get(Uri.parse(fullImageUrl));
+    return await ImageUtils.getMarkerIcon(request.bodyBytes, const Size(96, 96));
+  }
+
+  _onCameraMove(CameraPosition cameraPosition) async {
     setState(() {
       shouldCameraSnapToMarkers = false;
       // this should only happen on certain occasions
       if (shouldCurrentPositionBeUpdatedWithCameraPosition) {
         currentCentrePosition = cameraPosition.target;
       }
+
       markers.removeWhere((element) => element.markerId.value == currentLocationMarkerId);
       markers.add(Marker(
+        alpha: shouldCurrentPositionBeUpdatedWithCameraPosition ? 1.0 : 0.0,
         markerId: const MarkerId(currentLocationMarkerId),
         position: currentCentrePosition,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
       ));
-      _generateBoundaryCircle();
-      // widget.updateBlocState(currentCentrePosition, (currentSliderValue * 1000).toInt());
     });
   }
 

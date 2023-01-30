@@ -402,7 +402,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
               doesUserHaveGym: state.hasGym,
             ),
             GymLocationsView(
-              userProfile: state.userProfile,
+              currentUserProfile: state.userProfile,
               doesUserHaveGym: state.hasGym,
               gymLocationId: state.gymLocationId,
               gymLocationFsqId: state.gymLocationFsqId,

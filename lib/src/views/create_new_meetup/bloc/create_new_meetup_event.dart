@@ -12,6 +12,7 @@ class NewMeetupChanged extends CreateNewMeetupEvent {
   final DateTime? meetupTime;
   final String? meetupName;
   final String? locationId;
+  final String? fsqLocationId;
   final List<String> meetupParticipantUserIds;
   final List<MeetupAvailability> currentUserAvailabilities;
 
@@ -19,6 +20,7 @@ class NewMeetupChanged extends CreateNewMeetupEvent {
     this.meetupTime,
     this.meetupName,
     this.locationId,
+    this.fsqLocationId,
     required this.meetupParticipantUserIds,
     required this.currentUserAvailabilities
   });
@@ -28,6 +30,7 @@ class NewMeetupChanged extends CreateNewMeetupEvent {
     meetupTime,
     meetupName,
     locationId,
+    fsqLocationId,
     meetupParticipantUserIds,
     currentUserAvailabilities
   ];

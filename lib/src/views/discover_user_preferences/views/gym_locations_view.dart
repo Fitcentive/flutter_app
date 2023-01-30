@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/user_profile_with_location.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
@@ -7,14 +8,14 @@ import 'package:flutter_app/src/views/shared_components/search_locations/search_
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class GymLocationsView extends StatefulWidget {
-  final PublicUserProfile userProfile;
+  final PublicUserProfile currentUserProfile;
   final bool? doesUserHaveGym;
   final String? gymLocationId;
   final String? gymLocationFsqId;
 
   const GymLocationsView({
     Key? key,
-    required this.userProfile,
+    required this.currentUserProfile,
     required this.doesUserHaveGym,
     required this.gymLocationId,
     required this.gymLocationFsqId
@@ -50,12 +51,15 @@ class GymLocationsViewState extends State<GymLocationsView> {
   @override
   Widget build(BuildContext context) {
     return SearchLocationsView.withBloc(
-        latitude: latitude,
-        longitude: longitude,
-        radius: radius.toDouble(),
-        initialSelectedLocationId: widget.gymLocationId,
-        initialSelectedLocationFsqId: widget.gymLocationFsqId,
-        updateBlocCallback: _updateBlocState
+      userProfilesWithLocations: [UserProfileWithLocation(
+          widget.currentUserProfile,
+          latitude,
+          longitude,
+          radius.toDouble()
+      )],
+      initialSelectedLocationId: widget.gymLocationId,
+      initialSelectedLocationFsqId: widget.gymLocationFsqId,
+      updateBlocCallback: _updateBlocState
     );
   }
 
@@ -63,7 +67,7 @@ class GymLocationsViewState extends State<GymLocationsView> {
     final currentState = _discoverUserPreferencesBloc.state;
     if (currentState is UserDiscoverPreferencesModified) {
       _discoverUserPreferencesBloc.add(UserDiscoverPreferencesChanged(
-          userProfile: widget.userProfile,
+          userProfile: widget.currentUserProfile,
           locationCenter: currentState.locationCenter,
           locationRadius: currentState.locationRadius,
           preferredTransportMode: currentState.preferredTransportMode,

@@ -11,7 +11,7 @@ import 'package:flutter_app/src/views/create_new_meetup/views/select_meetup_deta
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-
+// todo - add limit to number of selected participants
 class CreateNewMeetupView extends StatefulWidget {
   static const String routeName = "create-meetup";
 
@@ -203,9 +203,9 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
   }
 
   _changeButtonIconIfNeeded(int pageNumber) {
-    if (pageNumber == 8) {
+    if (pageNumber == 1) {
       setState(() {
-        floatingActionButtonIcon = const Icon(Icons.save, color: Colors.white);
+        floatingActionButtonIcon = const Icon(Icons.check, color: Colors.white);
       });
     }
     else {

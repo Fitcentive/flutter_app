@@ -166,6 +166,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
           meetupName: currentState.meetupName,
           meetupTime: currentState.meetupTime,
           locationId: currentState.locationId,
+          fsqLocationId: currentState.fsqLocationId,
           meetupParticipantUserIds: participantUserIds,
           currentUserAvailabilities: currentState.currentUserAvailabilities
         )

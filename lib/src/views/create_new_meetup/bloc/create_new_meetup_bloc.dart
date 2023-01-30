@@ -39,6 +39,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
           meetupTime: event.meetupTime,
           meetupName: event.meetupName,
           locationId: event.locationId,
+          fsqLocationId: event.fsqLocationId,
           participantUserProfiles: userProfiles,
           currentUserAvailabilities: event.currentUserAvailabilities,
       ));
@@ -57,6 +58,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
             meetupTime: event.meetupTime,
             meetupName: event.meetupName,
             locationId: event.locationId,
+            fsqLocationId: event.fsqLocationId,
             participantUserProfiles: currentState.participantUserProfiles,
             currentUserAvailabilities: event.currentUserAvailabilities,
           ));
@@ -73,6 +75,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
             meetupTime: event.meetupTime,
             meetupName: event.meetupName,
             locationId: event.locationId,
+            fsqLocationId: event.fsqLocationId,
             participantUserProfiles: {...currentState.participantUserProfiles, ...additionalUserProfiles}.toList(),
             currentUserAvailabilities: event.currentUserAvailabilities,
           ));
@@ -87,6 +90,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
         meetupTime: event.meetupTime,
         meetupName: event.meetupName,
         locationId: event.locationId,
+        fsqLocationId: event.fsqLocationId,
         participantUserProfiles: userProfiles,
         currentUserAvailabilities: event.currentUserAvailabilities,
       ));

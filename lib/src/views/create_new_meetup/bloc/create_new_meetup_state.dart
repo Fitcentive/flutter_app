@@ -20,6 +20,7 @@ class MeetupModified extends CreateNewMeetupState {
   final DateTime? meetupTime;
   final String? meetupName;
   final String? locationId;
+  final String? fsqLocationId;
   final List<PublicUserProfile> participantUserProfiles;
   final List<MeetupAvailability> currentUserAvailabilities;
 
@@ -27,6 +28,7 @@ class MeetupModified extends CreateNewMeetupState {
     this.meetupTime,
     this.meetupName,
     this.locationId,
+    this.fsqLocationId,
     required this.participantUserProfiles,
     required this.currentUserAvailabilities,
   });
@@ -36,6 +38,7 @@ class MeetupModified extends CreateNewMeetupState {
     meetupTime,
     meetupName,
     locationId,
+    fsqLocationId,
     participantUserProfiles,
     currentUserAvailabilities,
   ];

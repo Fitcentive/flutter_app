@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter_app/src/utils/color_utils.dart';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/user_profile_with_location.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
@@ -11,7 +15,11 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
+import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
+import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
+import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
+import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -35,27 +43,10 @@ class SelectMeetupDetailsView extends StatefulWidget {
 class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
   late final CreateNewMeetupBloc _createNewMeetupBloc;
 
-  static const List<Color> circleColours = [
-    Colors.teal,
-    Colors.orange,
-    Colors.blue,
-    Colors.yellow,
-    Colors.pinkAccent,
-    Colors.redAccent,
-    Colors.greenAccent
-  ];
-
-  static Map<Color, double> colorToHueMap = {
-    Colors.teal: BitmapDescriptor.hueAzure,
-    Colors.orange: BitmapDescriptor.hueOrange,
-    Colors.blue: BitmapDescriptor.hueBlue,
-    Colors.yellow: BitmapDescriptor.hueYellow,
-    Colors.pinkAccent: BitmapDescriptor.hueRose,
-    Colors.redAccent: BitmapDescriptor.hueRed,
-    Colors.greenAccent: BitmapDescriptor.hueGreen,
-  };
-
   DateTime earliestPossibleMeetupDateTime = DateTime.now().add(const Duration(hours: 3));
+
+  Map<String, BitmapDescriptor?> userIdToMapMarkerIcon = {};
+  Map<String, Color> userIdToMapMarkerColor = {};
 
   List<String> selectedParticipants = List<String>.empty(growable: true);
   late DateTime selectedMeetupDate;
@@ -98,25 +89,24 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
         builder: (context, state) {
           if (state is MeetupModified) {
             return SingleChildScrollView(
-              child: Container(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: WidgetUtils.skipNulls([
-                      _renderParticipantsView(state),
-                      WidgetUtils.spacer(2.5),
-                      Divider(color: Theme.of(context).primaryColor),
-                      WidgetUtils.spacer(2.5),
-                      _renderMeetupNameView(state),
-                      _renderMeetupDateTime(state),
-                      WidgetUtils.spacer(2.5),
-                      _renderMeetupLocationNotAvailableTextIfNeeded(state),
-                      WidgetUtils.spacer(5),
-                      _renderMeetupLocation(state),
-                      WidgetUtils.spacer(2.5),
-                      _renderAvailabilitiesView(state),
-                    ]),
-                  ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: WidgetUtils.skipNulls([
+                    _renderParticipantsView(state),
+                    WidgetUtils.spacer(2.5),
+                    Divider(color: Theme.of(context).primaryColor),
+                    WidgetUtils.spacer(2.5),
+                    _renderMeetupNameView(state),
+                    _renderMeetupDateTime(state),
+                    WidgetUtils.spacer(2.5),
+                    _renderMeetupLocationNotAvailableTextIfNeeded(state),
+                    WidgetUtils.spacer(5),
+                    _renderMeetupLocation(state),
+                    WidgetUtils.spacer(20),
+                    // Move this to its own widget
+                    // _renderAvailabilitiesView(state),
+                  ]),
                 ),
               ),
             );
@@ -130,8 +120,109 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
     );
   }
 
+  // Import availabilities from test project, also test with multiple users
   _renderAvailabilitiesView(MeetupModified state) {
-    return Text("Yet to come baby");
+    return IntrinsicHeight(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: TimePlanner(
+          startHour: 6,
+          endHour: 23,
+          style: TimePlannerStyle(
+            // cellHeight: 60,
+            // cellWidth: 60,
+            showScrollBar: true,
+          ),
+          headers: const [
+            TimePlannerTitle(
+              date: "3/10/2021",
+              title: "sunday",
+            ),
+            TimePlannerTitle(
+              date: "3/11/2021",
+              title: "monday",
+            ),
+            TimePlannerTitle(
+              date: "3/12/2021",
+              title: "tuesday",
+            ),
+            TimePlannerTitle(
+              date: "3/13/2021",
+              title: "wednesday",
+            ),
+            TimePlannerTitle(
+              date: "3/14/2021",
+              title: "thursday",
+            ),
+            TimePlannerTitle(
+              date: "3/15/2021",
+              title: "friday",
+            ),
+            TimePlannerTitle(
+              date: "3/16/2021",
+              title: "saturday",
+            ),
+            TimePlannerTitle(
+              date: "3/17/2021",
+              title: "sunday",
+            ),
+            TimePlannerTitle(
+              date: "3/18/2021",
+              title: "monday",
+            ),
+            TimePlannerTitle(
+              date: "3/19/2021",
+              title: "tuesday",
+            ),
+            TimePlannerTitle(
+              date: "3/20/2021",
+              title: "wednesday",
+            ),
+            TimePlannerTitle(
+              date: "3/21/2021",
+              title: "thursday",
+            ),
+            TimePlannerTitle(
+              date: "3/22/2021",
+              title: "friday",
+            ),
+            TimePlannerTitle(
+              date: "3/23/2021",
+              title: "saturday",
+            ),
+            TimePlannerTitle(
+              date: "3/24/2021",
+              title: "tuesday",
+            ),
+            TimePlannerTitle(
+              date: "3/25/2021",
+              title: "wednesday",
+            ),
+            TimePlannerTitle(
+              date: "3/26/2021",
+              title: "thursday",
+            ),
+            TimePlannerTitle(
+              date: "3/27/2021",
+              title: "friday",
+            ),
+            TimePlannerTitle(
+              date: "3/28/2021",
+              title: "saturday",
+            ),
+            TimePlannerTitle(
+              date: "3/29/2021",
+              title: "friday",
+            ),
+            TimePlannerTitle(
+              date: "3/30/2021",
+              title: "saturday",
+            ),
+          ],
+          tasks: [],
+        ),
+      ),
+    );
   }
 
   _renderMeetupLocationNotAvailableTextIfNeeded(MeetupModified state) {
@@ -148,25 +239,48 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
     }
   }
 
+  _goToSelectLocationRoute(MeetupModified state, BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        SearchLocationsView.route(
+            userProfilesWithLocations: [...state.participantUserProfiles, widget.currentUserProfile]
+                .map((e) => UserProfileWithLocation(e, e.locationCenter!.latitude, e.locationCenter!.longitude, e.locationRadius!.toDouble()))
+                .toList(),
+            initialSelectedLocationId: state.locationId,
+            initialSelectedLocationFsqId: state.fsqLocationId,
+            updateBlocCallback: (s, s2) {
+            }),
+            (route) => true
+    );
+
+  }
+
   _renderMeetupLocation(MeetupModified state) {
-    _setupMap([...state.participantUserProfiles, widget.currentUserProfile], context);
+    _setupMap([...state.participantUserProfiles, widget.currentUserProfile]);
     return SizedBox(
       height: ScreenUtils.getScreenHeight(context) * 0.35,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: GoogleMap(
             onTap: (_) {
-              // _goToLocationView(userProfile, context);
+              _goToSelectLocationRoute(state, context);
             },
             mapType: MapType.normal,
             mapToolbarEnabled: false,
             myLocationButtonEnabled: false,
             myLocationEnabled: true,
             markers: markers,
+            rotateGesturesEnabled: true,
+            scrollGesturesEnabled: true,
+            zoomControlsEnabled: true,
+            zoomGesturesEnabled: true,
             circles: Set<Circle>.of(circles.values),
             initialCameraPosition: _initialCameraPosition,
             onMapCreated: (GoogleMapController controller) {
               _mapController.complete(controller);
+            },
+            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>> {
+              Factory<OneSequenceGestureRecognizer> (() => EagerGestureRecognizer()),
             }
         ),
       ),
@@ -177,16 +291,16 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
   void _generateCircleAndMarkerForUserProfile(PublicUserProfile profile, BuildContext context) {
     final newCircleId = CircleId(profile.userId);
     final _random = new Random();
-    var nextColour = circleColours[_random.nextInt(circleColours.length)];
+    var nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
     while (usedColoursThusFar.contains(nextColour)) {
-      nextColour = circleColours[_random.nextInt(circleColours.length)];
+      nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
     }
     usedColoursThusFar.add(nextColour);
 
     final Circle circle = Circle(
       circleId: newCircleId,
       strokeColor: nextColour,
-      consumeTapEvents: true,
+      consumeTapEvents: false,
       onTap: () {
         // _goToLocationView(userProfile, context);
       },
@@ -199,19 +313,19 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
 
     markers.add(
       Marker(
-        icon: BitmapDescriptor.defaultMarkerWithHue(colorToHueMap[nextColour]!),
+        icon: BitmapDescriptor.defaultMarkerWithHue(ColorUtils.colorToHueMap[nextColour]!),
         markerId: MarkerId(profile.userId),
         position: LatLng(profile.locationCenter!.latitude, profile.locationCenter!.longitude),
       ),
     );
   }
 
-  _setupMap(List<PublicUserProfile> users, BuildContext context) {
+  _setupMap(List<PublicUserProfile> users) {
     markers.clear();
     circles.clear();
     usedColoursThusFar.clear();
     users.forEach((user) {
-      _generateCircleAndMarkerForUserProfile(user, context);
+      _generateCircleAndMarkerForUserProfile(user);
     });
 
     _initialCameraPosition = CameraPosition(
@@ -252,6 +366,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
                         meetupName: text,
                         meetupTime: currentState.meetupTime,
                         locationId: currentState.locationId,
+                        fsqLocationId: currentState.fsqLocationId,
                         meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
                         currentUserAvailabilities: currentState.currentUserAvailabilities,
                       )
@@ -318,6 +433,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
                   meetupName: currentState.meetupName,
                   meetupTime: selectedMeetupDate,
                   locationId: currentState.locationId,
+                  fsqLocationId: currentState.fsqLocationId,
                   meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
                   currentUserAvailabilities: currentState.currentUserAvailabilities,
                 )
@@ -361,6 +477,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
                   meetupName: currentState.meetupName,
                   meetupTime: selectedDate,
                   locationId: currentState.locationId,
+                  fsqLocationId: currentState.fsqLocationId,
                   meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
                   currentUserAvailabilities: currentState.currentUserAvailabilities,
               )
@@ -456,6 +573,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
               meetupName: currentState.meetupName,
               meetupTime: currentState.meetupTime,
               locationId: currentState.locationId,
+              fsqLocationId: currentState.fsqLocationId,
               meetupParticipantUserIds: participantUserIds,
               currentUserAvailabilities: currentState.currentUserAvailabilities
           )
