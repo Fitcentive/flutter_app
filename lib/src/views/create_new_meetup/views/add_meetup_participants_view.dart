@@ -144,7 +144,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
                   child: Icon(
                     Icons.remove,
                     size: 20,
-                    color: Theme.of(context).secondaryHeaderColor,
+                    color: Colors.white,
                   ),
                 )
             ),
