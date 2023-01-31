@@ -59,6 +59,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
 
     _createNewMeetupBloc = BlocProvider.of<CreateNewMeetupBloc>(context);
     _createNewMeetupBloc.add(NewMeetupChanged(
+      currentUserProfile: widget.currentUserProfile,
       meetupParticipantUserIds: List.empty(),
       currentUserAvailabilities: List.empty(),
     ));
@@ -179,10 +180,22 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
   void _savePageData(int pageNumber, MeetupModified state) {
     switch (pageNumber) {
       case 0:
-        // todo
+        // Nothing to do here
         return;
       case 1:
-        // todo
+        final currentState = _createNewMeetupBloc.state;
+        if (currentState is MeetupModified) {
+          _createNewMeetupBloc.add(
+              SaveNewMeetup(
+                  currentUserProfile: currentState.currentUserProfile,
+                  meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
+                  currentUserAvailabilities: currentState.currentUserAvailabilities,
+                  meetupTime: currentState.meetupTime,
+                  meetupName: currentState.meetupName,
+                  location: currentState.location,
+              )
+          );
+        }
         return;
       default:
         return;
@@ -196,7 +209,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
         return state.participantUserProfiles.isNotEmpty;
       case 1:
       // Validate rest of the meetup data
-        return state.meetupName != null;
+        return state.meetupName != null && state.participantUserProfiles.isNotEmpty;
       default:
         return false;
     }

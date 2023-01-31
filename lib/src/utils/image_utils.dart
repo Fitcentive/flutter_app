@@ -43,7 +43,7 @@ class ImageUtils {
   }
 
   // Inspired from https://stackoverflow.com/questions/67585895/how-do-we-create-custom-marker-icon-in-google-map-flutter
-  static Future<BitmapDescriptor> getMarkerIcon(Uint8List imgList, Size size) async {
+  static Future<BitmapDescriptor> getMarkerIcon(Uint8List imgList, Size size, Color color) async {
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
 
@@ -52,8 +52,8 @@ class ImageUtils {
     final Paint shadowPaint = Paint()..color = Colors.white;
     const double shadowWidth = 2.0;
 
-    final Paint borderPaint = Paint()..color = Colors.white;
-    const double borderWidth = 2.0;
+    final Paint borderPaint = Paint()..color = color;
+    const double borderWidth = 5.0;
 
     const double imageOffset = shadowWidth + borderWidth;
 

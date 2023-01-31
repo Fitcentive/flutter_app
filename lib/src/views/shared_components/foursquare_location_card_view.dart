@@ -38,12 +38,12 @@ class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> 
   Widget build(BuildContext context) {
     return Card(
       // borderOnForeground: true,
-      // shape: RoundedRectangleBorder(
-      //   side: BorderSide(
-      //     color: Theme.of(context).primaryColor,
-      //     width: 3.5
-      //   )
-      // ),
+      shape: RoundedRectangleBorder(
+        side: BorderSide(
+          color: Theme.of(context).primaryColor,
+          width: 2.5
+        )
+      ),
       elevation: 0,
       color: Theme.of(context).backgroundColor,
       child: Padding(

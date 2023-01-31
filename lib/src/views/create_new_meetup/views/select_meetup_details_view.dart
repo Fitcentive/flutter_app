@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter_app/src/utils/color_utils.dart';
-
+import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -41,12 +40,11 @@ class SelectMeetupDetailsView extends StatefulWidget {
 }
 
 class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
+  final String customSelectedLocationMarkerId = "customSelectedLocationMarkerId";
+
   late final CreateNewMeetupBloc _createNewMeetupBloc;
 
   DateTime earliestPossibleMeetupDateTime = DateTime.now().add(const Duration(hours: 3));
-
-  Map<String, BitmapDescriptor?> userIdToMapMarkerIcon = {};
-  Map<String, Color> userIdToMapMarkerColor = {};
 
   List<String> selectedParticipants = List<String>.empty(growable: true);
   late DateTime selectedMeetupDate;
@@ -62,11 +60,19 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
   Timer? _debounce;
+  late BitmapDescriptor customGymLocationIcon;
+
+  _setupIcons() async {
+    final Uint8List? gymMarkerIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon.png', 100);
+    customGymLocationIcon = BitmapDescriptor.fromBytes(gymMarkerIcon!);
+  }
 
   @override
   void initState() {
     super.initState();
     _createNewMeetupBloc = BlocProvider.of<CreateNewMeetupBloc>(context);
+
+    _setupIcons();
 
     selectedParticipants = widget.participantUserIds;
 
@@ -99,11 +105,9 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
                     WidgetUtils.spacer(2.5),
                     _renderMeetupNameView(state),
                     _renderMeetupDateTime(state),
-                    WidgetUtils.spacer(2.5),
-                    _renderMeetupLocationNotAvailableTextIfNeeded(state),
-                    WidgetUtils.spacer(5),
                     _renderMeetupLocation(state),
-                    WidgetUtils.spacer(20),
+                    WidgetUtils.spacer(2.5),
+                    _renderMeetupFsqLocationCardIfNeeded(state),
                     // Move this to its own widget
                     // _renderAvailabilitiesView(state),
                   ]),
@@ -225,8 +229,8 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
     );
   }
 
-  _renderMeetupLocationNotAvailableTextIfNeeded(MeetupModified state) {
-    if (state.locationId == null) {
+  _renderMeetupFsqLocationCardIfNeeded(MeetupModified state) {
+    if (state.location == null) {
       return Center(
         child: Text(
             "Meetup location unset",
@@ -234,6 +238,17 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
               color: Theme.of(context).errorColor,
               fontWeight: FontWeight.bold
             ),
+        ),
+      );
+    }
+    else {
+      // Show the location card view here
+      return IntrinsicHeight(
+        child: Center(
+          child: FoursquareLocationCardView(
+            locationId: state.location!.locationId,
+            location: state.location!.location,
+          ),
         ),
       );
     }
@@ -246,9 +261,22 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
             userProfilesWithLocations: [...state.participantUserProfiles, widget.currentUserProfile]
                 .map((e) => UserProfileWithLocation(e, e.locationCenter!.latitude, e.locationCenter!.longitude, e.locationRadius!.toDouble()))
                 .toList(),
-            initialSelectedLocationId: state.locationId,
-            initialSelectedLocationFsqId: state.fsqLocationId,
-            updateBlocCallback: (s, s2) {
+            initialSelectedLocationId: state.location?.locationId,
+            initialSelectedLocationFsqId: state.location?.location.fsqId,
+            updateBlocCallback: (location) {
+              final currentState = _createNewMeetupBloc.state;
+              if(currentState is MeetupModified) {
+                _createNewMeetupBloc.add(
+                    NewMeetupChanged(
+                      currentUserProfile: currentState.currentUserProfile,
+                      meetupName: currentState.meetupName,
+                      meetupTime: selectedMeetupDate,
+                      location: location,
+                      meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
+                      currentUserAvailabilities: currentState.currentUserAvailabilities,
+                    )
+                );
+              }
             }),
             (route) => true
     );
@@ -256,9 +284,9 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
   }
 
   _renderMeetupLocation(MeetupModified state) {
-    _setupMap([...state.participantUserProfiles, widget.currentUserProfile]);
+    _setupMap(state, [...state.participantUserProfiles, widget.currentUserProfile]);
     return SizedBox(
-      height: ScreenUtils.getScreenHeight(context) * 0.35,
+      height: ScreenUtils.getScreenHeight(context) * 0.25,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: GoogleMap(
@@ -287,24 +315,21 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
     );
   }
 
-  // todo - DRY this up with what is there ins meetup_home_view.dart
-  void _generateCircleAndMarkerForUserProfile(PublicUserProfile profile, BuildContext context) {
+  void _generateCircleAndMarkerForUserProfile(
+      MeetupModified state,
+      PublicUserProfile profile,
+      BitmapDescriptor markerIcon
+  ) {
+    // circles.clear();
     final newCircleId = CircleId(profile.userId);
-    final _random = new Random();
-    var nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
-    while (usedColoursThusFar.contains(nextColour)) {
-      nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
-    }
-    usedColoursThusFar.add(nextColour);
-
     final Circle circle = Circle(
       circleId: newCircleId,
-      strokeColor: nextColour,
+      strokeColor: state.userIdToColorSet[profile.userId]!,
       consumeTapEvents: false,
       onTap: () {
         // _goToLocationView(userProfile, context);
       },
-      fillColor: nextColour.withOpacity(0.25),
+      fillColor: state.userIdToColorSet[profile.userId]!.withOpacity(0.25),
       strokeWidth: 5,
       center: LatLng(profile.locationCenter!.latitude, profile.locationCenter!.longitude),
       radius: profile.locationRadius!.toDouble(),
@@ -313,30 +338,40 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
 
     markers.add(
       Marker(
-        icon: BitmapDescriptor.defaultMarkerWithHue(ColorUtils.colorToHueMap[nextColour]!),
+        icon: markerIcon,
         markerId: MarkerId(profile.userId),
         position: LatLng(profile.locationCenter!.latitude, profile.locationCenter!.longitude),
       ),
     );
   }
 
-  _setupMap(List<PublicUserProfile> users) {
-    markers.clear();
-    circles.clear();
-    usedColoursThusFar.clear();
-    users.forEach((user) {
-      _generateCircleAndMarkerForUserProfile(user);
-    });
+  // todo - DRY this up with what is there ins meetup_home_view.dart
+   _setupMap(MeetupModified state, List<PublicUserProfile> users) async {
+     for (var user in users) {
+       final BitmapDescriptor theCustomMarkerToUse = state.userIdToMapMarkerIconSet[user.userId]!;
+       _generateCircleAndMarkerForUserProfile(state, user, theCustomMarkerToUse);
+     }
 
-    _initialCameraPosition = CameraPosition(
-        target: LocationUtils.computeCentroid(markers.toList().map((e) => e.position)),
-        tilt: 0,
-        zoom: LocationUtils.getZoomLevelMini(users.map((e) => e.locationRadius!).reduce(max).toDouble())
-    );
+     markers.removeWhere((element) => element.markerId.value == customSelectedLocationMarkerId);
+     if (state.location != null) {
+       markers.add(
+         Marker(
+           icon: customGymLocationIcon,
+           markerId: MarkerId(customSelectedLocationMarkerId),
+           position: state.location!.location.geocodes.toGoogleMapsLatLng(),
+         ),
+       );
+     }
 
-    if (isFirstTimeMapSetup) {
-      _snapCameraToMarkers();
-    }
+     _initialCameraPosition = CameraPosition(
+         target: LocationUtils.computeCentroid(markers.toList().map((e) => e.position)),
+         tilt: 0,
+         zoom: LocationUtils.getZoomLevelMini(users.map((e) => e.locationRadius!).reduce(max).toDouble())
+     );
+
+     if (isFirstTimeMapSetup) {
+       _snapCameraToMarkers();
+     }
 
   }
 
@@ -363,10 +398,10 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
                 if(currentState is MeetupModified) {
                   _createNewMeetupBloc.add(
                       NewMeetupChanged(
+                        currentUserProfile: currentState.currentUserProfile,
                         meetupName: text,
                         meetupTime: currentState.meetupTime,
-                        locationId: currentState.locationId,
-                        fsqLocationId: currentState.fsqLocationId,
+                        location: currentState.location,
                         meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
                         currentUserAvailabilities: currentState.currentUserAvailabilities,
                       )
@@ -430,10 +465,10 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
 
             _createNewMeetupBloc.add(
                 NewMeetupChanged(
+                  currentUserProfile: currentState.currentUserProfile,
                   meetupName: currentState.meetupName,
                   meetupTime: selectedMeetupDate,
-                  locationId: currentState.locationId,
-                  fsqLocationId: currentState.fsqLocationId,
+                  location: currentState.location,
                   meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
                   currentUserAvailabilities: currentState.currentUserAvailabilities,
                 )
@@ -474,10 +509,10 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
         if(currentState is MeetupModified && selectedDate != null) {
           _createNewMeetupBloc.add(
               NewMeetupChanged(
+                  currentUserProfile: currentState.currentUserProfile,
                   meetupName: currentState.meetupName,
                   meetupTime: selectedDate,
-                  locationId: currentState.locationId,
-                  fsqLocationId: currentState.fsqLocationId,
+                  location: currentState.location,
                   meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
                   currentUserAvailabilities: currentState.currentUserAvailabilities,
               )
@@ -570,10 +605,10 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
     if (currentState is MeetupModified) {
       _createNewMeetupBloc.add(
           NewMeetupChanged(
+              currentUserProfile: currentState.currentUserProfile,
               meetupName: currentState.meetupName,
               meetupTime: currentState.meetupTime,
-              locationId: currentState.locationId,
-              fsqLocationId: currentState.fsqLocationId,
+              location: currentState.location,
               meetupParticipantUserIds: participantUserIds,
               currentUserAvailabilities: currentState.currentUserAvailabilities
           )

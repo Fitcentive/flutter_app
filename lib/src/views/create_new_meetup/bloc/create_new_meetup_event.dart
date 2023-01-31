@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 
 abstract class CreateNewMeetupEvent extends Equatable {
   const CreateNewMeetupEvent();
@@ -9,28 +11,56 @@ abstract class CreateNewMeetupEvent extends Equatable {
 }
 
 class NewMeetupChanged extends CreateNewMeetupEvent {
+  final PublicUserProfile currentUserProfile;
   final DateTime? meetupTime;
   final String? meetupName;
-  final String? locationId;
-  final String? fsqLocationId;
+  final Location? location;
   final List<String> meetupParticipantUserIds;
   final List<MeetupAvailability> currentUserAvailabilities;
 
   const NewMeetupChanged({
+    required this.currentUserProfile,
     this.meetupTime,
     this.meetupName,
-    this.locationId,
-    this.fsqLocationId,
+    this.location,
     required this.meetupParticipantUserIds,
     required this.currentUserAvailabilities
   });
 
   @override
   List<Object?> get props => [
+    currentUserProfile,
     meetupTime,
     meetupName,
-    locationId,
-    fsqLocationId,
+    location,
+    meetupParticipantUserIds,
+    currentUserAvailabilities
+  ];
+}
+
+class SaveNewMeetup extends CreateNewMeetupEvent {
+  final PublicUserProfile currentUserProfile;
+  final DateTime? meetupTime;
+  final String? meetupName;
+  final Location? location;
+  final List<String> meetupParticipantUserIds;
+  final List<MeetupAvailability> currentUserAvailabilities;
+
+  const SaveNewMeetup({
+    required this.currentUserProfile,
+    this.meetupTime,
+    this.meetupName,
+    this.location,
+    required this.meetupParticipantUserIds,
+    required this.currentUserAvailabilities
+  });
+
+  @override
+  List<Object?> get props => [
+    currentUserProfile,
+    meetupTime,
+    meetupName,
+    location,
     meetupParticipantUserIds,
     currentUserAvailabilities
   ];

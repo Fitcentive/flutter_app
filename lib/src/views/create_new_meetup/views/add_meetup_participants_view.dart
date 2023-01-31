@@ -141,7 +141,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
                     _updateBlocState(updatedListAfterRemovingParticipant);
                     _updateUserSearchResultsListIfNeeded(userProfile.userId);
                   },
-                  child: Icon(
+                  child: const Icon(
                     Icons.remove,
                     size: 20,
                     color: Colors.white,
@@ -163,10 +163,10 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> {
     if (currentState is MeetupModified) {
       _createNewMeetupBloc.add(
         NewMeetupChanged(
+          currentUserProfile: currentState.currentUserProfile,
           meetupName: currentState.meetupName,
           meetupTime: currentState.meetupTime,
-          locationId: currentState.locationId,
-          fsqLocationId: currentState.fsqLocationId,
+          location: currentState.location,
           meetupParticipantUserIds: participantUserIds,
           currentUserAvailabilities: currentState.currentUserAvailabilities
         )

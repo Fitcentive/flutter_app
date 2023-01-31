@@ -26,11 +26,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-typedef UpdateSelectedGymLocationBlocCallback = void Function(String locationId, String fsqId);
+typedef UpdateSelectedGymLocationBlocCallback = void Function(Location location);
 
-//  todo - refactor this to select multiple users, and return a result somehow? Also add a `route()` method for this
-//  todo - ensure this is also used when searching for gyms to schedule workouts with
-// We need to modify this view to include multiple initial locations perhaps
 class SearchLocationsView extends StatefulWidget {
   static const String routeName = 'search-locations';
 
@@ -191,7 +188,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   }
 
   void _generateCircleAndMarkerForUserProfile(PublicUserProfile profile, BitmapDescriptor markerIcon) {
-    circles.clear();
     final newCircleId = CircleId(profile.userId);
     final Circle circle = Circle(
       circleId: newCircleId,
@@ -218,6 +214,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
 
   _setupMap(List<PublicUserProfile> users) async {
     markers.clear();
+    circles.clear();
     users.forEach((user) async {
       final BitmapDescriptor theCustomMarkerToUse = userIdToMapMarkerIcon[user.userId] ?? await  _generateCustomMarkerForUser(user);
       _generateCircleAndMarkerForUserProfile(user, theCustomMarkerToUse);
@@ -354,10 +351,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
             enlargeCenterPage: true,
             onPageChanged: (page, reason) async {
               currentSelectedGymIndex = page;
-              widget.updateBlocState(
-                state.locationResults[currentSelectedGymIndex].locationId,
-                state.locationResults[currentSelectedGymIndex].location.fsqId
-              );
+              widget.updateBlocState(state.locationResults[currentSelectedGymIndex]);
 
               // todo - make position marker draggable and simply the whole lock/unlock camera pan flow
               final relevantLocationItem = state.locationResults[currentSelectedGymIndex];
@@ -412,7 +406,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                   currentSelectedGymIndex = index;
                 });
                 gymsCarouselController.jumpToPage(currentSelectedGymIndex);
-                widget.updateBlocState(location.locationId, location.location.fsqId);
+                widget.updateBlocState(location);
             }
           ),
         );
@@ -484,7 +478,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   _generateCustomMarkerForUser(PublicUserProfile userProfile) async {
     final fullImageUrl = ImageUtils.getFullImageUrl(userProfile.photoUrl, 96, 96);
     final request = await http.get(Uri.parse(fullImageUrl));
-    return await ImageUtils.getMarkerIcon(request.bodyBytes, const Size(96, 96));
+    return await ImageUtils.getMarkerIcon(request.bodyBytes, const Size(96, 96), userIdToMapMarkerColor[userProfile.userId]!);
   }
 
   _onCameraMove(CameraPosition cameraPosition) async {

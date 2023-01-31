@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile_with_location.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
@@ -63,7 +64,7 @@ class GymLocationsViewState extends State<GymLocationsView> {
     );
   }
 
-  _updateBlocState(String gymLocationId, String fsqId) {
+  _updateBlocState(Location location) {
     final currentState = _discoverUserPreferencesBloc.state;
     if (currentState is UserDiscoverPreferencesModified) {
       _discoverUserPreferencesBloc.add(UserDiscoverPreferencesChanged(
@@ -80,8 +81,8 @@ class GymLocationsViewState extends State<GymLocationsView> {
           maximumAge: currentState.maximumAge,
           hoursPerWeek: currentState.hoursPerWeek,
           hasGym: currentState.hasGym,
-          gymLocationId: gymLocationId,
-          gymLocationFsqId: fsqId,
+          gymLocationId: location.locationId,
+          gymLocationFsqId: location.location.fsqId,
       ));
     }
   }
