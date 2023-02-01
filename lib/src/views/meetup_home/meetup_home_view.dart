@@ -15,9 +15,11 @@ import 'package:flutter_app/src/views/create_new_meetup/create_new_meetup_view.d
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_bloc.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_event.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_state.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 
 class MeetupHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -168,28 +170,31 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   ) {
     final relevantUserProfiles =
       userIdProfileMap.values.where((element) => participants.map((e) => e.userId).contains(element.userId)).toList();
-    return Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          child: Card(
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: WidgetUtils.skipNulls(
-                    [
-                      _renderTop(meetup),
-                      WidgetUtils.spacer(5),
-                      _renderBottom(meetup, participants, decisions, relevantUserProfiles),
-                    ]
+    return IntrinsicHeight(
+      child: Card(
+        elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: Card(
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: WidgetUtils.skipNulls(
+                      [
+                        _renderTop(meetup),
+                        WidgetUtils.spacer(25),
+                        _renderBottom(meetup, participants, decisions, relevantUserProfiles),
+                      ]
+                  ),
                 ),
               ),
             ),
-          ),
-        )
+          )
+      ),
     );
   }
 
@@ -202,12 +207,12 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     return Row(
       children: [
         // This part is supposed to be locations view
-        Flexible(
+        Expanded(
           flex: 3,
           child: _renderMapBox(userProfiles),
         ),
         // This part is supposed to be participant list
-        Flexible(
+        Expanded(
             flex: 2,
             child: _renderParticipantsList(participants, userProfiles, decisions)
         )
@@ -219,27 +224,41 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       List<MeetupParticipant> participants,
       List<PublicUserProfile> userProfiles,
       List<MeetupDecision> decisions) {
-    return const Text("Yet to come....");
+    return SizedBox(
+      height: 200,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+        child: MeetupParticipantsList(
+          participantUserProfiles: [...userProfiles, ...userProfiles, ...userProfiles, ...userProfiles],
+          onParticipantRemoved: null,
+          onParticipantTapped: null,
+          circleRadius: 45,
+        ),
+      ),
+    );
   }
 
 
   _renderMapBox(List<PublicUserProfile> userProfiles) {
     _setupMap(userProfiles, context);
-    return GoogleMap(
-        onTap: (_) {
-          // _goToLocationView(userProfile, context);
-        },
-        mapType: MapType.hybrid,
-        mapToolbarEnabled: false,
-        zoomControlsEnabled: false,
-        myLocationButtonEnabled: false,
-        myLocationEnabled: true,
-        markers: markers,
-        circles: Set<Circle>.of(circles.values),
-        initialCameraPosition: _initialCameraPosition,
-        onMapCreated: (GoogleMapController controller) {
-          _mapController.complete(controller);
-        }
+    return SizedBox(
+      height: 200,
+      child: GoogleMap(
+          onTap: (_) {
+            // _goToLocationView(userProfile, context);
+          },
+          mapType: MapType.hybrid,
+          mapToolbarEnabled: false,
+          zoomControlsEnabled: false,
+          myLocationButtonEnabled: false,
+          myLocationEnabled: true,
+          markers: markers,
+          circles: Set<Circle>.of(circles.values),
+          initialCameraPosition: _initialCameraPosition,
+          onMapCreated: (GoogleMapController controller) {
+            _mapController.complete(controller);
+          }
+      ),
     );
   }
 
@@ -289,24 +308,28 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   }
 
   _renderTop(Meetup meetup) {
+    final meetupDate = meetup.time == null ? "Unscheduled" : DateFormat("yyyy-MM-dd").format(meetup.time!);
     return Row(
       children: [
         // Name, date and time
-        Flexible(
+        Expanded(
           flex: 3,
           child: Column(
             children: [
-              Text(meetup.name ?? "Unnamed meetup", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, ),),
-              Text("${meetup.time?.hour}:${meetup.time?.minute}", style: const TextStyle(fontSize: 12),),
-              Text("${meetup.time?.year}-${meetup.time?.month}-${meetup.time?.day}", style: const TextStyle(fontSize: 12),),
+              Text(meetup.name ?? "Unnamed meetup", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ),),
+              WidgetUtils.spacer(5),
+              Text("${meetup.time?.hour}:${meetup.time?.minute}", style: const TextStyle(fontSize: 16),),
+              WidgetUtils.spacer(5),
+              Text(meetupDate, style: const TextStyle(fontSize: 16),),
             ],
           ),
         ),
-        Flexible(
+        Expanded(
           flex: 2,
           child: Center(
             child: Row(
               children: [
+                WidgetUtils.spacer(10),
                 Container(
                   width: 5,
                   height: 5,
@@ -315,7 +338,8 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
                     shape: BoxShape.circle,
                   ),
                 ),
-                Text(meetup.meetupStatus, style: const TextStyle(fontSize: 12),),
+                WidgetUtils.spacer(5),
+                Text(meetup.meetupStatus, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
               ],
             ),
           )

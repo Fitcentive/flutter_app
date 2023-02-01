@@ -7,6 +7,7 @@ import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_b
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_meetup_participants_view.dart';
+import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/select_meetup_details_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -140,7 +141,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
           _moveToNextPageOrPop(currentPage.toInt(), currentState);
         }
         else {
-          if (currentPage == 0) {
+          if (currentPage == 0 || currentPage == 2) {
             SnackbarUtils.showSnackBar(context, "Please add at least one participant to the meetup!");
           }
           else {
@@ -163,7 +164,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
   }
 
   void _moveToNextPageOrPop(int currentPage, MeetupModified state) {
-    if (currentPage < 1) {
+    if (currentPage < 2) {
       // Move to next page if not at last page
       _pageController.animateToPage(currentPage + 1,
           duration: const Duration(milliseconds: 200),
@@ -183,6 +184,9 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
         // Nothing to do here
         return;
       case 1:
+      // Nothing to do here
+        return;
+      case 2:
         final currentState = _createNewMeetupBloc.state;
         if (currentState is MeetupModified) {
           _createNewMeetupBloc.add(
@@ -210,13 +214,15 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
       case 1:
       // Validate rest of the meetup data
         return state.meetupName != null && state.participantUserProfiles.isNotEmpty;
+      case 2:
+        return state.participantUserProfiles.isNotEmpty;
       default:
         return false;
     }
   }
 
   _changeButtonIconIfNeeded(int pageNumber) {
-    if (pageNumber == 1) {
+    if (pageNumber == 2) {
       setState(() {
         floatingActionButtonIcon = const Icon(Icons.check, color: Colors.white);
       });
@@ -258,6 +264,10 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
                   participantUserIds: state.participantUserProfiles.map((e) => e.userId).toList(),
                 ),
                 SelectMeetupDetailsView(
+                    currentUserProfile: widget.currentUserProfile,
+                    participantUserIds: state.participantUserProfiles.map((e) => e.userId).toList()
+                ),
+                AddOwnerAvailabilitiesView(
                     currentUserProfile: widget.currentUserProfile,
                     participantUserIds: state.participantUserProfiles.map((e) => e.userId).toList()
                 )

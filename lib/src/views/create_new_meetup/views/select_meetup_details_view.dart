@@ -14,11 +14,9 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -39,7 +37,7 @@ class SelectMeetupDetailsView extends StatefulWidget {
   }
 }
 
-class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
+class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with AutomaticKeepAliveClientMixin {
   final String customSelectedLocationMarkerId = "customSelectedLocationMarkerId";
 
   late final CreateNewMeetupBloc _createNewMeetupBloc;
@@ -60,11 +58,16 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
   Timer? _debounce;
-  late BitmapDescriptor customGymLocationIcon;
+  BitmapDescriptor? customGymLocationIcon;
+
+  @override
+  bool get wantKeepAlive => true;
 
   _setupIcons() async {
-    final Uint8List? gymMarkerIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon.png', 100);
-    customGymLocationIcon = BitmapDescriptor.fromBytes(gymMarkerIcon!);
+    if (customGymLocationIcon == null) {
+      final Uint8List? gymMarkerIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon.png', 100);
+      customGymLocationIcon = BitmapDescriptor.fromBytes(gymMarkerIcon!);
+    }
   }
 
   @override
@@ -82,6 +85,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
     }
 
   }
+
 
   @override
   void dispose() {
@@ -124,110 +128,6 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
     );
   }
 
-  // Import availabilities from test project, also test with multiple users
-  _renderAvailabilitiesView(MeetupModified state) {
-    return IntrinsicHeight(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: TimePlanner(
-          startHour: 6,
-          endHour: 23,
-          style: TimePlannerStyle(
-            // cellHeight: 60,
-            // cellWidth: 60,
-            showScrollBar: true,
-          ),
-          headers: const [
-            TimePlannerTitle(
-              date: "3/10/2021",
-              title: "sunday",
-            ),
-            TimePlannerTitle(
-              date: "3/11/2021",
-              title: "monday",
-            ),
-            TimePlannerTitle(
-              date: "3/12/2021",
-              title: "tuesday",
-            ),
-            TimePlannerTitle(
-              date: "3/13/2021",
-              title: "wednesday",
-            ),
-            TimePlannerTitle(
-              date: "3/14/2021",
-              title: "thursday",
-            ),
-            TimePlannerTitle(
-              date: "3/15/2021",
-              title: "friday",
-            ),
-            TimePlannerTitle(
-              date: "3/16/2021",
-              title: "saturday",
-            ),
-            TimePlannerTitle(
-              date: "3/17/2021",
-              title: "sunday",
-            ),
-            TimePlannerTitle(
-              date: "3/18/2021",
-              title: "monday",
-            ),
-            TimePlannerTitle(
-              date: "3/19/2021",
-              title: "tuesday",
-            ),
-            TimePlannerTitle(
-              date: "3/20/2021",
-              title: "wednesday",
-            ),
-            TimePlannerTitle(
-              date: "3/21/2021",
-              title: "thursday",
-            ),
-            TimePlannerTitle(
-              date: "3/22/2021",
-              title: "friday",
-            ),
-            TimePlannerTitle(
-              date: "3/23/2021",
-              title: "saturday",
-            ),
-            TimePlannerTitle(
-              date: "3/24/2021",
-              title: "tuesday",
-            ),
-            TimePlannerTitle(
-              date: "3/25/2021",
-              title: "wednesday",
-            ),
-            TimePlannerTitle(
-              date: "3/26/2021",
-              title: "thursday",
-            ),
-            TimePlannerTitle(
-              date: "3/27/2021",
-              title: "friday",
-            ),
-            TimePlannerTitle(
-              date: "3/28/2021",
-              title: "saturday",
-            ),
-            TimePlannerTitle(
-              date: "3/29/2021",
-              title: "friday",
-            ),
-            TimePlannerTitle(
-              date: "3/30/2021",
-              title: "saturday",
-            ),
-          ],
-          tasks: [],
-        ),
-      ),
-    );
-  }
 
   _renderMeetupFsqLocationCardIfNeeded(MeetupModified state) {
     if (state.location == null) {
@@ -245,9 +145,12 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
       // Show the location card view here
       return IntrinsicHeight(
         child: Center(
-          child: FoursquareLocationCardView(
-            locationId: state.location!.locationId,
-            location: state.location!.location,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: FoursquareLocationCardView(
+              locationId: state.location!.locationId,
+              location: state.location!.location,
+            ),
           ),
         ),
       );
@@ -346,7 +249,8 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
   }
 
   // todo - DRY this up with what is there ins meetup_home_view.dart
-   _setupMap(MeetupModified state, List<PublicUserProfile> users) async {
+   _setupMap(MeetupModified state, List<PublicUserProfile> users) {
+     _setupIcons();
      for (var user in users) {
        final BitmapDescriptor theCustomMarkerToUse = state.userIdToMapMarkerIconSet[user.userId]!;
        _generateCircleAndMarkerForUserProfile(state, user, theCustomMarkerToUse);
@@ -356,7 +260,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
      if (state.location != null) {
        markers.add(
          Marker(
-           icon: customGymLocationIcon,
+           icon: customGymLocationIcon!,
            markerId: MarkerId(customSelectedLocationMarkerId),
            position: state.location!.location.geocodes.toGoogleMapsLatLng(),
          ),
@@ -389,6 +293,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: TextField(
+            textCapitalization: TextCapitalization.words,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
             onChanged: (text) {
@@ -532,11 +437,19 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
     );
   }
 
+  _onParticipantRemoved(PublicUserProfile removedUser) {
+    final updatedListAfterRemovingParticipant = [...selectedParticipants];
+    updatedListAfterRemovingParticipant.removeWhere((element) => element == removedUser.userId);
+    _updateBlocState(updatedListAfterRemovingParticipant);
+    _updateUserSearchResultsListIfNeeded(removedUser.userId);
+  }
+
   _renderParticipantsView(MeetupModified state) {
     if (state.participantUserProfiles.isNotEmpty) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: state.participantUserProfiles.map((e) => _renderParticipantCircleViewWithCloseButton(e)).toList(),
+      return MeetupParticipantsList(
+          participantUserProfiles: state.participantUserProfiles,
+          onParticipantRemoved: _onParticipantRemoved,
+          onParticipantTapped: null,
       );
     }
     else {
@@ -556,44 +469,6 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> {
         ),
       );
     }
-  }
-
-  Widget _renderParticipantCircleViewWithCloseButton(PublicUserProfile userProfile) {
-    return CircleAvatar(
-      radius: 30,
-      child: Stack(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: ImageUtils.getUserProfileImage(userProfile, 500, 500),
-            ),
-          ),
-          Align(
-            alignment: Alignment.topRight,
-            child: CircleAvatar(
-                radius: 10,
-                backgroundColor: Theme.of(context).primaryColor,
-                child: GestureDetector(
-                  onTap: () {
-                    final updatedListAfterRemovingParticipant = [...selectedParticipants];
-                    updatedListAfterRemovingParticipant.removeWhere((element) => element == userProfile.userId);
-                    _updateBlocState(updatedListAfterRemovingParticipant);
-                    _updateUserSearchResultsListIfNeeded(userProfile.userId);
-                  },
-                  child: Icon(
-                    Icons.remove,
-                    size: 20,
-                    color: Colors.white,
-                  ),
-                )
-            ),
-          )
-        ],
-      ),
-    );
   }
 
   _updateUserSearchResultsListIfNeeded(String userId) {

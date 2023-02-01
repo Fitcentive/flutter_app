@@ -39,17 +39,23 @@ class MeetupAvailability extends Equatable {
   ];
 }
 
+// Bit of a misnomer, fix eventually
 class MeetupAvailabilityUpsert extends Equatable {
-  final String? id;
   final DateTime availabilityStart;
   final DateTime availabilityEnd;
 
-  const MeetupAvailabilityUpsert(this.id, this.availabilityStart, this.availabilityEnd);
+  const MeetupAvailabilityUpsert(this.availabilityStart, this.availabilityEnd);
 
   @override
   List<Object?> get props => [
-    id,
     availabilityStart,
     availabilityEnd,
   ];
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'availabilityStart': availabilityStart.toIso8601String(),
+      'availabilityEnd': availabilityEnd.toIso8601String(),
+    };
+  }
 }

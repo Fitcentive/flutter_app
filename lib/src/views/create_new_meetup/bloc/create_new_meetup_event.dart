@@ -16,7 +16,8 @@ class NewMeetupChanged extends CreateNewMeetupEvent {
   final String? meetupName;
   final Location? location;
   final List<String> meetupParticipantUserIds;
-  final List<MeetupAvailability> currentUserAvailabilities;
+
+  final List<List<bool>> currentUserAvailabilities;
 
   const NewMeetupChanged({
     required this.currentUserProfile,
@@ -44,7 +45,8 @@ class SaveNewMeetup extends CreateNewMeetupEvent {
   final String? meetupName;
   final Location? location;
   final List<String> meetupParticipantUserIds;
-  final List<MeetupAvailability> currentUserAvailabilities;
+
+  final List<List<bool>> currentUserAvailabilities;
 
   const SaveNewMeetup({
     required this.currentUserProfile,

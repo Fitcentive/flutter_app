@@ -48,3 +48,34 @@ class Meetup extends Equatable {
     updatedAt,
   ];
 }
+
+class MeetupCreate extends Equatable {
+
+  final String ownerId;
+  final String meetupType;
+  final String? name;
+  final DateTime? time;
+  final int? durationInMinutes;
+  final String? locationId;
+
+
+  const MeetupCreate({
+    required this.ownerId,
+    required this.meetupType,
+    this.name,
+    this.time,
+    this.durationInMinutes,
+    this.locationId
+  });
+
+  @override
+  List<Object?> get props => [
+    ownerId,
+    meetupType,
+    name,
+    time,
+    durationInMinutes,
+    locationId,
+  ];
+
+}

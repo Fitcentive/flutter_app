@@ -18,6 +18,33 @@ class MeetupRepository {
 
   final logger = Logger("MeetupRepository");
 
+  Future<Meetup> createMeetup(
+      MeetupCreate newMeetup,
+      String accessToken
+      ) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/meetups"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: jsonEncode({
+        "meetupType": newMeetup.meetupType,
+        "owner" : newMeetup.ownerId,
+        "name" : newMeetup.name,
+        "time" : newMeetup.time?.toUtc().toIso8601String(),
+        "durationInMinutes" : newMeetup.durationInMinutes,
+        "locationId" : newMeetup.locationId
+      })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return Meetup.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "createMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<void> deleteMeetupForUser(
       String meetupId,
       String accessToken
@@ -104,7 +131,27 @@ class MeetupRepository {
     }
   }
 
-  Future<List<MeetupAvailability>> getMeetupParticipantAvailability(
+  Future<MeetupParticipant> addParticipantToMeetup(
+      String meetupId,
+      String participantUserId,
+      String accessToken
+      ) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/meetups/$meetupId/participants/$participantUserId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return MeetupParticipant.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "addParticipantToMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<MeetupAvailability>> getMeetupParticipantAvailabilities(
       String meetupId,
       String participantId,
       String accessToken
@@ -124,6 +171,52 @@ class MeetupRepository {
     else {
       throw Exception(
           "getMeetupParticipantAvailability: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<MeetupAvailability>> upsertMeetupParticipantAvailabilities(
+      String meetupId,
+      String participantId,
+      String accessToken,
+      List<MeetupAvailabilityUpsert> availabilities,
+      ) async {
+    final response = await http.put(
+      Uri.parse("$BASE_URL/meetups/$meetupId/participants/$participantId/availabilities"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: jsonEncode({
+        "availabilities": availabilities.map((e) => e.toJson()).toList()
+      })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<MeetupAvailability> results = jsonResponse.map((e) {
+        return MeetupAvailability.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "upsertMeetupParticipantAvailabilities: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> deleteMeetupParticipantAvailabilities(
+      String meetupId,
+      String participantId,
+      String accessToken
+      ) async {
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/meetups/$meetupId/participants/$participantId/availabilities"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+        return;
+    }
+    else {
+      throw Exception(
+          "deleteMeetupParticipantAvailabilities: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

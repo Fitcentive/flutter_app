@@ -5,6 +5,8 @@ import 'package:flutter_app/src/views/shared_components/time_planner/time_planne
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/config/global_config.dart' as config;
 
+typedef TimePlannerSelectedTileCallback = void Function(List<List<bool>> selectedTimeblocks);
+
 /// Inspired by https://pub.dev/packages/time_planner
 ///
 /// Time planner widget
@@ -29,21 +31,25 @@ class TimePlanner extends StatefulWidget {
   /// When widget loaded scroll to current time with an animation. Default is true
   final bool? currentTimeAnimation;
 
+  final TimePlannerSelectedTileCallback availabilityChangedCallback;
+
   /// Time planner widget
   const TimePlanner({
     Key? key,
     required this.startHour,
     required this.endHour,
     required this.headers,
+    required this.availabilityChangedCallback,
     this.tasks,
     this.style,
     this.currentTimeAnimation,
   }) : super(key: key);
+
   @override
-  _TimePlannerState createState() => _TimePlannerState();
+  TimePlannerState createState() => TimePlannerState();
 }
 
-class _TimePlannerState extends State<TimePlanner> {
+class TimePlannerState extends State<TimePlanner> {
   ScrollController mainHorizontalController = ScrollController();
   ScrollController mainVerticalController = ScrollController();
   ScrollController dayHorizontalController = ScrollController();
@@ -104,16 +110,22 @@ class _TimePlannerState extends State<TimePlanner> {
       if (hour > widget.startHour) {
         double scrollOffset =
             (hour - widget.startHour) * config.cellHeight!.toDouble();
-        mainVerticalController.animateTo(
-          scrollOffset,
-          duration: const Duration(milliseconds: 800),
-          curve: Curves.easeOutCirc,
-        );
-        timeVerticalController.animateTo(
-          scrollOffset,
-          duration: const Duration(milliseconds: 800),
-          curve: Curves.easeOutCirc,
-        );
+
+        if (mainVerticalController.hasClients) {
+          mainVerticalController.animateTo(
+            scrollOffset,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutCirc,
+          );
+        }
+
+        if (timeVerticalController.hasClients) {
+          timeVerticalController.animateTo(
+            scrollOffset,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutCirc,
+          );
+        }
       }
     });
   }
@@ -202,11 +214,10 @@ class _TimePlannerState extends State<TimePlanner> {
   }
 
   List<Widget> _getSideTimes() {
-    var b = true;
     List<Widget> r = [];
     for (int i = widget.startHour; i <= widget.endHour; i++) {
-      r.add(TimePlannerTime(time: i.toString() + ':00'));
-      r.add(TimePlannerTime(time: i.toString() + ':30'));
+      r.add(Center(child: TimePlannerTime(time: '$i:00')));
+      r.add(Center(child: TimePlannerTime(time: '$i:30')));
     }
     return r;
   }
@@ -237,6 +248,8 @@ class _TimePlannerState extends State<TimePlanner> {
                         // maybe do it ALL together instead to enable select and drag
                         GestureDetector(
                           onTap: () {
+                            // todo - need to update parent bloc, but how?
+                            // maybe just
                             setState(() {
                               if (cellStateColors[colIndex][i] == Colors.green) {
                                 cellStateColors[colIndex][i] = Colors.white;
@@ -245,6 +258,12 @@ class _TimePlannerState extends State<TimePlanner> {
                                 cellStateColors[colIndex][i] = Colors.green;
                               }
                             });
+
+                            widget.availabilityChangedCallback(
+                                cellStateColors
+                                    .map((e) => e.map((e) => e == Colors.white ? false : true).toList())
+                                    .toList()
+                            );
                           },
                           // Block of time
                           child: SizedBox(
@@ -282,7 +301,7 @@ class _TimePlannerState extends State<TimePlanner> {
     if (style.showScrollBar!) {
       return Scrollbar(
         controller: mainVerticalController,
-        isAlwaysShown: true,
+        thumbVisibility: true,
         child: SingleChildScrollView(
           controller: mainVerticalController,
           child: Scrollbar(
@@ -292,20 +311,7 @@ class _TimePlannerState extends State<TimePlanner> {
               controller: mainHorizontalController,
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: [
-                  _generateLengthWise(0),
-                  _generateLengthWise(1),
-                  _generateLengthWise(2),
-                  _generateLengthWise(3),
-                  _generateLengthWise(4),
-                  _generateLengthWise(5),
-                  _generateLengthWise(6),
-                  _generateLengthWise(7),
-                  _generateLengthWise(8),
-                  _generateLengthWise(9),
-                  _generateLengthWise(10),
-                  _generateLengthWise(11),
-                ],
+                children: List.generate(config.totalDays, (index) => _generateLengthWise(index))
               ),
             ),
           ),

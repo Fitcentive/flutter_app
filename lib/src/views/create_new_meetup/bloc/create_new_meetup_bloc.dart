@@ -2,7 +2,11 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
+import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
+import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
+import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -25,20 +29,95 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
     required this.meetupRepository,
     required this.userRepository
   }) : super(const CreateNewMeetupStateInitial()) {
+
+    final now = DateTime.now();
+    const numberOfIntervals = (AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) * 2;
+    final intervalsList = List.generate(numberOfIntervals, (i) => i);
+    var i = 0;
+    var k = 0;
+    while (i < intervalsList.length) {
+      timeSegmentToDateTimeMap[i] =
+          DateTime(now.year, now.month, now.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
+      timeSegmentToDateTimeMap[i+1] =
+          DateTime(now.year, now.month, now.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
+
+      i += 2;
+      k += 1;
+    }
+
     on<NewMeetupChanged>(_newMeetupChanged);
     on<SaveNewMeetup>(_saveNewMeetup);
   }
 
   List<Color> usedColoursThusFar = [];
 
-  // Save meetup participants
-  // Save meetup availabilities for current user
-  // Save meetup decisions?
-  // Save meetup itself
+  Map<int, DateTime> timeSegmentToDateTimeMap = {};
+
+
+  _convertBooleanMatrixToAvailabilities(List<List<bool>> currentUserAvailabilities) {
+    List<MeetupAvailabilityUpsert> resultsSoFar = List.empty(growable: true);
+
+    // Assert on expected size
+    currentUserAvailabilities.asMap().forEach((dayIntIndex, dayTimeBlockAvailabilities) {
+      var hasContinuousWindowStarted = false;
+      var intervalStart = 0;
+      var j = 0;
+
+      while(j < dayTimeBlockAvailabilities.length) {
+        // Contiguous block is now broken! we have a minimal discrete interval
+        if (hasContinuousWindowStarted && !dayTimeBlockAvailabilities[j]) {
+          final intervalDatetimeStart = timeSegmentToDateTimeMap[intervalStart]!;
+          final intervalDateTimeEnd = timeSegmentToDateTimeMap[j]!;
+          resultsSoFar
+              .add(MeetupAvailabilityUpsert(
+              intervalDatetimeStart.add(Duration(days: dayIntIndex)).toUtc(),
+              intervalDateTimeEnd.add(Duration(days: dayIntIndex)).toUtc(),
+          ));
+
+          hasContinuousWindowStarted = false;
+        }
+
+        else if (dayTimeBlockAvailabilities[j] && !hasContinuousWindowStarted) {
+          hasContinuousWindowStarted = true;
+          intervalStart = j;
+        }
+
+        else {
+          j++;
+        }
+
+      }
+    });
+
+    return resultsSoFar;
+  }
+
+  // todo - should we Save meetup decisions for owner?
   void _saveNewMeetup(SaveNewMeetup event, Emitter<CreateNewMeetupState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    // final meetup = await meetupRepository.
+    List <MeetupAvailabilityUpsert> availabilitiesToSave = _convertBooleanMatrixToAvailabilities(event.currentUserAvailabilities);
+
+    final newMeetup = MeetupCreate(
+        ownerId: event.currentUserProfile.userId,
+        meetupType: "Workout",
+        name: event.meetupName,
+        time: event.meetupTime,
+        durationInMinutes: null, // Need to update things to include a time duration
+        locationId: event.location?.locationId,
+    );
+    final meetup = await meetupRepository.createMeetup(newMeetup, accessToken!);
+    // Add current user to participants list
+    await meetupRepository.addParticipantToMeetup(meetup.id, event.currentUserProfile.userId, accessToken);
+    await Future.wait(event.meetupParticipantUserIds.map((e) => meetupRepository.addParticipantToMeetup(meetup.id, e, accessToken)));
+    // Add availabilities
+    await meetupRepository.upsertMeetupParticipantAvailabilities(
+        meetup.id,
+        event.currentUserProfile.userId,
+        accessToken,
+        availabilitiesToSave
+    );
+
   }
 
   void _newMeetupChanged(NewMeetupChanged event, Emitter<CreateNewMeetupState> emit) async {

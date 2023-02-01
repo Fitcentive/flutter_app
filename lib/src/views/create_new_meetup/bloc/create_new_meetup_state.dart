@@ -26,7 +26,12 @@ class MeetupModified extends CreateNewMeetupState {
   final String? meetupName;
   final Location? location;
   final List<PublicUserProfile> participantUserProfiles;
-  final List<MeetupAvailability> currentUserAvailabilities;
+
+  // mxn matrix of booleans
+  // m refers to days (0 indexed)
+  // n refers to discrete time intervals per day == 46
+  final List<List<bool>> currentUserAvailabilities;
+
   final Map<String, BitmapDescriptor> userIdToMapMarkerIconSet;
   final Map<String, Color> userIdToColorSet;
 
