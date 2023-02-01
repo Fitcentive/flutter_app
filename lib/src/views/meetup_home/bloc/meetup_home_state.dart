@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
+import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 
@@ -18,6 +19,7 @@ class MeetupHomeStateInitial extends MeetupHomeState {
 
 class MeetupUserDataFetched extends MeetupHomeState {
   final List<Meetup> meetups;
+  final List<MeetupLocation?> meetupLocations;
   final Map<String, List<MeetupParticipant>> meetupParticipants;
   final Map<String, List<MeetupDecision>> meetupDecisions;
   final Map<String, PublicUserProfile> userIdProfileMap;
@@ -26,6 +28,7 @@ class MeetupUserDataFetched extends MeetupHomeState {
   const MeetupUserDataFetched({
     required this.meetups,
     required this.meetupParticipants,
+    required this.meetupLocations,
     required this.meetupDecisions,
     required this.userIdProfileMap,
     required this.doesNextPageExist,
@@ -36,6 +39,7 @@ class MeetupUserDataFetched extends MeetupHomeState {
     meetups,
     doesNextPageExist,
     meetupParticipants,
+    meetupLocations,
     meetupDecisions,
     userIdProfileMap,
   ];

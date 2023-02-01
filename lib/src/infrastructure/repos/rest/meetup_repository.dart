@@ -240,6 +240,26 @@ class MeetupRepository {
     }
   }
 
+  Future<MeetupLocation> getLocationByLocationId(
+      String locationId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/locations/$locationId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final result = MeetupLocation.fromJson(jsonResponse);
+      return result;
+    }
+    else {
+      throw Exception(
+          "getLocationByLocationId: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<List<Location>> getGymsAroundLocation(
       String query,
       Coordinates userCoordinates,

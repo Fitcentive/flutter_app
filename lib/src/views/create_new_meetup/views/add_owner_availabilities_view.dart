@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
@@ -47,8 +46,6 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
 
     _createNewMeetupBloc = BlocProvider.of<CreateNewMeetupBloc>(context);
     selectedParticipants = widget.participantUserIds;
-
-    // _updateBlocState(selectedParticipants);
   }
 
   @override
@@ -57,23 +54,21 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
         builder: (context, state) {
           if (state is MeetupModified) {
             return SingleChildScrollView(
-              child: Container(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _renderParticipantsView(state),
-                      WidgetUtils.spacer(5),
-                      const Center(child: Text("Tap on a participant to view their availability"),),
-                      WidgetUtils.spacer(2.5),
-                      Divider(color: Theme.of(context).primaryColor),
-                      WidgetUtils.spacer(2.5),
-                      _renderUserTextPrompt(),
-                      WidgetUtils.spacer(2.5),
-                      _renderAvailabilitiesView(state),
-                      WidgetUtils.spacer(20),
-                    ],
-                  ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _renderParticipantsView(state),
+                    WidgetUtils.spacer(5),
+                    const Center(child: Text("Tap on a participant to view their availability"),),
+                    WidgetUtils.spacer(2.5),
+                    Divider(color: Theme.of(context).primaryColor),
+                    WidgetUtils.spacer(2.5),
+                    _renderUserTextPrompt(),
+                    WidgetUtils.spacer(2.5),
+                    _renderAvailabilitiesView(state),
+                    WidgetUtils.spacer(20),
+                  ],
                 ),
               ),
             );

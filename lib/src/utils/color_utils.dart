@@ -9,16 +9,7 @@ class ColorUtils {
     Colors.yellow,
     Colors.pinkAccent,
     Colors.redAccent,
-    Colors.greenAccent
+    Colors.greenAccent,
+    Colors.deepPurple,
   ];
-
-  static Map<Color, double> colorToHueMap = {
-    Colors.teal: BitmapDescriptor.hueAzure,
-    Colors.orange: BitmapDescriptor.hueOrange,
-    Colors.blue: BitmapDescriptor.hueBlue,
-    Colors.yellow: BitmapDescriptor.hueYellow,
-    Colors.pinkAccent: BitmapDescriptor.hueRose,
-    Colors.redAccent: BitmapDescriptor.hueRed,
-    Colors.greenAccent: BitmapDescriptor.hueGreen,
-  };
 }

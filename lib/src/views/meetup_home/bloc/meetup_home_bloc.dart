@@ -40,6 +40,14 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
           ConstantUtils.DEFAULT_LIMIT,
           ConstantUtils.DEFAULT_OFFSET
       );
+      final meetupLocations = await Future.wait(meetups.map((e) {
+        if (e.locationId != null) {
+          return meetupRepository.getLocationByLocationId(e.locationId!, accessToken);
+        } else {
+          return Future.value(null);
+        }
+      }));
+
       final meetupParticipants = { for (var m in meetups) m.id: await meetupRepository.getMeetupParticipants(m.id, accessToken)};
       final meetupDecisions = { for (var m in meetups) m.id: await meetupRepository.getMeetupDecisions(m.id, accessToken)};
       final doesNextPageExist = meetups.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
@@ -53,6 +61,7 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
 
       emit(MeetupUserDataFetched(
         meetups: [...currentState.meetups, ...meetups],
+        meetupLocations: [...currentState.meetupLocations, ...meetupLocations],
         meetupDecisions: meetupDecisions,
         meetupParticipants: meetupParticipants,
         doesNextPageExist: doesNextPageExist,
@@ -70,6 +79,14 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
         ConstantUtils.DEFAULT_LIMIT,
         ConstantUtils.DEFAULT_OFFSET
     );
+    final meetupLocations = await Future.wait(meetups.map((e) {
+      if (e.locationId != null) {
+        return meetupRepository.getLocationByLocationId(e.locationId!, accessToken);
+      } else {
+        return Future.value(null);
+      }
+    }));
+
     final meetupParticipants = { for (var m in meetups) m.id: await meetupRepository.getMeetupParticipants(m.id, accessToken)};
     final meetupDecisions = { for (var m in meetups) m.id: await meetupRepository.getMeetupDecisions(m.id, accessToken)};
     final doesNextPageExist = meetups.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
@@ -81,6 +98,7 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
 
     emit(MeetupUserDataFetched(
       meetups: meetups,
+      meetupLocations: meetupLocations,
       meetupDecisions: meetupDecisions,
       meetupParticipants: meetupParticipants,
       doesNextPageExist: doesNextPageExist,
