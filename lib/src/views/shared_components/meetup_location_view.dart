@@ -82,6 +82,7 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
               initialCameraPosition: _initialCameraPosition,
               onMapCreated: (GoogleMapController controller) {
                 _mapController.complete(controller);
+                _snapCameraToMarkers();
               },
               gestureRecognizers: <Factory<OneSequenceGestureRecognizer>> {
                 Factory<OneSequenceGestureRecognizer> (() => EagerGestureRecognizer()),
@@ -185,8 +186,6 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
         tilt: 0,
         zoom: LocationUtils.getZoomLevelMini(users.map((e) => e.locationRadius!).reduce(max).toDouble())
     );
-
-    _snapCameraToMarkers();
 
   }
 

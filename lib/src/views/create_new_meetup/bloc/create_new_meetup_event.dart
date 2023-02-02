@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/location/location.dart';
-import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 
 abstract class CreateNewMeetupEvent extends Equatable {

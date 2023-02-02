@@ -125,7 +125,7 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
     return IntrinsicHeight(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: TimePlanner(
+        child: DiscreteAvailabilitiesView(
           availabilityChangedCallback: _availabilityChangedCallback,
           startHour: availabilityStartHour,
           endHour: availabilityEndHour,
@@ -135,7 +135,9 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
             showScrollBar: true,
           ),
           headers: _renderAvailabilityHeaders(),
-          tasks: const [], // We don't use tasks, we only use the cells themselves to collect availabilities
+          tasks: const [],
+          availabilityInitialDay: DateTime.now(),
+          meetupAvailabilities: {}, // We don't use tasks, we only use the cells themselves to collect availabilities
         ),
       ),
     );

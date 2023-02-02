@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
+import 'package:flutter_app/src/utils/datetime_utils.dart';
+import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_task.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_time.dart';
@@ -10,7 +13,7 @@ typedef TimePlannerSelectedTileCallback = void Function(List<List<bool>> selecte
 /// Inspired by https://pub.dev/packages/time_planner
 ///
 /// Time planner widget
-class TimePlanner extends StatefulWidget {
+class DiscreteAvailabilitiesView extends StatefulWidget {
   /// Time start from this, it will start from 0
   final int startHour;
 
@@ -31,25 +34,38 @@ class TimePlanner extends StatefulWidget {
   /// When widget loaded scroll to current time with an animation. Default is true
   final bool? currentTimeAnimation;
 
+  /// Availability matrix defined as an mxn matrix, with (i,j) being relativeDay and discreteTimeInterval
+  /// There are 34 discrete time intervals. (23-6)*2
+  /// Integer value dictates number of overlapping people for that discrete interval
+  // final List<List<int>> availabilityMatrix;
+
+  final Map<String, List<MeetupAvailability>> meetupAvailabilities;
+  final DateTime availabilityInitialDay;
+
   final TimePlannerSelectedTileCallback availabilityChangedCallback;
 
   /// Time planner widget
-  const TimePlanner({
+  const DiscreteAvailabilitiesView({
     Key? key,
     required this.startHour,
     required this.endHour,
     required this.headers,
     required this.availabilityChangedCallback,
+    required this.availabilityInitialDay,
+    required this.meetupAvailabilities,
     this.tasks,
     this.style,
     this.currentTimeAnimation,
   }) : super(key: key);
 
+  static List<List<int>> defaultAvailabilityMatrix(int totalDays, int totalHours) =>
+    List.generate(totalDays, (_) => List.filled(totalHours * 2, 0));
+
   @override
-  TimePlannerState createState() => TimePlannerState();
+  DiscreteAvailabilitiesViewState createState() => DiscreteAvailabilitiesViewState();
 }
 
-class TimePlannerState extends State<TimePlanner> {
+class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> {
   ScrollController mainHorizontalController = ScrollController();
   ScrollController mainVerticalController = ScrollController();
   ScrollController dayHorizontalController = ScrollController();
@@ -58,7 +74,7 @@ class TimePlannerState extends State<TimePlanner> {
   List<TimePlannerTask> tasks = [];
   bool? isAnimated = true;
 
-  List<List<Color>> cellStateColors = [[]];
+  List<List<int>> cellStateMatrix = [[]];
 
   /// check input value rules
   void _checkInputValue() {
@@ -98,7 +114,72 @@ class TimePlannerState extends State<TimePlanner> {
     config.borderRadius = style.borderRadius;
     isAnimated = widget.currentTimeAnimation;
     tasks = widget.tasks ?? [];
-    cellStateColors = List.generate(config.totalDays, (_) => List.filled(config.totalHours.toInt() * 2, Colors.white));
+
+    _convertAvailabilitiesToCellStateMatrix(widget.availabilityInitialDay, widget.meetupAvailabilities);
+  }
+
+  void _convertAvailabilitiesToCellStateMatrix(
+      DateTime availabilityInitialDay,
+      Map<String, List<MeetupAvailability>> availabilities
+  ) {
+    cellStateMatrix = DiscreteAvailabilitiesView.defaultAvailabilityMatrix(config.totalDays, config.totalHours.toInt());
+
+    final all = availabilities
+        .entries
+        .map((e) => e.value)
+        .toList()
+        .expand((i) => i)
+        .toList();
+
+    var currentDayIndex = 0;
+    while(currentDayIndex < config.totalDays) {
+      final availabilitiesForCurrentDay = all
+          .where((element) =>
+              element.availabilityStart.isSameDate(availabilityInitialDay.add(Duration(days: currentDayIndex)))
+          )
+          .toList();
+
+      final currentDayBase = availabilityInitialDay.add(Duration(days: currentDayIndex));
+
+      // Construct map
+      Map<int, DateTime> timeSegmentToDateTimeMap = {};
+      const numberOfIntervals = (AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) * 2;
+      final intervalsList = List.generate(numberOfIntervals, (i) => i);
+      var i = 0;
+      var k = 0;
+      while (i < intervalsList.length) {
+        timeSegmentToDateTimeMap[i] =
+            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
+        timeSegmentToDateTimeMap[i+1] =
+            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
+
+        i += 2;
+        k += 1;
+      }
+
+      var currentDiscreteTimeIntervalIndex = 0;
+      while (currentDiscreteTimeIntervalIndex < config.totalHours.toInt() * 2) {
+
+        // if availability overlaps current cell, increase count of it by 1
+        final dateTimePertainingToCurrentTimeInterval =
+          timeSegmentToDateTimeMap[currentDiscreteTimeIntervalIndex]!.add(const Duration(minutes: 5));
+        var count = 0;
+
+        availabilitiesForCurrentDay.forEach((a) {
+          if (a.availabilityStart.compareTo(dateTimePertainingToCurrentTimeInterval) < 0 &&
+              a.availabilityEnd.compareTo(dateTimePertainingToCurrentTimeInterval) > 0) {
+            count += 1;
+          }
+
+        });
+
+        cellStateMatrix[currentDayIndex][currentDiscreteTimeIntervalIndex] = count;
+
+        currentDiscreteTimeIntervalIndex++;
+      }
+
+      currentDayIndex++;
+    }
   }
 
   @override
@@ -248,28 +329,28 @@ class TimePlannerState extends State<TimePlanner> {
                         // maybe do it ALL together instead to enable select and drag
                         GestureDetector(
                           onTap: () {
-                            // todo - need to update parent bloc, but how?
-                            // maybe just
-                            setState(() {
-                              if (cellStateColors[colIndex][i] == Colors.green) {
-                                cellStateColors[colIndex][i] = Colors.white;
-                              }
-                              else {
-                                cellStateColors[colIndex][i] = Colors.green;
-                              }
-                            });
-
-                            widget.availabilityChangedCallback(
-                                cellStateColors
-                                    .map((e) => e.map((e) => e == Colors.white ? false : true).toList())
-                                    .toList()
-                            );
+                            // todo - change this
+                            // setState(() {
+                            //   if (cellStateMatrix[colIndex][i] == Colors.green) {
+                            //     cellStateMatrix[colIndex][i] = Colors.white;
+                            //   }
+                            //   else {
+                            //     cellStateMatrix[colIndex][i] = Colors.green;
+                            //   }
+                            // });
+                            //
+                            // widget.availabilityChangedCallback(
+                            //     cellStateMatrix
+                            //         .map((e) => e.map((e) => e == Colors.white ? false : true).toList())
+                            //         .toList()
+                            // );
                           },
                           // Block of time
                           child: SizedBox(
                             height: (config.cellHeight! + 1).toDouble() / 2,
                             child: Container(
-                              color: cellStateColors[colIndex][i],
+                              color: cellStateMatrix[colIndex][i] == 0 ? Colors.white :
+                              Colors.tealAccent.withOpacity((cellStateMatrix[colIndex][i] / widget.meetupAvailabilities.entries.length)),
                             ),
                           ),
                         ),

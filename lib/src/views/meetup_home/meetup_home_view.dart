@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
+import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -171,6 +172,23 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     );
   }
 
+  _goToEditMeetupView(
+      Meetup meetup,
+      MeetupLocation? meetupLocation,
+      List<MeetupParticipant> participants,
+      List<MeetupDecision> decisions,
+      List<PublicUserProfile> relevantUserProfiles,
+      ) {
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) =>
+          DetailedMeetupView.withBloc(meetup, meetupLocation, participants, decisions, relevantUserProfiles)
+      ),
+    );
+
+  }
+
   _meetupCardItem(
       Meetup meetup,
       MeetupLocation? meetupLocation,
@@ -181,14 +199,17 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     final relevantUserProfiles =
       userIdProfileMap.values.where((element) => participants.map((e) => e.userId).contains(element.userId)).toList();
     return IntrinsicHeight(
-      child: Card(
-        elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            child: Card(
+      child: GestureDetector(
+        onTap: () {
+          _goToEditMeetupView(meetup, meetupLocation, participants, decisions, relevantUserProfiles);
+        },
+        child: Card(
+          elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(10),
               child: Container(
                 padding: const EdgeInsets.all(10),
                 child: Column(
@@ -202,8 +223,8 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
                   ),
                 ),
               ),
-            ),
-          )
+            )
+        ),
       ),
     );
   }
@@ -240,7 +261,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
         child: MeetupParticipantsList(
-          participantUserProfiles: [...userProfiles],
+          participantUserProfiles: userProfiles,
           onParticipantRemoved: null,
           onParticipantTapped: null,
           circleRadius: 45,
