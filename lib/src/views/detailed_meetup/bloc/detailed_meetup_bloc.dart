@@ -25,6 +25,9 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     emit(const DetailedMeetupStateLoading());
 
+    final meetupLocation = event.meetupLocationFsqId == null ? null :
+      await meetupRepository.getLocationByFsqId(event.meetupLocationFsqId!, accessToken!);
+
     Map<String, List<MeetupAvailability>> availabilityMap = {};
     final availabilities = await Future.wait(event.participantIds.map((e) =>
         meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))
@@ -36,7 +39,11 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
       i++;
     }
 
-    emit(DetailedMeetupDataFetched(meetupId: event.meetupId, userAvailabilities: availabilityMap));
+    emit(DetailedMeetupDataFetched(
+        meetupId: event.meetupId,
+        userAvailabilities: availabilityMap,
+        meetupLocation: meetupLocation
+    ));
   }
 
 }

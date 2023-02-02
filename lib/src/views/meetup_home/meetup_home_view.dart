@@ -183,7 +183,14 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) =>
-          DetailedMeetupView.withBloc(meetup, meetupLocation, participants, decisions, relevantUserProfiles)
+          DetailedMeetupView.withBloc(
+              meetup,
+              meetupLocation,
+              participants,
+              decisions,
+              relevantUserProfiles,
+              widget.currentUserProfile
+          )
       ),
     );
 

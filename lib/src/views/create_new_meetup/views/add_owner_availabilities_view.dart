@@ -126,6 +126,7 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: DiscreteAvailabilitiesView(
+          currentUserAcceptingAvailabilityFor: widget.currentUserProfile.userId,
           availabilityChangedCallback: _availabilityChangedCallback,
           startHour: availabilityStartHour,
           endHour: availabilityEndHour,
@@ -137,7 +138,7 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
           headers: _renderAvailabilityHeaders(),
           tasks: const [],
           availabilityInitialDay: DateTime.now(),
-          meetupAvailabilities: {}, // We don't use tasks, we only use the cells themselves to collect availabilities
+          meetupAvailabilities: const {}, // We don't use tasks, we only use the cells themselves to collect availabilities
         ),
       ),
     );
@@ -151,7 +152,7 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
   }
 
   // Update to show only selected user availabilities, instead of current/all user availabilities
-  _onParticipantTapped(PublicUserProfile removedUser) {
+  _onParticipantTapped(PublicUserProfile removedUser, bool isSelected) {
 
   }
 

@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 
-typedef MeetupParticipantCallback = void Function(PublicUserProfile userProfile);
+typedef MeetupParticipantRemovedCallback = void Function(PublicUserProfile userProfile);
+typedef MeetupParticipantTappedCallback = void Function(PublicUserProfile userProfile, bool isSelected);
 
 class MeetupParticipantsList extends StatefulWidget {
   final List<PublicUserProfile> participantUserProfiles;
 
-  final MeetupParticipantCallback? onParticipantRemoved;
-  final MeetupParticipantCallback? onParticipantTapped;
+  final MeetupParticipantRemovedCallback? onParticipantRemoved;
+  final MeetupParticipantTappedCallback? onParticipantTapped;
 
   final double circleRadius;
 
@@ -31,14 +32,12 @@ class MeetupParticipantsListState extends State<MeetupParticipantsList> {
 
   Map<String, bool> isParticipantSelectedMap = {};
 
-  Color backgroundColor = Colors.teal;
-
   @override
   void initState() {
     super.initState();
 
     widget.participantUserProfiles.forEach((element) {
-      isParticipantSelectedMap[element.userId] = false;
+      isParticipantSelectedMap[element.userId] = true;
     });
   }
 
@@ -54,7 +53,7 @@ class MeetupParticipantsListState extends State<MeetupParticipantsList> {
   Widget _renderParticipantCircleViewWithCloseButton(PublicUserProfile userProfile) {
     return CircleAvatar(
       radius: (widget.circleRadius / 2) + ((widget.circleRadius / 2)/10),
-      backgroundColor: backgroundColor,
+      backgroundColor: isParticipantSelectedMap[userProfile.userId] ?? false ? Colors.teal : Colors.red,
       child: Stack(
         children: [
           GestureDetector(
@@ -63,16 +62,16 @@ class MeetupParticipantsListState extends State<MeetupParticipantsList> {
                 if (isParticipantSelectedMap[userProfile.userId] ?? false) {
                   setState(() {
                     isParticipantSelectedMap[userProfile.userId] = false;
-                    backgroundColor = Colors.teal;
                   });
+                  widget.onParticipantTapped!(userProfile, false);
                 }
                 else {
                   setState(() {
                     isParticipantSelectedMap[userProfile.userId] = true;
-                    backgroundColor = Colors.red;
                   });
+                  widget.onParticipantTapped!(userProfile, true);
                 }
-                widget.onParticipantTapped!(userProfile);
+
               }
             },
             child: Center(

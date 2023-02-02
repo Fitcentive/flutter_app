@@ -34,10 +34,7 @@ class DiscreteAvailabilitiesView extends StatefulWidget {
   /// When widget loaded scroll to current time with an animation. Default is true
   final bool? currentTimeAnimation;
 
-  /// Availability matrix defined as an mxn matrix, with (i,j) being relativeDay and discreteTimeInterval
-  /// There are 34 discrete time intervals. (23-6)*2
-  /// Integer value dictates number of overlapping people for that discrete interval
-  // final List<List<int>> availabilityMatrix;
+  final String? currentUserAcceptingAvailabilityFor;
 
   final Map<String, List<MeetupAvailability>> meetupAvailabilities;
   final DateTime availabilityInitialDay;
@@ -53,6 +50,7 @@ class DiscreteAvailabilitiesView extends StatefulWidget {
     required this.availabilityChangedCallback,
     required this.availabilityInitialDay,
     required this.meetupAvailabilities,
+    this.currentUserAcceptingAvailabilityFor,
     this.tasks,
     this.style,
     this.currentTimeAnimation,
@@ -75,6 +73,8 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
   bool? isAnimated = true;
 
   List<List<int>> cellStateMatrix = [[]];
+
+  bool hasInitialCellMatrixBeenSetUpToAcceptAvailabilities = false;
 
   /// check input value rules
   void _checkInputValue() {
@@ -114,8 +114,6 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
     config.borderRadius = style.borderRadius;
     isAnimated = widget.currentTimeAnimation;
     tasks = widget.tasks ?? [];
-
-    _convertAvailabilitiesToCellStateMatrix(widget.availabilityInitialDay, widget.meetupAvailabilities);
   }
 
   void _convertAvailabilitiesToCellStateMatrix(
@@ -149,9 +147,9 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
       var k = 0;
       while (i < intervalsList.length) {
         timeSegmentToDateTimeMap[i] =
-            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
+            DateTime.utc(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
         timeSegmentToDateTimeMap[i+1] =
-            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
+            DateTime.utc(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
 
         i += 2;
         k += 1;
@@ -166,8 +164,9 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
         var count = 0;
 
         availabilitiesForCurrentDay.forEach((a) {
-          if (a.availabilityStart.compareTo(dateTimePertainingToCurrentTimeInterval) < 0 &&
-              a.availabilityEnd.compareTo(dateTimePertainingToCurrentTimeInterval) > 0) {
+          final aStart  = a.availabilityStart.add(const Duration(hours: 6));
+          final aEnd  = a.availabilityEnd.add(const Duration(hours: 6));
+          if (aStart.compareTo(dateTimePertainingToCurrentTimeInterval) < 0 && aEnd.compareTo(dateTimePertainingToCurrentTimeInterval) > 0) {
             count += 1;
           }
 
@@ -186,27 +185,28 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
   void initState() {
     _initData();
     super.initState();
+
     Future.delayed(Duration.zero).then((_) {
       int hour = DateTime.now().hour;
       if (hour > widget.startHour) {
         double scrollOffset =
             (hour - widget.startHour) * config.cellHeight!.toDouble();
 
-        if (mainVerticalController.hasClients) {
-          mainVerticalController.animateTo(
-            scrollOffset,
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOutCirc,
-          );
-        }
+        // if (mainVerticalController.hasClients) {
+        //   mainVerticalController.animateTo(
+        //     scrollOffset,
+        //     duration: const Duration(milliseconds: 800),
+        //     curve: Curves.easeOutCirc,
+        //   );
+        // }
 
-        if (timeVerticalController.hasClients) {
-          timeVerticalController.animateTo(
-            scrollOffset,
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOutCirc,
-          );
-        }
+        // if (timeVerticalController.hasClients) {
+        //   timeVerticalController.animateTo(
+        //     scrollOffset,
+        //     duration: const Duration(milliseconds: 800),
+        //     curve: Curves.easeOutCirc,
+        //   );
+        // }
       }
     });
   }
@@ -219,6 +219,23 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
 
   @override
   Widget build(BuildContext context) {
+    if (widget.currentUserAcceptingAvailabilityFor == null) {
+      // Just show all availabilities as expected
+      _convertAvailabilitiesToCellStateMatrix(widget.availabilityInitialDay, widget.meetupAvailabilities);
+      hasInitialCellMatrixBeenSetUpToAcceptAvailabilities = false;
+    }
+    else {
+      // Just populate entries for current user accepting availabilities for
+      if (!hasInitialCellMatrixBeenSetUpToAcceptAvailabilities) {
+        _convertAvailabilitiesToCellStateMatrix(
+            widget.availabilityInitialDay,
+            Map.fromEntries(widget.meetupAvailabilities.entries.where((element) => element.key == widget.currentUserAcceptingAvailabilityFor!))
+        );
+        hasInitialCellMatrixBeenSetUpToAcceptAvailabilities = true;
+      }
+
+    }
+
     mainHorizontalController.addListener(() {
       dayHorizontalController.jumpTo(mainHorizontalController.offset);
     });
@@ -329,29 +346,27 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
                         // maybe do it ALL together instead to enable select and drag
                         GestureDetector(
                           onTap: () {
-                            // todo - change this
-                            // setState(() {
-                            //   if (cellStateMatrix[colIndex][i] == Colors.green) {
-                            //     cellStateMatrix[colIndex][i] = Colors.white;
-                            //   }
-                            //   else {
-                            //     cellStateMatrix[colIndex][i] = Colors.green;
-                            //   }
-                            // });
-                            //
-                            // widget.availabilityChangedCallback(
-                            //     cellStateMatrix
-                            //         .map((e) => e.map((e) => e == Colors.white ? false : true).toList())
-                            //         .toList()
-                            // );
+                            if (widget.currentUserAcceptingAvailabilityFor != null) {
+                              setState(() {
+                                if (cellStateMatrix[colIndex][i] == 1) {
+                                  cellStateMatrix[colIndex][i] = 0;
+                                }
+                                else {
+                                  cellStateMatrix[colIndex][i] = 1;
+                                }
+                              });
+
+                              widget.availabilityChangedCallback(
+                                  cellStateMatrix
+                                      .map((e) => e.map((e) => e == 0 ? false : true).toList())
+                                      .toList()
+                              );
+                            }
                           },
                           // Block of time
                           child: SizedBox(
                             height: (config.cellHeight! + 1).toDouble() / 2,
-                            child: Container(
-                              color: cellStateMatrix[colIndex][i] == 0 ? Colors.white :
-                              Colors.tealAccent.withOpacity((cellStateMatrix[colIndex][i] / widget.meetupAvailabilities.entries.length)),
-                            ),
+                            child: _renderTimeUnitCell(colIndex, i),
                           ),
                         ),
                         const Divider(
@@ -375,6 +390,16 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
           ],
         )
       ],
+    );
+  }
+
+  _renderTimeUnitCell(int colIndex, int i) {
+    return Container(
+      color: cellStateMatrix[colIndex][i] == 0 ? Colors.white : (
+          widget.currentUserAcceptingAvailabilityFor != null ?
+          Colors.teal :
+          Colors.teal.withOpacity((cellStateMatrix[colIndex][i] / widget.meetupAvailabilities.entries.length))
+      ),
     );
   }
 

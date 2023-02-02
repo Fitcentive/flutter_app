@@ -69,7 +69,7 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
               onTap: (_) {
                 widget.onTapCallback();
               },
-              mapType: MapType.hybrid,
+              mapType: MapType.normal,
               mapToolbarEnabled: false,
               zoomControlsEnabled: false,
               myLocationButtonEnabled: false,
