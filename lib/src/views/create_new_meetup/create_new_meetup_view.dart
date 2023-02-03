@@ -90,6 +90,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
 
   _singleFloatingActionButton() {
     return FloatingActionButton(
+        heroTag: "CreateNewMeetupViewbutton0",
         onPressed: _onActionButtonPress,
         backgroundColor: Colors.teal,
         child: floatingActionButtonIcon
@@ -104,14 +105,14 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
         Container(
           margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
           child: FloatingActionButton(
-              heroTag: "button1",
+              heroTag: "CreateNewMeetupViewbutton1",
               onPressed: _onBackFloatingActionButtonPress,
               backgroundColor: Colors.teal,
               child: const Icon(Icons.navigate_before, color: Colors.white)
           ),
         ),
         FloatingActionButton(
-            heroTag: "button2",
+            heroTag: "CreateNewMeetupViewbutton2",
             onPressed: _onActionButtonPress,
             backgroundColor: Colors.teal,
             child: floatingActionButtonIcon

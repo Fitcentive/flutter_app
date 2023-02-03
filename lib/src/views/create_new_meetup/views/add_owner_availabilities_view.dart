@@ -162,6 +162,7 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
           participantUserProfiles: state.participantUserProfiles,
           onParticipantRemoved: _onParticipantRemoved,
           onParticipantTapped: _onParticipantTapped,
+          participantDecisions: [],
       );
     }
     else {

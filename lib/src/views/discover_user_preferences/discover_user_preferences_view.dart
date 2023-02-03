@@ -116,6 +116,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
 
   _singleFloatingActionButton() {
     return FloatingActionButton(
+        heroTag: "DiscoverUserPreferencesViewSingleFloatingACtionButton",
         onPressed: _onActionButtonPress,
         backgroundColor: Colors.teal,
         child: floatingActionButtonIcon
@@ -129,14 +130,14 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
         Container(
           margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
           child: FloatingActionButton(
-              heroTag: "button1",
+              heroTag: "DiscoverUserPreferencesbutton1",
               onPressed: _onBackFloatingActionButtonPress,
               backgroundColor: Colors.teal,
               child: const Icon(Icons.navigate_before, color: Colors.white)
           ),
         ),
         FloatingActionButton(
-            heroTag: "button2",
+            heroTag: "DiscoverUserPreferencesbutton2",
             onPressed: _onActionButtonPress,
             backgroundColor: Colors.teal,
             child: floatingActionButtonIcon

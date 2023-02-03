@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 
@@ -12,6 +14,11 @@ class UpperCaseTextFormatter extends TextInputFormatter {
 }
 
 class StringUtils {
+
+  static String generateRandomString(int len) {
+    var r = Random();
+    return String.fromCharCodes(List.generate(len, (index) => r.nextInt(33) + 89));
+  }
 
   static String getUserNameFromUserProfile(PublicUserProfile? publicUserProfile) {
     if (publicUserProfile != null) {

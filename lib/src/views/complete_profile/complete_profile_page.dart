@@ -106,6 +106,7 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
   _nextButton() {
     return BlocBuilder<CompleteProfileBloc, CompleteProfileState>(builder: (context, state) {
       return FloatingActionButton(
+          heroTag: "CompleteProfilePageNextButton",
           onPressed: _onFloatingActionButtonPress,
           backgroundColor: _getBackgroundColor(),
           child: const Icon(Icons.navigate_next_sharp, color: Colors.white)

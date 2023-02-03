@@ -78,6 +78,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   _nextButton() {
     return BlocBuilder<CreateAccountBloc, CreateAccountState>(builder: (context, state) {
       return FloatingActionButton(
+          heroTag: "CreateAccountPageNextButton",
           onPressed: _onFloatingActionButtonPress,
           backgroundColor: _getBackgroundColor(),
           child: const Icon(Icons.navigate_next_sharp, color: Colors.white));

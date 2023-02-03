@@ -251,6 +251,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                 ),
               ),
               floatingActionButton: FloatingActionButton(
+                heroTag: "SearchLocationsViewFab",
                 onPressed: () {
                   if (state is FetchLocationsAroundCoordinatesLoaded &&
                       state.coordinates.latitude != currentCentrePosition.latitude &&

@@ -394,11 +394,12 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
   }
 
   _renderTimeUnitCell(int colIndex, int i) {
+    final calculatedOpacity = (cellStateMatrix[colIndex][i] / widget.meetupAvailabilities.entries.length);
     return Container(
       color: cellStateMatrix[colIndex][i] == 0 ? Colors.white : (
           widget.currentUserAcceptingAvailabilityFor != null ?
-          Colors.teal :
-          Colors.teal.withOpacity((cellStateMatrix[colIndex][i] / widget.meetupAvailabilities.entries.length))
+          Colors.tealAccent :
+          Colors.tealAccent.withOpacity(calculatedOpacity)
       ),
     );
   }

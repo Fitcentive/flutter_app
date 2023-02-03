@@ -146,6 +146,10 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     );
   }
 
+  _pullToRefresh() {
+    _meetupHomeBloc.add(FetchUserMeetupData(widget.currentUserProfile.userId));
+  }
+
   _renderMeetupsListView(MeetupUserDataFetched state) {
     return RefreshIndicator(
       onRefresh: () async {
@@ -267,7 +271,8 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   _renderParticipantsList(
       List<MeetupParticipant> participants,
       List<PublicUserProfile> userProfiles,
-      List<MeetupDecision> decisions) {
+      List<MeetupDecision> decisions
+  ) {
     return SizedBox(
       height: 200,
       child: Container(
@@ -277,6 +282,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
           onParticipantRemoved: null,
           onParticipantTapped: null,
           circleRadius: 45,
+          participantDecisions: decisions,
         ),
       ),
     );
@@ -344,6 +350,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       child: Visibility(
         visible: _isFloatingButtonVisible,
         child: FloatingActionButton(
+          heroTag: "MeetupHomeViewCreateNewMeetupButton",
           onPressed: () {
             _goToCreateNewMeetupView();
           },

@@ -78,6 +78,7 @@ class ResetPasswordPageState extends State<ResetPasswordPage> {
     return BlocBuilder<ResetPasswordBloc, ResetPasswordState>(
         builder: (context, state) {
           return FloatingActionButton(
+              heroTag: "ResetPasswordPageNextButton",
               onPressed: _onFloatingActionButtonPress,
               backgroundColor: _getBackgroundColor(),
               child: const Icon(Icons.navigate_next_sharp, color: Colors.white));

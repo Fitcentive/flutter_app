@@ -160,6 +160,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
       child: Visibility(
         visible: _isFloatingButtonVisible,
         child: FloatingActionButton(
+          heroTag: "NewsfeedViewAnimatedButton",
           onPressed: () {
             _goToCreateNewPostView();
           },

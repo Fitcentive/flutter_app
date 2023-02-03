@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
@@ -47,7 +48,6 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
   Map<String, Color> userIdToMapMarkerColor = {};
   List<Color> usedColoursThusFar = [];
 
-  late Future<int> setupIconResult;
   late BitmapDescriptor customGymLocationIcon;
 
   @override
@@ -55,38 +55,64 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
     super.initState();
 
     _setupColorsForUsers(widget.userProfiles);
-    setupIconResult = _setupMapIconsForUsers(widget.userProfiles);
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<void>(
-      future: setupIconResult,
+      future: _setupMapIconsForUsers(widget.userProfiles),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           _setupMap(widget.meetupLocation, widget.userProfiles);
-          return GoogleMap(
-              onTap: (_) {
-                widget.onTapCallback();
-              },
-              mapType: MapType.normal,
-              mapToolbarEnabled: false,
-              zoomControlsEnabled: false,
-              myLocationButtonEnabled: false,
-              myLocationEnabled: true,
-              rotateGesturesEnabled: true,
-              scrollGesturesEnabled: true,
-              zoomGesturesEnabled: true,
-              markers: markers,
-              circles: Set<Circle>.of(circles.values),
-              initialCameraPosition: _initialCameraPosition,
-              onMapCreated: (GoogleMapController controller) {
-                _mapController.complete(controller);
-                _snapCameraToMarkers();
-              },
-              gestureRecognizers: <Factory<OneSequenceGestureRecognizer>> {
-                Factory<OneSequenceGestureRecognizer> (() => EagerGestureRecognizer()),
-              }
+          return Stack(
+            children: [
+              GoogleMap(
+                  onTap: (_) {
+                    widget.onTapCallback();
+                  },
+                  mapType: MapType.normal,
+                  mapToolbarEnabled: false,
+                  zoomControlsEnabled: false,
+                  myLocationButtonEnabled: false,
+                  myLocationEnabled: true,
+                  rotateGesturesEnabled: true,
+                  scrollGesturesEnabled: true,
+                  zoomGesturesEnabled: true,
+                  markers: markers,
+                  circles: Set<Circle>.of(circles.values),
+                  initialCameraPosition: _initialCameraPosition,
+                  onMapCreated: (GoogleMapController controller) {
+                    _mapController.complete(controller);
+                    // _snapCameraToMarkers();
+                  },
+                  gestureRecognizers: <Factory<OneSequenceGestureRecognizer>> {
+                    Factory<OneSequenceGestureRecognizer> (() => EagerGestureRecognizer()),
+                  }
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: FloatingActionButton(
+                      heroTag: "MeetupLocationViewSnapToMarkersButton-${StringUtils.generateRandomString(10)}",
+                      onPressed: () {
+                        _snapCameraToMarkers();
+                      },
+                      backgroundColor: Colors.teal,
+                      tooltip: "Re-center",
+                      child: const Icon(
+                          Icons.location_searching_outlined,
+                          color: Colors.white,
+                        size: 16
+                      )
+                    ),
+                  ),
+                ),
+              )
+            ],
           );
         }
         else {

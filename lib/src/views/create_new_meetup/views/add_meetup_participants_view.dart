@@ -108,6 +108,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
           participantUserProfiles: state.participantUserProfiles,
           onParticipantRemoved: _onParticipantRemoved,
           onParticipantTapped: null,
+          participantDecisions: [],
       );
     }
     else {

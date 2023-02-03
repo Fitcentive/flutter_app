@@ -214,7 +214,20 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   _addUserDecision(bool hasUserAcceptedMeetup) {
-    // Todo - add user decision to meetup via bloc event here
+    _detailedMeetupBloc.add(
+        AddParticipantDecisionToMeetup(
+            meetupId: widget.meetup.id,
+            participantId: widget.currentUserProfile.userId,
+            hasAccepted: hasUserAcceptedMeetup
+        )
+    );
+    if (hasUserAcceptedMeetup) {
+      SnackbarUtils.showSnackBar(context, "You have successfully accepted the meetup invite!");
+    }
+    else {
+      SnackbarUtils.showSnackBar(context, "You have successfully declined the meetup invite!");
+    }
+    Navigator.pop(context);
   }
 
   _dynamicFloatingActionButtons() {
@@ -225,23 +238,31 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         children: [
           Container(
             margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-              onPressed: _addUserDecision(false),
-              child: const Text("Decline"),
+            child: FloatingActionButton(
+                heroTag: "declineButtonDetailedMeetupView",
+                onPressed: () {
+                  _addUserDecision(false);
+                },
+                backgroundColor: Colors.redAccent,
+                tooltip: "Decline",
+                child: const Icon(Icons.close, color: Colors.white)
             ),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-            onPressed: _addUserDecision(true),
-            child: const Text("Accept"),
+          FloatingActionButton(
+              heroTag: "acceptButtonDetailedMeetupView",
+              onPressed: () {
+                _addUserDecision(true);
+              },
+              backgroundColor: Colors.teal,
+              tooltip: "Accept",
+              child: const Icon(Icons.check, color: Colors.white)
           )
         ],
       );
     }
     else {
       return FloatingActionButton(
-          heroTag: "button1",
+          heroTag: "saveButtonDetailedMeetupView",
           onPressed: _updateMeetingDetails,
           backgroundColor: Colors.teal,
           child: const Icon(Icons.save, color: Colors.white)
@@ -367,9 +388,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   // This is only triggered if the supplied currentUserAcceptingAvailabilityFor is not null
-  // Once bug is fixed, bloc event to save and pop!
-  // Need to figure out how to edit participants list for owner, with teh right view
-  // todo - when save edits is pressed, the edits should actually be peristed in the backend!, but ONLY AFTER BUG
   _availabilityChangedCallback(List<List<bool>> availabilitiesChanged) {
     // For some reason, this callback only is going ahead by 5.5 hours. Fix dirty hack
     final updatedCurrentUserAvailabilities = MiscUtils.convertBooleanMatrixToAvailabilities(
@@ -479,10 +497,23 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   _onParticipantRemoved(PublicUserProfile userProfile) {
-    // Do something about this with bloc soon
+    // We ensure that the owner is now removed
+    if (widget.currentUserProfile.userId == widget.meetup.ownerId) {
+      if (userProfile.userId != widget.meetup.ownerId) {
+        setState(() {
+          selectedMeetupParticipants.remove(userProfile);
+        });
+        selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(userProfile.userId);
+      }
+      else {
+        SnackbarUtils.showSnackBar(context, "Cannot remove owner from participants list!");
+      }
+    }
+    else {
+      SnackbarUtils.showSnackBar(context, "Cannot modify meetup participants unless you are the owner!");
+    }
   }
 
-  // Something is not right over here, needs more fine tuning
   _onParticipantTapped(PublicUserProfile userProfile, bool isSelected) {
     // Select only availabilities to show here
     setState(() {
@@ -503,6 +534,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         participantUserProfiles: selectedMeetupParticipants,
         onParticipantRemoved: _onParticipantRemoved,
         onParticipantTapped: _onParticipantTapped,
+        participantDecisions: widget.decisions,
       );
     }
     else {
@@ -597,6 +629,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             });
           }
         }
+        else {
+          SnackbarUtils.showSnackBar(context, "Cannot modify meetup time unless you are the owner!");
+        }
       },
       child: Text(
           selectedMeetupDate == null ? "Time unset" : DateFormat("hh:mm a").format(selectedMeetupDate!),
@@ -640,6 +675,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
               );
             });
           }
+        }
+        else {
+          SnackbarUtils.showSnackBar(context, "Cannot modify meetup date unless you are the owner!");
         }
       },
       child: Text(

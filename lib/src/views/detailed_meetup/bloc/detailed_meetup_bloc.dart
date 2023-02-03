@@ -22,8 +22,20 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     on<FetchAdditionalMeetupData>(_fetchAdditionalMeetupData);
     on<SaveAvailabilitiesForCurrentUser>(_saveAvailabilitiesForCurrentUser);
     on<UpdateMeetupDetails>(_updateMeetupDetails);
+    on<AddParticipantDecisionToMeetup>(_addParticipantDecisionToMeetup);
   }
 
+  void _addParticipantDecisionToMeetup(AddParticipantDecisionToMeetup event, Emitter<DetailedMeetupState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    
+    // Remove previous decision
+    // await meetupRepository.deleteUserMeetupDecision(event.meetupId, event.participantId, accessToken!);
+    // No need to remove previous as upsert takes care of it
+
+    // Add current decision
+    await meetupRepository.upsertMeetupDecision(event.meetupId, event.participantId, event.hasAccepted, accessToken!);
+  }
+  
   void _updateMeetupDetails(UpdateMeetupDetails event, Emitter<DetailedMeetupState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 

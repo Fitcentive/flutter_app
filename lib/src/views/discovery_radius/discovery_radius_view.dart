@@ -72,6 +72,7 @@ class DiscoveryRadiusViewState extends State<DiscoveryRadiusView> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+          heroTag: "DiscoveryRadiusViewbutton1",
           onPressed: _onFloatingActionButtonPress,
           backgroundColor: Colors.teal,
           child: const Icon(Icons.save, color: Colors.white)

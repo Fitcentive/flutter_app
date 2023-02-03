@@ -65,3 +65,23 @@ class UpdateMeetupDetails extends DetailedMeetupEvent {
     meetupParticipantUserIds,
   ];
 }
+
+class AddParticipantDecisionToMeetup extends DetailedMeetupEvent {
+  final String meetupId;
+  final String participantId;
+  final bool hasAccepted;
+
+
+  const AddParticipantDecisionToMeetup({
+    required this.meetupId,
+    required this.participantId,
+    required this.hasAccepted
+  });
+
+  @override
+  List<Object?> get props => [
+    meetupId,
+    participantId,
+    hasAccepted
+  ];
+}
