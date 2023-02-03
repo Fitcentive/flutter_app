@@ -79,17 +79,18 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
         currentUserId: widget.currentUserProfile.userId,
         currentUserProfile: widget.currentUserProfile,
         addSelectedUserIdToParticipantsCallback: _addSelectedUserIdToParticipantsCallback,
-        removeSelectedUserIdToParticipantsCallback: _removeSelectedUserIdToParticipantsCallback
+        removeSelectedUserIdToParticipantsCallback: _removeSelectedUserIdToParticipantsCallback,
+        alreadySelectedUserProfiles: [],
     );
   }
 
-  _addSelectedUserIdToParticipantsCallback(String selectedUserId) {
-    _updateBlocState({...selectedParticipants, selectedUserId}.toList());
+  _addSelectedUserIdToParticipantsCallback(PublicUserProfile selectedUserProfile) {
+    _updateBlocState({...selectedParticipants, selectedUserProfile.userId}.toList());
   }
 
-  _removeSelectedUserIdToParticipantsCallback(String selectedUserId) {
+  _removeSelectedUserIdToParticipantsCallback(PublicUserProfile removedUserProfile) {
     final newParticipants = [...selectedParticipants];
-    newParticipants.removeWhere((element) => element == selectedUserId);
+    newParticipants.removeWhere((element) => element == removedUserProfile.userId);
     _updateBlocState(newParticipants);
   }
 

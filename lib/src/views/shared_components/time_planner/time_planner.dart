@@ -36,7 +36,7 @@ class DiscreteAvailabilitiesView extends StatefulWidget {
 
   final String? currentUserAcceptingAvailabilityFor;
 
-  final Map<String, List<MeetupAvailability>> meetupAvailabilities;
+  final Map<String, List<MeetupAvailabilityUpsert>> meetupAvailabilities;
   final DateTime availabilityInitialDay;
 
   final TimePlannerSelectedTileCallback availabilityChangedCallback;
@@ -118,7 +118,7 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
 
   void _convertAvailabilitiesToCellStateMatrix(
       DateTime availabilityInitialDay,
-      Map<String, List<MeetupAvailability>> availabilities
+      Map<String, List<MeetupAvailabilityUpsert>> availabilities
   ) {
     cellStateMatrix = DiscreteAvailabilitiesView.defaultAvailabilityMatrix(config.totalDays, config.totalHours.toInt());
 
@@ -164,8 +164,8 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
         var count = 0;
 
         availabilitiesForCurrentDay.forEach((a) {
-          final aStart  = a.availabilityStart.add(const Duration(hours: 6));
-          final aEnd  = a.availabilityEnd.add(const Duration(hours: 6));
+          final aStart  = a.availabilityStart;
+          final aEnd  = a.availabilityEnd;
           if (aStart.compareTo(dateTimePertainingToCurrentTimeInterval) < 0 && aEnd.compareTo(dateTimePertainingToCurrentTimeInterval) > 0) {
             count += 1;
           }

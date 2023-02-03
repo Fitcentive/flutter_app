@@ -18,6 +18,33 @@ class MeetupRepository {
 
   final logger = Logger("MeetupRepository");
 
+  Future<Meetup> updateMeetup(
+      String meetupId,
+      MeetupUpdate updatedMeetup,
+      String accessToken
+      ) async {
+    final response = await http.put(
+        Uri.parse("$BASE_URL/meetups/$meetupId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: jsonEncode({
+          "meetupType": updatedMeetup.meetupType,
+          "name" : updatedMeetup.name,
+          "time" : updatedMeetup.time?.toUtc().toIso8601String(),
+          "durationInMinutes" : updatedMeetup.durationInMinutes,
+          "locationId" : updatedMeetup.locationId
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return Meetup.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "updateMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<Meetup> createMeetup(
       MeetupCreate newMeetup,
       String accessToken
@@ -128,6 +155,24 @@ class MeetupRepository {
     else {
       throw Exception(
           "getMeetupParticipants: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> removeAllParticipantsToMeetup(
+      String meetupId,
+      String accessToken
+      ) async {
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/meetups/$meetupId/participants"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    }
+    else {
+      throw Exception(
+          "removeAllParticipantsToMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

@@ -12,12 +12,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
-typedef UpdateSelectedUserIdCallback = void Function(String userId);
+typedef UpdateSelectedUserIdCallback = void Function(PublicUserProfile userProfile);
 
 GlobalKey<SelectFromFriendsViewState> selectFromFriendsViewStateGlobalKey = GlobalKey();
 
 class SelectFromFriendsView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
+  final List<PublicUserProfile> alreadySelectedUserProfiles;
+
 
   final UpdateSelectedUserIdCallback addSelectedUserIdToParticipantsCallback;
   final UpdateSelectedUserIdCallback removeSelectedUserIdToParticipantsCallback;
@@ -27,6 +29,7 @@ class SelectFromFriendsView extends StatefulWidget {
     required this.currentUserProfile,
     required this.addSelectedUserIdToParticipantsCallback,
     required this.removeSelectedUserIdToParticipantsCallback,
+    required this.alreadySelectedUserProfiles,
   }): super(key: key);
 
   static Widget withBloc({
@@ -36,6 +39,7 @@ class SelectFromFriendsView extends StatefulWidget {
     required PublicUserProfile currentUserProfile,
     required UpdateSelectedUserIdCallback addSelectedUserIdToParticipantsCallback,
     required UpdateSelectedUserIdCallback removeSelectedUserIdToParticipantsCallback,
+    required List<PublicUserProfile> alreadySelectedUserProfiles,
   }) {
     return MultiBlocProvider(
       providers: [
@@ -50,6 +54,7 @@ class SelectFromFriendsView extends StatefulWidget {
           currentUserProfile: currentUserProfile,
           addSelectedUserIdToParticipantsCallback: addSelectedUserIdToParticipantsCallback,
           removeSelectedUserIdToParticipantsCallback: removeSelectedUserIdToParticipantsCallback,
+          alreadySelectedUserProfiles: alreadySelectedUserProfiles
         ),
     );
   }
@@ -84,6 +89,10 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
     ));
 
     _scrollController.addListener(_onScroll);
+
+    widget.alreadySelectedUserProfiles.forEach((element) {
+      userIdToBoolCheckedMap[element.userId] = true;
+    });
   }
 
   @override
@@ -210,10 +219,10 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
 
             // Need to update parent bloc state here
             if (value!) {
-              widget.addSelectedUserIdToParticipantsCallback(userProfile.userId);
+              widget.addSelectedUserIdToParticipantsCallback(userProfile);
             }
             else if (!value) {
-              widget.removeSelectedUserIdToParticipantsCallback(userProfile.userId);
+              widget.removeSelectedUserIdToParticipantsCallback(userProfile);
             }
           },
         ),

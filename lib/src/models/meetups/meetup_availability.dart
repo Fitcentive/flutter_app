@@ -27,6 +27,8 @@ class MeetupAvailability extends Equatable {
 
   Map<String, dynamic> toJson() => _$MeetupAvailabilityToJson(this);
 
+  MeetupAvailabilityUpsert toUpsert() => MeetupAvailabilityUpsert(availabilityStart, availabilityEnd);
+
   @override
   List<Object?> get props => [
     id,

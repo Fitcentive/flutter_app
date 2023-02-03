@@ -161,7 +161,6 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
             }),
             (route) => true
     );
-
   }
 
   _renderMeetupLocation(MeetupModified state) {

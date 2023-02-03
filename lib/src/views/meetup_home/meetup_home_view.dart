@@ -147,27 +147,32 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   }
 
   _renderMeetupsListView(MeetupUserDataFetched state) {
-    return Scrollbar(
-      controller: _scrollController,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
+    return RefreshIndicator(
+      onRefresh: () async {
+        _pullToRefresh();
+      },
+      child: Scrollbar(
         controller: _scrollController,
-        itemCount: state.doesNextPageExist ? state.meetups.length + 1 : state.meetups.length,
-        itemBuilder: (BuildContext context, int index) {
-          if (index >= state.meetups.length) {
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            final currentMeetupItem = state.meetups[index];
-            final currentMeetupLocation = state.meetupLocations[index];
-            return _meetupCardItem(
-                currentMeetupItem,
-                currentMeetupLocation,
-                state.meetupParticipants[currentMeetupItem.id]!,
-                state.meetupDecisions[currentMeetupItem.id]!,
-                state.userIdProfileMap
-            );
-          }
-        },
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          controller: _scrollController,
+          itemCount: state.doesNextPageExist ? state.meetups.length + 1 : state.meetups.length,
+          itemBuilder: (BuildContext context, int index) {
+            if (index >= state.meetups.length) {
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              final currentMeetupItem = state.meetups[index];
+              final currentMeetupLocation = state.meetupLocations[index];
+              return _meetupCardItem(
+                  currentMeetupItem,
+                  currentMeetupLocation,
+                  state.meetupParticipants[currentMeetupItem.id]!,
+                  state.meetupDecisions[currentMeetupItem.id]!,
+                  state.userIdProfileMap
+              );
+            }
+          },
+        ),
       ),
     );
   }

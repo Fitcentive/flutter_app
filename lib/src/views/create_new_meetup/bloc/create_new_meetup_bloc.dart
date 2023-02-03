@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
+import 'package:flutter_app/src/utils/misc_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
 import 'package:http/http.dart' as http;
@@ -24,12 +25,21 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
   final MeetupRepository meetupRepository;
   final UserRepository userRepository;
 
+  List<Color> usedColoursThusFar = [];
+  Map<int, DateTime> timeSegmentToDateTimeMap = {};
+
   CreateNewMeetupBloc({
     required this.secureStorage,
     required this.meetupRepository,
     required this.userRepository
   }) : super(const CreateNewMeetupStateInitial()) {
 
+    _setUpTimeSegmentDateTimeMap();
+    on<NewMeetupChanged>(_newMeetupChanged);
+    on<SaveNewMeetup>(_saveNewMeetup);
+  }
+
+  _setUpTimeSegmentDateTimeMap() {
     final now = DateTime.now();
     const numberOfIntervals = (AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) * 2;
     final intervalsList = List.generate(numberOfIntervals, (i) => i);
@@ -44,59 +54,16 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
       i += 2;
       k += 1;
     }
-
-    on<NewMeetupChanged>(_newMeetupChanged);
-    on<SaveNewMeetup>(_saveNewMeetup);
-  }
-
-  List<Color> usedColoursThusFar = [];
-
-  Map<int, DateTime> timeSegmentToDateTimeMap = {};
-
-
-  _convertBooleanMatrixToAvailabilities(List<List<bool>> currentUserAvailabilities) {
-    List<MeetupAvailabilityUpsert> resultsSoFar = List.empty(growable: true);
-
-    // Assert on expected size
-    currentUserAvailabilities.asMap().forEach((dayIntIndex, dayTimeBlockAvailabilities) {
-      var hasContinuousWindowStarted = false;
-      var intervalStart = 0;
-      var j = 0;
-
-      while(j < dayTimeBlockAvailabilities.length) {
-        // Contiguous block is now broken! we have a minimal discrete interval
-        if (hasContinuousWindowStarted && !dayTimeBlockAvailabilities[j]) {
-          final intervalDatetimeStart = timeSegmentToDateTimeMap[intervalStart]!;
-          final intervalDateTimeEnd = timeSegmentToDateTimeMap[j]!;
-          resultsSoFar
-              .add(MeetupAvailabilityUpsert(
-              intervalDatetimeStart.add(Duration(days: dayIntIndex)).toUtc(),
-              intervalDateTimeEnd.add(Duration(days: dayIntIndex)).toUtc(),
-          ));
-
-          hasContinuousWindowStarted = false;
-        }
-
-        else if (dayTimeBlockAvailabilities[j] && !hasContinuousWindowStarted) {
-          hasContinuousWindowStarted = true;
-          intervalStart = j;
-        }
-
-        else {
-          j++;
-        }
-
-      }
-    });
-
-    return resultsSoFar;
   }
 
   // todo - should we Save meetup decisions for owner?
   void _saveNewMeetup(SaveNewMeetup event, Emitter<CreateNewMeetupState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    List <MeetupAvailabilityUpsert> availabilitiesToSave = _convertBooleanMatrixToAvailabilities(event.currentUserAvailabilities);
+    List <MeetupAvailabilityUpsert> availabilitiesToSave = MiscUtils.convertBooleanMatrixToAvailabilities(
+        event.currentUserAvailabilities,
+        timeSegmentToDateTimeMap,
+    );
 
     final newMeetup = MeetupCreate(
         ownerId: event.currentUserProfile.userId,
