@@ -56,15 +56,16 @@ class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> 
             WidgetUtils.spacer(2.5),
             _generateDotsIfNeeded(widget.location.photos),
             _autoSizingText(Text(widget.location.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-            // WidgetUtils.spacer(2.5),
             _autoSizingText(Text(_generateFullAddress(widget.location.location))),
-            // WidgetUtils.spacer(2.5),
+            WidgetUtils.spacer(2.5),
+            Expanded(child: Text(widget.location.tel ?? "Phone number unknown")),
+            WidgetUtils.spacer(2.5),
             Expanded(child: RichText(
                 text: TextSpan(
                     children: [
                       TextSpan(
                           text: "View website",
-                          style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                          style: Theme.of(context).textTheme.subtitle2?.copyWith(color: Colors.teal),
                           recognizer: TapGestureRecognizer()..onTap = () {
                             launchUrl(Uri.parse(widget.location.website ?? "https://google.ca"));
                           }
@@ -73,12 +74,13 @@ class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> 
                 )
               )
             ),
+            WidgetUtils.spacer(2.5),
             Expanded(child: RichText(
                 text: TextSpan(
                     children: [
                       TextSpan(
                           text: "Get directions",
-                          style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                          style: Theme.of(context).textTheme.subtitle2?.copyWith(color: Colors.teal),
                           recognizer: TapGestureRecognizer()..onTap = () {
                             launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query="
                                 "${widget.location.location.address ??
@@ -93,8 +95,6 @@ class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> 
                 )
             )
             ),
-            // WidgetUtils.spacer(2.5),
-            Expanded(child: Text(widget.location.tel ?? "Phone number unknown")),
             WidgetUtils.spacer(2.5),
           ]),
         ),

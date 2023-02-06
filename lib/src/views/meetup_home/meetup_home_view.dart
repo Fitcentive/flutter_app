@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
+import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter/material.dart';
@@ -233,7 +234,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
                   children: WidgetUtils.skipNulls(
                       [
                         _renderTop(meetup),
-                        WidgetUtils.spacer(25),
+                        WidgetUtils.spacer(10),
                         _renderBottom(meetup, meetupLocation, participants, decisions, relevantUserProfiles),
                       ]
                   ),
@@ -303,7 +304,8 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   }
 
   _renderTop(Meetup meetup) {
-    final meetupDate = meetup.time == null ? "Unscheduled" : DateFormat("yyyy-MM-dd").format(meetup.time!);
+    final meetupDate = meetup.time == null ? "Date unset" : "${DateFormat('EEEE').format(meetup.time!)}, ${DateFormat("yyyy-MM-dd").format(meetup.time!)}";
+    final meetupTime = meetup.time == null ? "Time unset" : DateFormat("hh:mm a").format(meetup.time!);
     return Row(
       children: [
         // Name, date and time
@@ -313,7 +315,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
             children: [
               Text(meetup.name ?? "Unnamed meetup", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ),),
               WidgetUtils.spacer(5),
-              Text("${meetup.time?.hour}:${meetup.time?.minute}", style: const TextStyle(fontSize: 16),),
+              Text(meetupTime, style: const TextStyle(fontSize: 16),),
               WidgetUtils.spacer(5),
               Text(meetupDate, style: const TextStyle(fontSize: 16),),
             ],
@@ -326,10 +328,10 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
               children: [
                 WidgetUtils.spacer(10),
                 Container(
-                  width: 5,
-                  height: 5,
-                  decoration: const BoxDecoration(
-                    color: Colors.teal,
+                  width: 7.5,
+                  height: 7.5,
+                  decoration: BoxDecoration(
+                    color: ColorUtils.meetupStatusToColorMap[meetup.meetupStatus]!,
                     shape: BoxShape.circle,
                   ),
                 ),

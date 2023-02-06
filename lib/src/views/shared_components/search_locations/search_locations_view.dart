@@ -137,6 +137,8 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   late BitmapDescriptor customGymLocationSelectedIcon;
   CarouselController gymsCarouselController = CarouselController();
 
+  bool isCameraUpdateHappening = false;
+
   @override
   void initState() {
     super.initState();
@@ -250,32 +252,55 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                   color: Colors.teal,
                 ),
               ),
-              floatingActionButton: FloatingActionButton(
-                heroTag: "SearchLocationsViewFab",
-                onPressed: () {
-                  if (state is FetchLocationsAroundCoordinatesLoaded &&
-                      state.coordinates.latitude != currentCentrePosition.latitude &&
-                      state.coordinates.longitude != currentCentrePosition.longitude) {
-                    shouldCameraSnapToMarkers = true;
-                    shouldCurrentPositionBeUpdatedWithCameraPosition = false;
-                    _initiateLocationSearchAroundCoordinates(
-                        currentCentrePosition.latitude,
-                        currentCentrePosition.longitude,
-                        minimumRadiusOfAllInvolved.toInt(),
-                        state.locationResults,
-                    );
-                  }
-                },
-                backgroundColor: Theme.of(context).primaryColor,
-                child: const Icon(Icons.search, color: Colors.white),
-              ),
-              floatingActionButtonLocation: !widget.isRoute ? FloatingActionButtonLocation.centerFloat : FloatingActionButtonLocation.endFloat,
-              body: Column(
-                children: [
-                  _renderHelpText(),
-                  WidgetUtils.spacer(2.5),
-                  _renderMap(state),
-                ],
+              body: Stack(
+                children: WidgetUtils.skipNulls([
+                  Column(
+                    children: [
+                      _renderHelpText(),
+                      WidgetUtils.spacer(2.5),
+                      _renderMap(state),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: FloatingActionButton(
+                        heroTag: "SearchLocationsViewFab",
+                        onPressed: () {
+                          if (state is FetchLocationsAroundCoordinatesLoaded &&
+                              state.coordinates.latitude != currentCentrePosition.latitude &&
+                              state.coordinates.longitude != currentCentrePosition.longitude) {
+                            shouldCameraSnapToMarkers = true;
+                            shouldCurrentPositionBeUpdatedWithCameraPosition = false;
+                            _initiateLocationSearchAroundCoordinates(
+                              currentCentrePosition.latitude,
+                              currentCentrePosition.longitude,
+                              minimumRadiusOfAllInvolved.toInt(),
+                              state.locationResults,
+                            );
+                          }
+                        },
+                        backgroundColor: Theme.of(context).primaryColor,
+                        child: const Icon(Icons.search, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  !widget.isRoute ? null : Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 5, 5),
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: FloatingActionButton(
+                        heroTag: "SearchLocationsViewSelectFab",
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        backgroundColor: Theme.of(context).primaryColor,
+                        child: const Icon(Icons.check, color: Colors.white),
+                      ),
+                    ),
+                  )
+                ]),
               ),
             );
           }
@@ -318,6 +343,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
         }
       });
       gymsCarouselController.onReady.then((value) => gymsCarouselController.jumpToPage(currentSelectedGymIndex));
+      _slidingUpPanelController.open();
     }
 
   }
@@ -354,11 +380,11 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
               currentSelectedGymIndex = page;
               widget.updateBlocState(state.locationResults[currentSelectedGymIndex]);
 
-              // todo - make position marker draggable and simply the whole lock/unlock camera pan flow
               final relevantLocationItem = state.locationResults[currentSelectedGymIndex];
               final GoogleMapController controller = await _mapController.future;
               controller
                   .animateCamera(CameraUpdate.newLatLng(relevantLocationItem.location.geocodes.toGoogleMapsLatLng()));
+              isCameraUpdateHappening = true;
             },
             scrollDirection: Axis.horizontal,
           )
@@ -407,6 +433,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                   currentSelectedGymIndex = index;
                 });
                 gymsCarouselController.jumpToPage(currentSelectedGymIndex);
+                _slidingUpPanelController.open();
                 widget.updateBlocState(location);
             }
           ),
@@ -452,6 +479,12 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
         },
         markers: markers,
         onCameraMove: _onCameraMove,
+        onCameraIdle: () {
+          if (isCameraUpdateHappening){
+            _slidingUpPanelController.open();
+            isCameraUpdateHappening = false;
+          }
+        },
         onLongPress: (latlng) {
           shouldCurrentPositionBeUpdatedWithCameraPosition = !shouldCurrentPositionBeUpdatedWithCameraPosition;
         },

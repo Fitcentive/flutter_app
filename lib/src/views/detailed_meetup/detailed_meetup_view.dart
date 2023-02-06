@@ -12,6 +12,7 @@ import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile_with_location.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/datetime_utils.dart';
 import 'package:flutter_app/src/utils/misc_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
@@ -90,9 +91,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   List<PublicUserProfile> selectedMeetupParticipants = [];
   DateTime? selectedMeetupDate;
-  Location? selectedMeetupLocation;
   String? selectedMeetupName;
   Map<String, List<MeetupAvailabilityUpsert>> userMeetupAvailabilities = {};
+
+  Location? selectedMeetupLocation;
+  String? selectedMeetupLocationId;
+  String? selectedMeetupLocationFsqId;
 
   late List<PublicUserProfile> selectedUserProfilesToShowAvailabilitiesFor;
 
@@ -125,6 +129,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     selectedMeetupDate = widget.meetup.time;
     selectedMeetupParticipants = List.from(widget.userProfiles);
     selectedMeetupName = widget.meetup.name;
+
+    selectedMeetupLocationId = widget.meetupLocation?.id;
+    selectedMeetupLocationFsqId = widget.meetupLocation?.fsqId;
 
     _detailedMeetupBloc = BlocProvider.of<DetailedMeetupBloc>(context);
     _detailedMeetupBloc.add(FetchAdditionalMeetupData(
@@ -473,7 +480,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     }
     else {
       return SizedBox(
-        height: 250,
+        height: 275,
         child: Center(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -513,11 +520,13 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             userProfilesWithLocations: selectedMeetupParticipants
                 .map((e) => UserProfileWithLocation(e, e.locationCenter!.latitude, e.locationCenter!.longitude, e.locationRadius!.toDouble()))
                 .toList(),
-            initialSelectedLocationId: widget.meetupLocation?.id,
-            initialSelectedLocationFsqId: widget.meetupLocation?.fsqId,
+            initialSelectedLocationId: selectedMeetupLocationId,
+            initialSelectedLocationFsqId: selectedMeetupLocationFsqId,
             updateBlocCallback: (location) {
               setState(() {
                 selectedMeetupLocation = location;
+                selectedMeetupLocationId = selectedMeetupLocation?.locationId;
+                selectedMeetupLocationFsqId = selectedMeetupLocation?.location.fsqId;
               });
             }),
             (route) => true
@@ -634,7 +643,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       onPressed: () async {
         if (widget.currentUserProfile.userId == widget.meetup.ownerId) {
           final selectedTime = await showTimePicker(
-            initialTime: TimeOfDay.now(),
+            initialTime: TimeOfDay.fromDateTime(selectedMeetupDate ?? earliestPossibleMeetupDateTime),
             builder: (BuildContext context, Widget? child) {
               return Theme(
                   data: ThemeData(primarySwatch: Colors.teal),
@@ -687,7 +696,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             context: context,
             initialEntryMode: DatePickerEntryMode.calendarOnly,
             initialDate: selectedMeetupDate ?? earliestPossibleMeetupDateTime,
-            firstDate: selectedMeetupDate ?? earliestPossibleMeetupDateTime,
+            firstDate: DateTimeUtils.calcMinDate(WidgetUtils.skipNulls([selectedMeetupDate, earliestPossibleMeetupDateTime])),
             lastDate: DateTime(ConstantUtils.LATEST_YEAR),
           );
 

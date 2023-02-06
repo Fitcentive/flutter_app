@@ -267,15 +267,16 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
               ),
             ),
             Container(
-              height: 1,
-              color: style.dividerColor ?? Theme.of(context).primaryColor,
+              height: 5,
+              color: Colors.teal,
             ),
             Expanded(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  ScrollConfiguration(
-                    behavior: ScrollConfiguration.of(context)
+                  ScrollConfiguration(behavior:
+                    ScrollConfiguration
+                        .of(context)
                         .copyWith(scrollbars: false),
                     child: SingleChildScrollView(
                       physics: const NeverScrollableScrollPhysics(),
@@ -290,10 +291,9 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
                             children: _getSideTimes(),
                           ),
                           Container(
-                            height: (config.totalHours * config.cellHeight! / 2) + 50,
-                            width: 1,
-                            color: style.dividerColor ??
-                                Theme.of(context).primaryColor,
+                            height: (config.totalHours * config.cellHeight!) + 80,
+                            width: 5,
+                            color: Colors.teal,
                           ),
                         ],
                       ),
@@ -371,6 +371,7 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
                         ),
                         const Divider(
                           height: 1,
+                          color: Colors.teal,
                         ),
                       ],
                     )
@@ -383,7 +384,7 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
                 Container(
                   width: 1,
                   height: (config.totalHours * config.cellHeight!) + config.cellHeight!,
-                  color: Colors.black12,
+                  color: Colors.teal,
                 )
               ],
             )
@@ -477,7 +478,7 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
                                   height:
                                       (config.totalHours * config.cellHeight!) +
                                           config.cellHeight!,
-                                  color: Colors.black12,
+                                  color: Colors.teal,
                                 )
                               ],
                             )
