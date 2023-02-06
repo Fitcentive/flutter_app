@@ -49,18 +49,20 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
   List<Color> usedColoursThusFar = [];
 
   late BitmapDescriptor customGymLocationIcon;
+  late Future<int> setupIconResult;
 
   @override
   void initState() {
     super.initState();
 
+    setupIconResult = _setupMapIconsForUsers(widget.userProfiles);
     _setupColorsForUsers(widget.userProfiles);
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<void>(
-      future: _setupMapIconsForUsers(widget.userProfiles),
+      future: setupIconResult,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           _setupMap(widget.meetupLocation, widget.userProfiles);

@@ -21,6 +21,7 @@ import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_bloc.
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_state.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_comments_list/meetup_comments_list.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
@@ -293,20 +294,28 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         isParticipantSelectHappening ? _participantSelectView(state) : Expanded(
           child: SingleChildScrollView(
             child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: WidgetUtils.skipNulls([
-                  WidgetUtils.spacer(2.5),
-                  _renderMeetupNameView(),
-                  _renderMeetupDateTime(),
-                  _renderMeetupLocation(),
-                  WidgetUtils.spacer(2.5),
-                  _renderMeetupFsqLocationCardIfNeeded(),
-                  WidgetUtils.spacer(2.5),
-                  _renderEditAvailabilitiesButton(),
-                  WidgetUtils.spacer(2.5),
-                  _renderAvailabilitiesView(),
-                ]),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 75), //FAB is 56 pixels by default
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: WidgetUtils.skipNulls([
+                    WidgetUtils.spacer(2.5),
+                    _renderMeetupNameView(),
+                    _renderMeetupDateTime(),
+                    WidgetUtils.spacer(2.5),
+                    _renderEditAvailabilitiesButton(),
+                    WidgetUtils.spacer(2.5),
+                    _renderAvailabilitiesView(),
+                    WidgetUtils.spacer(2.5),
+                    _renderMeetupLocation(),
+                    WidgetUtils.spacer(2.5),
+                    _renderMeetupFsqLocationCardIfNeeded(),
+                    WidgetUtils.spacer(5),
+                    _renderMeetupCommentsHeader(),
+                    WidgetUtils.spacer(5),
+                    _renderMeetupComments(),
+                  ]),
+                ),
               ),
             ),
           ),
@@ -315,6 +324,25 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     );
   }
 
+  _renderMeetupCommentsHeader() {
+    return const Text(
+      "Activity",
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 20
+      ),
+    );
+  }
+
+  _renderMeetupComments() {
+    return LimitedBox(
+        maxHeight: 400,
+        child: MeetupCommentsListView.withBloc(
+            currentUserId: widget.currentUserProfile.userId,
+            meetupId: widget.meetup.id
+        )
+    );
+  }
 
   _renderEditAvailabilitiesButton() {
     if (isAvailabilitySelectHappening) {
@@ -405,7 +433,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _renderAvailabilitiesView() {
     return SizedBox(
-      height: ScreenUtils.getScreenHeight(context) * 0.65,
+      height: ScreenUtils.getScreenHeight(context) * 0.5,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: DiscreteAvailabilitiesView(

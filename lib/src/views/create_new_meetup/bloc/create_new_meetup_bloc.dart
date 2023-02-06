@@ -7,7 +7,6 @@ import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/misc_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -56,7 +55,6 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
     }
   }
 
-  // todo - should we Save meetup decisions for owner?
   void _saveNewMeetup(SaveNewMeetup event, Emitter<CreateNewMeetupState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
@@ -85,6 +83,8 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
         availabilitiesToSave
     );
 
+    // Add owner decision as yes - since they control the details, they should be ok with it!
+    await meetupRepository.upsertMeetupDecision(meetup.id, event.currentUserProfile.userId, true, accessToken);
   }
 
   void _newMeetupChanged(NewMeetupChanged event, Emitter<CreateNewMeetupState> emit) async {

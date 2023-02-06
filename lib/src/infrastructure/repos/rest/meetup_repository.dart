@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
+import 'package:flutter_app/src/models/meetups/meetup_comment.dart';
 import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
@@ -17,6 +18,70 @@ class MeetupRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/meetup";
 
   final logger = Logger("MeetupRepository");
+
+  Future<void> deleteMeetupCommentForUser(
+      String meetupId,
+      String commentId,
+      String accessToken
+      ) async {
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/meetups/$meetupId/comments/$commentId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    }
+    else {
+      throw Exception(
+          "deleteMeetupCommentForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<MeetupComment> createMeetupComment(
+      String meetupId,
+      String comment,
+      String accessToken
+      ) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/meetups/$meetupId/comments"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: jsonEncode({
+          "comment": comment
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return MeetupComment.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "createMeetupComment: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<MeetupComment>> getMeetupComments(
+      String meetupId,
+      String accessToken,
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups/$meetupId/comments"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<MeetupComment> results = jsonResponse.map((e) {
+        return MeetupComment.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getMeetupComments: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 
   Future<Meetup> updateMeetup(
       String meetupId,
@@ -76,7 +141,7 @@ class MeetupRepository {
       String meetupId,
       String accessToken
       ) async {
-    final response = await http.get(
+    final response = await http.delete(
       Uri.parse("$BASE_URL/meetups/$meetupId"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );

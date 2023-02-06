@@ -71,7 +71,28 @@ class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> 
                       ),
                     ]
                 )
-            )),
+              )
+            ),
+            Expanded(child: RichText(
+                text: TextSpan(
+                    children: [
+                      TextSpan(
+                          text: "Get directions",
+                          style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                          recognizer: TapGestureRecognizer()..onTap = () {
+                            launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query="
+                                "${widget.location.location.address ??
+                                   widget.location.location.formattedAddress ??
+                                   "${widget.location.geocodes.main.latitude},${widget.location.geocodes.main.longitude}"
+                                }"
+                              )
+                            );
+                          }
+                      ),
+                    ]
+                )
+            )
+            ),
             // WidgetUtils.spacer(2.5),
             Expanded(child: Text(widget.location.tel ?? "Phone number unknown")),
             WidgetUtils.spacer(2.5),
