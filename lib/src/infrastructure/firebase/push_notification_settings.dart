@@ -3,13 +3,17 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
+import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/notification/push_notification_metadata.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/chat_message_push_notification_metadata.dart';
+import 'package:flutter_app/src/models/push/participant_added_to_meetup_push_notification_metadata.dart';
 import 'package:flutter_app/src/models/push/user_friend_request_push_notification_metadata.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
+import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
@@ -74,6 +78,48 @@ class PushNotificationSettings {
         context,
         UserProfileView.route(otherUserProfile!, currentUserProfile!),
             (route) => true
+    );
+  }
+
+  static _openDetailedMeetupView(
+      context,
+      FlutterSecureStorage secureStorage,
+      UserRepository userRepository,
+      MeetupRepository meetupRepository,
+      String payload
+      ) async {
+    final notificationMetadata = ParticipantAddedToMeetupPushNotificationMetadata.fromJson(jsonDecode(payload));
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+
+    final meetup = await meetupRepository.getMeetupById(notificationMetadata.meetupId, accessToken!);
+    final meetupParticipants = await meetupRepository.getMeetupParticipants(notificationMetadata.meetupId, accessToken);
+    final meetupDecisions = await meetupRepository.getMeetupDecisions(notificationMetadata.meetupId, accessToken);
+
+    final MeetupLocation? meetupLocation;
+    if (meetup.locationId != null) {
+      meetupLocation = await meetupRepository.getLocationByLocationId(meetup.locationId!, accessToken);
+    } else {
+      meetupLocation = null;
+    }
+
+    final userProfiles = await userRepository.getPublicUserProfiles(
+        [...meetupParticipants.map((e) => e.userId), notificationMetadata.meetupId],
+        accessToken
+    );
+
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) =>
+            DetailedMeetupView.withBloc(
+                meetup,
+                meetupLocation,
+                meetupParticipants,
+                meetupDecisions,
+                userProfiles,
+                userProfiles.where((element) => element.userId == notificationMetadata.meetupOwnerId).first
+            )
+        ),
+        (route) => true
     );
   }
 
@@ -144,6 +190,10 @@ class PushNotificationSettings {
 
               case "chat_message":
                 _openUserChatView(context, secureStorage, userRepository, payload);
+                break;
+
+              case "participant_added_to_meetup":
+                _openNotificationsView(context);
                 break;
 
               default:
@@ -255,6 +305,13 @@ class PushNotificationSettings {
           }
           break;
 
+        case "participant_added_to_meetup":
+          final notificationMetadata = ParticipantAddedToMeetupPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
+          if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
+            _handleShowingNotification(notification, notificationMetadata.meetupOwnerPhotoUrl, jsonPayload);
+          }
+          break;
+
         default:
           break;
       }
@@ -287,6 +344,7 @@ class PushNotificationSettings {
   // When auto delivered push notification is selected, this callback is invoked
   static _handleNotificationsReceivedWhenAppInBackground(BuildContext context) {
     final userRepository = RepositoryProvider.of<UserRepository>(context);
+    final meetupRepository = RepositoryProvider.of<MeetupRepository>(context);
     final secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -299,6 +357,10 @@ class PushNotificationSettings {
 
         case "chat_message":
           _openUserChatView(context, secureStorage, userRepository, jsonEncode(message.data));
+          break;
+
+        case "participant_added_to_meetup":
+          _openDetailedMeetupView(context, secureStorage, userRepository, meetupRepository, jsonEncode(message.data));
           break;
 
         default:

@@ -155,10 +155,19 @@ class NotificationsViewState extends State<NotificationsView> {
     switch (notification.notificationType) {
       case "UserFriendRequest":
         return _generateUserFriendRequestNotification(notification, userProfileMap);
+
       case "UserCommentedOnPost":
         return _generateUserCommentedOnPostNotification(notification, userProfileMap);
+
       case "UserLikedPost":
         return _generateUserLikedPostNotification(notification, userProfileMap);
+
+      case "ParticipantAddedToMeetup":
+        return _generateParticipantAddedToMeetupNotification(notification, userProfileMap);
+
+      case "MeetupDecision":
+        return _generateMeetupDecisionNotification(notification, userProfileMap);
+
       default:
         return const Text("Unknown notification type");
     }
@@ -282,6 +291,100 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
     );
+  }
+
+  Widget _generateParticipantAddedToMeetupNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
+    final String meetupId = notification.data['meetupId'];
+    final String meetupOwnerId = notification.data['meetupOwnerId'];
+    final String participantId = notification.data['participantId'];
+
+    final PublicUserProfile? meetupOwnerProfile = userProfileMap[meetupOwnerId];
+    final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
+    return ListTile(
+      onTap: () async {
+        // _goToSelectedPost(postId);
+        // todo - go to detailed meetup view
+      },
+      tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
+      leading: GestureDetector(
+        onTap: () async {
+          _goToUserProfile(meetupOwnerProfile);
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(meetupOwnerProfile, 100, 100),
+          ),
+        ),
+      ),
+      title: Text(
+        _getParticipantAddedToMeetupNotificationText(meetupOwnerProfile ?? staticDeletedUserProfile!),
+        style: const TextStyle(fontSize: 14),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Text(
+          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          style: const TextStyle(fontSize: 10),
+        ),
+      ),
+    );
+  }
+
+  Widget _generateMeetupDecisionNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
+    final String meetupId = notification.data['meetupId'];
+    final String meetupOwnerId = notification.data['meetupOwnerId'];
+    final String participantId = notification.data['participantId'];
+    final bool hasAccepted = notification.data['hasAccepted'];
+
+    final PublicUserProfile? participantProfile = userProfileMap[participantId];
+    final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
+    return ListTile(
+      onTap: () async {
+        // _goToSelectedPost(postId);
+        // todo - go to detailed meetup view - need to modify it like selectedPost to fetch everything instead of have it passed by parent. UGH
+      },
+      tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
+      leading: GestureDetector(
+        onTap: () async {
+          _goToUserProfile(participantProfile);
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(participantProfile, 100, 100),
+          ),
+        ),
+      ),
+      title: Text(
+        _getMeetupDecisionNotificationText(participantProfile ?? staticDeletedUserProfile!, hasAccepted),
+        style: const TextStyle(fontSize: 14),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Text(
+          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          style: const TextStyle(fontSize: 10),
+        ),
+      ),
+    );
+  }
+
+  _getParticipantAddedToMeetupNotificationText(PublicUserProfile meetupOwnerProfile) {
+    return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} added you to a meetup!";
+  }
+
+  _getMeetupDecisionNotificationText(PublicUserProfile meetupOwnerProfile, bool hasAccepted) {
+    if (hasAccepted) {
+      return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} has accepted your meetup invite!";
+    }
+    else {
+      return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} has declined your meetup invite.";
+    }
   }
 
   _getCommentNotificationText(

@@ -49,12 +49,23 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
 
     final meetup = await meetupRepository.updateMeetup(event.meetupId, updatedMeetup, accessToken!);
 
-    // Remove existing participants and add again, this is to ensure all updated changes are captured
-    await meetupRepository.removeAllParticipantsToMeetup(event.meetupId, accessToken);
-    await Future.wait(event.meetupParticipantUserIds.map((e) => meetupRepository.addParticipantToMeetup(meetup.id, e, accessToken)));
+    final existingSavedMeetupParticipants = await meetupRepository.getMeetupParticipants(event.meetupId, accessToken);
+    final existingSavedMeetupParticipantsUserIds = existingSavedMeetupParticipants.map((e) => e.userId);
 
-    // No need to emit state, we are done over here
-    // todo - should we include meetup decisions too?
+    /// Creates a new set with the elements of this that are not in [other].
+    final participantsToRemove =
+      existingSavedMeetupParticipantsUserIds.toSet().difference(event.meetupParticipantUserIds.toSet());
+    final participantsToAdd =
+      event.meetupParticipantUserIds.toSet().difference(existingSavedMeetupParticipantsUserIds.toSet());
+
+    if (participantsToAdd.isNotEmpty) {
+      await Future.wait(participantsToAdd.map((e) =>
+          meetupRepository.addParticipantToMeetup(meetup.id, e, accessToken)));
+    }
+    if (participantsToRemove.isNotEmpty) {
+      await Future.wait(participantsToRemove.map((e) =>
+          meetupRepository.removeParticipantFromMeetup(meetup.id, e, accessToken)));
+    }
   }
 
   void _saveAvailabilitiesForCurrentUser(SaveAvailabilitiesForCurrentUser event, Emitter<DetailedMeetupState> emit) async {

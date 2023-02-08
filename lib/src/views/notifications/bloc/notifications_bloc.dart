@@ -166,6 +166,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .map((e) => e.data['requestingUser'] as String)
         .toSet()
         .toList();
+
     final userCommentedOnPostNotificationUsers = notifications
         .where((element) => element.notificationType == "UserCommentedOnPost")
         .map((e) {
@@ -175,6 +176,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .expand((element) => element)
         .toSet()
         .toList();
+
     final postCreatorUsers = notifications
         .where((element) => element.notificationType == "UserCommentedOnPost")
         .map((e) {
@@ -188,6 +190,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .whereType<String>()
         .toSet()
         .toList();
+
     final userLikedPostNotificationUsers = notifications
         .where((element) => element.notificationType == "UserLikedPost")
         .map((e) {
@@ -198,11 +201,35 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .toSet()
         .toList();
 
+    final participantAddedToMeetupNotificationUsers = notifications
+        .where((element) => element.notificationType == "ParticipantAddedToMeetup")
+        .map((e) {
+      final participantId = e.data['participantId'] as String;
+      final meetupOwnerId = e.data['meetupOwnerId'] as String;
+      return [participantId, meetupOwnerId];
+    })
+        .expand((element) => element)
+        .toSet()
+        .toList();
+
+    final meetupDecisionNotificationUsers = notifications
+        .where((element) => element.notificationType == "MeetupDecision")
+        .map((e) {
+      final participantId = e.data['participantId'] as String;
+      final meetupOwnerId = e.data['meetupOwnerId'] as String;
+      return [participantId, meetupOwnerId];
+    })
+        .expand((element) => element)
+        .toSet()
+        .toList();
+
     final userIdList = [
       ...userFriendRequestNotificationUsers,
       ...userCommentedOnPostNotificationUsers,
       ...userLikedPostNotificationUsers,
       ...postCreatorUsers,
+      ...meetupDecisionNotificationUsers,
+      ...participantAddedToMeetupNotificationUsers,
       ConstantUtils.staticDeletedUserId,
     ];
     return userIdList.toSet().toList();
