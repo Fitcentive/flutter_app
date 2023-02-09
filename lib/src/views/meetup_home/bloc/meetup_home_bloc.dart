@@ -71,6 +71,7 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
   }
 
   void _fetchUserMeetupData(FetchUserMeetupData event, Emitter<MeetupHomeState> emit) async {
+    emit(const MeetupDataLoading());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
     final meetups = await meetupRepository.getMeetupsForUser(

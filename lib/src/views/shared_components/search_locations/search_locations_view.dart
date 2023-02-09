@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:carousel_slider/carousel_controller.dart';
@@ -111,6 +112,7 @@ class SearchLocationsView extends StatefulWidget {
 
 class SearchLocationsViewState extends State<SearchLocationsView> {
   static const String currentLocationMarkerId = "camera_centre_marker_id";
+  static const int defaultLocationSearchQuerySearchRadiusInMetres = 10000;  // todo - avoid hardcoding radius
 
   Map<String, BitmapDescriptor?> userIdToMapMarkerIcon = {};
   Map<String, Color> userIdToMapMarkerColor = {};
@@ -129,6 +131,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   List<Color> usedColoursThusFar = [];
 
   late LatLng currentCentrePosition;
+  late LatLng currentCameraCentrePosition;
   late double minimumRadiusOfAllInvolved;
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
@@ -138,6 +141,15 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   CarouselController gymsCarouselController = CarouselController();
 
   bool isCameraUpdateHappening = false;
+
+  final _searchTextController = TextEditingController();
+  final _suggestionsController = SuggestionsBoxController();
+
+  @override
+  void dispose() {
+    _searchTextController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -224,6 +236,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
 
     currentCentrePosition =
         LocationUtils.computeCentroid(widget.userProfilesWithLocations.map((e) => LatLng(e.latitude, e.longitude)));
+    currentCameraCentrePosition = currentCentrePosition;
     initialCameraPosition = CameraPosition(
         target: currentCentrePosition,
         tilt: 0,
@@ -255,10 +268,15 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
               body: Stack(
                 children: WidgetUtils.skipNulls([
                   Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                       _renderSearchTextBar(),
+                      WidgetUtils.spacer(2.5),
                       _renderHelpText(),
                       WidgetUtils.spacer(2.5),
-                      _renderMap(state),
+                      Expanded(
+                        child: _renderMap(state)
+                      ),
                     ],
                   ),
                   Padding(
@@ -273,6 +291,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                               state.coordinates.longitude != currentCentrePosition.longitude) {
                             shouldCameraSnapToMarkers = true;
                             shouldCurrentPositionBeUpdatedWithCameraPosition = false;
+                            // todo - change this behaviour to be more consistent?
                             _initiateLocationSearchAroundCoordinates(
                               currentCentrePosition.latitude,
                               currentCentrePosition.longitude,
@@ -286,7 +305,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                       ),
                     ),
                   ),
-                  !widget.isRoute ? null : Padding(
+                  !widget.isRoute ? null : Padding( // Only render tick button button if it is a route and not a component
                     padding: const EdgeInsets.fromLTRB(0, 0, 5, 5),
                     child: Align(
                       alignment: Alignment.bottomRight,
@@ -299,7 +318,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                         child: const Icon(Icons.check, color: Colors.white),
                       ),
                     ),
-                  )
+                  ),
                 ]),
               ),
             );
@@ -346,6 +365,82 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
       _slidingUpPanelController.open();
     }
 
+  }
+
+  _renderSearchTextBar() {
+    return Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: TypeAheadField<PublicUserProfile>(
+          suggestionsBoxController: _suggestionsController,
+          debounceDuration: const Duration(milliseconds: 300),
+          textFieldConfiguration: TextFieldConfiguration(
+              onSubmitted: (value) {},
+              autocorrect: false,
+              onTap: () => _suggestionsController.toggle(),
+              onChanged: (text) {},
+              autofocus: true,
+              controller: _searchTextController,
+              style: const TextStyle(fontSize: 15),
+              decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: "Search by location name",
+                  prefixIcon: IconButton(
+                    onPressed: () {
+                      _suggestionsController.close();
+                      setState(() {
+                        _searchTextController.text = "";
+                      });
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      _suggestionsController.close();
+                      // Make the search happen now
+                      final currentState = _searchLocationsBloc.state;
+                      if (currentState is FetchLocationsAroundCoordinatesLoaded) {
+                        shouldCameraSnapToMarkers = true;
+                        shouldCurrentPositionBeUpdatedWithCameraPosition = false;
+                        _searchLocationsBloc.add(FetchLocationsAroundCoordinatesRequested(
+                          query: _searchTextController.value.text,
+                          coordinates: Coordinates(currentCameraCentrePosition.latitude, currentCameraCentrePosition.longitude),
+                          radiusInMetres: defaultLocationSearchQuerySearchRadiusInMetres,
+                          previousLocationResults: currentState.locationResults,
+                        )
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.search),
+                  ),
+              )),
+          suggestionsCallback: (text)  {
+            if (text.trim().isNotEmpty) {
+              // Do nothing?
+            }
+            return List.empty();
+          },
+          itemBuilder: (context, suggestion) {
+            final s = suggestion;
+            return ListTile(
+              leading: CircleAvatar(
+                radius: 30,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: ImageUtils.getUserProfileImage(suggestion, 100, 100),
+                  ),
+                ),
+              ),
+              title: Text("${s.firstName ?? ""} ${s.lastName ?? ""}"),
+              subtitle: Text(suggestion.username ?? ""),
+            );
+          },
+          onSuggestionSelected: (suggestion) {},
+          hideOnEmpty: true,
+        )
+    );
   }
 
   _renderHelpText() {
@@ -518,6 +613,8 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   _onCameraMove(CameraPosition cameraPosition) async {
     setState(() {
       shouldCameraSnapToMarkers = false;
+
+      currentCameraCentrePosition = cameraPosition.target;
       // this should only happen on certain occasions
       if (shouldCurrentPositionBeUpdatedWithCameraPosition) {
         currentCentrePosition = cameraPosition.target;

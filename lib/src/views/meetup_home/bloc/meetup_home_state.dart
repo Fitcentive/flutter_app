@@ -17,6 +17,11 @@ class MeetupHomeStateInitial extends MeetupHomeState {
   const MeetupHomeStateInitial();
 }
 
+class MeetupDataLoading extends MeetupHomeState {
+
+  const MeetupDataLoading();
+}
+
 class MeetupUserDataFetched extends MeetupHomeState {
   final List<Meetup> meetups;
   final List<MeetupLocation?> meetupLocations;

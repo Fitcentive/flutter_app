@@ -8,6 +8,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/bloc/meetup_comments_list_bloc.dart';
@@ -81,24 +82,31 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
       builder: (context, state) {
         if (state is MeetupCommentsLoaded) {
           fetchedComments = state.comments;
-          return Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              // _commentsListView(state.userIdProfileMap),
-              LimitedBox(
-                maxHeight: 300,
-                // constraints: const BoxConstraints(maxHeight: 350),
-                child: _commentsListView(state.userIdProfileMap),
-              ),
-              const Spacer(),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 50, maxHeight: 75),
-                  child: _createAddCommentView(),
+          return ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxHeight: 400
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // _commentsListView(state.userIdProfileMap),
+                Flexible(
+                  child: LimitedBox(
+                    maxHeight: 300,
+                    // constraints: const BoxConstraints(maxHeight: 350),
+                    child: _commentsListView(state.userIdProfileMap),
+                  ),
                 ),
-              )
-            ],
+                WidgetUtils.spacer(2.5),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 50, maxHeight: 75),
+                    child: _createAddCommentView(),
+                  ),
+                )
+              ],
+            ),
           );
         }
         else {
@@ -132,6 +140,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
             body: Align(
               alignment: Alignment.bottomLeft,
               child: TextField(
+                textCapitalization: TextCapitalization.words,
                 onChanged: (text) {
                   setState(() {
                     if (text.trim().isNotEmpty) {
@@ -252,8 +261,9 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
         onTap: () {
           KeyboardUtils.hideKeyboard(context);
         },
-        child: const Center(
-            child: Text("Awfully quiet here....")
+        child: const Padding(
+          padding: EdgeInsets.all(10.0),
+          child: Text("No activity yet... get started by adding a comment!"),
         ),
       );
     }
@@ -261,7 +271,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
       return RefreshIndicator(
         onRefresh: () async {
           _meetupCommentsListBloc.add(FetchMeetupCommentsRequested(
-              meetupId: widget.meetupId!,
+              meetupId: widget.meetupId,
               currentUserId: widget.currentUserId
           ));
         },

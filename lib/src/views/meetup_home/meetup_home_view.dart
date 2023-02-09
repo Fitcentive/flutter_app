@@ -201,7 +201,9 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
           userProfiles: relevantUserProfiles,
           currentUserProfile: widget.currentUserProfile
       ),
-    );
+    ).then((value) {
+      _meetupHomeBloc.add(FetchUserMeetupData(widget.currentUserProfile.userId));
+    });
 
   }
 
