@@ -399,8 +399,8 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
     return Container(
       color: cellStateMatrix[colIndex][i] == 0 ? Colors.white : (
           widget.currentUserAcceptingAvailabilityFor != null ?
-          Colors.tealAccent :
-          Colors.tealAccent.withOpacity(calculatedOpacity)
+          Colors.tealAccent.shade700 :
+          Colors.tealAccent.shade700.withOpacity(calculatedOpacity)
       ),
     );
   }

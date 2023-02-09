@@ -91,33 +91,13 @@ class PushNotificationSettings {
     final notificationMetadata = ParticipantAddedToMeetupPushNotificationMetadata.fromJson(jsonDecode(payload));
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    final meetup = await meetupRepository.getMeetupById(notificationMetadata.meetupId, accessToken!);
-    final meetupParticipants = await meetupRepository.getMeetupParticipants(notificationMetadata.meetupId, accessToken);
-    final meetupDecisions = await meetupRepository.getMeetupDecisions(notificationMetadata.meetupId, accessToken);
-
-    final MeetupLocation? meetupLocation;
-    if (meetup.locationId != null) {
-      meetupLocation = await meetupRepository.getLocationByLocationId(meetup.locationId!, accessToken);
-    } else {
-      meetupLocation = null;
-    }
-
-    final userProfiles = await userRepository.getPublicUserProfiles(
-        [...meetupParticipants.map((e) => e.userId), notificationMetadata.meetupId],
-        accessToken
-    );
+    final currentUserProfile = await userRepository.getPublicUserProfiles([notificationMetadata.participantId], accessToken!);
 
     Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) =>
-            DetailedMeetupView.withBloc(
-                meetup,
-                meetupLocation,
-                meetupParticipants,
-                meetupDecisions,
-                userProfiles,
-                userProfiles.where((element) => element.userId == notificationMetadata.meetupOwnerId).first
-            )
+        DetailedMeetupView.route(
+            meetupId: notificationMetadata.meetupId,
+            currentUserProfile: currentUserProfile.first,
         ),
         (route) => true
     );

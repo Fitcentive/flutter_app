@@ -1,6 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/location/location.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
+import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
+import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 
 abstract class DetailedMeetupEvent extends Equatable {
   const DetailedMeetupEvent();
@@ -9,19 +13,48 @@ abstract class DetailedMeetupEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class FetchAllMeetupData extends DetailedMeetupEvent {
+  final String meetupId;
+
+  const FetchAllMeetupData({
+    required this.meetupId,
+  });
+
+  @override
+  List<Object?> get props => [meetupId];
+}
+
 class FetchAdditionalMeetupData extends DetailedMeetupEvent {
   final String meetupId;
   final String? meetupLocationFsqId;
   final List<String> participantIds;
 
+  // These guys are provided by the widget itself
+  final Meetup meetup;
+  final List<MeetupParticipant> participants;
+  final List<MeetupDecision> decisions;
+  final List<PublicUserProfile> userProfiles;
+
   const FetchAdditionalMeetupData({
     required this.meetupId,
     required this.participantIds,
-    required this.meetupLocationFsqId
+    required this.meetupLocationFsqId,
+    required this.meetup,
+    required this.participants,
+    required this.decisions,
+    required this.userProfiles,
   });
 
   @override
-  List<Object?> get props => [meetupId, participantIds, meetupLocationFsqId];
+  List<Object?> get props => [
+    meetupId,
+    participantIds,
+    meetupLocationFsqId,
+    meetup,
+    participants,
+    decisions,
+    userProfiles,
+  ];
 }
 
 

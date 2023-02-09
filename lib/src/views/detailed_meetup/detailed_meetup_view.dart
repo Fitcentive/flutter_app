@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -35,31 +33,61 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 class DetailedMeetupView extends StatefulWidget {
+  static const String routeName = "view-meetup";
+
   final PublicUserProfile currentUserProfile;
-  final Meetup meetup;
+
+  final String meetupId;
   final MeetupLocation? meetupLocation;
-  final List<MeetupParticipant> participants;
-  final List<MeetupDecision> decisions;
-  final List<PublicUserProfile> userProfiles;
+  final Meetup? meetup;
+  final List<MeetupParticipant>? participants;
+  final List<MeetupDecision>? decisions;
+  final List<PublicUserProfile>? userProfiles;
 
   const DetailedMeetupView({
     super.key,
-    required this.meetup,
-    this.meetupLocation,
     required this.currentUserProfile,
-    required this.participants,
-    required this.decisions,
-    required this.userProfiles
+    required this.meetupId,
+    this.meetup,
+    this.meetupLocation,
+    this.participants,
+    this.decisions,
+    this.userProfiles
   });
 
-  static Widget withBloc(
-    Meetup meetup,
+  static Route route({
+    required String meetupId,
+    required PublicUserProfile currentUserProfile,
+    Meetup? meetup,
     MeetupLocation? meetupLocation,
-    List<MeetupParticipant> participants,
-    List<MeetupDecision> decisions,
-    List<PublicUserProfile> userProfiles,
-    PublicUserProfile currentUserProfile,
-  ) => MultiBlocProvider(
+    List<MeetupParticipant>? participants,
+    List<MeetupDecision>? decisions,
+    List<PublicUserProfile>? userProfiles,
+  }
+  ) => MaterialPageRoute(
+    settings: const RouteSettings(
+        name: routeName
+    ),
+    builder: (_) => DetailedMeetupView.withBloc(
+        meetupId: meetupId,
+        currentUserProfile: currentUserProfile,
+        meetup: meetup,
+        meetupLocation: meetupLocation,
+        participants: participants,
+        decisions: decisions,
+        userProfiles: userProfiles,
+    )
+  );
+
+  static Widget withBloc({
+    required String meetupId,
+    required PublicUserProfile currentUserProfile,
+    Meetup? meetup,
+    MeetupLocation? meetupLocation,
+    List<MeetupParticipant>? participants,
+    List<MeetupDecision>? decisions,
+    List<PublicUserProfile>? userProfiles,
+  }) => MultiBlocProvider(
     providers: [
       BlocProvider<DetailedMeetupBloc>(
           create: (context) => DetailedMeetupBloc(
@@ -69,6 +97,7 @@ class DetailedMeetupView extends StatefulWidget {
           )),
     ],
     child: DetailedMeetupView(
+        meetupId: meetupId,
         meetup: meetup,
         participants: participants,
         decisions: decisions,
@@ -89,7 +118,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   DateTime earliestPossibleMeetupDateTime = DateTime.now().add(const Duration(hours: 3));
 
-  List<PublicUserProfile> selectedMeetupParticipants = [];
+  List<PublicUserProfile> selectedMeetupParticipantUserProfiles = [];
+  List<MeetupParticipant> selectedMeetupParticipants = [];
+  List<MeetupDecision> selectedMeetupParticipantDecisions = [];
+
   DateTime? selectedMeetupDate;
   String? selectedMeetupName;
   Map<String, List<MeetupAvailabilityUpsert>> userMeetupAvailabilities = {};
@@ -99,6 +131,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   String? selectedMeetupLocationFsqId;
 
   late List<PublicUserProfile> selectedUserProfilesToShowAvailabilitiesFor;
+  late Meetup currentMeetup;
 
   Map<int, DateTime> timeSegmentToDateTimeMap = {};
 
@@ -124,23 +157,44 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   @override
   void initState() {
     super.initState();
-    _setUpTimeSegmentDateTimeMap(widget.meetup.createdAt);
+    _detailedMeetupBloc = BlocProvider.of<DetailedMeetupBloc>(context);
 
-    selectedMeetupDate = widget.meetup.time;
-    selectedMeetupParticipants = List.from(widget.userProfiles);
-    selectedMeetupName = widget.meetup.name;
+    if (widget.meetup != null && widget.userProfiles != null && widget.participants != null && widget.decisions != null) {
+      _setupWidgetWhenParentSuppliedData();
+    }
+    else {
+      _fetchAllRequiredDataFromScratch();
+    }
 
+  }
+
+  _fetchAllRequiredDataFromScratch() {
+    _detailedMeetupBloc.add(FetchAllMeetupData(
+        meetupId: widget.meetupId,
+    ));
+  }
+
+  _setupWidgetWhenParentSuppliedData() {
+    currentMeetup = widget.meetup!;
+    selectedMeetupDate = widget.meetup!.time;
+    selectedMeetupParticipantUserProfiles = List.from(widget.userProfiles!);
+    selectedMeetupParticipants = List.from(widget.participants!);
+    selectedMeetupParticipantDecisions = List.from(widget.decisions!);
+    selectedMeetupName = widget.meetup!.name;
     selectedMeetupLocationId = widget.meetupLocation?.id;
     selectedMeetupLocationFsqId = widget.meetupLocation?.fsqId;
 
-    _detailedMeetupBloc = BlocProvider.of<DetailedMeetupBloc>(context);
     _detailedMeetupBloc.add(FetchAdditionalMeetupData(
-      meetupId: widget.meetup.id,
-      participantIds: widget.participants.map((e) => e.userId).toList(),
+      meetupId: widget.meetup!.id,
+      participantIds: widget.participants!.map((e) => e.userId).toList(),
       meetupLocationFsqId: widget.meetupLocation?.fsqId,
+      meetup: widget.meetup!,
+      participants: widget.participants!,
+      decisions: widget.decisions!,
+      userProfiles: widget.userProfiles!,
     ));
 
-    selectedUserProfilesToShowAvailabilitiesFor = List.from(widget.userProfiles);
+    selectedUserProfilesToShowAvailabilitiesFor = List.from(widget.userProfiles!);
   }
 
 
@@ -151,18 +205,33 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   _renderAppBar() {
-    return AppBar(
-      title: const Text("View Meetup", style: TextStyle(color: Colors.teal)),
-      iconTheme: const IconThemeData(color: Colors.teal),
-      actions: widget.currentUserProfile.userId != widget.meetup.ownerId ? [] : <Widget>[
-        IconButton(
-          icon: Icon(
-            isParticipantSelectHappening ? Icons.check : Icons.add,
-            color: Colors.teal,
-          ),
-          onPressed: _onAddParticipantsButtonPressed,
-        )
-      ],
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(56),
+      child: BlocBuilder<DetailedMeetupBloc, DetailedMeetupState>(
+        builder: (context, state) {
+          if (state is DetailedMeetupDataFetched) {
+            return AppBar(
+              title: const Text("View Meetup", style: TextStyle(color: Colors.teal)),
+              iconTheme: const IconThemeData(color: Colors.teal),
+              actions: widget.currentUserProfile.userId != currentMeetup?.ownerId ? [] : <Widget>[
+                IconButton(
+                  icon: Icon(
+                    isParticipantSelectHappening ? Icons.check : Icons.add,
+                    color: Colors.teal,
+                  ),
+                  onPressed: _onAddParticipantsButtonPressed,
+                )
+              ],
+            );
+          }
+          else {
+            return AppBar(
+              title: const Text("View Meetup", style: TextStyle(color: Colors.teal)),
+              iconTheme: const IconThemeData(color: Colors.teal),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -175,9 +244,22 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         listener: (context, state) {
           if (state is DetailedMeetupDataFetched) {
             setState(() {
+              _setUpTimeSegmentDateTimeMap(state.meetup.createdAt);
+
               selectedMeetupLocation = state.meetupLocation;
               userMeetupAvailabilities = state.userAvailabilities
                   .map((key, value) => MapEntry(key, value.map((e) => e.toUpsert()).toList()));
+
+              currentMeetup = state.meetup;
+              selectedMeetupDate = state.meetup.time;
+              selectedMeetupParticipantUserProfiles = List.from(state.userProfiles);
+              selectedMeetupParticipants = List.from(state.participants);
+              selectedMeetupParticipantDecisions = List.from(state.decisions);
+              selectedMeetupName = state.meetup.name;
+              selectedMeetupLocationId = state.meetupLocation?.locationId;
+              selectedMeetupLocationFsqId = state.meetupLocation?.location.fsqId;
+
+              selectedUserProfilesToShowAvailabilitiesFor = List.from(state.userProfiles);
             });
           }
         },
@@ -199,14 +281,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
     setState(() {
-      selectedMeetupParticipants.add(userProfile);
+      selectedMeetupParticipantUserProfiles.add(userProfile);
     });
   }
 
 
   _removeSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
     setState(() {
-      selectedMeetupParticipants.remove(userProfile);
+      selectedMeetupParticipantUserProfiles.remove(userProfile);
     });
   }
 
@@ -217,14 +299,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         currentUserProfile: widget.currentUserProfile,
         addSelectedUserIdToParticipantsCallback: _addSelectedUserIdToParticipantsCallback,
         removeSelectedUserFromToParticipantsCallback: _removeSelectedUserIdToParticipantsCallback,
-        alreadySelectedUserProfiles: selectedMeetupParticipants
+        alreadySelectedUserProfiles: selectedMeetupParticipantUserProfiles
     );
   }
 
   _addUserDecision(bool hasUserAcceptedMeetup) {
     _detailedMeetupBloc.add(
         AddParticipantDecisionToMeetup(
-            meetupId: widget.meetup.id,
+            meetupId: currentMeetup.id,
             participantId: widget.currentUserProfile.userId,
             hasAccepted: hasUserAcceptedMeetup
         )
@@ -240,51 +322,69 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _dynamicFloatingActionButtons() {
     // Add accept/decline options if non-owner is viewing it
-    if (widget.currentUserProfile.userId != widget.meetup.ownerId) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+    return BlocBuilder<DetailedMeetupBloc, DetailedMeetupState>(
+      builder: (context, state) {
+        if (state is DetailedMeetupDataFetched) {
+          if (widget.currentUserProfile.userId != currentMeetup.ownerId) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+                  child: FloatingActionButton(
+                      heroTag: "declineButtonDetailedMeetupView",
+                      onPressed: () {
+                        _addUserDecision(false);
+                      },
+                      backgroundColor: Colors.redAccent,
+                      tooltip: "Decline",
+                      child: const Icon(Icons.close, color: Colors.white)
+                  ),
+                ),
+                FloatingActionButton(
+                    heroTag: "acceptButtonDetailedMeetupView",
+                    onPressed: () {
+                      _addUserDecision(true);
+                    },
+                    backgroundColor: Colors.teal,
+                    tooltip: "Accept",
+                    child: const Icon(Icons.check, color: Colors.white)
+                )
+              ],
+            );
+          }
+          else {
+            return FloatingActionButton(
+                heroTag: "saveButtonDetailedMeetupView",
+                onPressed: _updateMeetingDetails,
+                backgroundColor: Colors.teal,
+                child: const Icon(Icons.save, color: Colors.white)
+            );
+          }
+        }
+        else {
+          return Visibility(
+            visible: false,
             child: FloatingActionButton(
-                heroTag: "declineButtonDetailedMeetupView",
-                onPressed: () {
-                  _addUserDecision(false);
-                },
-                backgroundColor: Colors.redAccent,
-                tooltip: "Decline",
-                child: const Icon(Icons.close, color: Colors.white)
+                heroTag: "saveButtonDetailedMeetupView",
+                onPressed: () {},
+                backgroundColor: Colors.teal,
+                child: const Icon(Icons.save, color: Colors.white)
             ),
-          ),
-          FloatingActionButton(
-              heroTag: "acceptButtonDetailedMeetupView",
-              onPressed: () {
-                _addUserDecision(true);
-              },
-              backgroundColor: Colors.teal,
-              tooltip: "Accept",
-              child: const Icon(Icons.check, color: Colors.white)
-          )
-        ],
-      );
-    }
-    else {
-      return FloatingActionButton(
-          heroTag: "saveButtonDetailedMeetupView",
-          onPressed: _updateMeetingDetails,
-          backgroundColor: Colors.teal,
-          child: const Icon(Icons.save, color: Colors.white)
-      );
-    }
+          );;
+        }
+      },
+    );
+
   }
 
   void _updateMeetingDetails() {
     _detailedMeetupBloc.add(UpdateMeetupDetails(
-        meetupId: widget.meetup.id,
+        meetupId: currentMeetup.id,
         meetupTime: selectedMeetupDate,
         meetupName: selectedMeetupName,
         location: selectedMeetupLocation,
-        meetupParticipantUserIds: selectedMeetupParticipants.map((e) => e.userId).toList()
+        meetupParticipantUserIds: selectedMeetupParticipantUserProfiles.map((e) => e.userId).toList()
     ));
     SnackbarUtils.showSnackBar(context, "Meetup updated successfully!");
     Navigator.pop(context);
@@ -347,7 +447,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         maxHeight: 400,
         child: MeetupCommentsListView.withBloc(
             currentUserId: widget.currentUserProfile.userId,
-            meetupId: widget.meetup.id
+            meetupId: currentMeetup.id
         )
     );
   }
@@ -386,7 +486,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
                  _detailedMeetupBloc.add(
                      SaveAvailabilitiesForCurrentUser(
-                       meetupId: widget.meetup.id,
+                       meetupId: currentMeetup.id,
                        currentUserId: widget.currentUserProfile.userId,
                        availabilities: userMeetupAvailabilities[widget.currentUserProfile.userId]!,
                      )
@@ -454,9 +554,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             // cellWidth: 60,
             showScrollBar: true,
           ),
-          headers: _renderAvailabilityHeaders(widget.meetup.createdAt),
+          headers: _renderAvailabilityHeaders(currentMeetup.createdAt),
           tasks: const [],
-          availabilityInitialDay: widget.meetup.createdAt,
+          availabilityInitialDay: currentMeetup.createdAt,
           meetupAvailabilities: Map.fromEntries(userMeetupAvailabilities
               .entries
               .where((element) =>
@@ -503,10 +603,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
           child: MeetupLocationView(
             currentUserProfile: widget.currentUserProfile,
             meetupLocation: selectedMeetupLocation?.toMeetupLocation(),
-            userProfiles: selectedMeetupParticipants,
+            userProfiles: selectedMeetupParticipantUserProfiles,
             onTapCallback: () {
               // Go to select location route
-              if (widget.currentUserProfile.userId == widget.meetup.ownerId) {
+              if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
                 _goToSelectLocationRoute();
               }
             },
@@ -519,7 +619,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     Navigator.pushAndRemoveUntil(
         context,
         SearchLocationsView.route(
-            userProfilesWithLocations: selectedMeetupParticipants
+            userProfilesWithLocations: selectedMeetupParticipantUserProfiles
                 .map((e) => UserProfileWithLocation(e, e.locationCenter!.latitude, e.locationCenter!.longitude, e.locationRadius!.toDouble()))
                 .toList(),
             initialSelectedLocationId: selectedMeetupLocationId,
@@ -537,10 +637,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _onParticipantRemoved(PublicUserProfile userProfile) {
     // We ensure that the owner is now removed
-    if (widget.currentUserProfile.userId == widget.meetup.ownerId) {
-      if (userProfile.userId != widget.meetup.ownerId) {
+    if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
+      if (userProfile.userId != currentMeetup.ownerId) {
         setState(() {
-          selectedMeetupParticipants.remove(userProfile);
+          selectedMeetupParticipantUserProfiles.remove(userProfile);
         });
         selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(userProfile.userId);
       }
@@ -568,12 +668,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   _renderParticipantsView() {
-    if (widget.participants.isNotEmpty) {
+    if (selectedMeetupParticipants.isNotEmpty) {
       return MeetupParticipantsList(
-        participantUserProfiles: selectedMeetupParticipants,
+        participantUserProfiles: selectedMeetupParticipantUserProfiles,
         onParticipantRemoved: _onParticipantRemoved,
         onParticipantTapped: _onParticipantTapped,
-        participantDecisions: widget.decisions,
+        participantDecisions: selectedMeetupParticipantDecisions,
       );
     }
     else {
@@ -601,7 +701,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: TextFormField(
-            readOnly: widget.currentUserProfile.userId != widget.meetup.ownerId,
+            readOnly: widget.currentUserProfile.userId != currentMeetup.ownerId,
             initialValue: selectedMeetupName ?? "Unspecified name",
             textCapitalization: TextCapitalization.words,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -643,7 +743,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
       ),
       onPressed: () async {
-        if (widget.currentUserProfile.userId == widget.meetup.ownerId) {
+        if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
           final selectedTime = await showTimePicker(
             initialTime: TimeOfDay.fromDateTime(selectedMeetupDate ?? earliestPossibleMeetupDateTime),
             builder: (BuildContext context, Widget? child) {
@@ -687,7 +787,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
       ),
       onPressed: () async {
-        if (widget.currentUserProfile.userId == widget.meetup.ownerId) {
+        if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
           final selectedDate = await showDatePicker(
             builder: (BuildContext context, Widget? child) {
               return Theme(

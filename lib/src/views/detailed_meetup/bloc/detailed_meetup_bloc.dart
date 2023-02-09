@@ -3,6 +3,8 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
+import 'package:flutter_app/src/models/meetups/meetup_location.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,6 +25,51 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     on<SaveAvailabilitiesForCurrentUser>(_saveAvailabilitiesForCurrentUser);
     on<UpdateMeetupDetails>(_updateMeetupDetails);
     on<AddParticipantDecisionToMeetup>(_addParticipantDecisionToMeetup);
+    on<FetchAllMeetupData>(_fetchAllMeetupData);
+  }
+
+  void _fetchAllMeetupData(FetchAllMeetupData event, Emitter<DetailedMeetupState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+
+    final meetup = await meetupRepository.getMeetupById(
+        event.meetupId,
+        accessToken!,
+    );
+
+    MeetupLocation? meetupLocation;
+    if (meetup.locationId != null) {
+      meetupLocation = await meetupRepository.getLocationByLocationId(meetup.locationId!, accessToken);
+    }
+    final location = meetupLocation == null ? null : await meetupRepository.getLocationByFsqId(meetupLocation.fsqId, accessToken);
+
+    final meetupParticipants = await meetupRepository.getMeetupParticipants(meetup.id, accessToken);
+    final meetupDecisions = await meetupRepository.getMeetupDecisions(meetup.id, accessToken);
+
+    final participantIds = meetupParticipants.map((e) => e.userId).toList();
+    Map<String, List<MeetupAvailability>> availabilityMap = {};
+    final availabilities = await Future.wait(participantIds.map((e) =>
+        meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))
+    );
+
+    var i = 0;
+    while(i < availabilities.length) {
+      availabilityMap[participantIds[i]] = availabilities[i];
+      i++;
+    }
+
+
+    final List<PublicUserProfile> userProfileDetails =
+      await userRepository.getPublicUserProfiles(meetupParticipants.map((e) => e.userId).toList(), accessToken);
+
+    emit(DetailedMeetupDataFetched(
+        meetupId: event.meetupId,
+        userAvailabilities: availabilityMap,
+        meetupLocation: location,
+        meetup: meetup,
+        participants: meetupParticipants,
+        decisions: meetupDecisions,
+        userProfiles: userProfileDetails
+    ));
   }
 
   void _addParticipantDecisionToMeetup(AddParticipantDecisionToMeetup event, Emitter<DetailedMeetupState> emit) async {
@@ -99,7 +146,11 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     emit(DetailedMeetupDataFetched(
         meetupId: event.meetupId,
         userAvailabilities: availabilityMap,
-        meetupLocation: meetupLocation
+        meetupLocation: meetupLocation,
+        meetup: event.meetup,
+        participants: event.participants,
+        decisions: event.decisions,
+        userProfiles: event.userProfiles
     ));
   }
 

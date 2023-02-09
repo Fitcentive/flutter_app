@@ -7,6 +7,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
+import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_bloc.dart';
@@ -191,6 +192,14 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
+  _goToDetailedMeetup(String meetupId) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        DetailedMeetupView.route(meetupId: meetupId, currentUserProfile: widget.currentUserProfile),
+            (route) => true
+    );
+  }
+
   Widget _generateUserLikedPostNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final List<dynamic> likingUserIdsDynamic = notification.data['likingUsers'];
     final List<String> likingUserIds = likingUserIdsDynamic.map((e) => e as String).toList();
@@ -302,8 +311,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
     return ListTile(
       onTap: () async {
-        // _goToSelectedPost(postId);
-        // todo - go to detailed meetup view
+        _goToDetailedMeetup(meetupId);
       },
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
@@ -343,8 +351,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
     return ListTile(
       onTap: () async {
-        // _goToSelectedPost(postId);
-        // todo - go to detailed meetup view - need to modify it like selectedPost to fetch everything instead of have it passed by parent. UGH
+        _goToDetailedMeetup(meetupId);
       },
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
