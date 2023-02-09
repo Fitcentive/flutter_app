@@ -56,7 +56,9 @@ class MeetupParticipantsListState extends State<MeetupParticipantsList> {
   Widget _renderParticipantCircleViewWithCloseButton(PublicUserProfile userProfile) {
     return CircleAvatar(
       radius: (widget.circleRadius / 2) + ((widget.circleRadius / 2)/10),
-      backgroundColor: isParticipantSelectedMap[userProfile.userId] ?? false ? Colors.teal : Colors.red,
+      backgroundColor: widget.onParticipantTapped == null ? Colors.teal : (
+          isParticipantSelectedMap[userProfile.userId] ?? false ? Colors.teal : Colors.red
+      ),
       child: Stack(
         children: [
           GestureDetector(

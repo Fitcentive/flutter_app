@@ -20,10 +20,12 @@ class MeetupLocationView extends StatefulWidget {
 
   final MeetupLocation? meetupLocation;
   final List<PublicUserProfile> userProfiles;
+  final PublicUserProfile currentUserProfile;
 
   const MeetupLocationView({
     super.key,
     this.meetupLocation,
+    required this.currentUserProfile,
     required this.userProfiles,
     required this.onTapCallback,
   });
@@ -49,20 +51,18 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
   List<Color> usedColoursThusFar = [];
 
   late BitmapDescriptor customGymLocationIcon;
-  late Future<int> setupIconResult;
 
   @override
   void initState() {
     super.initState();
 
-    setupIconResult = _setupMapIconsForUsers(widget.userProfiles);
     _setupColorsForUsers(widget.userProfiles);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<void>(
-      future: setupIconResult,
+    return FutureBuilder<int>(
+      future: _setupMapIconsForUsers(widget.userProfiles),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           _setupMap(widget.meetupLocation, widget.userProfiles);
@@ -128,6 +128,8 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
 
 
   Future<int> _setupMapIconsForUsers(List<PublicUserProfile> users) async {
+    _setupColorsForUsers(users);
+
     for (var e in users) {
       if (userIdToMapMarkerIcon[e.userId] == null) {
         userIdToMapMarkerIcon[e.userId] = await _generateCustomMarkerForUser(e);
@@ -146,12 +148,22 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
       var nextColor = userIdToMapMarkerColor[u.userId];
 
       if (nextColor == null) {
-        final _random = Random();
-        var nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
-        while (usedColoursThusFar.contains(nextColour)) {
-          nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
+        // We always give same colour to current user for consistency
+        if (u.userId == widget.currentUserProfile.userId) {
+          userIdToMapMarkerColor[u.userId] = Colors.teal;
+          usedColoursThusFar.add(Colors.teal);
         }
-        userIdToMapMarkerColor[u.userId] = nextColour;
+
+        else {
+          final _random = Random();
+          var nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
+          while (usedColoursThusFar.contains(nextColour)) {
+            nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
+          }
+
+          userIdToMapMarkerColor[u.userId] = nextColour;
+          usedColoursThusFar.add(nextColour);
+        }
       }
     });
   }
@@ -173,7 +185,7 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
         // _goToLocationView(userProfile, context);
       },
       fillColor: userIdToMapMarkerColor[profile.userId]!.withOpacity(0.25),
-      strokeWidth: 5,
+      strokeWidth: 3,
       center: LatLng(profile.locationCenter!.latitude, profile.locationCenter!.longitude),
       radius: profile.locationRadius!.toDouble(),
     );

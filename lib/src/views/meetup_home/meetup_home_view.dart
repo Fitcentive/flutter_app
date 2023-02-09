@@ -224,6 +224,10 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
           elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15.0),
+                side: BorderSide(
+                    color: Theme.of(context).primaryColor,
+                    width: 1
+                )
             ),
             child: Container(
               padding: const EdgeInsets.all(10),
@@ -294,6 +298,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     return SizedBox(
       height: 200,
       child: MeetupLocationView(
+          currentUserProfile: widget.currentUserProfile,
           meetupLocation: meetupLocation,
           userProfiles: userProfiles,
           onTapCallback: () {

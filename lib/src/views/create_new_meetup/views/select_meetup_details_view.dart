@@ -73,6 +73,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<CreateNewMeetupBloc, CreateNewMeetupState>(
         builder: (context, state) {
           if (state is MeetupModified) {
@@ -86,7 +87,9 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
                     Divider(color: Theme.of(context).primaryColor),
                     WidgetUtils.spacer(2.5),
                     _renderMeetupNameView(state),
+                    WidgetUtils.spacer(2.5),
                     _renderMeetupDateTime(state),
+                    WidgetUtils.spacer(2.5),
                     _renderMeetupLocation(state),
                     WidgetUtils.spacer(2.5),
                     _renderMeetupFsqLocationCardIfNeeded(state),
@@ -169,6 +172,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
       child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: MeetupLocationView(
+            currentUserProfile: widget.currentUserProfile,
             meetupLocation: state.location?.toMeetupLocation(),
             userProfiles: [...state.participantUserProfiles, widget.currentUserProfile],
             onTapCallback: () {

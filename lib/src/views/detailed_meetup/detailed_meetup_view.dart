@@ -216,7 +216,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         currentUserId: widget.currentUserProfile.userId,
         currentUserProfile: widget.currentUserProfile,
         addSelectedUserIdToParticipantsCallback: _addSelectedUserIdToParticipantsCallback,
-        removeSelectedUserIdToParticipantsCallback: _removeSelectedUserIdToParticipantsCallback,
+        removeSelectedUserFromToParticipantsCallback: _removeSelectedUserIdToParticipantsCallback,
         alreadySelectedUserProfiles: selectedMeetupParticipants
     );
   }
@@ -308,6 +308,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                   children: WidgetUtils.skipNulls([
                     WidgetUtils.spacer(2.5),
                     _renderMeetupNameView(),
+                    WidgetUtils.spacer(2.5),
                     _renderMeetupDateTime(),
                     WidgetUtils.spacer(2.5),
                     _renderEditAvailabilitiesButton(),
@@ -500,6 +501,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: MeetupLocationView(
+            currentUserProfile: widget.currentUserProfile,
             meetupLocation: selectedMeetupLocation?.toMeetupLocation(),
             userProfiles: selectedMeetupParticipants,
             onTapCallback: () {

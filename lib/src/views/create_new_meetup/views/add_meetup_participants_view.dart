@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
@@ -29,6 +28,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
   late final CreateNewMeetupBloc _createNewMeetupBloc;
 
   List<String> selectedParticipants = List<String>.empty(growable: true);
+  List<PublicUserProfile> selectedMeetupParticipantProfiles = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -44,11 +44,19 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CreateNewMeetupBloc, CreateNewMeetupState>(
-        builder: (context, state) {
-          if (state is MeetupModified) {
-            return SingleChildScrollView(
-              child: Container(
+    super.build(context);
+    return BlocListener<CreateNewMeetupBloc, CreateNewMeetupState>(
+      listener: (context, state) {
+        if (state is MeetupModified) {
+          setState(() {
+            selectedMeetupParticipantProfiles  = List.from(state.participantUserProfiles);
+          });
+        }
+       },
+      child: BlocBuilder<CreateNewMeetupBloc, CreateNewMeetupState>(
+          builder: (context, state) {
+            if (state is MeetupModified) {
+              return SingleChildScrollView(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -61,15 +69,15 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
                     ],
                   ),
                 ),
-              ),
-            );
+              );
+            }
+            else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
           }
-          else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        }
+      ),
     );
   }
 
@@ -79,7 +87,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
         currentUserId: widget.currentUserProfile.userId,
         currentUserProfile: widget.currentUserProfile,
         addSelectedUserIdToParticipantsCallback: _addSelectedUserIdToParticipantsCallback,
-        removeSelectedUserIdToParticipantsCallback: _removeSelectedUserIdToParticipantsCallback,
+        removeSelectedUserFromToParticipantsCallback: _removeSelectedUserFromToParticipantsCallback,
         alreadySelectedUserProfiles: [],
     );
   }
@@ -88,10 +96,13 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
     _updateBlocState({...selectedParticipants, selectedUserProfile.userId}.toList());
   }
 
-  _removeSelectedUserIdToParticipantsCallback(PublicUserProfile removedUserProfile) {
+  _removeSelectedUserFromToParticipantsCallback(PublicUserProfile removedUserProfile) {
     final newParticipants = [...selectedParticipants];
     newParticipants.removeWhere((element) => element == removedUserProfile.userId);
     _updateBlocState(newParticipants);
+    setState(() {
+      selectedMeetupParticipantProfiles.removeWhere((element) => element.userId == removedUserProfile.userId);
+    });
   }
 
 
@@ -100,15 +111,19 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
     updatedListAfterRemovingParticipant.removeWhere((element) => element == removedUser.userId);
     _updateBlocState(updatedListAfterRemovingParticipant);
     _updateUserSearchResultsListIfNeeded(removedUser.userId);
+
+    setState(() {
+      selectedMeetupParticipantProfiles.removeWhere((element) => element.userId == removedUser.userId);
+    });
   }
 
   _renderParticipantsView(MeetupModified state) {
-    if (state.participantUserProfiles.isNotEmpty) {
+    if (selectedMeetupParticipantProfiles.isNotEmpty) {
       return MeetupParticipantsList(
-          participantUserProfiles: state.participantUserProfiles,
+          participantUserProfiles: selectedMeetupParticipantProfiles,
           onParticipantRemoved: _onParticipantRemoved,
           onParticipantTapped: null,
-          participantDecisions: [],
+          participantDecisions: const [],
       );
     }
     else {

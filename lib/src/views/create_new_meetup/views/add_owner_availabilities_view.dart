@@ -50,6 +50,7 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<CreateNewMeetupBloc, CreateNewMeetupState>(
         builder: (context, state) {
           if (state is MeetupModified) {

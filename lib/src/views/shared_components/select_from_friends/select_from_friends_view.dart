@@ -22,13 +22,13 @@ class SelectFromFriendsView extends StatefulWidget {
 
 
   final UpdateSelectedUserIdCallback addSelectedUserIdToParticipantsCallback;
-  final UpdateSelectedUserIdCallback removeSelectedUserIdToParticipantsCallback;
+  final UpdateSelectedUserIdCallback removeSelectedUserFromToParticipantsCallback;
 
   const SelectFromFriendsView({
     Key? key,
     required this.currentUserProfile,
     required this.addSelectedUserIdToParticipantsCallback,
-    required this.removeSelectedUserIdToParticipantsCallback,
+    required this.removeSelectedUserFromToParticipantsCallback,
     required this.alreadySelectedUserProfiles,
   }): super(key: key);
 
@@ -38,7 +38,7 @@ class SelectFromFriendsView extends StatefulWidget {
     required String currentUserId,
     required PublicUserProfile currentUserProfile,
     required UpdateSelectedUserIdCallback addSelectedUserIdToParticipantsCallback,
-    required UpdateSelectedUserIdCallback removeSelectedUserIdToParticipantsCallback,
+    required UpdateSelectedUserIdCallback removeSelectedUserFromToParticipantsCallback,
     required List<PublicUserProfile> alreadySelectedUserProfiles,
   }) {
     return MultiBlocProvider(
@@ -53,7 +53,7 @@ class SelectFromFriendsView extends StatefulWidget {
           key: key,
           currentUserProfile: currentUserProfile,
           addSelectedUserIdToParticipantsCallback: addSelectedUserIdToParticipantsCallback,
-          removeSelectedUserIdToParticipantsCallback: removeSelectedUserIdToParticipantsCallback,
+          removeSelectedUserFromToParticipantsCallback: removeSelectedUserFromToParticipantsCallback,
           alreadySelectedUserProfiles: alreadySelectedUserProfiles
         ),
     );
@@ -222,7 +222,7 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
               widget.addSelectedUserIdToParticipantsCallback(userProfile);
             }
             else if (!value) {
-              widget.removeSelectedUserIdToParticipantsCallback(userProfile);
+              widget.removeSelectedUserFromToParticipantsCallback(userProfile);
             }
           },
         ),
