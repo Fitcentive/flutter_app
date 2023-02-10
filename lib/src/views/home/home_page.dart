@@ -15,6 +15,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/notification_repositor
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/calendar/calendar_view.dart';
 import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
 import 'package:flutter_app/src/views/discover_home/discover_home_view.dart';
 import 'package:flutter_app/src/views/meetup_home/meetup_home_view.dart';
@@ -70,6 +71,7 @@ class HomePageState extends State<HomePage> {
   static const String discover = 'Discover';
   static const String search = 'Search';
   static const String friends = 'Friends';
+  static const String calendar = 'Calendar';
   static const String newsFeed = 'News Feed';
   static const String meetup = 'Meetup';
   static const String chat = 'Chat';
@@ -450,6 +452,7 @@ class HomePageState extends State<HomePage> {
         _generateListTile(discover),
         _generateListTile(friends),
         _generateListTile(meetup),
+        _generateListTile(calendar),
         _generateListTile(newsFeed),
         _generateListTile(chat),
       ],
@@ -495,6 +498,8 @@ class HomePageState extends State<HomePage> {
           return DiscoverHomeView.withBloc(publicUserProfile);
         case "Meetup":
           return MeetupHomeView.withBloc(publicUserProfile);
+        case "Calendar":
+          return CalendarView.withBloc(publicUserProfile);
         default:
           return _oldStuff();
       }

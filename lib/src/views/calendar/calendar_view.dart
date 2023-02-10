@@ -1,0 +1,376 @@
+import 'package:calendar_view/calendar_view.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
+import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
+import 'package:flutter_app/src/models/meetups/meetup_location.dart';
+import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/calendar/bloc/calendar_bloc.dart';
+import 'package:flutter_app/src/views/calendar/bloc/calendar_event.dart';
+import 'package:flutter_app/src/views/calendar/bloc/calendar_state.dart';
+import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
+import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_state.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_card_view.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
+
+class CalendarView extends StatefulWidget {
+  final PublicUserProfile currentUserProfile;
+
+  const CalendarView ({Key? key, required this.currentUserProfile}): super(key: key);
+
+  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
+    providers: [
+      BlocProvider<CalendarBloc>(
+          create: (context) => CalendarBloc(
+            userRepository: RepositoryProvider.of<UserRepository>(context),
+            meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
+            secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+          )),
+    ],
+    child: CalendarView(currentUserProfile: currentUserProfile),
+  );
+
+  @override
+  State createState() {
+    return CalendarViewState();
+  }
+}
+
+class CalendarViewState extends State<CalendarView> {
+  static final DateTime minimumDate = DateTime(1970);
+  static final DateTime maximumDate = DateTime(2050);
+
+  late CalendarBloc _calendarBloc;
+
+  String selectedCalendarView = "month"; // Options are month, week, day
+  DateTime currentSelectedDateTime = DateTime.now();
+  List<CalendarEventData<Meetup>> calendarEvents = [];
+
+  EventController<Meetup> monthCalendarEventController = EventController<Meetup>();
+  EventController<Meetup> weekCalendarEventController = EventController<Meetup>();
+  EventController<Meetup> dayCalendarEventController = EventController<Meetup>();
+
+  final HeaderStyle calendarHeaderStyle = const HeaderStyle(
+      headerTextStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+      ),
+      decoration: BoxDecoration(
+          color: Colors.teal
+      ),
+      leftIcon: Icon(Icons.chevron_left, color: Colors.white,),
+      rightIcon: Icon(Icons.chevron_right, color: Colors.white,)
+  );
+
+  @override
+  void initState() {
+    super.initState();
+
+    _calendarBloc = BlocProvider.of<CalendarBloc>(context);
+    _calendarBloc.add(
+        FetchCalendarMeetupData(
+            userId: widget.currentUserProfile.userId,
+            year: currentSelectedDateTime.year,
+            month: currentSelectedDateTime.month,
+        )
+    );
+  }
+
+  @override
+  void dispose() {
+    monthCalendarEventController.dispose();
+    weekCalendarEventController.dispose();
+    dayCalendarEventController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: BlocListener<CalendarBloc, CalendarState>(
+        listener: (context, state) {
+          if (state is CalendarMeetupUserDataFetched) {
+            setState(() {
+              calendarEvents = state.meetups
+                  .where((m) => m.time != null)
+                  .map((m) {
+                return CalendarEventData(
+                  date: m.time!,
+                  event: m,
+                  title: m.name ?? "Unnamed meetup",
+                  description: m.name ?? "No description",
+                  startTime: m.time,
+                  endTime: m.time?.add(const Duration(hours: 1)) // todo - solution for this
+                );
+              })
+                  .toList();
+              monthCalendarEventController.addAll(calendarEvents);
+              weekCalendarEventController.addAll(calendarEvents);
+              dayCalendarEventController.addAll(calendarEvents);
+            });
+          }
+        },
+        child: BlocBuilder<CalendarBloc, CalendarState>(
+          builder: (context, state) {
+            if (state is CalendarMeetupUserDataFetched) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _renderViewSelectButtons(),
+                  WidgetUtils.spacer(2.5),
+                  Expanded(child: _renderCalendarView(state)),
+                ],
+              );
+            }
+            else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  _renderCalendarView(CalendarMeetupUserDataFetched state) {
+    if (selectedCalendarView == "month") {
+      return CalendarControllerProvider<Meetup>(
+        controller: monthCalendarEventController,
+        child: MonthView(
+          controller: monthCalendarEventController,
+          minMonth: minimumDate,
+          maxMonth: maximumDate,
+          initialMonth: currentSelectedDateTime,
+          cellAspectRatio: .5,
+          onPageChange: (date, pageIndex) {
+            setState(() {
+              currentSelectedDateTime = date;
+            });
+          },
+          onCellTap: (events, date) {
+            setState(() {
+              currentSelectedDateTime = date;
+            });
+          },
+          startDay: WeekDays.monday, // To change the first day of the week.
+          // This callback will only work if cellBuilder is null.
+          onEventTap: (event, date) {
+              _showMeetupCardDialog(state, [event]);
+          },
+          onDateLongPress: (date) {
+            // show popup menu with options
+          },
+          dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
+          headerStringBuilder: ((date, {secondaryDate}) => DateFormat("MMM yyyy").format(date).toString()),
+          headerStyle: calendarHeaderStyle,
+        ),
+      );
+    }
+    else if (selectedCalendarView == "week") {
+      return CalendarControllerProvider<Meetup>(
+          controller: weekCalendarEventController,
+          child: WeekView(
+            controller: weekCalendarEventController,
+            showLiveTimeLineInAllDays: true, // To display live time line in all pages in week view.
+            minDay: minimumDate,
+            maxDay: maximumDate,
+            initialDay: currentSelectedDateTime,
+            heightPerMinute: 1, // height occupied by 1 minute time span.
+            eventArranger: SideEventArranger(), // To define how simultaneous events will be arranged.
+            onEventTap: (events, date) {
+              if (events.isNotEmpty) {
+                _showMeetupCardDialog(state, events);
+              }
+            },
+            onDateLongPress: (date) {
+              // Show context popup menu
+            },
+            onDateTap: (date) {
+              setState(() {
+                currentSelectedDateTime = date;
+              });
+            },
+            startDay: WeekDays.monday, // To change the first day of the week.
+            headerStringBuilder: ((date, {secondaryDate}) => DateFormat("MMM yyyy").format(date).toString()),
+            headerStyle: calendarHeaderStyle,
+            weekDayStringBuilder: (dayIndex) {
+              switch (dayIndex) {
+                case 0:
+                  return "Mon";
+                case 1:
+                  return "Tue";
+                case 2:
+                  return "Wed";
+                case 3:
+                  return "Thu";
+                case 4:
+                  return "Fri";
+                case 5:
+                  return "Sat";
+                case 6:
+                  return "Sun";
+                default:
+                  return "poop";
+              }
+            },
+          )
+      );
+    }
+    else {
+      return CalendarControllerProvider<Meetup>(
+          controller: dayCalendarEventController,
+          child: DayView(
+            controller: dayCalendarEventController,
+            showVerticalLine: true, // To display live time line in day view.
+            showLiveTimeLineInAllDays: true, // To display live time line in all pages in day view.
+            minDay: minimumDate,
+            maxDay: maximumDate,
+            initialDay: currentSelectedDateTime,
+            heightPerMinute: 1, // height occupied by 1 minute time span.
+            eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
+            onEventTap: (events, date) {
+              if (events.isNotEmpty) {
+                _showMeetupCardDialog(state, events);
+              }
+            },
+            onDateLongPress: (date) => print(date),
+            dateStringBuilder: ((date, {secondaryDate}) => DateFormat("MMM dd yyyy").format(date).toString()),
+            headerStyle: calendarHeaderStyle,
+            onPageChange: (date, index) {
+              setState(() {
+                currentSelectedDateTime = date;
+              });
+            },
+          )
+      );
+    }
+
+  }
+
+  _showMeetupCardDialog(CalendarMeetupUserDataFetched state, List<CalendarEventData<Object?>> events) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          final currentMeetup = events.first.event as Meetup;
+          final currentMeetupLocation = state.meetupLocations.firstWhere((element) => element?.id == currentMeetup.locationId);
+          final currentMeetupDecisions = state.meetupDecisions[currentMeetup.id]!;
+          final currentMeetupParticipants = state.meetupParticipants[currentMeetup.id]!;
+          return Center(
+            child: MeetupCardView(
+                currentUserProfile: widget.currentUserProfile,
+                meetup: currentMeetup,
+                participants: currentMeetupParticipants,
+                decisions: currentMeetupDecisions,
+                meetupLocation: currentMeetupLocation,
+                userIdProfileMap: state.userIdProfileMap,
+                onCardTapped: () {
+                  _goToEditMeetupView(
+                      currentMeetup,
+                      currentMeetupLocation,
+                      currentMeetupParticipants,
+                      currentMeetupDecisions,
+                      state.userIdProfileMap.values.where((element) => currentMeetupParticipants.map((e) => e.userId).contains(element.userId)).toList()
+                  );
+                }
+            ),
+          );
+        }
+    );
+  }
+
+  _renderViewSelectButtons() {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        WidgetUtils.spacer(2.5),
+        Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.calendar_view_month),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              ),
+              onPressed: () {
+                setState(() {
+                  selectedCalendarView = "month";
+                });
+              },
+              label: const Text('Month',
+                  style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+            )
+        ),
+        WidgetUtils.spacer(5),
+        Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.calendar_view_week),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              ),
+              onPressed: () {
+                setState(() {
+                  selectedCalendarView = "week";
+                });
+              },
+              label: const Text('Week',
+                  style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+            )
+        ),
+        WidgetUtils.spacer(5),
+        Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.calendar_view_day),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              ),
+              onPressed: () {
+                setState(() {
+                  selectedCalendarView = "day";
+                });
+              },
+              label: const Text('Day',
+                  style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+            )
+        ),
+        WidgetUtils.spacer(2.5),
+      ],
+    );
+  }
+
+  _goToEditMeetupView(
+      Meetup meetup,
+      MeetupLocation? meetupLocation,
+      List<MeetupParticipant> participants,
+      List<MeetupDecision> decisions,
+      List<PublicUserProfile> relevantUserProfiles,
+      ) {
+    Navigator.push(
+      context,
+      DetailedMeetupView.route(
+          meetupId: meetup.id,
+          meetup: meetup,
+          meetupLocation: meetupLocation,
+          participants: participants,
+          decisions: decisions,
+          userProfiles: relevantUserProfiles,
+          currentUserProfile: widget.currentUserProfile
+      ),
+    ).then((value) {
+      _calendarBloc.add(
+          FetchCalendarMeetupData(
+            userId: widget.currentUserProfile.userId,
+            year: currentSelectedDateTime.year,
+            month: currentSelectedDateTime.month,
+          )
+      );
+    });
+  }
+
+}

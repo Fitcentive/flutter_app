@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
-import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_card_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
@@ -18,11 +17,9 @@ import 'package:flutter_app/src/views/create_new_meetup/create_new_meetup_view.d
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_bloc.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_event.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_state.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
 
 class MeetupHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -361,12 +358,24 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
             } else {
               final currentMeetupItem = state.meetups[index];
               final currentMeetupLocation = state.meetupLocations[index];
-              return _meetupCardItem(
-                  currentMeetupItem,
-                  currentMeetupLocation,
-                  state.meetupParticipants[currentMeetupItem.id]!,
-                  state.meetupDecisions[currentMeetupItem.id]!,
-                  state.userIdProfileMap
+              final currentMeetupParticipants = state.meetupParticipants[currentMeetupItem.id]!;
+              final currentMeetupDecisions = state.meetupDecisions[currentMeetupItem.id]!;
+              return MeetupCardView(
+                  currentUserProfile: widget.currentUserProfile,
+                  meetup: currentMeetupItem,
+                  meetupLocation: currentMeetupLocation,
+                  participants: currentMeetupParticipants,
+                  decisions: currentMeetupDecisions,
+                  userIdProfileMap: state.userIdProfileMap,
+                  onCardTapped: () {
+                    _goToEditMeetupView(
+                        currentMeetupItem,
+                        currentMeetupLocation,
+                        currentMeetupParticipants,
+                        currentMeetupDecisions,
+                        state.userIdProfileMap.values.where((element) => currentMeetupParticipants.map((e) => e.userId).contains(element.userId)).toList()
+                    );
+                  },
               );
             }
           },
@@ -382,7 +391,6 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       List<MeetupDecision> decisions,
       List<PublicUserProfile> relevantUserProfiles,
       ) {
-
     Navigator.push(
       context,
       DetailedMeetupView.route(
@@ -403,174 +411,6 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
           )
       );
     });
-
-  }
-
-  _meetupCardItem(
-      Meetup meetup,
-      MeetupLocation? meetupLocation,
-      List<MeetupParticipant> participants,
-      List<MeetupDecision> decisions,
-      Map<String, PublicUserProfile> userIdProfileMap
-  ) {
-    final relevantUserProfiles =
-      userIdProfileMap.values.where((element) => participants.map((e) => e.userId).contains(element.userId)).toList();
-    return IntrinsicHeight(
-      child: GestureDetector(
-        onTap: () {
-          _goToEditMeetupView(meetup, meetupLocation, participants, decisions, relevantUserProfiles);
-        },
-        child: Card(
-          elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
-                side: BorderSide(
-                    color: Theme.of(context).primaryColor,
-                    width: 1
-                )
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: WidgetUtils.skipNulls(
-                      [
-                        _renderTop(meetup),
-                        WidgetUtils.spacer(10),
-                        _renderBottom(meetup, meetupLocation, participants, decisions, relevantUserProfiles),
-                      ]
-                  ),
-                ),
-              ),
-            )
-        ),
-      ),
-    );
-  }
-
-  _renderBottom(
-    Meetup meetup,
-    MeetupLocation? meetupLocation,
-    List<MeetupParticipant> participants,
-    List<MeetupDecision> decisions,
-    List<PublicUserProfile> userProfiles
-  ) {
-    return Row(
-      children: [
-        // This part is supposed to be locations view
-        Expanded(
-          flex: 3,
-          child: _renderMapBox(meetup, meetupLocation, userProfiles),
-        ),
-        // This part is supposed to be participant list
-        Expanded(
-            flex: 2,
-            child: _renderParticipantsList(participants, userProfiles, decisions)
-        )
-      ],
-    );
-  }
-
-  _renderParticipantsList(
-      List<MeetupParticipant> participants,
-      List<PublicUserProfile> userProfiles,
-      List<MeetupDecision> decisions
-  ) {
-    return SizedBox(
-      height: 200,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
-        child: MeetupParticipantsList(
-          participantUserProfiles: userProfiles,
-          onParticipantRemoved: null,
-          onParticipantTapped: null,
-          circleRadius: 45,
-          participantDecisions: decisions,
-        ),
-      ),
-    );
-  }
-
-
-  _renderMapBox(Meetup meetup, MeetupLocation? meetupLocation, List<PublicUserProfile> userProfiles) {
-    return SizedBox(
-      height: 200,
-      child: MeetupLocationView(
-          currentUserProfile: widget.currentUserProfile,
-          meetupLocation: meetupLocation,
-          userProfiles: userProfiles,
-          onTapCallback: () {
-            // Go to location view?
-          },
-      ),
-    );
-  }
-
-  _renderTop(Meetup meetup) {
-    final meetupDate = meetup.time == null ? "Date unset" : "${DateFormat('EEEE').format(meetup.time!)}, ${DateFormat("yyyy-MM-dd").format(meetup.time!)}";
-    final meetupTime = meetup.time == null ? "Time unset" : DateFormat("hh:mm a").format(meetup.time!);
-    return Row(
-      children: [
-        // Name, date and time
-        Expanded(
-          flex: 3,
-          child: Column(
-            children: [
-              Text(meetup.name ?? "Unnamed meetup", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ),),
-              WidgetUtils.spacer(5),
-              Text(meetupTime, style: const TextStyle(fontSize: 16),),
-              WidgetUtils.spacer(5),
-              Text(meetupDate, style: const TextStyle(fontSize: 16),),
-            ],
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: Column(
-            children: WidgetUtils.skipNulls([
-              Row(
-                children: [
-                  Container(
-                    width: 7.5,
-                    height: 7.5,
-                    decoration: BoxDecoration(
-                      color: ColorUtils.meetupStatusToColorMap[meetup.meetupStatus]!,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  WidgetUtils.spacer(5),
-                  Text(meetup.meetupStatus, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                ],
-              ),
-              WidgetUtils.spacer(5),
-              Wrap(
-                children: WidgetUtils.skipNulls([
-                  _showMeetupOwnerIfNeeded(meetup)
-                ]),
-              )
-            ]) ,
-          )
-        )
-      ],
-    );
-  }
-
-  Widget? _showMeetupOwnerIfNeeded(Meetup meetup) {
-    if (meetup.ownerId == widget.currentUserProfile.userId) {
-      return const Text(
-        "You created this meetup!",
-        style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.normal,
-            color: Colors.teal
-        ),
-      );
-    }
-    else {
-      return null;
-    }
   }
 
 
