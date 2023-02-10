@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter/material.dart';
@@ -70,12 +71,19 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   late Future<int> setupIconResult;
   late BitmapDescriptor customGymLocationIcon;
 
+  String? selectedFilterByOption;
+  String? selectedStatusOption;
+
   @override
   void initState() {
     super.initState();
 
     _meetupHomeBloc = BlocProvider.of<MeetupHomeBloc>(context);
-    _meetupHomeBloc.add(FetchUserMeetupData(widget.currentUserProfile.userId));
+    _meetupHomeBloc.add(
+        FetchUserMeetupData(
+          userId: widget.currentUserProfile.userId,
+        )
+    );
     _scrollController.addListener(_onScroll);
   }
 
@@ -86,7 +94,13 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
 
       if (maxScroll - currentScroll <= _scrollThreshold && !isDataBeingRequested) {
         isDataBeingRequested = true;
-        _meetupHomeBloc.add(FetchMoreUserMeetupData(widget.currentUserProfile.userId));
+        _meetupHomeBloc.add(
+            FetchMoreUserMeetupData(
+                userId: widget.currentUserProfile.userId,
+                selectedStatusOption: selectedStatusOption,
+                selectedFilterByOption: selectedFilterByOption
+            )
+        );
       }
 
       // Handle floating action button visibility
@@ -125,30 +139,208 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
         },
         child: BlocBuilder<MeetupHomeBloc, MeetupHomeState>(
           builder: (context, state) {
-            if (state is MeetupUserDataFetched) {
-              isDataBeingRequested = false;
-              if (state.meetups.isEmpty) {
-                return const Center(
-                  child: Text("No meetups here... get started by creating one!"),
-                );
-              }
-              else {
-                return _renderMeetupsListView(state);
-              }
-            }
-            else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _renderMeetupUserFilters(),
+                  WidgetUtils.spacer(2.5),
+                  _renderMeetupStatusFilters(),
+                  WidgetUtils.spacer(2.5),
+                  _renderBody(state),
+                ],
+              ),
+            );
           },
         ),
       ),
     );
   }
 
+  _renderBody(MeetupHomeState state) {
+    if (state is MeetupUserDataFetched) {
+      isDataBeingRequested = false;
+      if (state.meetups.isEmpty) {
+        return LimitedBox(
+          maxHeight: ScreenUtils.getScreenHeight(context) * 0.7,
+          child: const Center(
+            child: Text("No meetups here... get started by creating one!"),
+          ),
+        );
+      }
+      else {
+        return _renderMeetupsListView(state);
+      }
+    }
+    else {
+      return LimitedBox(
+        maxHeight: ScreenUtils.getScreenHeight(context) * 0.7,
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+  }
+
+  _filterItem(String filterType, String text) {
+    final Color backgroundColor;
+    final Color textColor;
+    if (filterType == "status") {
+      if (selectedStatusOption == text) {
+        backgroundColor = Colors.teal;
+        textColor = Colors.white;
+      }
+      else {
+        backgroundColor = Colors.white;
+        textColor = Colors.teal;
+      }
+    }
+    else {
+      if (selectedFilterByOption == text) {
+        backgroundColor = Colors.teal;
+        textColor = Colors.white;
+      }
+      else {
+        backgroundColor = Colors.white;
+        textColor = Colors.teal;
+      }
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (filterType == "status") {
+          setState(() {
+            if (selectedStatusOption == text) {
+              selectedStatusOption = null;
+            }
+            else {
+              selectedStatusOption = text;
+            }
+          });
+        }
+        else {
+          setState(() {
+            if (selectedFilterByOption == text) {
+              selectedFilterByOption = null;
+            }
+            else {
+              selectedFilterByOption = text;
+            }
+          });
+        }
+        _meetupHomeBloc.add(
+            FetchUserMeetupData(
+              userId: widget.currentUserProfile.userId,
+              selectedFilterByOption: selectedFilterByOption,
+              selectedStatusOption: selectedStatusOption,
+            )
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          color: backgroundColor,
+          boxShadow: const [
+            BoxShadow(color: Colors.teal, spreadRadius: 1),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text(
+              text,
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+              )
+          ),
+        ),
+      ),
+    );
+  }
+
+  _renderMeetupUserFilters() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Expanded(
+            flex: 2,
+            child: Text(
+              "Filter by",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14
+              ),
+            )
+          ),
+          Expanded(
+              flex: 8,
+              child: Wrap(
+                  runSpacing: 5,
+                  spacing: 2.5,
+                  direction: Axis.horizontal,
+                  children: <Widget>[
+                    _filterItem("filterBy", "Created"),
+                    _filterItem("filterBy", "Joined"),
+                    _filterItem("filterBy", "Active"),
+                    _filterItem("filterBy", "Complete"),
+                    // Gap()
+                  ]
+              )
+          )
+        ],
+      ),
+    );
+  }
+
+  _renderMeetupStatusFilters() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Expanded(
+              flex: 2,
+              child: Text(
+                "Status",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14
+                ),
+              )
+          ),
+          Expanded(
+              flex: 8,
+              child: Wrap(
+                  direction: Axis.horizontal,
+                  runSpacing: 5,
+                  spacing: 2.5,
+                  children: <Widget>[
+                    _filterItem("status", "Unscheduled"),
+                    _filterItem("status", "Confirmed"),
+                    _filterItem("status", "Unconfirmed"),
+                    _filterItem("status", "Complete"),
+                    _filterItem("status", "Expired"),
+                    // Gap()
+                  ]
+              )
+          )
+        ],
+      ),
+    );
+  }
+
   _pullToRefresh() {
-    _meetupHomeBloc.add(FetchUserMeetupData(widget.currentUserProfile.userId));
+    _meetupHomeBloc.add(
+        FetchUserMeetupData(
+          userId: widget.currentUserProfile.userId,
+          selectedFilterByOption: selectedFilterByOption,
+          selectedStatusOption: selectedStatusOption,
+        )
+    );
   }
 
   _renderMeetupsListView(MeetupUserDataFetched state) {
@@ -159,7 +351,8 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       child: Scrollbar(
         controller: _scrollController,
         child: ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           controller: _scrollController,
           itemCount: state.doesNextPageExist ? state.meetups.length + 1 : state.meetups.length,
           itemBuilder: (BuildContext context, int index) {
@@ -202,7 +395,13 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
           currentUserProfile: widget.currentUserProfile
       ),
     ).then((value) {
-      _meetupHomeBloc.add(FetchUserMeetupData(widget.currentUserProfile.userId));
+      _meetupHomeBloc.add(
+          FetchUserMeetupData(
+            userId: widget.currentUserProfile.userId,
+            selectedFilterByOption: selectedFilterByOption,
+            selectedStatusOption: selectedStatusOption,
+          )
+      );
     });
 
   }
@@ -329,27 +528,51 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
         ),
         Expanded(
           flex: 2,
-          child: Center(
-            child: Row(
-              children: [
-                WidgetUtils.spacer(10),
-                Container(
-                  width: 7.5,
-                  height: 7.5,
-                  decoration: BoxDecoration(
-                    color: ColorUtils.meetupStatusToColorMap[meetup.meetupStatus]!,
-                    shape: BoxShape.circle,
+          child: Column(
+            children: WidgetUtils.skipNulls([
+              Row(
+                children: [
+                  Container(
+                    width: 7.5,
+                    height: 7.5,
+                    decoration: BoxDecoration(
+                      color: ColorUtils.meetupStatusToColorMap[meetup.meetupStatus]!,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                WidgetUtils.spacer(5),
-                Text(meetup.meetupStatus, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-              ],
-            ),
+                  WidgetUtils.spacer(5),
+                  Text(meetup.meetupStatus, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                ],
+              ),
+              WidgetUtils.spacer(5),
+              Wrap(
+                children: WidgetUtils.skipNulls([
+                  _showMeetupOwnerIfNeeded(meetup)
+                ]),
+              )
+            ]) ,
           )
         )
       ],
     );
   }
+
+  Widget? _showMeetupOwnerIfNeeded(Meetup meetup) {
+    if (meetup.ownerId == widget.currentUserProfile.userId) {
+      return const Text(
+        "You created this meetup!",
+        style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: Colors.teal
+        ),
+      );
+    }
+    else {
+      return null;
+    }
+  }
+
 
   _animatedButton() {
     return AnimatedOpacity(
@@ -371,6 +594,16 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   }
 
   _goToCreateNewMeetupView() {
-    Navigator.pushAndRemoveUntil(context, CreateNewMeetupView.route(widget.currentUserProfile), (route) => true);
+    Navigator
+        .pushAndRemoveUntil(context, CreateNewMeetupView.route(widget.currentUserProfile), (route) => true)
+    .then((value) {
+      _meetupHomeBloc.add(
+          FetchUserMeetupData(
+            userId: widget.currentUserProfile.userId,
+            selectedFilterByOption: selectedFilterByOption,
+            selectedStatusOption: selectedStatusOption,
+          )
+      );
+    });
   }
 }

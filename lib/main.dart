@@ -120,7 +120,7 @@ class _AppViewState extends State<AppView> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: appTheme,
-      darkTheme: darkTheme,
+      // darkTheme: darkTheme,
       routes: {
         '/login': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),

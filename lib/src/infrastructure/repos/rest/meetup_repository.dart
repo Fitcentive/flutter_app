@@ -159,10 +159,14 @@ class MeetupRepository {
       String userId,
       String accessToken,
       int limit,
-      int offset
+      int offset,
+      String? filterBy,
+      String? status
       ) async {
+    final filterByOption = filterBy == null ? "" : "&filterBy=$filterBy";
+    final statusOption = status == null ? "" : "&status=$status";
     final response = await http.get(
-      Uri.parse("$BASE_URL/meetups?limit=$limit&offset=$offset"),
+      Uri.parse("$BASE_URL/meetups?limit=$limit&offset=$offset$filterByOption$statusOption"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 

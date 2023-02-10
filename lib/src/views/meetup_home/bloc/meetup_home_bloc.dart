@@ -38,7 +38,9 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
           event.userId,
           accessToken!,
           ConstantUtils.DEFAULT_LIMIT,
-          ConstantUtils.DEFAULT_OFFSET
+          ConstantUtils.DEFAULT_OFFSET,
+          event.selectedFilterByOption,
+          event.selectedStatusOption,
       );
       final meetupLocations = await Future.wait(meetups.map((e) {
         if (e.locationId != null) {
@@ -78,7 +80,9 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
         event.userId,
         accessToken!,
         ConstantUtils.DEFAULT_LIMIT,
-        ConstantUtils.DEFAULT_OFFSET
+        ConstantUtils.DEFAULT_OFFSET,
+        event.selectedFilterByOption,
+        event.selectedStatusOption,
     );
     final meetupLocations = await Future.wait(meetups.map((e) {
       if (e.locationId != null) {
