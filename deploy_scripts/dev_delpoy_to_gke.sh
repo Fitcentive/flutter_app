@@ -1,5 +1,7 @@
 #!/bin/bash
 
+kubectl delete -n web deployment/flutter-web-app
+
 # Remove from local docker repo
 docker image rm gcr.io/fitcentive-dev/flutter-web-app:1.0
 docker image rm gcr.io/fitcentive-dev/flutter-web-app
