@@ -1,6 +1,6 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -14,7 +14,6 @@ import 'package:flutter_app/src/views/calendar/bloc/calendar_bloc.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_event.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_state.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
-import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_state.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_card_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -105,6 +104,7 @@ class CalendarViewState extends State<CalendarView> {
                 return CalendarEventData(
                   date: m.time!,
                   event: m,
+                  color: Colors.teal,
                   title: m.name ?? "Unnamed meetup",
                   description: m.name ?? "No description",
                   startTime: m.time,
@@ -141,11 +141,84 @@ class CalendarViewState extends State<CalendarView> {
     );
   }
 
+  _areDaysTheSame(DateTime d1, DateTime d2) {
+    return d1.day == d2.day && d1.month == d2.month && d1.year == d2.year;
+  }
+
+  // Not needed
+  _renderMonthCellView(
+      DateTime date,
+      List<CalendarEventData<Meetup>> events,
+      CalendarMeetupUserDataFetched state
+  ) {
+    return Container(
+      color: date.month != currentSelectedDateTime.month ? Colors.grey.shade400 : null,
+      padding: const EdgeInsets.all(1),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          WidgetUtils.spacer(2),
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: !_areDaysTheSame(date, DateTime.now()) ? null : BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              border: Border.all(width: 0, color: Colors.teal),
+              color: Colors.teal,
+            ),
+            child: Text(
+              date.day.toString(),
+              style: !_areDaysTheSame(date, DateTime.now()) ?
+              const TextStyle(fontSize: 12) :
+              const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12
+              ),
+            ),
+          ),
+          WidgetUtils.spacer(2),
+          ...events.map((e) {
+            return [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    _showMeetupCardDialog(state, [e]);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.teal,
+                    ),
+                    child: Center(
+                      child: AutoSizeText(
+                        e.title,
+                        minFontSize: 8,
+                        style: const TextStyle(
+                            color: Colors.white
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              WidgetUtils.spacer(2),
+            ];
+          }).expand((e) => e)
+              .toList(),
+          WidgetUtils.spacer(2),
+        ],
+      ),
+    );
+  }
+
   _renderCalendarView(CalendarMeetupUserDataFetched state) {
     if (selectedCalendarView == "month") {
       return CalendarControllerProvider<Meetup>(
         controller: monthCalendarEventController,
         child: MonthView(
+          // cellBuilder: (DateTime date, List<CalendarEventData<Meetup>> events, bool isToday, bool isInMonth) {
+          //   return _renderMonthCellView(date, events, state);
+          // },
           controller: monthCalendarEventController,
           minMonth: minimumDate,
           maxMonth: maximumDate,
@@ -185,7 +258,7 @@ class CalendarViewState extends State<CalendarView> {
             maxDay: maximumDate,
             initialDay: currentSelectedDateTime,
             heightPerMinute: 1, // height occupied by 1 minute time span.
-            eventArranger: SideEventArranger(), // To define how simultaneous events will be arranged.
+            eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
             onEventTap: (events, date) {
               if (events.isNotEmpty) {
                 _showMeetupCardDialog(state, events);
