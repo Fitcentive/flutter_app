@@ -21,8 +21,8 @@ Map<String, dynamic> _$ParticipantAddedToMeetupPushNotificationMetadataToJson(
         ParticipantAddedToMeetupPushNotificationMetadata instance) =>
     <String, dynamic>{
       'type': instance.type,
-      'meetupOwnerId': instance.meetupOwnerId,
       'meetupId': instance.meetupId,
+      'meetupOwnerId': instance.meetupOwnerId,
       'participantId': instance.participantId,
       'meetupOwnerPhotoUrl': instance.meetupOwnerPhotoUrl,
     };

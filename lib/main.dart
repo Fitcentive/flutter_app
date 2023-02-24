@@ -7,6 +7,7 @@ import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/proxies/custom_proxy.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/authentication_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
@@ -85,6 +86,7 @@ class App extends StatelessWidget {
         RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage()),
         RepositoryProvider<AuthenticatedUserStreamRepository>(create: (context) => AuthenticatedUserStreamRepository()),
         RepositoryProvider<MeetupRepository>(create: (context) => MeetupRepository()),
+        RepositoryProvider<DiaryRepository>(create: (context) => DiaryRepository()),
       ],
       child: MultiBlocProvider(
         providers: [

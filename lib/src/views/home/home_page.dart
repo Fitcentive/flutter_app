@@ -17,6 +17,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/calendar/calendar_view.dart';
 import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
+import 'package:flutter_app/src/views/diary/diary_view.dart';
 import 'package:flutter_app/src/views/discover_home/discover_home_view.dart';
 import 'package:flutter_app/src/views/meetup_home/meetup_home_view.dart';
 import 'package:flutter_app/src/views/newsfeed/newsfeed_view.dart';
@@ -76,6 +77,7 @@ class HomePageState extends State<HomePage> {
   static const String meetup = 'Meetup';
   static const String chat = 'Chat';
   static const String logout = 'Logout';
+  static const String diary = 'Diary';
 
   static const bottomBarToAppDrawerItemMap = {
     0: newsFeed,
@@ -455,6 +457,7 @@ class HomePageState extends State<HomePage> {
         _generateListTile(calendar),
         _generateListTile(newsFeed),
         _generateListTile(chat),
+        _generateListTile(diary),
       ],
     );
   }
@@ -500,6 +503,8 @@ class HomePageState extends State<HomePage> {
           return MeetupHomeView.withBloc(publicUserProfile);
         case "Calendar":
           return CalendarView.withBloc(publicUserProfile);
+        case "Diary":
+          return DiaryView.withBloc(publicUserProfile);
         default:
           return _oldStuff();
       }

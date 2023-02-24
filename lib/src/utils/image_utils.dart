@@ -4,12 +4,24 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/src/models/exercise/exercise_image.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class ImageUtils {
   static const String imageBaseUrl = "${ConstantUtils.API_HOST_URL}/api/gateway/image";
+
+  static DecorationImage? getExerciseImage(List<ExerciseImage> exerciseImages) {
+    if (exerciseImages.isNotEmpty) {
+      return DecorationImage(
+          image: NetworkImage(exerciseImages.first.image), fit: BoxFit.fitHeight);
+    } else {
+      return const DecorationImage(
+          image: AssetImage("assets/images/deleted_user_avatar.png")
+      );
+    }
+  }
 
   static DecorationImage? getUserProfileImage(PublicUserProfile? profile, int width, int height) {
     final photoUrlOpt = profile?.photoUrl;
