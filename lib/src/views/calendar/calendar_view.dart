@@ -15,6 +15,7 @@ import 'package:flutter_app/src/views/calendar/bloc/calendar_event.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_state.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_card_view.dart';
+import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
@@ -216,9 +217,19 @@ class CalendarViewState extends State<CalendarView> {
       return CalendarControllerProvider<Meetup>(
         controller: monthCalendarEventController,
         child: MonthView(
-          // cellBuilder: (DateTime date, List<CalendarEventData<Meetup>> events, bool isToday, bool isInMonth) {
-          //   return _renderMonthCellView(date, events, state);
-          // },
+          cellBuilder: (DateTime date, List<CalendarEventData<Meetup>> events, bool isToday, bool isInMonth) {
+            return FilledCell(
+              date: date,
+              shouldHighlight: isToday,
+              events: events,
+              highlightColor: Colors.teal,
+              backgroundColor: isInMonth ? ColorConstants.white : ColorConstants.offWhite,
+              onTileTap: (event, date) {
+                _showMeetupCardDialog(state, [event]);
+              },
+              dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
+            );
+          },
           controller: monthCalendarEventController,
           minMonth: minimumDate,
           maxMonth: maximumDate,

@@ -72,6 +72,13 @@ class DiaryViewState extends State<DiaryView> {
   }
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButtonLocation: ExpandableFab.location,
@@ -330,7 +337,7 @@ class DiaryViewState extends State<DiaryView> {
                             }
                           },
                           child: Container(
-                            alignment: Alignment.centerRight,
+                            alignment: Alignment.bottomRight,
                             padding: const EdgeInsets.all(1.0),
                             child: Text(
                               index != 4 ? "ADD FOOD" : "ADD EXERCISE",

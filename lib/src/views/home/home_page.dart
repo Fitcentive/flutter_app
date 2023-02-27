@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -206,7 +206,7 @@ class HomePageState extends State<HomePage> {
   _bottomNavigationBar() {
     final Widget notificationIcon;
     if (unreadNotificationCount != 0) {
-      notificationIcon = Badge(
+      notificationIcon = badge.Badge(
         alignment: Alignment.topRight,
         badgeContent: Text(unreadNotificationCount.toString(), style: const TextStyle(color: Colors.white)),
         padding: const EdgeInsets.all(4),
@@ -423,7 +423,7 @@ class HomePageState extends State<HomePage> {
   Widget _generateListTile(String text) {
     final Widget element;
     if (text == notifications && unreadNotificationCount != 0) {
-      element = Badge(
+      element =  badge.Badge(
         alignment: Alignment.centerLeft,
         badgeContent: Text(unreadNotificationCount.toString(), style: const TextStyle(color: Colors.white)),
         padding: const EdgeInsets.all(10),

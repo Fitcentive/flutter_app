@@ -12,7 +12,6 @@ class Muscle extends Equatable {
   final String image_url_main;
   final String image_url_secondary;
 
-
   const Muscle(
       this.id,
       this.name,

@@ -5,6 +5,8 @@ class ConstantUtils {
   static const String API_HOSTNAME = "api.fitcentive.xyz";
   static const String AUTH_HOSTNAME = "auth.fitcentive.xyz";
 
+  static const String WGER_API_HOST = "https://wger.de";
+
   static const String TERMS_AND_CONDITIONS_URL = "https://www.freeprivacypolicy.com/live/c9701c0e-9f64-4080-b73d-5594defd36f5";
   static const String PRIVACY_POLICY_URL = "https://www.freeprivacypolicy.com/live/0b5bf195-1fc5-4f99-b42c-8d22b17d6738";
 

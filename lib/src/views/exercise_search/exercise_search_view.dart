@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/detailed_exercise/detailed_exercise_view.dart';
 import 'package:flutter_app/src/views/exercise_search/bloc/exercise_search_bloc.dart';
 import 'package:flutter_app/src/views/exercise_search/bloc/exercise_search_event.dart';
 import 'package:flutter_app/src/views/exercise_search/bloc/exercise_search_state.dart';
@@ -54,6 +55,12 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
 
   final _searchTextController = TextEditingController();
   final _suggestionsController = SuggestionsBoxController();
+
+  @override
+  void dispose() {
+    _searchTextController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -236,11 +243,11 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
       ),
       onTap: () {
         // Move to detailed exercise definition page from here
-        // Navigator.pushAndRemoveUntil(
-        //     context,
-        //     UserProfileView.route(userProfile, widget.currentUserProfile),
-        //         (route) => true
-        // );
+        Navigator.pushAndRemoveUntil(
+            context,
+            DetailedExerciseView.route(widget.currentUserProfile, exerciseDefinition),
+                (route) => true
+        );
       },
     );
   }
