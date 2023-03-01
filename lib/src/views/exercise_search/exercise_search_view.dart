@@ -125,16 +125,16 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
           body: TabBarView(
             controller: _tabController,
             children: [
-              _showExerciseList([]),
-              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id == 15).toList()),
-              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id != 15).toList()),
+              _showExerciseList([], false),
+              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id == 15).toList(), true),
+              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id != 15).toList(), false),
             ],
           ),
         )
     );
   }
 
-  _showExerciseList(List<ExerciseDefinition> exercises) {
+  _showExerciseList(List<ExerciseDefinition> exercises, bool isCardio) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -144,7 +144,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
           title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
           trailing: Text(exercises.length.toString(), style: const TextStyle(color: Colors.teal)),
         ),
-        Expanded(child: _searchResults(exercises))
+        Expanded(child: _searchResults(exercises, isCardio))
       ],
     );
   }
@@ -203,14 +203,14 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
     );
   }
 
-  Widget _searchResults(List<ExerciseDefinition> items) {
+  Widget _searchResults(List<ExerciseDefinition> items, bool isCardio) {
     if (items.isNotEmpty) {
       return Scrollbar(
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
           itemCount: items.length,
           itemBuilder: (BuildContext context, int index) {
-            return exerciseResultItem(items[index]);
+            return exerciseResultItem(items[index], isCardio);
           },
         ),
       );
@@ -224,7 +224,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
     }
   }
 
-  Widget exerciseResultItem(ExerciseDefinition exerciseDefinition) {
+  Widget exerciseResultItem(ExerciseDefinition exerciseDefinition, bool isCardio) {
     return ListTile(
       title: Text(exerciseDefinition.name,
           style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -245,7 +245,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
         // Move to detailed exercise definition page from here
         Navigator.pushAndRemoveUntil(
             context,
-            DetailedExerciseView.route(widget.currentUserProfile, exerciseDefinition),
+            DetailedExerciseView.route(widget.currentUserProfile, exerciseDefinition, isCardio),
                 (route) => true
         );
       },

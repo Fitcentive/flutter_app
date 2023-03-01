@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/add_to_diary/add_to_diary_view.dart';
 import 'package:flutter_app/src/views/detailed_exercise/bloc/detailed_exercise_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -17,21 +18,36 @@ class DetailedExerciseView extends StatefulWidget {
 
   final PublicUserProfile currentUserProfile;
   final ExerciseDefinition exerciseDefinition;
+  final bool isCurrentExerciseDefinitionCardio;
 
-  const DetailedExerciseView({Key? key, required this.currentUserProfile, required this.exerciseDefinition}): super(key: key);
+  const DetailedExerciseView({
+    Key? key,
+    required this.currentUserProfile,
+    required this.exerciseDefinition,
+    required this.isCurrentExerciseDefinitionCardio
+  }): super(key: key);
 
-  static Route route(PublicUserProfile currentUserProfile, ExerciseDefinition exerciseDefinition) {
+  static Route route(
+      PublicUserProfile currentUserProfile,
+      ExerciseDefinition exerciseDefinition,
+      bool isCurrentExerciseDefinitionCardio,
+  ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
             name: routeName
         ),
-        builder: (_) => DetailedExerciseView.withBloc(currentUserProfile, exerciseDefinition)
+        builder: (_) => DetailedExerciseView.withBloc(
+            currentUserProfile,
+            exerciseDefinition,
+            isCurrentExerciseDefinitionCardio
+        )
     );
   }
 
   static Widget withBloc(
       PublicUserProfile currentUserProfile,
-      ExerciseDefinition exerciseDefinition
+      ExerciseDefinition exerciseDefinition,
+      bool isCurrentExerciseDefinitionCardio,
   ) => MultiBlocProvider(
     providers: [
       BlocProvider<DetailedExerciseBloc>(
@@ -43,7 +59,8 @@ class DetailedExerciseView extends StatefulWidget {
     ],
     child: DetailedExerciseView(
         currentUserProfile: currentUserProfile,
-        exerciseDefinition: exerciseDefinition
+        exerciseDefinition: exerciseDefinition,
+        isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
     ),
   );
 
@@ -76,6 +93,11 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
     return DefaultTabController(
         length: MAX_TABS,
         child: Scaffold(
+          bottomNavigationBar: BottomAppBar(
+            color: Colors.transparent,
+            child: _showAddToDiaryButton(),
+            elevation: 0,
+          ),
           appBar: AppBar(
             iconTheme: const IconThemeData(
               color: Colors.teal,
@@ -102,166 +124,213 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
     );
   }
 
+  _showAddToDiaryButton() {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () async {
+          Navigator.pushAndRemoveUntil(
+              context,
+              AddToDiaryView.route(widget.currentUserProfile, widget.exerciseDefinition, widget.isCurrentExerciseDefinitionCardio),
+                  (route) => true
+          );
+        },
+        child: const Text("Add to diary", style: TextStyle(fontSize: 15, color: Colors.white)),
+      ),
+    );
+  }
+
   _showExerciseMuscles() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        WidgetUtils.spacer(5),
-        _displayCarousel(),
-        WidgetUtils.spacer(2.5),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              const Expanded(
-                  flex: 3,
-                  child: Text(
-                    "Primary",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  )
-              ),
-              Expanded(
-                  flex: 8,
-                  child: Text(widget.exerciseDefinition.muscles.map((e) => e.name).join(", "))
-              ),
-            ],
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: WidgetUtils.skipNulls([
+          WidgetUtils.spacer(5),
+          _displayCarousel(),
+          _generateDotsIfNeeded(),
+          WidgetUtils.spacer(2.5),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                const Expanded(
+                    flex: 3,
+                    child: Text(
+                      "Primary",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )
+                ),
+                Expanded(
+                    flex: 8,
+                    child: Text(widget.exerciseDefinition.muscles.map((e) => e.name).join(", "))
+                ),
+              ],
+            ),
           ),
-        ),
-        WidgetUtils.spacer(2.5),
-        CarouselSlider(
+          WidgetUtils.spacer(2.5),
+          CarouselSlider(
             // carouselController: _carouselController,
-            items: _generateMusclesCarousel(),
-            options: CarouselOptions(
-              height: 100,
-              // aspectRatio: 3.0,
-              viewportFraction: 0.825,
-              initialPage: 0,
-              enableInfiniteScroll: true,
-              reverse: false,
-              enlargeCenterPage: true,
-              enlargeStrategy: CenterPageEnlargeStrategy.height,
-              onPageChanged: (page, reason) {
-                setState(() {
-                  // _current = page;
-                });
-              },
-              scrollDirection: Axis.horizontal,
-            )
-        ),
-        // Secondary muscles
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              const Expanded(
-                  flex: 3,
-                  child: Text(
-                    "Secondary",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  )
-              ),
-              Expanded(
-                  flex: 8,
-                  child: Text(widget.exerciseDefinition.muscles_secondary.map((e) => e.name).join(", "))
-              ),
-            ],
+              items: _generateMusclesCarousel(),
+              options: CarouselOptions(
+                height: 100,
+                // aspectRatio: 3.0,
+                viewportFraction: 0.825,
+                initialPage: 0,
+                enableInfiniteScroll: true,
+                reverse: false,
+                enlargeCenterPage: true,
+                enlargeStrategy: CenterPageEnlargeStrategy.height,
+                onPageChanged: (page, reason) {
+                  setState(() {
+                    // _current = page;
+                  });
+                },
+                scrollDirection: Axis.horizontal,
+              )
           ),
-        ),
-        WidgetUtils.spacer(2.5),
-        CarouselSlider(
-          // carouselController: _carouselController,
-            items: _generateSecondaryMusclesCarousel(),
-            options: CarouselOptions(
-              height: 100,
-              // aspectRatio: 3.0,
-              viewportFraction: 0.825,
-              initialPage: 0,
-              enableInfiniteScroll: true,
-              reverse: false,
-              enlargeCenterPage: true,
-              enlargeStrategy: CenterPageEnlargeStrategy.height,
-              onPageChanged: (page, reason) {
-                setState(() {
-                  // _current = page;
-                });
-              },
-              scrollDirection: Axis.horizontal,
-            )
-        )
-      ],
+          // Secondary muscles
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                const Expanded(
+                    flex: 3,
+                    child: Text(
+                      "Secondary",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )
+                ),
+                Expanded(
+                    flex: 8,
+                    child: Text(widget.exerciseDefinition.muscles_secondary.map((e) => e.name).join(", "))
+                ),
+              ],
+            ),
+          ),
+          WidgetUtils.spacer(2.5),
+          CarouselSlider(
+            // carouselController: _carouselController,
+              items: _generateSecondaryMusclesCarousel(),
+              options: CarouselOptions(
+                height: 100,
+                // aspectRatio: 3.0,
+                viewportFraction: 0.825,
+                initialPage: 0,
+                enableInfiniteScroll: true,
+                reverse: false,
+                enlargeCenterPage: true,
+                enlargeStrategy: CenterPageEnlargeStrategy.height,
+                onPageChanged: (page, reason) {
+                  setState(() {
+                    // _current = page;
+                  });
+                },
+                scrollDirection: Axis.horizontal,
+              )
+          ),
+        ]),
+      ),
     );
   }
 
   _showExerciseInfo() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        WidgetUtils.spacer(5),
-        _displayCarousel(),
-        WidgetUtils.spacer(2.5),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              const Expanded(
-                  flex: 3,
-                  child: Text(
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: WidgetUtils.skipNulls([
+          WidgetUtils.spacer(5),
+          _displayCarousel(),
+          _generateDotsIfNeeded(),
+          WidgetUtils.spacer(2.5),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                const Expanded(
+                    flex: 3,
+                    child: Text(
                       "Category",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  )
-              ),
-              Expanded(
-                  flex: 8,
-                  child: Text(widget.exerciseDefinition.category.name)
-              ),
-            ],
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    )
+                ),
+                Expanded(
+                    flex: 8,
+                    child: Text(widget.exerciseDefinition.category.name)
+                ),
+              ],
+            ),
           ),
-        ),
-        WidgetUtils.spacer(2.5),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              const Expanded(
-                  flex: 3,
-                  child: Text(
-                    "Equipment",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  )
-              ),
-              Expanded(
-                  flex: 8,
-                  child: Text(widget.exerciseDefinition.equipment.map((e) => e.name).join(", "))
-              ),
-            ],
+          WidgetUtils.spacer(2.5),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                const Expanded(
+                    flex: 3,
+                    child: Text(
+                      "Equipment",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    )
+                ),
+                Expanded(
+                    flex: 8,
+                    child: Text(widget.exerciseDefinition.equipment.map((e) => e.name).join(", "))
+                ),
+              ],
+            ),
           ),
-        ),
-        WidgetUtils.spacer(2.5),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              const Expanded(
-                  flex: 3,
-                  child: Text(
+          WidgetUtils.spacer(2.5),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                const Expanded(
+                    flex: 3,
+                    child: Text(
                       "Description",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  )
-              ),
-              Expanded(
-                  flex: 8,
-                  child: Text(widget.exerciseDefinition.description)
-              ),
-            ],
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    )
+                ),
+                Expanded(
+                    flex: 8,
+                    child: Text(widget.exerciseDefinition.description)
+                ),
+              ],
+            ),
           ),
-        )
-      ],
+        ]),
+      ),
     );
+  }
+
+  _generateDotsIfNeeded() {
+    if (widget.exerciseDefinition.images.isNotEmpty) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: widget.exerciseDefinition.images.asMap().entries.map((entry) {
+          return Container(
+            width: 8.0,
+            height: 8.0,
+            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black)
+                    .withOpacity(_current == entry.key ? 0.9 : 0.4)),
+          );
+        }).toList(),
+      );
+    }
+    return null;
   }
 
   _displayCarousel() {
@@ -269,7 +338,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
         carouselController: _carouselController,
         items: _generateCarouselOrStaticImage(),
         options: CarouselOptions(
-          height: 100,
+          height: 200,
           // aspectRatio: 3.0,
           viewportFraction: 0.825,
           initialPage: 0,
@@ -287,7 +356,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
     );
   }
 
-  // todo - fix muscle images, and then add to diary option, remove but BE first!
+  // todo - fix muscle images, and then add to diary option, remove but BE first!!
   _generateMusclesCarousel() {
     if (widget.exerciseDefinition.muscles.isNotEmpty) {
       return widget.exerciseDefinition.muscles.map((e) =>
@@ -297,9 +366,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                 width: MediaQuery.of(context).size.width * 0.65,
                 child: SvgPicture.network(
                   "${ConstantUtils.WGER_API_HOST}${e.image_url_main}",
-                  height: 40,
-                  width: 40,
-                  fit: BoxFit.fill,
+                  fit: BoxFit.scaleDown,
                   placeholderBuilder: (BuildContext context) => Container(
                       padding: const EdgeInsets.all(30.0),
                       child: const CircularProgressIndicator(color: Colors.yellow,)),
@@ -310,8 +377,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                 width: MediaQuery.of(context).size.width * 0.65,
                 child: SvgPicture.network(
                   "${ConstantUtils.WGER_API_HOST}${e.image_url_secondary}",
-                  height: 40,
-                  width: 40,
+                  fit: BoxFit.scaleDown,
                   placeholderBuilder: (BuildContext context) => Container(
                       child: const CircularProgressIndicator(color: Colors.teal,)),
                 )
@@ -354,11 +420,15 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                   .of(context)
                   .size
                   .width * 0.65,
-              child: SvgPicture.network(
-                "${ConstantUtils.WGER_API_HOST}${e.image_url_main}",
-                placeholderBuilder: (BuildContext context) => Container(
-                    padding: const EdgeInsets.all(30.0),
-                    child: const CircularProgressIndicator(color: Colors.yellow,)),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: 200, minWidth: 200),
+                child: SvgPicture.network(
+                  "${ConstantUtils.WGER_API_HOST}${e.image_url_main}",
+                  fit: BoxFit.scaleDown,
+                  placeholderBuilder: (BuildContext context) => Container(
+                      padding: const EdgeInsets.all(30.0),
+                      child: const CircularProgressIndicator(color: Colors.yellow,)),
+                ),
               )
           ),
           SizedBox(
@@ -372,6 +442,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                   .width * 0.65,
               child: SvgPicture.network(
                 "${ConstantUtils.WGER_API_HOST}${e.image_url_secondary}",
+                fit: BoxFit.scaleDown,
                 placeholderBuilder: (BuildContext context) => Container(
                     padding: const EdgeInsets.all(30.0),
                     child: const CircularProgressIndicator(color: Colors.yellow,)),
@@ -408,7 +479,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
           SizedBox(
               height: MediaQuery.of(context).size.height * 0.8,
               width: MediaQuery.of(context).size.width * 0.65,
-              child: Image.network(e.image, fit: BoxFit.cover)
+              child: Image.network(e.image, fit: BoxFit.contain)
           )
       ).toList();
     }

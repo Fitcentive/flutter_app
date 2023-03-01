@@ -198,7 +198,7 @@ class DiaryViewState extends State<DiaryView> {
             ),
             FloatingActionButton.small(
               heroTag: "DiaryViewAddToSnackDiaryButton",
-              tooltip: 'Add breakfast foods!',
+              tooltip: 'Add snacks!',
               backgroundColor: Colors.teal,
               child: const Icon(
                   Icons.emoji_food_beverage,
@@ -230,7 +230,7 @@ class DiaryViewState extends State<DiaryView> {
               color: Colors.teal,
             ),
             onPressed: () {
-
+              // todo- make pageview move left
             },
           ),
         ),
@@ -250,7 +250,7 @@ class DiaryViewState extends State<DiaryView> {
               color: Colors.teal,
             ),
             onPressed: () {
-
+              // todo- make pageview move left
             },
           ),
         ),
