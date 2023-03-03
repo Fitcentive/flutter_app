@@ -215,7 +215,9 @@ class DiaryViewState extends State<DiaryView> {
   }
 
   _goToExerciseSearchView() {
-    Navigator.pushAndRemoveUntil(context, ExerciseSearchView.route(widget.currentUserProfile), (route) => true);
+    Navigator
+        .push(context, ExerciseSearchView.route(widget.currentUserProfile))
+        .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
   }
 
   _dateHeader() {
@@ -289,6 +291,7 @@ class DiaryViewState extends State<DiaryView> {
 
           }
         });
+        _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
       },
       itemBuilder: (BuildContext context, int index) {
         return RefreshIndicator(
@@ -328,7 +331,7 @@ class DiaryViewState extends State<DiaryView> {
                         ),
                         WidgetUtils.spacer(1.5),
                         _renderDiaryEntries(listItemIndexToTitleMap[index]!, state),
-                        WidgetUtils.spacer(1.5),
+                        WidgetUtils.spacer(5),
                         InkWell(
                           onTap: () {
                             if (index == 4) {
@@ -361,78 +364,130 @@ class DiaryViewState extends State<DiaryView> {
 
   _renderDiaryEntries(String heading, DiaryDataFetched state) {
     if (heading == listItemIndexToTitleMap[4]!) {
-      return Column(
-        children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.all(5),
-            child: const Text(
-              "Cardio",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16
+      return Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.teal)
+        ),
+        child: Column(
+          children: [
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.all(5),
+              child: const Text(
+                "Cardio",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16
+                ),
               ),
             ),
-          ),
-          WidgetUtils.spacer(1),
-          state.cardioDiaryEntries.isNotEmpty ? ListView.builder(
-              shrinkWrap: true,
-              itemCount: state.cardioDiaryEntries.length,
-              itemBuilder: (context, index) {
-                return Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Text(state.cardioDiaryEntries[index].name)
+            WidgetUtils.spacer(1),
+            state.cardioDiaryEntries.isNotEmpty ? ListView.builder(
+                shrinkWrap: true,
+                itemCount: state.cardioDiaryEntries.length,
+                itemBuilder: (context, index) {
+                  return InkWell(
+                    onTap: () {
+                      // Exercise tapped
+                    },
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(state.cardioDiaryEntries[index].name)
+                              )
+                            ),
+                            Expanded(
+                                flex: 1,
+                                child: Text(
+                                    "${state.cardioDiaryEntries[index].durationInMinutes} minutes",
+                                )
+                            ),
+                            Expanded(
+                                flex: 1,
+                                child: Text(
+                                    "${state.cardioDiaryEntries[index].caloriesBurned.toInt()} calories",
+                                  style: const TextStyle(
+                                    color: Colors.teal
+                                  ),
+                                )
+                            )
+                          ],
+                        ),
+                      ),
                     ),
-                    Expanded(
-                        flex: 1,
-                        child: Text("${state.cardioDiaryEntries[index].durationInMinutes} minutes")
-                    )
-                  ],
-                );
-              }
-          ) : const Center(
-            child: Text("No items here..."),
-          ),
-          WidgetUtils.spacer(2.5),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.all(5),
-            child: const Text(
-              "Strength",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16
+                  );
+                }
+            ) : const Center(
+              child: Text("No items here..."),
+            ),
+            WidgetUtils.spacer(5),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.all(5),
+              child: const Text(
+                "Strength",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16
+                ),
               ),
             ),
-          ),
-          WidgetUtils.spacer(1),
-          state.strengthDiaryEntries.isNotEmpty ? ListView.builder(
-              shrinkWrap: true,
-              itemCount: state.strengthDiaryEntries.length,
-              itemBuilder: (context, index) {
-                return Row(
-                  children: [
-                    Expanded(
-                        flex: 1,
-                        child: Text(state.strengthDiaryEntries[index].name)
+            WidgetUtils.spacer(1),
+            state.strengthDiaryEntries.isNotEmpty ? ListView.builder(
+                shrinkWrap: true,
+                itemCount: state.strengthDiaryEntries.length,
+                itemBuilder: (context, index) {
+                  return InkWell(
+                    onTap: () {
+                      // Exercise tapped
+                    },
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                                flex: 6,
+                                child: Container(
+                                    padding: const EdgeInsets.all(5),
+                                    child: Text(state.strengthDiaryEntries[index].name)
+                                )
+                            ),
+                            Expanded(
+                                flex: 3,
+                                child: Text("${state.strengthDiaryEntries[index].sets} sets")
+                            ),
+                            Expanded(
+                                flex: 3,
+                                child: Text("${state.strengthDiaryEntries[index].reps} reps")
+                            ),
+                            Expanded(
+                                flex: 4,
+                                child: Text(
+                                  "${state.cardioDiaryEntries[index].caloriesBurned.toInt()} calories",
+                                  style: const TextStyle(
+                                      color: Colors.teal
+                                  ),
+                                )
+                            )
+                          ],
+                        ),
+                      ),
                     ),
-                    Expanded(
-                        flex: 1,
-                        child: Text("${state.strengthDiaryEntries[index].sets} sets")
-                    ),
-                    Expanded(
-                        flex: 1,
-                        child: Text("${state.strengthDiaryEntries[index].reps} reps")
-                    )
-                  ],
-                );
-              }
-          ) : const Center(
-            child: Text("No items here..."),
-          ),
-        ],
+                  );
+                }
+            ) : const Center(
+              child: Text("No items here..."),
+            ),
+          ],
+        ),
       );
     }
     else {
