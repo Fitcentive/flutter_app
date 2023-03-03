@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 
 abstract class DiaryState extends Equatable {
   const DiaryState();
@@ -18,11 +20,17 @@ class DiaryDataLoading extends DiaryState {
 }
 
 class DiaryDataFetched extends DiaryState {
+  final List<StrengthDiaryEntry> strengthDiaryEntries;
+  final List<CardioDiaryEntry> cardioDiaryEntries;
 
-  // todo - add diary data after dfefining backend
-  const DiaryDataFetched();
+  const DiaryDataFetched({
+    required this.strengthDiaryEntries,
+    required this.cardioDiaryEntries
+});
 
   @override
   List<Object?> get props => [
+    strengthDiaryEntries,
+    cardioDiaryEntries,
   ];
 }

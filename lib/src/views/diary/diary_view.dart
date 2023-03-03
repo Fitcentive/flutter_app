@@ -58,7 +58,7 @@ class DiaryViewState extends State<DiaryView> {
   DateTime initialSelectedDate = DateTime.now();
   DateTime currentSelectedDate = DateTime.now();
 
-  int currentPage = 0;
+  int currentSelectedPage = MAX_PAGES ~/ 2;
   final PageController _pageController = PageController(initialPage: MAX_PAGES ~/ 2);
   final _scrollController = ScrollController();
 
@@ -67,7 +67,7 @@ class DiaryViewState extends State<DiaryView> {
     super.initState();
 
     _diaryBloc = BlocProvider.of<DiaryBloc>(context);
-    _diaryBloc.add(FetchDiaryInfo(diaryDate: DateTime.now()));
+    _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
     _scrollController.addListener(_onScroll);
   }
 
@@ -230,7 +230,7 @@ class DiaryViewState extends State<DiaryView> {
               color: Colors.teal,
             ),
             onPressed: () {
-              // todo- make pageview move left
+              _pageController.animateToPage(currentSelectedPage - 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
             },
           ),
         ),
@@ -250,7 +250,7 @@ class DiaryViewState extends State<DiaryView> {
               color: Colors.teal,
             ),
             onPressed: () {
-              // todo- make pageview move left
+              _pageController.animateToPage(currentSelectedPage + 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
             },
           ),
         ),
@@ -267,17 +267,18 @@ class DiaryViewState extends State<DiaryView> {
           _dateHeader(),
           WidgetUtils.spacer(2.5),
           Expanded(
-            child: _diaryPageViews(),
+            child: _diaryPageViews(state),
           ),
         ],
       ),
     );
   }
 
-  _diaryPageViews() {
+  _diaryPageViews(DiaryDataFetched state) {
     return PageView.builder(
       controller: _pageController,
       onPageChanged: (pageNumber) {
+        currentSelectedPage = pageNumber;
         final daysToAdd = pageNumber - INITIAL_PAGE;
         setState(() {
           if (daysToAdd < 0) {
@@ -292,7 +293,7 @@ class DiaryViewState extends State<DiaryView> {
       itemBuilder: (BuildContext context, int index) {
         return RefreshIndicator(
           onRefresh: () async {
-
+            _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
           },
           child: ListView.builder(
             shrinkWrap: true,
@@ -326,9 +327,7 @@ class DiaryViewState extends State<DiaryView> {
                           ),
                         ),
                         WidgetUtils.spacer(1.5),
-                        const Center(
-                          child: Text("No items here..."),
-                        ),
+                        _renderDiaryEntries(listItemIndexToTitleMap[index]!, state),
                         WidgetUtils.spacer(1.5),
                         InkWell(
                           onTap: () {
@@ -358,6 +357,89 @@ class DiaryViewState extends State<DiaryView> {
         );
       },
     );
+  }
+
+  _renderDiaryEntries(String heading, DiaryDataFetched state) {
+    if (heading == listItemIndexToTitleMap[4]!) {
+      return Column(
+        children: [
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.all(5),
+            child: const Text(
+              "Cardio",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16
+              ),
+            ),
+          ),
+          WidgetUtils.spacer(1),
+          state.cardioDiaryEntries.isNotEmpty ? ListView.builder(
+              shrinkWrap: true,
+              itemCount: state.cardioDiaryEntries.length,
+              itemBuilder: (context, index) {
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Text(state.cardioDiaryEntries[index].name)
+                    ),
+                    Expanded(
+                        flex: 1,
+                        child: Text("${state.cardioDiaryEntries[index].durationInMinutes} minutes")
+                    )
+                  ],
+                );
+              }
+          ) : const Center(
+            child: Text("No items here..."),
+          ),
+          WidgetUtils.spacer(2.5),
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.all(5),
+            child: const Text(
+              "Strength",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16
+              ),
+            ),
+          ),
+          WidgetUtils.spacer(1),
+          state.strengthDiaryEntries.isNotEmpty ? ListView.builder(
+              shrinkWrap: true,
+              itemCount: state.strengthDiaryEntries.length,
+              itemBuilder: (context, index) {
+                return Row(
+                  children: [
+                    Expanded(
+                        flex: 1,
+                        child: Text(state.strengthDiaryEntries[index].name)
+                    ),
+                    Expanded(
+                        flex: 1,
+                        child: Text("${state.strengthDiaryEntries[index].sets} sets")
+                    ),
+                    Expanded(
+                        flex: 1,
+                        child: Text("${state.strengthDiaryEntries[index].reps} reps")
+                    )
+                  ],
+                );
+              }
+          ) : const Center(
+            child: Text("No items here..."),
+          ),
+        ],
+      );
+    }
+    else {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
   }
 
 }

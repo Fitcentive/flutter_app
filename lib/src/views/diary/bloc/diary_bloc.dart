@@ -4,6 +4,7 @@ import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 
 class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
   final FlutterSecureStorage secureStorage;
@@ -16,10 +17,24 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
     on<FetchDiaryInfo>(_fetchDiaryInfo);
   }
 
-  // todo - fetch actual info
   void _fetchDiaryInfo(FetchDiaryInfo event, Emitter<DiaryState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    emit(DiaryDataFetched());
+
+    final cardioWorkouts = await diaryRepository.getCardioWorkoutsForUserByDay(
+        event.userId,
+        DateFormat("yyyy-MM-dd").format(event.diaryDate),
+        accessToken!
+    );
+    final strengthWorkouts = await diaryRepository.getStrengthWorkoutsForUserByDay(
+        event.userId,
+        DateFormat("yyyy-MM-dd").format(event.diaryDate),
+        accessToken
+    );
+
+    emit(DiaryDataFetched(
+      strengthDiaryEntries: strengthWorkouts,
+      cardioDiaryEntries: cardioWorkouts,
+    ));
   }
 
 }
