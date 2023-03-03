@@ -57,14 +57,14 @@ class CardioDiaryEntryCreate extends Equatable {
   final double caloriesBurned;
   final String? meetupId;
 
-  const CardioDiaryEntryCreate(
-      this.workoutId,
-      this.name,
-      this.cardioDate,
-      this.durationInMinutes,
-      this.caloriesBurned,
-      this.meetupId
-  );
+  const CardioDiaryEntryCreate({
+    required this.workoutId,
+    required this.name,
+    required this.cardioDate,
+    required this.durationInMinutes,
+    required this.caloriesBurned,
+    required this.meetupId
+  });
 
   @override
   List<Object?> get props => [

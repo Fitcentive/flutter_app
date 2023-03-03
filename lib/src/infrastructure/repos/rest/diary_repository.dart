@@ -46,7 +46,7 @@ class DiaryRepository {
         body: jsonEncode({
           "workoutId": entry.workoutId,
           "name": entry.name,
-          "cardioDate": entry.cardioDate,
+          "cardioDate": entry.cardioDate.toUtc().toIso8601String(),
           "durationInMinutes": entry.durationInMinutes,
           "caloriesBurned": entry.caloriesBurned,
           "meetupId": entry.meetupId,
@@ -68,13 +68,14 @@ class DiaryRepository {
       StrengthDiaryEntryCreate entry,
       String accessToken
       ) async {
+    final theDate = entry.exerciseDate.toIso8601String();
     final response = await http.post(
         Uri.parse("$BASE_URL/user/$userId/strength"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: jsonEncode({
           "workoutId": entry.workoutId,
           "name": entry.name,
-          "exerciseDate": entry.exerciseDate,
+          "exerciseDate": entry.exerciseDate.toUtc().toIso8601String(),
           "sets": entry.sets,
           "reps": entry.reps,
           "weightsInLbs": entry.weightsInLbs,

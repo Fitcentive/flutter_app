@@ -11,3 +11,8 @@ class AddToDiaryStateInitial extends AddToDiaryState {
 
   const AddToDiaryStateInitial();
 }
+
+class DiaryEntryAdded extends AddToDiaryState {
+
+  const DiaryEntryAdded();
+}

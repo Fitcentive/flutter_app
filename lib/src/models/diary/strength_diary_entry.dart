@@ -65,16 +65,16 @@ class StrengthDiaryEntryCreate extends Equatable {
   final double caloriesBurned;
   final String? meetupId;
 
-  const StrengthDiaryEntryCreate(
-      this.workoutId,
-      this.name,
-      this.exerciseDate,
-      this.sets,
-      this.reps,
-      this.weightsInLbs,
-      this.caloriesBurned,
-      this.meetupId
-  );
+  const StrengthDiaryEntryCreate({
+    required this.workoutId,
+    required this.name,
+    required this.exerciseDate,
+    required this.sets,
+    required this.reps,
+    required this.weightsInLbs,
+    required this.caloriesBurned,
+    required this.meetupId
+  });
 
   @override
   List<Object?> get props => [

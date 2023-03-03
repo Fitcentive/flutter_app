@@ -1,17 +1,18 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
-import 'package:flutter_app/src/utils/datetime_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_to_diary/bloc/add_to_diary_bloc.dart';
-import 'package:flutter_app/src/views/detailed_exercise/bloc/detailed_exercise_bloc.dart';
+import 'package:flutter_app/src/views/add_to_diary/bloc/add_to_diary_event.dart';
+import 'package:flutter_app/src/views/add_to_diary/bloc/add_to_diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 
 class AddToDiaryView extends StatefulWidget {
@@ -83,6 +84,11 @@ class AddToDiaryViewState extends State<AddToDiaryView> {
   int _current = 0;
   final CarouselController _carouselController = CarouselController();
 
+  final TextEditingController _mintuesPerformedTextController = TextEditingController();
+  final TextEditingController _setsTextController = TextEditingController();
+  final TextEditingController _repsTextController = TextEditingController();
+  final TextEditingController _caloriesBurnedTextController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -105,34 +111,25 @@ class AddToDiaryViewState extends State<AddToDiaryView> {
         toolbarHeight: 75,
         title: Text(widget.exerciseDefinition.name, style: const TextStyle(color: Colors.teal)),
       ),
-      body: _displayMainBody(),
+      body: BlocListener<AddToDiaryBloc, AddToDiaryState>(
+        listener: (context, state) {
+          if (state is DiaryEntryAdded) {
+            var count = 0;
+            Navigator.popUntil(context, (route) => count++ == 3);
+          }
+        },
+        child: _displayMainBody(),
+      ),
     );
   }
 
   _displayMainBody() {
     if (widget.isCurrentExerciseDefinitionCardio) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: WidgetUtils.skipNulls([
-          WidgetUtils.spacer(2.5),
-          _displayExerciseImageIfAny(),
-          _generateDotsIfNeeded(),
-          WidgetUtils.spacer(2.5),
-          _renderWorkoutDate(),
-          WidgetUtils.spacer(2.5),
-          _renderWorkoutTime(),
-          WidgetUtils.spacer(2.5),
-          _renderMinutesPerformed(),
-        ]),
-      );
-    }
-    else {
-      // Needs weight per set
-      return Center(
+      return SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: WidgetUtils.skipNulls([
             WidgetUtils.spacer(2.5),
             _displayExerciseImageIfAny(),
@@ -142,10 +139,35 @@ class AddToDiaryViewState extends State<AddToDiaryView> {
             WidgetUtils.spacer(2.5),
             _renderWorkoutTime(),
             WidgetUtils.spacer(2.5),
-            _renderSets(),
-            WidgetUtils.spacer(1),
-            _renderReps(),
+            _renderMinutesPerformed(),
+            WidgetUtils.spacer(2.5),
+            _renderCaloriesBurned(),
           ]),
+        ),
+      );
+    }
+    else {
+      // Needs weight per set
+      return Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: WidgetUtils.skipNulls([
+              WidgetUtils.spacer(2.5),
+              _displayExerciseImageIfAny(),
+              _generateDotsIfNeeded(),
+              WidgetUtils.spacer(2.5),
+              _renderWorkoutDate(),
+              WidgetUtils.spacer(2.5),
+              _renderWorkoutTime(),
+              WidgetUtils.spacer(2.5),
+              _renderSets(),
+              WidgetUtils.spacer(2.5),
+              _renderReps(),
+              WidgetUtils.spacer(2.5),
+              _renderCaloriesBurned(),
+            ]),
+          ),
         ),
       );
     }
@@ -167,6 +189,12 @@ class AddToDiaryViewState extends State<AddToDiaryView> {
           Expanded(
               flex: 8,
               child: TextFormField(
+                controller: _repsTextController,
+                onChanged: (text) {
+                  final sets = _setsTextController.value.text.isEmpty ? 1 : int.parse(_setsTextController.value.text);;
+                  final reps = int.parse(text);
+                  _caloriesBurnedTextController.text = (sets * reps * 10).toString(); // todo - change this!
+                },
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: "Eg - 3",
@@ -200,9 +228,49 @@ class AddToDiaryViewState extends State<AddToDiaryView> {
           Expanded(
               flex: 8,
               child: TextFormField(
+                controller: _setsTextController,
+                onChanged: (text) {
+                  final sets = int.parse(text);
+                  final reps = _repsTextController.value.text.isEmpty ? 1 : int.parse(_repsTextController.value.text);
+                  _caloriesBurnedTextController.text = (sets * reps * 10).toString(); // todo - change this!
+                },
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: "Eg - 3",
+                  hintStyle: TextStyle(color: Colors.teal),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.teal,
+                    ),
+                  ),
+                ),
+              )
+          ),
+        ],
+      ),
+    );
+  }
+
+  _renderCaloriesBurned() {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          const Expanded(
+              flex: 5,
+              child: Text(
+                "Calories burned",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              )
+          ),
+          Expanded(
+              flex: 8,
+              child: TextFormField(
+                enabled: false,
+                controller: _caloriesBurnedTextController,
+                decoration: const InputDecoration(
+                  hintText: "Auto calculated",
                   hintStyle: TextStyle(color: Colors.teal),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
@@ -233,6 +301,12 @@ class AddToDiaryViewState extends State<AddToDiaryView> {
           Expanded(
               flex: 8,
               child: TextFormField(
+                controller: _mintuesPerformedTextController,
+                onChanged: (text) {
+                  final minutes = int.parse(text);
+                  _caloriesBurnedTextController.text = (minutes * 10).toString(); // todo - change this!
+                },
+                keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: "Eg - 30",
                   hintStyle: TextStyle(color: Colors.teal),
@@ -459,8 +533,56 @@ class AddToDiaryViewState extends State<AddToDiaryView> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
         ),
         onPressed: () async {
-          // todo - add to diary, perform validation to ensure required fields are added before diary
-          // Need to update BLOC events andf state
+          if (widget.isCurrentExerciseDefinitionCardio) {
+            if (_mintuesPerformedTextController.value.text.isNotEmpty) {
+              final durationInMins = int.parse(_mintuesPerformedTextController.value.text);
+              _addToDiaryBloc.add(
+                  AddCardioEntryToDiary(
+                    userId: widget.currentUserProfile.userId,
+                    newEntry: CardioDiaryEntryCreate(
+                        workoutId: widget.exerciseDefinition.uuid,
+                        name: widget.exerciseDefinition.name,
+                        cardioDate: selectedWorkoutDateTime,
+                        durationInMinutes: durationInMins,
+                        caloriesBurned: (durationInMins * 10).toDouble(), // todo - replace this!
+                        meetupId: null,
+                    ),
+                  )
+              );
+            }
+            else {
+              SnackbarUtils.showSnackBar(context, "Please add minutes performed!");
+            }
+          }
+          else {
+            if (_setsTextController.value.text.isNotEmpty && _repsTextController.value.text.isNotEmpty) {
+              final sets = int.parse(_setsTextController.value.text);
+              final reps = int.parse(_repsTextController.value.text);
+              _addToDiaryBloc.add(
+                  AddStrengthEntryToDiary(
+                    userId: widget.currentUserProfile.userId,
+                    newEntry: StrengthDiaryEntryCreate(
+                      workoutId: widget.exerciseDefinition.uuid,
+                      name: widget.exerciseDefinition.name,
+                      exerciseDate: selectedWorkoutDateTime,
+                      sets: sets,
+                      reps: reps,
+                      caloriesBurned: (reps * sets * 15).toDouble(), // todo - replace this
+                      weightsInLbs: const [], // todo - update this
+                      meetupId: null,
+                    ),
+                  )
+              );
+            }
+            else {
+              if (_setsTextController.value.text.isEmpty) {
+                SnackbarUtils.showSnackBar(context, "Please add sets performed!");
+              }
+              else {
+                SnackbarUtils.showSnackBar(context, "Please add reps performed!");
+              }
+            }
+          }
         },
         child: const Text("Add to diary", style: TextStyle(fontSize: 15, color: Colors.white)),
       ),
