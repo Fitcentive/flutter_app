@@ -7,6 +7,7 @@ import 'package:flutter_app/src/views/diary/bloc/diary_bloc.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_state.dart';
 import 'package:flutter_app/src/views/exercise_search/exercise_search_view.dart';
+import 'package:flutter_app/src/views/food_search/food_search_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -169,7 +170,7 @@ class DiaryViewState extends State<DiaryView> {
                   color: Colors.white
               ),
               onPressed: () {
-                // _goToExerciseSearchView();
+                _goToFoodSearchView("Breakfast");
               },
             ),
             FloatingActionButton.small(
@@ -181,19 +182,19 @@ class DiaryViewState extends State<DiaryView> {
                   color: Colors.white
               ),
               onPressed: () {
-                // _goToExerciseSearchView();
+                _goToFoodSearchView("Lunch");
               },
             ),
             FloatingActionButton.small(
               heroTag: "DiaryViewAddToDinnerDiaryButton",
-              tooltip: 'Add breakfast foods!',
+              tooltip: 'Add dinner foods!',
               backgroundColor: Colors.teal,
               child: const Icon(
                   Icons.dinner_dining,
                   color: Colors.white
               ),
               onPressed: () {
-                // _goToExerciseSearchView();
+                _goToFoodSearchView("Dinner");
               },
             ),
             FloatingActionButton.small(
@@ -205,7 +206,7 @@ class DiaryViewState extends State<DiaryView> {
                   color: Colors.white
               ),
               onPressed: () {
-                // _goToExerciseSearchView();
+                _goToFoodSearchView("Snacks");
               },
             )
           ],
@@ -217,6 +218,12 @@ class DiaryViewState extends State<DiaryView> {
   _goToExerciseSearchView() {
     Navigator
         .push(context, ExerciseSearchView.route(widget.currentUserProfile))
+        .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
+  }
+
+  _goToFoodSearchView(String mealOfDay) {
+    Navigator
+        .push(context, FoodSearchView.route(widget.currentUserProfile, mealOfDay))
         .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
   }
 
@@ -336,6 +343,9 @@ class DiaryViewState extends State<DiaryView> {
                           onTap: () {
                             if (index == 4) {
                               _goToExerciseSearchView();
+                            }
+                            else {
+                              _goToFoodSearchView(listItemIndexToTitleMap[index]!);
                             }
                           },
                           child: Container(

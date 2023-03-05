@@ -179,7 +179,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
             _exerciseSearchBloc.add(FilterSearchQueryChanged(searchQuery: text.trim()));
             return List.empty();
           },
-          itemBuilder: (context, suggestion) {
+          itemBuilder: (context, suggestion) { // todo - there is an error here and maybe this is not needed?
             final s = suggestion;
             return ListTile(
               leading: CircleAvatar(
