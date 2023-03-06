@@ -8,6 +8,8 @@ part 'food_search_results.g.dart';
 class FoodSearchResults extends Equatable {
   final FoodResults foods;
 
+  static FoodSearchResults empty() => const FoodSearchResults(FoodResults([], "", "", ""));
+
   const FoodSearchResults(
       this.foods,
       );

@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/fatsecret/food_search_result.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/detailed_food/detailed_food_view.dart';
 import 'package:flutter_app/src/views/food_search/bloc/food_search_bloc.dart';
 import 'package:flutter_app/src/views/food_search/bloc/food_search_event.dart';
 import 'package:flutter_app/src/views/food_search/bloc/food_search_state.dart';
@@ -178,7 +179,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
           trailing: Text("0", style: TextStyle(color: Colors.teal)),
         ),
         Expanded(
-            child: _searchResults([])
+            child: _searchResults([], null)
         )
       ];
     }
@@ -189,7 +190,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
           trailing: Text(state.results.foods.food.length.toString(), style: const TextStyle(color: Colors.teal)),
         ),
         Expanded(
-            child: _searchResults(showOnlyRecent ? [] : state.results.foods.food) // todo - fix this when recent is available
+            child: _searchResults(showOnlyRecent ? [] : state.results.foods.food, state) // todo - fix this when recent is available
         )
       ];
     }
@@ -217,7 +218,20 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
               onSubmitted: (value) {},
               autocorrect: false,
               onTap: () => _suggestionsController.toggle(),
-              onChanged: (text) {},
+              onChanged: (text) {
+                if (_searchQueryDebounceTimer?.isActive ?? false) _searchQueryDebounceTimer?.cancel();
+                _searchQueryDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+                  if (text.trim().isNotEmpty) {
+                    _foodSearchBloc.add(
+                        FetchFoodSearchInfo(
+                          query: text.trim(),
+                          pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
+                          maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
+                        )
+                    );
+                  }
+                });
+              },
               autofocus: true,
               controller: _searchTextController,
               style: const TextStyle(fontSize: 15),
@@ -228,22 +242,11 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                     onPressed: () {
                       _suggestionsController.close();
                       _searchTextController.text = "";
+                      _foodSearchBloc.add(const ClearFoodSearchQuery());
                     },
                     icon: const Icon(Icons.close),
                   ))),
           suggestionsCallback: (text)  {
-            if (_searchQueryDebounceTimer?.isActive ?? false) _searchQueryDebounceTimer?.cancel();
-            _searchQueryDebounceTimer = Timer(const Duration(milliseconds: 300), () {
-              if (text.trim().isNotEmpty) {
-                _foodSearchBloc.add(
-                    FetchFoodSearchInfo(
-                      query: text.trim(),
-                      pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
-                      maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
-                    )
-                );
-              }
-            });
             return List.empty();
           },
           // TODO  + PROVIDE ATTRIBUTEION TO WGER AND FATSECRET API
@@ -271,14 +274,14 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     );
   }
 
-  Widget _searchResults(List<FoodSearchResult> items) {
+  Widget _searchResults(List<FoodSearchResult> items, FoodDataFetched? state) {
     if (items.isNotEmpty) {
       return Scrollbar(
         controller: _scrollController,
         child: ListView.builder(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: items.length + 1,
+          itemCount: (state?.doesNextPageExist ?? false) ? items.length + 1 : items.length,
           itemBuilder: (BuildContext context, int index) {
             if (index != items.length) {
               return foodResultItem(items[index]);
@@ -310,7 +313,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
       trailing: Text(foodSearchResult.food_type),
       subtitle: Text(foodSearchResult.food_description),
       onTap: () {
-        // todo Move to detailed food definition page from here
+        Navigator.push(context, DetailedFoodView.route(widget.currentUserProfile, foodSearchResult));
       },
     );
   }

@@ -15,7 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
-class AddToDiaryView extends StatefulWidget {
+class AddExerciseToDiaryView extends StatefulWidget {
 
   static const String routeName = "exercise/search/add-to-diary";
 
@@ -23,7 +23,7 @@ class AddToDiaryView extends StatefulWidget {
   final ExerciseDefinition exerciseDefinition;
   final bool isCurrentExerciseDefinitionCardio;
 
-  const AddToDiaryView({
+  const AddExerciseToDiaryView({
     Key? key,
     required this.currentUserProfile,
     required this.exerciseDefinition,
@@ -39,7 +39,7 @@ class AddToDiaryView extends StatefulWidget {
         settings: const RouteSettings(
             name: routeName
         ),
-        builder: (_) => AddToDiaryView.withBloc(
+        builder: (_) => AddExerciseToDiaryView.withBloc(
             currentUserProfile,
             exerciseDefinition,
             isCurrentExerciseDefinitionCardio
@@ -60,7 +60,7 @@ class AddToDiaryView extends StatefulWidget {
           )
       ),
     ],
-    child: AddToDiaryView(
+    child: AddExerciseToDiaryView(
       currentUserProfile: currentUserProfile,
       exerciseDefinition: exerciseDefinition,
       isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
@@ -70,11 +70,11 @@ class AddToDiaryView extends StatefulWidget {
 
   @override
   State createState() {
-    return AddToDiaryViewState();
+    return AddExerciseToDiaryViewState();
   }
 }
 
-class AddToDiaryViewState extends State<AddToDiaryView> {
+class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
   static const int MAX_TABS = 2;
 
   late AddToDiaryBloc _addToDiaryBloc;

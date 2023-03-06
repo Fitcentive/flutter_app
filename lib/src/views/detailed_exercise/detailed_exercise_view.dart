@@ -134,7 +134,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
         onPressed: () async {
           Navigator.pushAndRemoveUntil(
               context,
-              AddToDiaryView.route(widget.currentUserProfile, widget.exerciseDefinition, widget.isCurrentExerciseDefinitionCardio),
+              AddExerciseToDiaryView.route(widget.currentUserProfile, widget.exerciseDefinition, widget.isCurrentExerciseDefinitionCardio),
                   (route) => true
           );
         },

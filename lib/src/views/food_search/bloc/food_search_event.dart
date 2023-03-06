@@ -8,6 +8,15 @@ abstract class FoodSearchEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class ClearFoodSearchQuery extends FoodSearchEvent {
+
+  const ClearFoodSearchQuery();
+
+  @override
+  List<Object?> get props => [];
+
+}
+
 class FetchFoodSearchInfo extends FoodSearchEvent {
   final String query;
   final int pageNumber;
