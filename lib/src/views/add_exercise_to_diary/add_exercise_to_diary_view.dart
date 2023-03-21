@@ -8,9 +8,9 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/add_to_diary/bloc/add_to_diary_bloc.dart';
-import 'package:flutter_app/src/views/add_to_diary/bloc/add_to_diary_event.dart';
-import 'package:flutter_app/src/views/add_to_diary/bloc/add_to_diary_state.dart';
+import 'package:flutter_app/src/views/add_exercise_to_diary/bloc/add_exercise_to_diary_bloc.dart';
+import 'package:flutter_app/src/views/add_exercise_to_diary/bloc/add_exercise_to_diary_event.dart';
+import 'package:flutter_app/src/views/add_exercise_to_diary/bloc/add_exercise_to_diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
@@ -53,8 +53,8 @@ class AddExerciseToDiaryView extends StatefulWidget {
       bool isCurrentExerciseDefinitionCardio,
       ) => MultiBlocProvider(
     providers: [
-      BlocProvider<AddToDiaryBloc>(
-          create: (context) => AddToDiaryBloc(
+      BlocProvider<AddExerciseToDiaryBloc>(
+          create: (context) => AddExerciseToDiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
@@ -77,7 +77,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
 class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
   static const int MAX_TABS = 2;
 
-  late AddToDiaryBloc _addToDiaryBloc;
+  late AddExerciseToDiaryBloc _addExerciseToDiaryBloc;
 
   DateTime selectedWorkoutDateTime = DateTime.now();
 
@@ -93,7 +93,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
   void initState() {
     super.initState();
 
-    _addToDiaryBloc = BlocProvider.of<AddToDiaryBloc>(context);
+    _addExerciseToDiaryBloc = BlocProvider.of<AddExerciseToDiaryBloc>(context);
   }
 
   @override
@@ -111,9 +111,9 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
         toolbarHeight: 75,
         title: Text(widget.exerciseDefinition.name, style: const TextStyle(color: Colors.teal)),
       ),
-      body: BlocListener<AddToDiaryBloc, AddToDiaryState>(
+      body: BlocListener<AddExerciseToDiaryBloc, AddExerciseToDiaryState>(
         listener: (context, state) {
-          if (state is DiaryEntryAdded) {
+          if (state is ExerciseDiaryEntryAdded) {
             var count = 0;
             Navigator.popUntil(context, (route) => count++ == 3);
           }
@@ -536,7 +536,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
           if (widget.isCurrentExerciseDefinitionCardio) {
             if (_mintuesPerformedTextController.value.text.isNotEmpty) {
               final durationInMins = int.parse(_mintuesPerformedTextController.value.text);
-              _addToDiaryBloc.add(
+              _addExerciseToDiaryBloc.add(
                   AddCardioEntryToDiary(
                     userId: widget.currentUserProfile.userId,
                     newEntry: CardioDiaryEntryCreate(
@@ -558,7 +558,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
             if (_setsTextController.value.text.isNotEmpty && _repsTextController.value.text.isNotEmpty) {
               final sets = int.parse(_setsTextController.value.text);
               final reps = int.parse(_repsTextController.value.text);
-              _addToDiaryBloc.add(
+              _addExerciseToDiaryBloc.add(
                   AddStrengthEntryToDiary(
                     userId: widget.currentUserProfile.userId,
                     newEntry: StrengthDiaryEntryCreate(

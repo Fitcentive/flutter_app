@@ -49,8 +49,6 @@ class FoodSearchBloc extends Bloc<FoodSearchEvent, FoodSearchState> {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final results = await diaryRepository.searchForFoods(event.query, accessToken!, pageNumber: event.pageNumber, maxResults: event.maxResults);
 
-      // todo - there is a bug here, same stuff keeps getting appended, need to fix infinite bug!!
-
       // Search query hasn't changed, we append results
       if (currentState.query == event.query) {
         emit(
@@ -81,8 +79,6 @@ class FoodSearchBloc extends Bloc<FoodSearchEvent, FoodSearchState> {
             )
         );
       }
-
-
     }
   }
 

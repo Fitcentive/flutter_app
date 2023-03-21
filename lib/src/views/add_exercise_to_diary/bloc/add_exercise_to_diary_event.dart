@@ -2,14 +2,14 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 
-abstract class AddToDiaryEvent extends Equatable {
-  const AddToDiaryEvent();
+abstract class AddExerciseToDiaryEvent extends Equatable {
+  const AddExerciseToDiaryEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-class AddCardioEntryToDiary extends AddToDiaryEvent {
+class AddCardioEntryToDiary extends AddExerciseToDiaryEvent {
   final String userId;
   final CardioDiaryEntryCreate newEntry;
 
@@ -24,7 +24,7 @@ class AddCardioEntryToDiary extends AddToDiaryEvent {
 }
 
 
-class AddStrengthEntryToDiary extends AddToDiaryEvent {
+class AddStrengthEntryToDiary extends AddExerciseToDiaryEvent {
   final String userId;
   final StrengthDiaryEntryCreate newEntry;
 

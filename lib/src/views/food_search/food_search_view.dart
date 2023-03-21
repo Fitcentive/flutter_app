@@ -139,7 +139,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
               color: Colors.teal,
             ),
             toolbarHeight: 75,
-            title: Text("View ${widget.mealOfDay} Foods", style: TextStyle(color: Colors.teal)),
+            title: Text("View ${widget.mealOfDay} Foods", style: const TextStyle(color: Colors.teal)),
             bottom: TabBar(
               labelColor: Colors.teal,
               controller: _tabController,

@@ -6,7 +6,7 @@ import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/add_to_diary/add_to_diary_view.dart';
+import 'package:flutter_app/src/views/add_exercise_to_diary/add_exercise_to_diary_view.dart';
 import 'package:flutter_app/src/views/detailed_exercise/bloc/detailed_exercise_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

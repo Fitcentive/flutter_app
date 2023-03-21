@@ -7,14 +7,14 @@ part 'food_result.g.dart';
 @JsonSerializable()
 class FoodResult extends Equatable {
   final String food_id;
-  final String foo_nName;
+  final String food_name;
   final String food_type;
   final String food_url;
   final Servings servings;
 
   const FoodResult(
       this.food_id,
-      this.foo_nName,
+      this.food_name,
       this.food_type,
       this.food_url,
       this.servings

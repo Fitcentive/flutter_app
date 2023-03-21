@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:either_dart/either.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/fatsecret/food_search_results.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:http/http.dart' as http;
@@ -166,7 +168,7 @@ class DiaryRepository {
     }
   }
 
-  Future<FoodGetResult> getFoodById(String foodId, String accessToken) async {
+  Future<Either<FoodGetResult, FoodGetResultSingleServing>> getFoodById(String foodId, String accessToken) async {
     final response = await http.get(
       Uri.parse("$BASE_URL/food/$foodId"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
@@ -174,7 +176,12 @@ class DiaryRepository {
 
     if (response.statusCode == HttpStatus.ok) {
       final jsonResponse = jsonDecode(response.body);
-      return FoodGetResult.fromJson(jsonResponse);
+      try {
+        return Left(FoodGetResult.fromJson(jsonResponse));
+      } catch (e) {
+        return Right(FoodGetResultSingleServing.fromJson(jsonResponse));
+      }
+
     }
     else {
       throw Exception(
