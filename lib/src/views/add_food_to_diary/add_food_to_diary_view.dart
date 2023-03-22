@@ -1,16 +1,21 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:either_dart/either.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
+import 'package:flutter_app/src/models/fatsecret/serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_bloc.dart';
 import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AddFoodToDiaryView extends StatefulWidget {
 
@@ -76,16 +81,23 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
   int _current = 0;
   final CarouselController _carouselController = CarouselController();
 
-  final TextEditingController _mintuesPerformedTextController = TextEditingController();
-  final TextEditingController _setsTextController = TextEditingController();
-  final TextEditingController _repsTextController = TextEditingController();
-  final TextEditingController _caloriesBurnedTextController = TextEditingController();
+  final TextEditingController _servingsTextController = TextEditingController();
+
+  List<Serving> servingOptions = [];
+  Serving? selectedServingOption;
+  double selectedServingSize = 1;
 
   @override
   void initState() {
     super.initState();
 
     _addFoodToDiaryBloc = BlocProvider.of<AddFoodToDiaryBloc>(context);
+
+    servingOptions = widget.foodDefinition.isLeft ?
+                      widget.foodDefinition.left.food.servings.serving :
+                      [widget.foodDefinition.right.food.servings.serving];
+
+    selectedServingOption = servingOptions.first;
   }
 
   @override
@@ -119,204 +131,196 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
   }
 
   _displayMainBody() {
-    return Text("yet to come...");
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  const Expanded(
+                      flex: 5,
+                      child: Text(
+                        "# of servings",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      )
+                  ),
+                  Expanded(
+                      flex: 8,
+                      child: TextFormField(
+                        controller: _servingsTextController,
+                        onChanged: (text) {
+                          final servingSize = double.parse(text);
+                          setState(() {
+                            selectedServingSize = servingSize;
+                          });
+                        },
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(
+                          hintText: "Eg - 1.5",
+                          hintStyle: TextStyle(color: Colors.teal),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.teal,
+                            ),
+                          ),
+                        ),
+                      )
+                  ),
+                ],
+              ),
+            ),
+            WidgetUtils.spacer(2.5),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  const Expanded(
+                      flex: 5,
+                      child: Text(
+                        "Selected serving size",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      )
+                  ),
+                  Expanded(
+                      flex: 8,
+                      child: DropdownButton<String>(
+                        value: selectedServingOption?.serving_description ?? "No serving size",
+                        icon: const Padding(
+                          padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                          child: Icon(Icons.fastfood),
+                        ),
+                        elevation: 16,
+                        style: const TextStyle(color: Colors.teal),
+                        underline: Container(
+                          height: 2,
+                          // color: Colors.tealAccent,
+                        ),
+                        onChanged: (String? value) {
+                          // This is called when the user selects an item.
+                          setState(() {
+                            selectedServingOption = servingOptions.firstWhere((element) => element.serving_description == value);
+                          });
+                        },
+                        items: servingOptions.map((e) => e.serving_description).map<DropdownMenuItem<String>>((String? value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value ?? "No serving size"),
+                          );
+                        }).toList(),
+                      )
+                  ),
+                ],
+              ),
+            )
+            ,
+            WidgetUtils.spacer(2.5),
+            _infoItem("Serving Size", "${selectedServingOption?.metric_serving_amount} ${selectedServingOption?.metric_serving_unit}"),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Calories", _stringOptToDouble(selectedServingOption?.calories)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Carbohydrates", _stringOptToDouble(selectedServingOption?.carbohydrate)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Fat", _stringOptToDouble(selectedServingOption?.fat)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Protein", _stringOptToDouble(selectedServingOption?.protein)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Calcium", _stringOptToDouble(selectedServingOption?.calcium)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Cholesterol", _stringOptToDouble(selectedServingOption?.cholesterol)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Fiber", _stringOptToDouble(selectedServingOption?.fiber)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Iron", _stringOptToDouble(selectedServingOption?.iron)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Monounsaturated Fat", _stringOptToDouble(selectedServingOption?.monounsaturated_fat)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Polyunsaturated Fat", _stringOptToDouble(selectedServingOption?.polyunsaturated_fat)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Potassium", _stringOptToDouble(selectedServingOption?.potassium)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Saturated Fat", _stringOptToDouble(selectedServingOption?.saturated_fat)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Sodium", _stringOptToDouble(selectedServingOption?.sodium)),
+            WidgetUtils.spacer(2.5),
+            _infoItem("Sugar", _stringOptToDouble(selectedServingOption?.sugar)),
+            WidgetUtils.spacer(2.5),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  const Expanded(
+                      flex: 5,
+                      child: Text(
+                        "Serving URL",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      )
+                  ),
+                  Expanded(
+                      flex: 8,
+                      child: RichText(
+                          text: TextSpan(
+                              children: [
+                                TextSpan(
+                                    text: "View in browser",
+                                    style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                                    recognizer: TapGestureRecognizer()..onTap = () {
+                                      launchUrl(Uri.parse(selectedServingOption?.serving_url ?? ConstantUtils.FALLBACK_URL));
+                                    }
+                                ),
+                              ]
+                          )
+                      )
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  _renderReps() {
+  _stringOptToDouble(String? value) {
+    return (double.parse(value ?? "0") * selectedServingSize).toStringAsFixed(2);
+  }
+
+  _infoItem(String name, String? value) {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
-          const Expanded(
+          Expanded(
               flex: 5,
               child: Text(
-                "Reps per set",
-                style: TextStyle(fontWeight: FontWeight.bold),
+                name,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               )
           ),
           Expanded(
               flex: 8,
-              child: TextFormField(
-                controller: _repsTextController,
-                onChanged: (text) {
-                  final sets = _setsTextController.value.text.isEmpty ? 1 : int.parse(_setsTextController.value.text);;
-                  final reps = int.parse(text);
-                  _caloriesBurnedTextController.text = (sets * reps * 10).toString(); // todo - change this!
-                },
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: "Eg - 3",
-                  hintStyle: TextStyle(color: Colors.teal),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.teal,
-                    ),
-                  ),
-                ),
-              )
+              child: Text(value ?? "n/a")
           ),
         ],
       ),
     );
   }
 
-  _renderSets() {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          const Expanded(
-              flex: 5,
-              child: Text(
-                "Sets",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              )
-          ),
-          Expanded(
-              flex: 8,
-              child: TextFormField(
-                controller: _setsTextController,
-                onChanged: (text) {
-                  final sets = int.parse(text);
-                  final reps = _repsTextController.value.text.isEmpty ? 1 : int.parse(_repsTextController.value.text);
-                  _caloriesBurnedTextController.text = (sets * reps * 10).toString(); // todo - change this!
-                },
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: "Eg - 3",
-                  hintStyle: TextStyle(color: Colors.teal),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.teal,
-                    ),
-                  ),
-                ),
-              )
-          ),
-        ],
-      ),
-    );
-  }
-
-  _renderCaloriesBurned() {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          const Expanded(
-              flex: 5,
-              child: Text(
-                "Calories burned",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              )
-          ),
-          Expanded(
-              flex: 8,
-              child: TextFormField(
-                enabled: false,
-                controller: _caloriesBurnedTextController,
-                decoration: const InputDecoration(
-                  hintText: "Auto calculated",
-                  hintStyle: TextStyle(color: Colors.teal),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.teal,
-                    ),
-                  ),
-                ),
-              )
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _timePickerButton() {
-    return ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-      ),
-      onPressed: () async {
-        final selectedTime = await showTimePicker(
-          initialTime: TimeOfDay.fromDateTime(DateTime.now()),
-          builder: (BuildContext context, Widget? child) {
-            return Theme(
-                data: ThemeData(primarySwatch: Colors.teal),
-                child: child!
-            );
-          },
-          context: context,
-        );
-
-        // Interact with bloc here
-        if(selectedTime != null) {
-          // Setstate and update here properly
-          setState(() {
-            selectedWorkoutDateTime = DateTime(
-              selectedWorkoutDateTime.year,
-              selectedWorkoutDateTime.month,
-              selectedWorkoutDateTime.day,
-              selectedTime.hour,
-              selectedTime.minute,
-            );
-          });
-        }
-
-      },
-      child: Text(
-          DateFormat("hh:mm a").format(selectedWorkoutDateTime),
-          style: const TextStyle(
-              fontSize: 16,
-              color: Colors.white
-          )),
-    );
-  }
-
-  Widget _datePickerButton() {
-    return ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-      ),
-      onPressed: () async {
-        final selectedDate = await showDatePicker(
-          builder: (BuildContext context, Widget? child) {
-            return Theme(
-                data: ThemeData(primarySwatch: Colors.teal),
-                child: child!
-            );
-          },
-          context: context,
-          initialEntryMode: DatePickerEntryMode.calendarOnly,
-          initialDate: selectedWorkoutDateTime,
-          firstDate: DateTime(ConstantUtils.EARLIEST_YEAR),
-          lastDate: DateTime(ConstantUtils.LATEST_YEAR),
-        );
-
-        // Interact
-        if(selectedDate != null) {
-          setState(() {
-            selectedWorkoutDateTime = DateTime(
-              selectedDate.year,
-              selectedDate.month,
-              selectedDate.day,
-              selectedWorkoutDateTime.hour,
-              selectedWorkoutDateTime.minute,
-            );
-          });
-        }
-      },
-      child: Text(
-          DateFormat('yyyy-MM-dd').format(selectedWorkoutDateTime),
-          style: const TextStyle(
-              fontSize: 16,
-              color: Colors.white
-          )),
-    );
-  }
-
+  /*
+    FatSecret data you can store indefinitely include:
+      food_id - the unique food identifier.
+      food_entry_id - the unique identifier of the food diary entry.
+      serving_id - the unique serving identifier.
+      recipe_id - the unique recipe identifier.
+      saved_meal_id - the unique saved meal identifier.
+      saved_meal_item_id - the unique saved meal item identifier.
+      exercise_id - the unique exercise identifier.
+   */
   _showAddToDiaryButton() {
     return Padding(
       padding: const EdgeInsets.all(10),
@@ -325,7 +329,12 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
         ),
         onPressed: () async {
-          // todo - add onPressed
+          if (_servingsTextController.value.text.isNotEmpty) {
+            // todo - fill this in
+          }
+          else {
+            SnackbarUtils.showSnackBar(context, "Please add number of servings!");
+          }
         },
         child: const Text("Add to diary", style: TextStyle(fontSize: 15, color: Colors.white)),
       ),
