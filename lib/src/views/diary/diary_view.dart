@@ -43,6 +43,8 @@ class DiaryViewState extends State<DiaryView> {
   static const int MAX_PAGES = 500;
   static const int INITIAL_PAGE = MAX_PAGES ~/ 2;
 
+  static const int defaultCaloriesTargetPerDay = 2240;
+
   static const listItemIndexToTitleMap = {
     0: "Breakfast",
     1: "Lunch",
@@ -50,7 +52,6 @@ class DiaryViewState extends State<DiaryView> {
     3: "Snacks",
     4: "Exercise",
   };
-  static const double _scrollThreshold = 200.0;
 
   late DiaryBloc _diaryBloc;
 
@@ -227,6 +228,112 @@ class DiaryViewState extends State<DiaryView> {
         .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
   }
 
+  _caloriesHeader(DiaryDataFetched state) {
+    final foodCalories = state.foodDiaryEntries.isEmpty ? 0 : state.foodDiaryEntries.map((e) {
+      if (e.isLeft) {
+        final rawEntry = state.foodDiaryEntriesRaw.firstWhere((element) => element.foodId.toString() == e.left.food.food_id);
+        return double.parse((e.left.food.servings.serving.firstWhere((element) => element.serving_id == rawEntry.servingId.toString()).calories ?? "0")) * rawEntry.numberOfServings;
+      }
+      else {
+        final rawEntry = state.foodDiaryEntriesRaw.firstWhere((element) => element.foodId.toString() == e.right.food.food_id);
+        return double.parse(e.right.food.servings.serving.calories ?? "0") * rawEntry.numberOfServings;
+      }
+    }).reduce((value, element) => value + element);
+    final cardioCalories = state.cardioDiaryEntries.isEmpty ? 0 : state.cardioDiaryEntries.map((e) => e.caloriesBurned).reduce((value, element) => value + element);
+    final strengthCalories = state.strengthDiaryEntries.isEmpty ? 0 : state.strengthDiaryEntries.map((e) => e.caloriesBurned).reduce((value, element) => value + element);
+    final remainingCalories = defaultCaloriesTargetPerDay - foodCalories + cardioCalories + strengthCalories;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "$defaultCaloriesTargetPerDay",
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.headlineMedium?.color
+                ),
+              ),
+              WidgetUtils.spacer(2),
+              const Text("Goal", style: TextStyle(fontSize: 12),)
+            ],
+          )
+        ),
+        const Expanded(
+            flex: 1,
+            child: Text("-")
+        ),
+        Expanded(
+            flex: 3,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "$foodCalories",
+                  style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red
+                  ),
+                ),
+                WidgetUtils.spacer(2),
+                const Text("Food", style: TextStyle(fontSize: 12),)
+              ],
+            )
+        ),
+        const Expanded(
+            flex: 1,
+            child: Text("+")
+        ),
+        Expanded(
+            flex: 3,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${cardioCalories + strengthCalories}",
+                  style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal
+                  ),
+                ),
+                WidgetUtils.spacer(2),
+                const Text("Exercise", style: TextStyle(fontSize: 12),)
+              ],
+            )
+        ),
+        const Expanded(
+            flex: 1,
+            child: Text("=")
+        ),
+        Expanded(
+            flex: 3,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "$remainingCalories",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: remainingCalories == 0 ? Theme.of(context).textTheme.headlineMedium?.color : (remainingCalories > 0 ? Colors.teal : Colors.red)
+                  ),
+                ),
+                WidgetUtils.spacer(2),
+                const Text("Remaining", style: TextStyle(fontSize: 12),)
+              ],
+            )
+        ),
+      ],
+    );
+  }
+
   _dateHeader() {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -248,6 +355,10 @@ class DiaryViewState extends State<DiaryView> {
             child: Center(
               child: Text(
                 DateFormat('yyyy-MM-dd').format(currentSelectedDate),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold
+                ),
               ),
             )
         ),
@@ -275,6 +386,8 @@ class DiaryViewState extends State<DiaryView> {
         children: [
           _dateHeader(),
           WidgetUtils.spacer(2.5),
+          _caloriesHeader(state),
+          WidgetUtils.spacer(5),
           Expanded(
             child: _diaryPageViews(state),
           ),
@@ -374,17 +487,73 @@ class DiaryViewState extends State<DiaryView> {
 
   _renderDiaryEntries(String heading, DiaryDataFetched state) {
     if (heading == listItemIndexToTitleMap[4]!) {
-      _renderExerciseDiaryEntries(state);
+      return _renderExerciseDiaryEntries(state);
     }
     else {
-      _renderFoodDiaryEntries(heading, state);
+      return _renderFoodDiaryEntries(heading, state);
     }
   }
 
   _renderFoodDiaryEntries(String heading, DiaryDataFetched state) {
-    return const Center(
-      child: Text("No items here..."),
-    );
+    final foodEntriesForHeadingRaw = state.foodDiaryEntriesRaw.where((element) => element.mealEntry == heading).toList();
+    if (foodEntriesForHeadingRaw.isNotEmpty) {
+      return ListView.builder(
+          shrinkWrap: true,
+          itemCount: foodEntriesForHeadingRaw.length,
+          itemBuilder: (context, index) {
+            final foodEntryForHeadingRaw = foodEntriesForHeadingRaw[index];
+            final detailedFoodEntry = state.foodDiaryEntries.firstWhere((element) {
+              if (element.isLeft) {
+                return element.left.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+              }
+              else {
+                return element.right.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+              }
+            });
+            final caloriesRaw = detailedFoodEntry.isLeft ?
+              detailedFoodEntry.left.food.servings.serving.firstWhere((element) => element.serving_id == foodEntryForHeadingRaw.servingId.toString()).calories :
+              detailedFoodEntry.right.food.servings.serving.calories;
+
+            return InkWell(
+              onTap: () {
+                // Food tapped
+              },
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          flex: 12,
+                          child: Container(
+                              padding: const EdgeInsets.all(5),
+                              child: Text(
+                                detailedFoodEntry.isLeft ? detailedFoodEntry.left.food.food_name : detailedFoodEntry.right.food.food_name
+                              )
+                          )
+                      ),
+                      Expanded(
+                          flex: 4,
+                          child: Text(
+                            "${double.parse(caloriesRaw ?? "0") * foodEntryForHeadingRaw.numberOfServings} calories",
+                            style: const TextStyle(
+                                color: Colors.teal
+                            ),
+                          )
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+      );
+    }
+    else {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
   }
 
   _renderExerciseDiaryEntries(DiaryDataFetched state) {
@@ -495,7 +664,7 @@ class DiaryViewState extends State<DiaryView> {
                           Expanded(
                               flex: 4,
                               child: Text(
-                                "${state.cardioDiaryEntries[index].caloriesBurned.toInt()} calories",
+                                "${state.strengthDiaryEntries[index].caloriesBurned.toInt()} calories",
                                 style: const TextStyle(
                                     color: Colors.teal
                                 ),

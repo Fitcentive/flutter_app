@@ -356,7 +356,6 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
     );
   }
 
-  // todo - fix muscle images, and then add to diary option, remove but BE first!!
   _generateMusclesCarousel() {
     if (widget.exerciseDefinition.muscles.isNotEmpty) {
       return widget.exerciseDefinition.muscles.map((e) =>
