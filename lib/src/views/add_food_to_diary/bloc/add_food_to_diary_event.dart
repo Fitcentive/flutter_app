@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 
 abstract class AddFoodToDiaryEvent extends Equatable {
   const AddFoodToDiaryEvent();
@@ -10,7 +10,7 @@ abstract class AddFoodToDiaryEvent extends Equatable {
 
 class AddFoodEntryToDiary extends AddFoodToDiaryEvent {
   final String userId;
-  final CardioDiaryEntryCreate newEntry;
+  final FoodDiaryEntryCreate newEntry;
 
   const AddFoodEntryToDiary({
     required this.userId,

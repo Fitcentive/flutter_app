@@ -31,9 +31,16 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
         accessToken
     );
 
+    final foodEntries = await diaryRepository.getFoodEntriesForUserByDay(
+        event.userId,
+        DateFormat("yyyy-MM-dd").format(event.diaryDate),
+        accessToken
+    );
+
     emit(DiaryDataFetched(
       strengthDiaryEntries: strengthWorkouts,
       cardioDiaryEntries: cardioWorkouts,
+      foodDiaryEntries: foodEntries,
     ));
   }
 

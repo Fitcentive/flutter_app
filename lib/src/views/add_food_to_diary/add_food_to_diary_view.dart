@@ -3,6 +3,7 @@ import 'package:either_dart/either.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/fatsecret/serving.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_bloc.dart';
+import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_event.dart';
 import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -23,16 +25,22 @@ class AddFoodToDiaryView extends StatefulWidget {
 
   final PublicUserProfile currentUserProfile;
   final Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition;
+  final String mealEntry;
+  final DateTime selectedDayInQuestion;
 
   const AddFoodToDiaryView({
     Key? key,
     required this.currentUserProfile,
     required this.foodDefinition,
+    required this.mealEntry,
+    required this.selectedDayInQuestion,
   }): super(key: key);
 
   static Route route(
       PublicUserProfile currentUserProfile,
       Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition,
+      String mealEntry,
+      DateTime selectedDayInQuestion,
       ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -41,6 +49,8 @@ class AddFoodToDiaryView extends StatefulWidget {
         builder: (_) => AddFoodToDiaryView.withBloc(
             currentUserProfile,
             foodDefinition,
+            mealEntry,
+            selectedDayInQuestion
         )
     );
   }
@@ -48,6 +58,8 @@ class AddFoodToDiaryView extends StatefulWidget {
   static Widget withBloc(
       PublicUserProfile currentUserProfile,
       Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition,
+      String mealEntry,
+      DateTime selectedDayInQuestion,
       ) => MultiBlocProvider(
     providers: [
       BlocProvider<AddFoodToDiaryBloc>(
@@ -60,6 +72,8 @@ class AddFoodToDiaryView extends StatefulWidget {
     child: AddFoodToDiaryView(
       currentUserProfile: currentUserProfile,
       foodDefinition: foodDefinition,
+      mealEntry: mealEntry,
+      selectedDayInQuestion: selectedDayInQuestion
     ),
   );
 
@@ -70,7 +84,6 @@ class AddFoodToDiaryView extends StatefulWidget {
   }
 }
 
-// todo - work on this, lots to do here
 class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
   static const int MAX_TABS = 2;
 
@@ -311,16 +324,6 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
     );
   }
 
-  /*
-    FatSecret data you can store indefinitely include:
-      food_id - the unique food identifier.
-      food_entry_id - the unique identifier of the food diary entry.
-      serving_id - the unique serving identifier.
-      recipe_id - the unique recipe identifier.
-      saved_meal_id - the unique saved meal identifier.
-      saved_meal_item_id - the unique saved meal item identifier.
-      exercise_id - the unique exercise identifier.
-   */
   _showAddToDiaryButton() {
     return Padding(
       padding: const EdgeInsets.all(10),
@@ -330,7 +333,34 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
         ),
         onPressed: () async {
           if (_servingsTextController.value.text.isNotEmpty) {
-            // todo - fill this in
+            if (widget.foodDefinition.isLeft) {
+              _addFoodToDiaryBloc.add(
+                  AddFoodEntryToDiary(
+                    userId: widget.currentUserProfile.userId,
+                    newEntry: FoodDiaryEntryCreate(
+                        foodId: int.parse(widget.foodDefinition.left.food.food_id),
+                        servingId: int.parse(selectedServingOption!.serving_id!),
+                        numberOfServings: selectedServingSize,
+                        mealEntry: widget.mealEntry,
+                        entryDate: widget.selectedDayInQuestion
+                    ),
+                  )
+              );
+            }
+            else {
+              _addFoodToDiaryBloc.add(
+                  AddFoodEntryToDiary(
+                    userId: widget.currentUserProfile.userId,
+                    newEntry: FoodDiaryEntryCreate(
+                        foodId: int.parse(widget.foodDefinition.right.food.food_id),
+                        servingId: int.parse(selectedServingOption!.serving_id!),
+                        numberOfServings: selectedServingSize,
+                        mealEntry: widget.mealEntry,
+                        entryDate: widget.selectedDayInQuestion
+                    ),
+                  )
+              );
+            }
           }
           else {
             SnackbarUtils.showSnackBar(context, "Please add number of servings!");

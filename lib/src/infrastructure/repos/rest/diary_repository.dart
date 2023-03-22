@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:either_dart/either.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
@@ -75,7 +76,6 @@ class DiaryRepository {
       StrengthDiaryEntryCreate entry,
       String accessToken
       ) async {
-    final theDate = entry.exerciseDate.toIso8601String();
     final response = await http.post(
         Uri.parse("$BASE_URL/user/$userId/strength"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
@@ -186,6 +186,56 @@ class DiaryRepository {
     else {
       throw Exception(
           "getFoodById: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<FoodDiaryEntry>> getFoodEntriesForUserByDay(
+      String userId,
+      String dateString,
+      String accessToken,
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/date/$dateString/food"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<FoodDiaryEntry> results = jsonResponse.map((e) {
+        return FoodDiaryEntry.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getFoodEntriesForUserByDay: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<FoodDiaryEntry> addFoodEntryToUserDiary(
+      String userId,
+      FoodDiaryEntryCreate entry,
+      String accessToken
+      ) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/user/$userId/food"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: jsonEncode({
+          "foodId": entry.foodId,
+          "servingId": entry.servingId,
+          "numberOfServings": entry.numberOfServings,
+          "mealEntry": entry.mealEntry,
+          "entryDate": entry.entryDate.toUtc().toIso8601String(),
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return FoodDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "addFoodEntryToUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 }

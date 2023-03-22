@@ -18,20 +18,34 @@ class FoodSearchView extends StatefulWidget {
   static const String routeName = "food/search";
 
   final PublicUserProfile currentUserProfile;
-  final String mealOfDay; // One of Breakfast, Lunch, Dinner, or Snacks
+  final String mealOfDay; // One of Breakfast, Lunch, Dinner, or Snack
+  final DateTime selectedDayInQuestion; // The day for which a potential diary entry might be added
 
-  const FoodSearchView({Key? key, required this.currentUserProfile, required this.mealOfDay}): super(key: key);
+  const FoodSearchView({
+    Key? key,
+    required this.currentUserProfile,
+    required this.mealOfDay,
+    required this.selectedDayInQuestion,
+  }): super(key: key);
 
-  static Route route(PublicUserProfile currentUserProfile, String mealOfDay) {
+  static Route route(
+      PublicUserProfile currentUserProfile,
+      String mealOfDay,
+      DateTime selectedDayInQuestion,
+  ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
             name: routeName
         ),
-        builder: (_) => FoodSearchView.withBloc(currentUserProfile, mealOfDay)
+        builder: (_) => FoodSearchView.withBloc(currentUserProfile, mealOfDay, selectedDayInQuestion)
     );
   }
 
-  static Widget withBloc(PublicUserProfile currentUserProfile, String mealOfDay) => MultiBlocProvider(
+  static Widget withBloc(
+      PublicUserProfile currentUserProfile,
+      String mealOfDay,
+      DateTime selectedDayInQuestion
+  ) => MultiBlocProvider(
     providers: [
       BlocProvider<FoodSearchBloc>(
           create: (context) => FoodSearchBloc(
@@ -40,7 +54,11 @@ class FoodSearchView extends StatefulWidget {
           )
       ),
     ],
-    child: FoodSearchView(currentUserProfile: currentUserProfile, mealOfDay: mealOfDay),
+    child: FoodSearchView(
+        currentUserProfile: currentUserProfile,
+        mealOfDay: mealOfDay,
+        selectedDayInQuestion: selectedDayInQuestion
+    ),
   );
 
 
@@ -50,6 +68,7 @@ class FoodSearchView extends StatefulWidget {
   }
 }
 
+// TODO  + PROVIDE ATTRIBUTEION TO WGER AND FATSECRET API
 class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProviderStateMixin {
   static const int MAX_TABS = 2;
   static const double _scrollThreshold = 400.0;
@@ -249,7 +268,6 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
           suggestionsCallback: (text)  {
             return List.empty();
           },
-          // TODO  + PROVIDE ATTRIBUTEION TO WGER AND FATSECRET API
           itemBuilder: (context, suggestion) { // this might not be needed
             final s = suggestion;
             return ListTile(
@@ -313,7 +331,15 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
       trailing: Text(foodSearchResult.food_type),
       subtitle: Text(foodSearchResult.food_description),
       onTap: () {
-        Navigator.push(context, DetailedFoodView.route(widget.currentUserProfile, foodSearchResult));
+        Navigator.push(
+            context,
+            DetailedFoodView.route(
+                widget.currentUserProfile,
+                foodSearchResult,
+                widget.mealOfDay,
+                widget.selectedDayInQuestion
+            )
+        );
       },
     );
   }

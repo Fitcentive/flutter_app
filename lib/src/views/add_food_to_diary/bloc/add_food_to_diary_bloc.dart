@@ -19,7 +19,7 @@ class AddFoodToDiaryBloc extends Bloc<AddFoodToDiaryEvent, AddFoodToDiaryState> 
 
   void _addFoodEntryToDiary(AddFoodEntryToDiary event, Emitter<AddFoodToDiaryState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    // await diaryRepository.addStrengthEntryToUserDiary(event.userId, event.newEntry, accessToken!);
+    await diaryRepository.addFoodEntryToUserDiary(event.userId, event.newEntry, accessToken!);
     emit(const FoodDiaryEntryAdded());
   }
 

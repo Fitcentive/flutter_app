@@ -23,16 +23,22 @@ class DetailedFoodView extends StatefulWidget {
 
   final PublicUserProfile currentUserProfile;
   final FoodSearchResult foodSearchResult;
+  final String mealEntry;
+  final DateTime selectedDayInQuestion;
 
   const DetailedFoodView({
     Key? key,
     required this.currentUserProfile,
     required this.foodSearchResult,
+    required this.mealEntry,
+    required this.selectedDayInQuestion,
   }): super(key: key);
 
   static Route route(
       PublicUserProfile currentUserProfile,
       FoodSearchResult foodSearchResult,
+      String mealEntry,
+      DateTime selectedDayInQuestion
       ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -41,6 +47,8 @@ class DetailedFoodView extends StatefulWidget {
         builder: (_) => DetailedFoodView.withBloc(
             currentUserProfile,
             foodSearchResult,
+            mealEntry,
+            selectedDayInQuestion,
         )
     );
   }
@@ -48,6 +56,8 @@ class DetailedFoodView extends StatefulWidget {
   static Widget withBloc(
       PublicUserProfile currentUserProfile,
       FoodSearchResult foodSearchResult,
+      String mealEntry,
+      DateTime selectedDayInQuestion,
       ) => MultiBlocProvider(
     providers: [
       BlocProvider<DetailedFoodBloc>(
@@ -60,6 +70,8 @@ class DetailedFoodView extends StatefulWidget {
     child: DetailedFoodView(
       currentUserProfile: currentUserProfile,
       foodSearchResult: foodSearchResult,
+      mealEntry: mealEntry,
+      selectedDayInQuestion: selectedDayInQuestion
     ),
   );
 
@@ -153,7 +165,12 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
           if (state is DetailedFoodDataFetched) {
             Navigator.push(
               context,
-              AddFoodToDiaryView.route(widget.currentUserProfile, state.result),
+              AddFoodToDiaryView.route(
+                  widget.currentUserProfile,
+                  state.result,
+                  widget.mealEntry,
+                  widget.selectedDayInQuestion
+              ),
             );
           }
         },
@@ -223,10 +240,6 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
             WidgetUtils.spacer(2.5),
             _showDetailedFoodInfo(state),
           ]),
-          // todo next
-          // 3. Design BE to store the required data in food diary
-          // 4. Update add to diary bloc to save data to BE
-          // 5. Fetch and display food info in diary home view
         ),
       ),
     );
