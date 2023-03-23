@@ -245,7 +245,6 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
     );
   }
 
-  // Shit is in state, might just have to show it nowHmm
   _showDetailedFoodInfo(DetailedFoodState state) {
     if (state is DetailedFoodDataFetched) {
       return Column(

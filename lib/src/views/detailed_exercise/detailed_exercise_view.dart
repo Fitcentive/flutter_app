@@ -19,18 +19,21 @@ class DetailedExerciseView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final ExerciseDefinition exerciseDefinition;
   final bool isCurrentExerciseDefinitionCardio;
+  final DateTime selectedDayInQuestion;
 
   const DetailedExerciseView({
     Key? key,
     required this.currentUserProfile,
     required this.exerciseDefinition,
-    required this.isCurrentExerciseDefinitionCardio
+    required this.isCurrentExerciseDefinitionCardio,
+    required this.selectedDayInQuestion
   }): super(key: key);
 
   static Route route(
       PublicUserProfile currentUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
+      DateTime selectedDayInQuestion
   ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -39,7 +42,8 @@ class DetailedExerciseView extends StatefulWidget {
         builder: (_) => DetailedExerciseView.withBloc(
             currentUserProfile,
             exerciseDefinition,
-            isCurrentExerciseDefinitionCardio
+            isCurrentExerciseDefinitionCardio,
+            selectedDayInQuestion
         )
     );
   }
@@ -48,6 +52,7 @@ class DetailedExerciseView extends StatefulWidget {
       PublicUserProfile currentUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
+      DateTime selectedDayInQuestion
   ) => MultiBlocProvider(
     providers: [
       BlocProvider<DetailedExerciseBloc>(
@@ -61,6 +66,7 @@ class DetailedExerciseView extends StatefulWidget {
         currentUserProfile: currentUserProfile,
         exerciseDefinition: exerciseDefinition,
         isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
+        selectedDayInQuestion: selectedDayInQuestion,
     ),
   );
 
@@ -134,7 +140,12 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
         onPressed: () async {
           Navigator.pushAndRemoveUntil(
               context,
-              AddExerciseToDiaryView.route(widget.currentUserProfile, widget.exerciseDefinition, widget.isCurrentExerciseDefinitionCardio),
+              AddExerciseToDiaryView.route(
+                  widget.currentUserProfile,
+                  widget.exerciseDefinition,
+                  widget.isCurrentExerciseDefinitionCardio,
+                  widget.selectedDayInQuestion
+              ),
                   (route) => true
           );
         },

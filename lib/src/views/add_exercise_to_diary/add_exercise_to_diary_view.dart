@@ -22,18 +22,21 @@ class AddExerciseToDiaryView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final ExerciseDefinition exerciseDefinition;
   final bool isCurrentExerciseDefinitionCardio;
+  final DateTime selectedDayInQuestion;
 
   const AddExerciseToDiaryView({
     Key? key,
     required this.currentUserProfile,
     required this.exerciseDefinition,
-    required this.isCurrentExerciseDefinitionCardio
+    required this.isCurrentExerciseDefinitionCardio,
+    required this.selectedDayInQuestion,
   }): super(key: key);
 
   static Route route(
       PublicUserProfile currentUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
+      DateTime selectedDayInQuestion,
       ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -42,7 +45,8 @@ class AddExerciseToDiaryView extends StatefulWidget {
         builder: (_) => AddExerciseToDiaryView.withBloc(
             currentUserProfile,
             exerciseDefinition,
-            isCurrentExerciseDefinitionCardio
+            isCurrentExerciseDefinitionCardio,
+            selectedDayInQuestion
         )
     );
   }
@@ -51,6 +55,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
       PublicUserProfile currentUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
+      DateTime selectedDayInQuestion,
       ) => MultiBlocProvider(
     providers: [
       BlocProvider<AddExerciseToDiaryBloc>(
@@ -64,6 +69,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
       currentUserProfile: currentUserProfile,
       exerciseDefinition: exerciseDefinition,
       isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
+      selectedDayInQuestion: selectedDayInQuestion
     ),
   );
 
@@ -94,6 +100,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
     super.initState();
 
     _addExerciseToDiaryBloc = BlocProvider.of<AddExerciseToDiaryBloc>(context);
+    selectedWorkoutDateTime = widget.selectedDayInQuestion;
   }
 
   @override

@@ -22,3 +22,51 @@ class FetchDiaryInfo extends DiaryEvent {
     diaryDate
   ];
 }
+
+class RemoveFoodDiaryEntryFromDiary extends DiaryEvent {
+  final String userId;
+  final String foodDiaryEntryId;
+
+  const RemoveFoodDiaryEntryFromDiary({
+    required this.userId,
+    required this.foodDiaryEntryId
+  });
+
+  @override
+  List<Object?> get props => [
+    userId,
+    foodDiaryEntryId
+  ];
+}
+
+class RemoveCardioDiaryEntryFromDiary extends DiaryEvent {
+  final String userId;
+  final String cardioDiaryEntryId;
+
+  const RemoveCardioDiaryEntryFromDiary({
+    required this.userId,
+    required this.cardioDiaryEntryId
+  });
+
+  @override
+  List<Object?> get props => [
+    userId,
+    cardioDiaryEntryId
+  ];
+}
+
+class RemoveStrengthDiaryEntryFromDiary extends DiaryEvent {
+  final String userId;
+  final String strengthDiaryEntryId;
+
+  const RemoveStrengthDiaryEntryFromDiary({
+    required this.userId,
+    required this.strengthDiaryEntryId
+  });
+
+  @override
+  List<Object?> get props => [
+    userId,
+    strengthDiaryEntryId
+  ];
+}

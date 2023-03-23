@@ -16,19 +16,24 @@ class ExerciseSearchView extends StatefulWidget {
   static const String routeName = "exercise/search";
 
   final PublicUserProfile currentUserProfile;
+  final DateTime selectedDayInQuestion; // The day for which a potential diary entry might be added
 
-  const ExerciseSearchView({Key? key, required this.currentUserProfile}): super(key: key);
+  const ExerciseSearchView({
+    Key? key,
+    required this.currentUserProfile,
+    required this.selectedDayInQuestion,
+  }): super(key: key);
 
-  static Route route(PublicUserProfile currentUserProfile) {
+  static Route route(PublicUserProfile currentUserProfile, DateTime selectedDayInQuestion) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
             name: routeName
         ),
-        builder: (_) => ExerciseSearchView.withBloc(currentUserProfile)
+        builder: (_) => ExerciseSearchView.withBloc(currentUserProfile, selectedDayInQuestion)
     );
   }
 
-  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
+  static Widget withBloc(PublicUserProfile currentUserProfile, DateTime selectedDayInQuestion) => MultiBlocProvider(
     providers: [
       BlocProvider<ExerciseSearchBloc>(
           create: (context) => ExerciseSearchBloc(
@@ -37,7 +42,10 @@ class ExerciseSearchView extends StatefulWidget {
           )
       ),
     ],
-    child: ExerciseSearchView(currentUserProfile: currentUserProfile),
+    child: ExerciseSearchView(
+      currentUserProfile: currentUserProfile,
+      selectedDayInQuestion: selectedDayInQuestion,
+    ),
   );
 
 
@@ -245,7 +253,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
         // Move to detailed exercise definition page from here
         Navigator.pushAndRemoveUntil(
             context,
-            DetailedExerciseView.route(widget.currentUserProfile, exerciseDefinition, isCardio),
+            DetailedExerciseView.route(widget.currentUserProfile, exerciseDefinition, isCardio, widget.selectedDayInQuestion),
                 (route) => true
         );
       },

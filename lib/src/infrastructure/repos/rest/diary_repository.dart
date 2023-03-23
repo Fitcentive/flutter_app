@@ -71,6 +71,24 @@ class DiaryRepository {
     }
   }
 
+  Future<void> deleteCardioEntryFromUserDiary(
+      String userId,
+      String cardioWorkoutDiaryEntryId,
+      String accessToken
+      ) async {
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/user/$userId/cardio/$cardioWorkoutDiaryEntryId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return;
+    } else {
+      throw Exception(
+          "deleteCardioEntryFromUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<StrengthDiaryEntry> addStrengthEntryToUserDiary(
       String userId,
       StrengthDiaryEntryCreate entry,
@@ -98,6 +116,24 @@ class DiaryRepository {
     else {
       throw Exception(
           "addStrengthEntryToUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> deleteStrengthEntryFromUserDiary(
+      String userId,
+      String strengthWorkoutDiaryEntryId,
+      String accessToken
+      ) async {
+    final response = await http.delete(
+        Uri.parse("$BASE_URL/user/$userId/strength/$strengthWorkoutDiaryEntryId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return;
+    } else {
+      throw Exception(
+          "deleteStrengthEntryFromUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -238,4 +274,23 @@ class DiaryRepository {
           "addFoodEntryToUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
+
+  Future<void> deleteFoodEntryFromUserDiary(
+      String userId,
+      String foodDiaryEntryId,
+      String accessToken
+      ) async {
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/user/$userId/food/$foodDiaryEntryId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return;
+    } else {
+      throw Exception(
+          "deleteFoodEntryFromUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
 }

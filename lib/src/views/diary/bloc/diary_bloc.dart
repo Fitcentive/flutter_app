@@ -15,7 +15,26 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
     required this.secureStorage,
   }) : super(const DiaryStateInitial()) {
     on<FetchDiaryInfo>(_fetchDiaryInfo);
+    on<RemoveFoodDiaryEntryFromDiary>(_removeFoodDiaryEntryFromDiary);
+    on<RemoveCardioDiaryEntryFromDiary>(_removeCardioDiaryEntryFromDiary);
+    on<RemoveStrengthDiaryEntryFromDiary>(_removeStrengthDiaryEntryFromDiary);
   }
+
+  void _removeFoodDiaryEntryFromDiary(RemoveFoodDiaryEntryFromDiary event, Emitter<DiaryState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await diaryRepository.deleteFoodEntryFromUserDiary(event.userId, event.foodDiaryEntryId, accessToken!);
+  }
+
+  void _removeCardioDiaryEntryFromDiary(RemoveCardioDiaryEntryFromDiary event, Emitter<DiaryState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await diaryRepository.deleteCardioEntryFromUserDiary(event.userId, event.cardioDiaryEntryId, accessToken!);
+  }
+
+  void _removeStrengthDiaryEntryFromDiary(RemoveStrengthDiaryEntryFromDiary event, Emitter<DiaryState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await diaryRepository.deleteStrengthEntryFromUserDiary(event.userId, event.strengthDiaryEntryId, accessToken!);
+  }
+
 
   void _fetchDiaryInfo(FetchDiaryInfo event, Emitter<DiaryState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
