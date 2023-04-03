@@ -50,35 +50,35 @@ class DefaultFirebaseOptions {
   //        find instructions in firebase console under android/ios app settings
   // Get API key from https://console.cloud.google.com/apis/credentials?authuser=1&orgonly=true&project=fitcentive-dev&supportedpurview=organizationId,folder,project
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBLKAtbshtA2-0_Ki_YQKsfUhUAGg0jmMk',
-    appId: '1:823597371065:web:aa8d8365aefaf5c1671568',
-    messagingSenderId: '823597371065',
-    projectId: 'fitcentive-dev',
-    authDomain: 'fitcentive-dev.firebaseapp.com',
-    databaseURL: 'https://fitcentive-dev.firebaseio.com',
-    storageBucket: 'fitcentive-dev.appspot.com',
-    measurementId: 'G-MZ4R425SMP',
+    apiKey: 'AIzaSyARqvT6yJ-P2imc8-595kH5nsVDEpdt-kE',
+    appId: '1:27981216008:android:9e823848112e98c5d954bd',
+    messagingSenderId: '27981216008',
+    projectId: 'fitcentive-dev-02',
+    authDomain: 'fitcentive-dev-02.firebaseapp.com',
+    databaseURL: 'https://fitcentive-dev-02.firebaseio.com',
+    storageBucket: 'fitcentive-dev-02.appspot.com',
+    measurementId: 'G-MZ4R425SMP', // Not used perhaps
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDT0w9ShI2Q-7G7ixF-JfBXGj8AcKnMDeE',
-    appId: '1:823597371065:android:cb6e6b9eae41aa5b671568',
-    messagingSenderId: '823597371065',
-    projectId: 'fitcentive-dev',
-    databaseURL: 'https://fitcentive-dev.firebaseio.com',
-    storageBucket: 'fitcentive-dev.appspot.com',
+    apiKey: 'AIzaSyARqvT6yJ-P2imc8-595kH5nsVDEpdt-kE',
+    appId: '1:27981216008:android:9e823848112e98c5d954bd',
+    messagingSenderId: '27981216008',
+    projectId: 'fitcentive-dev-02',
+    databaseURL: 'https://fitcentive-dev-02.firebaseio.com',
+    storageBucket: 'fitcentive-dev-02.appspot.com',
   );
 
   // Register APNS key in Firebase console project cloud messaging settings
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCmsVazElmVEZAzbnRpFQHR9dFdK7LMv80',
-    appId: '1:823597371065:ios:16b2b2e46a2456c4671568',
-    messagingSenderId: '823597371065',
-    projectId: 'fitcentive-dev',
-    databaseURL: 'https://fitcentive-dev.firebaseio.com',
-    storageBucket: 'fitcentive-dev.appspot.com',
-    androidClientId: '823597371065-t2lv74id6palhrnl105r2mp90fs6b06a.apps.googleusercontent.com',
-    iosClientId: '823597371065-t2lv74id6palhrnl105r2mp90fs6b06a.apps.googleusercontent.com',
+    apiKey: 'AIzaSyARqvT6yJ-P2imc8-595kH5nsVDEpdt-kE',
+    appId: '1:27981216008:android:9e823848112e98c5d954bd',
+    messagingSenderId: '27981216008',
+    projectId: 'fitcentive-dev-02',
+    databaseURL: 'https://fitcentive-dev-02.firebaseio.com',
+    storageBucket: 'fitcentive-dev-02.appspot.com',
+    androidClientId: '27981216008-lccq2unlfjg9n757rol6459gduefgu0q.apps.googleusercontent.com',
+    iosClientId: '27981216008-lccq2unlfjg9n757rol6459gduefgu0q.apps.googleusercontent.com',
     iosBundleId: 'io.fitcentive.flutterApp',
   );
 

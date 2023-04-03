@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: flutter-web-app
-          image: gcr.io/fitcentive-dev/flutter-web-app:1.0
+          image: gcr.io/fitcentive-dev-02/flutter-web-app:1.0
           imagePullPolicy: Always
           resources:
             requests:

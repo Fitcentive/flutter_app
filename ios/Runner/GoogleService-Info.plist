@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>823597371065-t2lv74id6palhrnl105r2mp90fs6b06a.apps.googleusercontent.com</string>
+	<string>27981216008-lccq2unlfjg9n757rol6459gduefgu0q.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.823597371065-t2lv74id6palhrnl105r2mp90fs6b06a</string>
+	<string>com.googleusercontent.apps.27981216008-lccq2unlfjg9n757rol6459gduefgu0q</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBZPkZvS7j-k2xNsYppdUKRjDOaJtQZR5I</string>
+	<string>AIzaSyDv8KsBwbGDojAgtvw7TotuoQBF8VfJUww</string>
 	<key>GCM_SENDER_ID</key>
-	<string>823597371065</string>
+	<string>27981216008</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>io.fitcentive.flutterApp</string>
 	<key>PROJECT_ID</key>
-	<string>fitcentive-dev</string>
+	<string>fitcentive-dev-02</string>
 	<key>STORAGE_BUCKET</key>
-	<string>fitcentive-dev.appspot.com</string>
+	<string>fitcentive-dev-02.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:823597371065:ios:16b2b2e46a2456c4671568</string>
+	<string>1:27981216008:ios:cf767bfdfaa1b085d954bd</string>
 </dict>
 </plist>

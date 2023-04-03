@@ -33,10 +33,19 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-      name: "dev-flutter-app",
-      options: DefaultFirebaseOptions.currentPlatform
-  );
+
+  if(kIsWeb){
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform
+    );
+  }
+  else{
+    await Firebase.initializeApp(
+        name: "dev-flutter-app",
+        options: DefaultFirebaseOptions.currentPlatform
+    );
+  }
+
   // await _initializeProxy();
   runApp(const App());
 }
