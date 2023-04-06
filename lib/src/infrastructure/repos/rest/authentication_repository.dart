@@ -105,7 +105,7 @@ class AuthenticationRepository {
       // Present the dialog to the user
       final result = await FlutterWebAuth.authenticate(
           url: url.toString(),
-          callbackUrlScheme: oidcProviderInfo.redirectUri,
+          callbackUrlScheme: OidcProviderInfo.REDIRECT_SCHEME,
           preferEphemeral: true,
       );
 
