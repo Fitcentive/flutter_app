@@ -72,7 +72,7 @@ class DefaultFirebaseOptions {
   // Register APNS key in Firebase console project cloud messaging settings
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyARqvT6yJ-P2imc8-595kH5nsVDEpdt-kE',
-    appId: '1:27981216008:android:9e823848112e98c5d954bd',
+    appId: '1:27981216008:ios:cf767bfdfaa1b085d954bd',
     messagingSenderId: '27981216008',
     projectId: 'fitcentive-dev-02',
     databaseURL: 'https://fitcentive-dev-02.firebaseio.com',

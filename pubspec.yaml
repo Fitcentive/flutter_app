@@ -77,7 +77,6 @@ dependencies:
   flutter_expandable_fab: ^1.7.0
   flutter_svg: ^2.0.4
   webview_flutter: ^4.0.6
-  flutter_inappwebview: ^5.7.2+3
   either_dart: ^0.3.0
 
 dev_dependencies:
