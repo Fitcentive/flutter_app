@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
@@ -63,7 +64,7 @@ class LoginFormState extends State<LoginForm> {
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: WidgetUtils.skipNulls([
           _emailInput(),
           const Padding(padding: EdgeInsets.all(12)),
           _passwordInput(),
@@ -83,7 +84,7 @@ class LoginFormState extends State<LoginForm> {
           _termsOfService(),
           WidgetUtils.spacer(5),
           _privacyPolicy(),
-        ],
+        ]),
       ),
     );
   }
@@ -150,19 +151,22 @@ class LoginFormState extends State<LoginForm> {
     );
   }
 
+  // Only return facebook login button for Mobile as web doesn't work
   _facebookLoginButton() {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: SignInButton(
-        DeviceUtils.isDarkMode(context) ? Buttons.FacebookNew : Buttons.Facebook,
-        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-        onPressed: () {
-          context
-              .read<AuthenticationBloc>()
-              .add(const SignInWithOidcEvent(provider: OidcProviderInfo.FACEBOOK_AUTH_PROVIDER));
-        },
-      ),
-    );
+    if (!kIsWeb) {
+      return Align(
+        alignment: Alignment.bottomCenter,
+        child: SignInButton(
+          DeviceUtils.isDarkMode(context) ? Buttons.FacebookNew : Buttons.Facebook,
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          onPressed: () {
+            context
+                .read<AuthenticationBloc>()
+                .add(const SignInWithOidcEvent(provider: OidcProviderInfo.FACEBOOK_AUTH_PROVIDER));
+          },
+        ),
+      );
+    }
   }
 
   _emailInput() {
