@@ -13,7 +13,7 @@ import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_b
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
+import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -343,11 +343,12 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
 
   _renderParticipantsView(MeetupModified state) {
     if (state.participantUserProfiles.isNotEmpty) {
-      return MeetupParticipantsList(
+      return ParticipantsList(
           participantUserProfiles: state.participantUserProfiles,
           onParticipantRemoved: _onParticipantRemoved,
           onParticipantTapped: null,
           participantDecisions: [],
+          shouldShowAvailabilityIcon: true,
       );
     }
     else {

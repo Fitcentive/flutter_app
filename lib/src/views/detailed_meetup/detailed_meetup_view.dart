@@ -22,7 +22,7 @@ import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_state
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/meetup_comments_list.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
+import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
@@ -293,13 +293,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   _participantSelectView(DetailedMeetupDataFetched state) {
-    return SelectFromFriendsView.withBloc(
+    return SelectFromUsersView.withBloc(
         key: selectFromFriendsViewStateGlobalKey,
         currentUserId: widget.currentUserProfile.userId,
         currentUserProfile: widget.currentUserProfile,
         addSelectedUserIdToParticipantsCallback: _addSelectedUserIdToParticipantsCallback,
         removeSelectedUserFromToParticipantsCallback: _removeSelectedUserIdToParticipantsCallback,
-        alreadySelectedUserProfiles: selectedMeetupParticipantUserProfiles
+        alreadySelectedUserProfiles: selectedMeetupParticipantUserProfiles,
+        isRestrictedOnlyToFriends: true,
     );
   }
 
@@ -669,11 +670,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _renderParticipantsView() {
     if (selectedMeetupParticipants.isNotEmpty) {
-      return MeetupParticipantsList(
+      return ParticipantsList(
         participantUserProfiles: selectedMeetupParticipantUserProfiles,
         onParticipantRemoved: _onParticipantRemoved,
         onParticipantTapped: _onParticipantTapped,
         participantDecisions: selectedMeetupParticipantDecisions,
+        shouldShowAvailabilityIcon: true,
       );
     }
     else {

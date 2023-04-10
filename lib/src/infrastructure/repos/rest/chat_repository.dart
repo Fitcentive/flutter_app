@@ -29,7 +29,29 @@ class ChatRepository {
     }
   }
 
-  Future<ChatRoom> getChatRoomForConversation(String targetUserId, String accessToken) async {
+  Future<ChatRoom> getChatRoomForGroupConversation(List<String> targetUserIds, String accessToken) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/get-chat-room"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+        body: json.encode({
+          "target_users": targetUserIds
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final chatRoom = ChatRoom.fromJson(jsonResponse);
+      return chatRoom;
+    } else {
+      throw Exception(
+          "getChatRoomForGroupConversation: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<ChatRoom> getChatRoomForPrivateConversation(String targetUserId, String accessToken) async {
     final response = await http.post(
         Uri.parse("$BASE_URL/get-chat-room"),
         headers: {
@@ -47,7 +69,29 @@ class ChatRepository {
       return chatRoom;
     } else {
       throw Exception(
-          "getChatRoomForConversation: Received bad response with status: ${response.statusCode} and body ${response.body}");
+          "getChatRoomForPrivateConversation: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<ChatRoom>> getChatRoomDefinitions(List<String> roomIds, String accessToken) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/get-chat-rooms"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+        body: json.encode({
+          "room_ids": roomIds
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final chatRooms = jsonResponse.map((e) => ChatRoom.fromJson(e)).toList();
+      return chatRooms;
+    } else {
+      throw Exception(
+          "getChatRoomDefinitions: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

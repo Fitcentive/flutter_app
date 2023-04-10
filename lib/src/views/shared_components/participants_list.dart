@@ -3,35 +3,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 
-typedef MeetupParticipantRemovedCallback = void Function(PublicUserProfile userProfile);
-typedef MeetupParticipantTappedCallback = void Function(PublicUserProfile userProfile, bool isSelected);
+typedef ParticipantRemovedCallback = void Function(PublicUserProfile userProfile);
+typedef ParticipantTappedCallback = void Function(PublicUserProfile userProfile, bool isSelected);
 
-class MeetupParticipantsList extends StatefulWidget {
+class ParticipantsList extends StatefulWidget {
   final List<PublicUserProfile> participantUserProfiles;
   final List<MeetupDecision> participantDecisions;
+  final bool shouldShowAvailabilityIcon;
 
-  final MeetupParticipantRemovedCallback? onParticipantRemoved;
-  final MeetupParticipantTappedCallback? onParticipantTapped;
+  final ParticipantRemovedCallback? onParticipantRemoved;
+  final ParticipantTappedCallback? onParticipantTapped;
 
   final double circleRadius;
 
-  const MeetupParticipantsList({
+  const ParticipantsList({
     super.key,
     required this.participantUserProfiles,
     required this.participantDecisions,
     required this.onParticipantRemoved,
     required this.onParticipantTapped,
+    required this.shouldShowAvailabilityIcon,
     this.circleRadius = 60,
   });
 
   @override
   State createState() {
-    return MeetupParticipantsListState();
+    return ParticipantsListState();
   }
 }
 
-class MeetupParticipantsListState extends State<MeetupParticipantsList> {
+class ParticipantsListState extends State<ParticipantsList> {
 
   Map<String, bool> isParticipantSelectedMap = {};
 
@@ -60,7 +63,7 @@ class MeetupParticipantsListState extends State<MeetupParticipantsList> {
           isParticipantSelectedMap[userProfile.userId] ?? false ? Colors.teal : Colors.red
       ),
       child: Stack(
-        children: [
+        children: WidgetUtils.skipNulls([
           GestureDetector(
             onTap: () {
               if (widget.onParticipantTapped != null) {
@@ -109,17 +112,23 @@ class MeetupParticipantsListState extends State<MeetupParticipantsList> {
                 )
             ),
           ),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: CircleAvatar(
-                radius: widget.circleRadius / 6,
-                backgroundColor: _generateBackgroundColour(userProfile),
-                child: _generateSubscriptIcon(userProfile)
-            ),
-          )
-        ],
+          _generateAvailabilitySubscriptIconIfNeeded(userProfile),
+        ]),
       ),
     );
+  }
+
+  _generateAvailabilitySubscriptIconIfNeeded(PublicUserProfile userProfile) {
+    if (widget.shouldShowAvailabilityIcon) {
+      return Align(
+        alignment: Alignment.bottomRight,
+        child: CircleAvatar(
+            radius: widget.circleRadius / 6,
+            backgroundColor: _generateBackgroundColour(userProfile),
+            child: _generateSubscriptIcon(userProfile)
+        ),
+      );
+    }
   }
 
   _generateSubscriptIcon(PublicUserProfile userProfile) {

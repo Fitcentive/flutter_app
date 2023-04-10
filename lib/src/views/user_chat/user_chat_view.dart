@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -23,12 +22,12 @@ class UserChatView extends StatefulWidget {
 
   final String currentRoomId;
   final PublicUserProfile currentUserProfile;
-  final PublicUserProfile otherUserProfile;
+  final List<PublicUserProfile> otherUserProfiles;
 
   static Route route({
     required String currentRoomId,
     required PublicUserProfile currentUserProfile,
-    required PublicUserProfile otherUserProfile,
+    required List<PublicUserProfile> otherUserProfiles,
   }) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -44,7 +43,7 @@ class UserChatView extends StatefulWidget {
           ],
           child: UserChatView(
               currentRoomId: currentRoomId,
-              otherUserProfile: otherUserProfile,
+              otherUserProfiles: otherUserProfiles,
               currentUserProfile: currentUserProfile
           ),
         )
@@ -55,7 +54,7 @@ class UserChatView extends StatefulWidget {
     Key? key,
     required this.currentRoomId,
     required this.currentUserProfile,
-    required this.otherUserProfile
+    required this.otherUserProfiles
   }): super(key: key);
 
 
@@ -72,7 +71,7 @@ class UserChatViewState extends State<UserChatView> {
   final ScrollController _scrollController = ScrollController();
 
   late final types.User _currentUser;
-  late final types.User _otherUser;
+  late final List<types.User> _otherUsers;
 
   bool isDraftMessageEmpty = true;
   bool isRequestingMoreData = false;
@@ -83,6 +82,8 @@ class UserChatViewState extends State<UserChatView> {
   List<types.Message> _newMessages = [];
 
   late final UserChatBloc _userChatBloc;
+
+  String chatTitle = "";
 
   @override
   void dispose() {
@@ -100,12 +101,12 @@ class UserChatViewState extends State<UserChatView> {
       lastName: widget.currentUserProfile.lastName,
       imageUrl: ImageUtils.getFullImageUrl(widget.currentUserProfile.photoUrl, 100, 100),
     );
-    _otherUser = types.User(
-      id: widget.otherUserProfile.userId,
-      firstName: widget.otherUserProfile.firstName,
-      lastName: widget.otherUserProfile.lastName,
-      imageUrl: ImageUtils.getFullImageUrl(widget.otherUserProfile.photoUrl, 100, 100),
-    );
+    _otherUsers = widget.otherUserProfiles.map((e) => types.User(
+      id: e.userId,
+      firstName: e.firstName,
+      lastName: e.lastName,
+      imageUrl: ImageUtils.getFullImageUrl(e.photoUrl, 100, 100),
+    )).toList();
 
     _userChatBloc = BlocProvider.of<UserChatBloc>(context);
     _userChatBloc.add(ConnectWebsocketAndFetchHistoricalChats(
@@ -113,6 +114,74 @@ class UserChatViewState extends State<UserChatView> {
         currentUserId: widget.currentUserProfile.userId
     ));
 
+  }
+
+  _generateChatPicture() {
+    if (widget.otherUserProfiles.length > 1) {
+      return Container(
+        width: 40,
+        height: 40,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: ImageUtils.getUserProfileImage(widget.otherUserProfiles.first, 100, 100),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: ImageUtils.getUserProfileImage(widget.otherUserProfiles[1], 100, 100),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    else {
+      return CircleAvatar(
+        radius: 20,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(widget.otherUserProfiles.first, 100, 100),
+          ),
+        ),
+      );
+    }
+  }
+
+  _generateChatTitle(String roomName) {
+    setState(() {
+      if (widget.otherUserProfiles.length > 1) {
+        chatTitle = roomName;
+      }
+      else {
+        chatTitle = StringUtils.getUserNameFromUserProfile(widget.otherUserProfiles.first);
+      }
+    });
+  }
+
+  _getChatMessageAuthor(String senderId) {
+    if (senderId == widget.currentUserProfile.userId) {
+      return _currentUser;
+    }
+    else {
+      return _otherUsers.firstWhere((element) => widget.otherUserProfiles.firstWhere((element) => element.userId == senderId).userId == element.id);
+    }
   }
 
   @override
@@ -125,78 +194,75 @@ class UserChatViewState extends State<UserChatView> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 20,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: ImageUtils.getUserProfileImage(widget.otherUserProfile, 100, 100),
-                ),
-              ),
-            ),
+            _generateChatPicture(),
             WidgetUtils.spacer(10),
             Expanded(
               child: Text(
-                StringUtils.getUserNameFromUserProfile(widget.otherUserProfile),
+                chatTitle,
                 style: const TextStyle(color: Colors.teal),
               ),
-            )
+            ),
           ],
         ),
       ),
-      body: BlocBuilder<UserChatBloc, UserChatState>(
-        builder: (context, state) {
+      body: BlocListener<UserChatBloc, UserChatState>(
+        listener: (context, state) {
           if (state is HistoricalChatsFetched) {
-            isRequestingMoreData = false;
-            _previousMessages = List<types.Message>.from(state.messages.map((msg) => types.TextMessage(
-              author: msg.senderId == widget.currentUserProfile.userId ? _currentUser : _otherUser,
-              createdAt: msg.createdAt.millisecondsSinceEpoch,
-              id: msg.id,
-              text: msg.text,
-            )));
-
-            // Cannot simply add after, need to sort
-            for (var msg in _newMessages.reversed) {
-              _previousMessages.insert(0, msg);
-            }
-
-            // todo -  this could be a problem at scale
-            _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-
-            return Scrollbar(
-              controller: _scrollController,
-              child: Chat(
-                scrollController: _scrollController,
-                messages: _previousMessages,
-                onTextChanged: _handleTextChanged,
-                onAttachmentPressed: _handleAttachmentPressed,
-                onMessageTap: _handleMessageTap,
-                onPreviewDataFetched: _handlePreviewDataFetched,
-                onSendPressed: _handleSendPressed,
-                showUserAvatars: true,
-                showUserNames: true,
-                user: _currentUser,
-                onEndReached: () async {
-                  if (!isRequestingMoreData) {
-                    isRequestingMoreData = true;
-                    _userChatBloc.add(FetchMoreChatData(
-                        roomId: widget.currentRoomId,
-                        currentUserId: widget.currentUserProfile.userId,
-                        sentBefore: _previousMessages.last.createdAt!
-                    ));
-                  }
-                },
-              ),
-            );
-          }
-          else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            _generateChatTitle(state.currentChatRoom.name);
           }
         },
+        child: BlocBuilder<UserChatBloc, UserChatState>(
+          builder: (context, state) {
+            if (state is HistoricalChatsFetched) {
+              isRequestingMoreData = false;
+              _previousMessages = List<types.Message>.from(state.messages.map((msg) => types.TextMessage(
+                author: _getChatMessageAuthor(msg.senderId),
+                createdAt: msg.createdAt.millisecondsSinceEpoch,
+                id: msg.id,
+                text: msg.text,
+              )));
+
+              // Cannot simply add after, need to sort
+              for (var msg in _newMessages.reversed) {
+                _previousMessages.insert(0, msg);
+              }
+
+              // todo -  this could be a problem at scale
+              _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+
+              return Scrollbar(
+                controller: _scrollController,
+                child: Chat(
+                  scrollController: _scrollController,
+                  messages: _previousMessages,
+                  onTextChanged: _handleTextChanged,
+                  onAttachmentPressed: _handleAttachmentPressed,
+                  onMessageTap: _handleMessageTap,
+                  onPreviewDataFetched: _handlePreviewDataFetched,
+                  onSendPressed: _handleSendPressed,
+                  showUserAvatars: true,
+                  showUserNames: true,
+                  user: _currentUser,
+                  onEndReached: () async {
+                    if (!isRequestingMoreData) {
+                      isRequestingMoreData = true;
+                      _userChatBloc.add(FetchMoreChatData(
+                          roomId: widget.currentRoomId,
+                          currentUserId: widget.currentUserProfile.userId,
+                          sentBefore: _previousMessages.last.createdAt!
+                      ));
+                    }
+                  },
+                ),
+              );
+            }
+            else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
       )
     );
   }

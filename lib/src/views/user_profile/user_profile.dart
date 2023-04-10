@@ -99,7 +99,7 @@ class UserProfileViewState extends State<UserProfileView> {
         UserChatView.route(
             currentRoomId: roomId,
             currentUserProfile: widget.currentUserProfile,
-            otherUserProfile: otherUserProfile
+            otherUserProfiles: [otherUserProfile]
         ),
             (route) => true
     );

@@ -1,7 +1,7 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
-import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_event.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,75 +18,97 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
     required this.userRepository,
     required this.secureStorage
   }): super(const ChatSearchStateInitial()) {
-    on<ChatSearchQueryChanged>(_searchQueryChanged);
-    on<FetchMoreResultsForSameQuery>(_fetchMoreResultsForSameQuery);
     on<GetChatRoom>(_getChatRoom);
+    on<ChatParticipantsChanged>(_chatParticipantsChanged);
+  }
+
+  void _chatParticipantsChanged(ChatParticipantsChanged event, Emitter<ChatSearchState> emit) async {
+    final currentState = state;
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+
+    if (currentState is ChatSearchStateInitial) {
+      final List<PublicUserProfile> userProfiles;
+      if (event.participantUserIds.isNotEmpty) {
+        userProfiles = await userRepository.getPublicUserProfiles(event.participantUserIds, accessToken!);
+      }
+      else {
+        userProfiles = [];
+      }
+
+      emit(ChatParticipantsModified(
+        currentUserProfile: event.currentUserProfile,
+        participantUserProfiles: userProfiles,
+      ));
+    }
+    else if (currentState is ChatParticipantsModified) {
+      if (event.participantUserIds.isNotEmpty) {
+        bool doProfilesAlreadyExistForAll = event
+            .participantUserIds
+            .map((element) => currentState.participantUserProfiles.map((e) => e.userId).contains(element))
+            .reduce((value, element) => value && element);
+
+        if (doProfilesAlreadyExistForAll) {
+          emit(ChatParticipantsModified(
+            currentUserProfile: event.currentUserProfile,
+            participantUserProfiles: currentState.participantUserProfiles,
+          ));
+        }
+        else {
+          final additionalUserIdsToGetProfilesFor = event
+              .participantUserIds
+              .where((meetupParticipantId) => !currentState.participantUserProfiles.map((e) => e.userId).contains(meetupParticipantId))
+              .toList();
+
+          final additionalUserProfiles =
+            await userRepository.getPublicUserProfiles(additionalUserIdsToGetProfilesFor, accessToken!);
+
+          emit(ChatParticipantsModified(
+              currentUserProfile: event.currentUserProfile,
+              participantUserProfiles: {...currentState.participantUserProfiles, ...additionalUserProfiles}.toList(),
+          ));
+        }
+      }
+      else {
+        emit(ChatParticipantsModified(
+          currentUserProfile: event.currentUserProfile,
+          participantUserProfiles: const [],
+        ));
+      }
+
+
+    }
   }
 
   void _getChatRoom(GetChatRoom event, Emitter<ChatSearchState> emit) async {
     final currentState = state;
-    if (currentState is ChatSearchResultsLoaded) {
+    if (currentState is ChatParticipantsModified) {
       try {
         final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-        final chatRoom = await chatRepository.getChatRoomForConversation(event.targetUserProfile.userId, accessToken!);
 
-        emit(GoToUserChatView(roomId: chatRoom.id, targetUserProfile: event.targetUserProfile));
+        final chatRoom;
+        if (event.targetUserProfiles.isEmpty) {
+          // Throw snackbar error over here
+        }
+        if (event.targetUserProfiles.length == 1) {
+          chatRoom = await chatRepository.getChatRoomForPrivateConversation(event.targetUserProfiles.single.userId, accessToken!);
+        }
+        else {
+          chatRoom = await chatRepository.getChatRoomForGroupConversation(event.targetUserProfiles.map((e) => e.userId).toList(), accessToken!);
+        }
+
+        emit(GoToUserChatView(roomId: chatRoom.id, targetUserProfiles: event.targetUserProfiles));
         emit(
-            ChatSearchResultsLoaded(
-                query: currentState.query,
-                userData: currentState.userData,
-                doesNextPageExist: currentState.doesNextPageExist
+            ChatParticipantsModified(
+                currentUserProfile: currentState.currentUserProfile,
+                participantUserProfiles: currentState.participantUserProfiles
             )
         );
       } catch (ex) {
         emit(const TargetUserChatNotEnabled());
         emit(
-            ChatSearchResultsLoaded(
-                query: currentState.query,
-                userData: currentState.userData,
-                doesNextPageExist: currentState.doesNextPageExist
-            )
-        );
-      }
-    }
-  }
-
-  void _fetchMoreResultsForSameQuery(FetchMoreResultsForSameQuery event, Emitter<ChatSearchState> emit) async {
-    final currentState = state;
-    if (currentState is ChatSearchResultsLoaded && currentState.doesNextPageExist){
-      // We are lazy loading in this case
-      try {
-        final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-        final results = await userRepository.searchForUsers(event.query, accessToken!, event.limit, event.offset);
-        final doesNextPageExist = results.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
-        final completeResults = [...currentState.userData, ...results];
-        emit(ChatSearchResultsLoaded(query: event.query, userData: completeResults, doesNextPageExist: doesNextPageExist));
-      } catch (ex) {
-        emit(ChatSearchResultsError(query: event.query, error: ex.toString()));
-      }
-    }
-  }
-
-  void _searchQueryChanged(ChatSearchQueryChanged event, Emitter<ChatSearchState> emit) async {
-    if (event.query.trim().isNotEmpty) {
-      emit(ChatSearchResultsLoading(query: event.query));
-      try {
-        final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-        final results = await userRepository.searchForUsers(event.query.trim(), accessToken!, event.limit, event.offset);
-        final doesNextPageExist = results.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
-        emit(ChatSearchResultsLoaded(query: event.query, userData: results, doesNextPageExist: doesNextPageExist ));
-      } catch (ex) {
-        emit(ChatSearchResultsError(query: event.query, error: ex.toString()));
-      }
-    }
-    else {
-      final currentState = state;
-      if (currentState is ChatSearchResultsLoaded) {
-        emit(
-            ChatSearchResultsLoaded(
-                query: "",
-                userData: currentState.userData,
-                doesNextPageExist: currentState.doesNextPageExist
+            ChatParticipantsModified(
+                currentUserProfile: currentState.currentUserProfile,
+                participantUserProfiles: currentState.participantUserProfiles
             )
         );
       }

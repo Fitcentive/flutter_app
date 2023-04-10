@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -14,22 +15,24 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 typedef UpdateSelectedUserIdCallback = void Function(PublicUserProfile userProfile);
 
-GlobalKey<SelectFromFriendsViewState> selectFromFriendsViewStateGlobalKey = GlobalKey();
+GlobalKey<SelectFromUsersViewState> selectFromFriendsViewStateGlobalKey = GlobalKey();
 
-class SelectFromFriendsView extends StatefulWidget {
+class SelectFromUsersView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final List<PublicUserProfile> alreadySelectedUserProfiles;
+  final bool isRestrictedOnlyToFriends;
 
 
   final UpdateSelectedUserIdCallback addSelectedUserIdToParticipantsCallback;
   final UpdateSelectedUserIdCallback removeSelectedUserFromToParticipantsCallback;
 
-  const SelectFromFriendsView({
+  const SelectFromUsersView({
     Key? key,
     required this.currentUserProfile,
     required this.addSelectedUserIdToParticipantsCallback,
     required this.removeSelectedUserFromToParticipantsCallback,
     required this.alreadySelectedUserProfiles,
+    required this.isRestrictedOnlyToFriends,
   }): super(key: key);
 
   static Widget withBloc({
@@ -40,32 +43,35 @@ class SelectFromFriendsView extends StatefulWidget {
     required UpdateSelectedUserIdCallback addSelectedUserIdToParticipantsCallback,
     required UpdateSelectedUserIdCallback removeSelectedUserFromToParticipantsCallback,
     required List<PublicUserProfile> alreadySelectedUserProfiles,
+    required bool isRestrictedOnlyToFriends,
   }) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<SelectFromFriendsBloc>(
             create: (context) => SelectFromFriendsBloc(
+              userRepository: RepositoryProvider.of<UserRepository>(context),
               socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
               secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
             )),
       ],
-      child: SelectFromFriendsView(
+      child: SelectFromUsersView(
           key: key,
           currentUserProfile: currentUserProfile,
           addSelectedUserIdToParticipantsCallback: addSelectedUserIdToParticipantsCallback,
           removeSelectedUserFromToParticipantsCallback: removeSelectedUserFromToParticipantsCallback,
-          alreadySelectedUserProfiles: alreadySelectedUserProfiles
+          alreadySelectedUserProfiles: alreadySelectedUserProfiles,
+          isRestrictedOnlyToFriends: isRestrictedOnlyToFriends,
         ),
     );
   }
 
   @override
   State createState() {
-    return SelectFromFriendsViewState();
+    return SelectFromUsersViewState();
   }
 }
 
-class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
+class SelectFromUsersViewState extends State<SelectFromUsersView> {
   static const double _scrollThreshold = 200.0;
 
   late final SelectFromFriendsBloc _selectFromFriendsBloc;
@@ -162,9 +168,16 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
     if (state is FriendsDataLoaded) {
       isDataBeingRequested = false;
       if (state.userProfiles.isEmpty) {
-        return const Center(
-          child: Text("No friends here... get started by discovering people!"),
-        );
+        if (widget.isRestrictedOnlyToFriends) {
+          return const Center(
+            child: Text("No friends here... get started by discovering people!"),
+          );
+        }
+        else {
+          return const Center(
+            child: Text("No results found..."),
+          );
+        }
       }
       else {
         return Scrollbar(
@@ -285,6 +298,7 @@ class SelectFromFriendsViewState extends State<SelectFromFriendsView> {
                 query: text,
                 limit: ConstantUtils.DEFAULT_LIMIT,
                 offset: ConstantUtils.DEFAULT_OFFSET,
+                isRestrictedOnlyToFriends: widget.isRestrictedOnlyToFriends,
               ));
             }
             return List.empty();

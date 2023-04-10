@@ -30,6 +30,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     emit(const UserRoomsLoading());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final chatRooms = await chatRepository.getUserChatRooms(event.userId, accessToken!);
+    final chatRoomDefinitions = await chatRepository.getChatRoomDefinitions(chatRooms.map((e) => e.roomId).toList(), accessToken);
 
     final roomIds = chatRooms.map((e) => e.roomId).toList();
     final roomMostRecentMessages = await chatRepository.getRoomMostRecentMessage(roomIds, accessToken);
@@ -39,7 +40,9 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
         ChatRoomWithMostRecentMessage(
             roomId: e.roomId,
             userIds: e.userIds,
-            mostRecentMessage: roomIdMostRecentMessageMap[e.roomId] ?? ""
+            mostRecentMessage: roomIdMostRecentMessageMap[e.roomId] ?? "",
+            roomName: chatRoomDefinitions.firstWhere((element) => element.id == e.roomId).name,
+            isGroupChat: chatRoomDefinitions.firstWhere((element) => element.id == e.roomId).type == "group"
         )
     ).toList();
 

@@ -123,7 +123,7 @@ class PushNotificationSettings {
         UserChatView.route(
           currentRoomId: notificationMetadata.roomId,
           currentUserProfile: currentUserProfile!,
-          otherUserProfile: otherUserProfile!,
+          otherUserProfiles: [otherUserProfile!],
         ),
             (route) => true
     );

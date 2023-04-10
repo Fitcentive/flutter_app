@@ -4,7 +4,7 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
+import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -82,13 +82,14 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
   }
 
   _renderSearchUserSelectView(MeetupModified state) {
-    return SelectFromFriendsView.withBloc(
+    return SelectFromUsersView.withBloc(
         key: selectFromFriendsViewStateGlobalKey,
         currentUserId: widget.currentUserProfile.userId,
         currentUserProfile: widget.currentUserProfile,
         addSelectedUserIdToParticipantsCallback: _addSelectedUserIdToParticipantsCallback,
         removeSelectedUserFromToParticipantsCallback: _removeSelectedUserFromToParticipantsCallback,
         alreadySelectedUserProfiles: [],
+        isRestrictedOnlyToFriends: true,
     );
   }
 
@@ -119,11 +120,12 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
 
   _renderParticipantsView(MeetupModified state) {
     if (selectedMeetupParticipantProfiles.isNotEmpty) {
-      return MeetupParticipantsList(
+      return ParticipantsList(
           participantUserProfiles: selectedMeetupParticipantProfiles,
           onParticipantRemoved: _onParticipantRemoved,
           onParticipantTapped: null,
           participantDecisions: const [],
+          shouldShowAvailabilityIcon: true,
       );
     }
     else {

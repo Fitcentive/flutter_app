@@ -4,7 +4,7 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
+import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
@@ -159,11 +159,12 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
 
   _renderParticipantsView(MeetupModified state) {
     if (state.participantUserProfiles.isNotEmpty) {
-      return MeetupParticipantsList(
+      return ParticipantsList(
           participantUserProfiles: state.participantUserProfiles,
           onParticipantRemoved: _onParticipantRemoved,
           onParticipantTapped: _onParticipantTapped,
           participantDecisions: [],
+          shouldShowAvailabilityIcon: true,
       );
     }
     else {

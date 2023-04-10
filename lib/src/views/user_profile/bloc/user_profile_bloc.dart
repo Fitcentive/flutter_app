@@ -44,7 +44,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
 
         try {
           final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-          final chatRoom = await chatRepository.getChatRoomForConversation(event.targetUserId, accessToken!);
+          final chatRoom = await chatRepository.getChatRoomForPrivateConversation(event.targetUserId, accessToken!);
 
           emit(GoToUserChatView(roomId: chatRoom.id));
           emit(currentState.copyWith(

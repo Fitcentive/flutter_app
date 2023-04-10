@@ -40,29 +40,16 @@ class FetchFriendsByQueryRequested extends SelectFromFriendsEvent {
   final String query;
   final int limit;
   final int offset;
+  final bool isRestrictedOnlyToFriends;
 
   const FetchFriendsByQueryRequested({
     required this.userId,
     required this.query,
     required this.limit,
     required this.offset,
+    required this.isRestrictedOnlyToFriends,
   });
 
   @override
-  List<Object> get props => [userId, query, limit, offset];
+  List<Object> get props => [userId, query, limit, offset, isRestrictedOnlyToFriends];
 }
-
-// class ResetBackToAllUserFriends extends SelectFromFriendsEvent {
-//   final String userId;
-//   final List<PublicUserProfile> previouslyFetchedFriends;
-//   final bool doesPreviouslyFetchedNextPageExist;
-//
-//   const ResetBackToAllUserFriends({
-//     required this.userId,
-//     required this.previouslyFetchedFriends,
-//     required this.doesPreviouslyFetchedNextPageExist
-//   });
-//
-//   @override
-//   List<Object> get props => [userId, previouslyFetchedFriends, doesPreviouslyFetchedNextPageExist];
-// }

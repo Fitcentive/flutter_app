@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
@@ -125,17 +126,20 @@ class ChatHomeViewState extends State<ChatHomeView> {
             itemCount: state.rooms.length,
             itemBuilder: (context, index) {
               final currentChatRoom = state.rooms[index];
-              final otherUserInChatRoom = currentChatRoom
+              final otherUserIdsInChatRoom = currentChatRoom
                   .userIds
-                  .firstWhere(
-                      (element) => element != widget.currentUserProfile.userId,
-                  orElse: () => widget.currentUserProfile.userId
-              );
-              final otherUserProfile = state.userIdProfileMap[otherUserInChatRoom];
+                  .where((element) => element != widget.currentUserProfile.userId)
+                  .toList();
+
+              final List<PublicUserProfile> otherUserProfiles = state
+                  .userIdProfileMap
+                  .entries
+                  .where((element) => otherUserIdsInChatRoom.contains(element.value.userId))
+                  .map((e) => e.value).toList();
 
               return ListTile(
                   title: Text(
-                    StringUtils.getUserNameFromUserProfile(otherUserProfile),
+                    currentChatRoom.isGroupChat ? currentChatRoom.roomName : StringUtils.getUserNameFromUserProfile(otherUserProfiles.first),
                     style: const TextStyle(
                         fontWeight: FontWeight.w600
                     ),
@@ -143,19 +147,12 @@ class ChatHomeViewState extends State<ChatHomeView> {
                   subtitle: Text(currentChatRoom.mostRecentMessage),
                   leading: GestureDetector(
                     onTap: () async {
-                      _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
+                      _openUserChatView(currentChatRoom, otherUserProfiles);
                     },
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: ImageUtils.getUserProfileImage(otherUserProfile, 100, 100),
-                      ),
-                    ),
+                    child: _generateChatPicture(currentChatRoom, widget.currentUserProfile.userId, otherUserIdsInChatRoom, state.userIdProfileMap),
                   ),
                   onTap: () {
-                    _openUserChatView(currentChatRoom.roomId, otherUserProfile!);
+                    _openUserChatView(currentChatRoom, otherUserProfiles);
                   }
               );
             }
@@ -164,13 +161,67 @@ class ChatHomeViewState extends State<ChatHomeView> {
     );
   }
 
-  _openUserChatView(String roomId, PublicUserProfile otherUserProfile) {
+  _generateChatPicture(
+      ChatRoomWithMostRecentMessage currentChatRoom,
+      String currentUserId,
+      List<String> otherUserIdsInChatRoom,
+      Map<String, PublicUserProfile> userIdProfileMap,
+  ) {
+    if (currentChatRoom.isGroupChat) {
+      final otherUserProfilesInThisChat =
+        userIdProfileMap.entries.where((element) => otherUserIdsInChatRoom.contains(element.key)).map((e) => e.value).toList();
+      // Group chat has minimum 3 people, HARD RESTRICTION!
+      return Container(
+        width: 50,
+        height: 50,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                width: 32.5,
+                height: 32.5,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: ImageUtils.getUserProfileImage(otherUserProfilesInThisChat.first, 100, 100),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Container(
+                width: 32.5,
+                height: 32.5,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: ImageUtils.getUserProfileImage(otherUserProfilesInThisChat[1], 100, 100),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    else {
+      final otherUserProfile = userIdProfileMap[otherUserIdsInChatRoom.first];
+      return Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          image: ImageUtils.getUserProfileImage(otherUserProfile, 100, 100),
+        ),
+      );
+    }
+  }
+
+  _openUserChatView(ChatRoomWithMostRecentMessage room, List<PublicUserProfile> otherUserProfiles) {
     Navigator.pushAndRemoveUntil(
         context,
         UserChatView.route(
-            currentRoomId: roomId,
+            currentRoomId: room.roomId,
             currentUserProfile: widget.currentUserProfile,
-            otherUserProfile: otherUserProfile
+            otherUserProfiles: otherUserProfiles
         ),
             (route) => true
     );

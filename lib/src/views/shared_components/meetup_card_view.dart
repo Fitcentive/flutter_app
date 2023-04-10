@@ -8,7 +8,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_participants_list.dart';
+import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:intl/intl.dart';
 
 class MeetupCardView extends StatelessWidget {
@@ -117,12 +117,13 @@ class MeetupCardView extends StatelessWidget {
       height: 200,
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
-        child: MeetupParticipantsList(
+        child: ParticipantsList(
           participantUserProfiles: userProfiles,
           onParticipantRemoved: null,
           onParticipantTapped: null,
           circleRadius: 45,
           participantDecisions: decisions,
+          shouldShowAvailabilityIcon: true,
         ),
       ),
     );

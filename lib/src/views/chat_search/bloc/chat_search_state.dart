@@ -16,48 +16,27 @@ class ChatSearchStateInitial extends ChatSearchState {
   List<Object> get props => [];
 }
 
-class ChatSearchResultsLoading extends ChatSearchState {
-  final String query;
+class GoToUserChatView extends ChatSearchState {
+  final String roomId;
+  final List<PublicUserProfile> targetUserProfiles;
 
-  const ChatSearchResultsLoading({required this.query});
+  const GoToUserChatView({required this.roomId, required this.targetUserProfiles});
 
   @override
-  List<Object> get props => [query];
+  List<Object?> get props => [roomId, targetUserProfiles];
 }
 
-class ChatSearchResultsLoaded extends ChatSearchState {
-  final String query;
-  final List<PublicUserProfile> userData;
-  final bool doesNextPageExist;
+class ChatParticipantsModified extends ChatSearchState {
+  final PublicUserProfile currentUserProfile;
+  final List<PublicUserProfile> participantUserProfiles;
 
-  const ChatSearchResultsLoaded({
-    required this.query,
-    required this.userData,
-    required this.doesNextPageExist,
+  const ChatParticipantsModified({
+    required this.currentUserProfile,
+    required this.participantUserProfiles,
   });
 
   @override
-  List<Object?> get props => [query, userData, doesNextPageExist];
-}
-
-class ChatSearchResultsError extends ChatSearchState {
-  final String query;
-  final String error;
-
-  const ChatSearchResultsError({required this.query, required this.error});
-
-  @override
-  List<Object> get props => [query, error];
-}
-
-class GoToUserChatView extends ChatSearchState {
-  final String roomId;
-  final PublicUserProfile targetUserProfile;
-
-  const GoToUserChatView({required this.roomId, required this.targetUserProfile});
-
-  @override
-  List<Object?> get props => [roomId, targetUserProfile];
+  List<Object?> get props => [currentUserProfile, participantUserProfiles];
 }
 
 class TargetUserChatNotEnabled extends ChatSearchState {

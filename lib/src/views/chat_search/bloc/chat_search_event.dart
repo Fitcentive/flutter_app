@@ -8,41 +8,24 @@ abstract class ChatSearchEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class ChatSearchQueryChanged extends ChatSearchEvent {
-  final String query;
-  final int limit;
-  final int offset;
+class ChatParticipantsChanged extends ChatSearchEvent {
+  final PublicUserProfile currentUserProfile;
+  final List<String> participantUserIds;
 
-  const ChatSearchQueryChanged({
-    required this.query,
-    required this.limit,
-    required this.offset,
+  const ChatParticipantsChanged({
+    required this.currentUserProfile,
+    required this.participantUserIds,
   });
 
   @override
-  List<Object?> get props => [query, limit, offset];
-}
-
-class FetchMoreResultsForSameQuery extends ChatSearchEvent {
-  final String query;
-  final int limit;
-  final int offset;
-
-  const FetchMoreResultsForSameQuery({
-    required this.query,
-    required this.limit,
-    required this.offset,
-  });
-
-  @override
-  List<Object?> get props => [query, limit, offset];
+  List<Object?> get props => [currentUserProfile, participantUserIds];
 }
 
 class GetChatRoom extends ChatSearchEvent {
-  final PublicUserProfile targetUserProfile;
+  final List<PublicUserProfile> targetUserProfiles;
 
-  const GetChatRoom({required this.targetUserProfile});
+  const GetChatRoom({required this.targetUserProfiles});
 
   @override
-  List<Object> get props => [targetUserProfile];
+  List<Object> get props => [targetUserProfiles];
 }

@@ -1,5 +1,7 @@
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/bloc/select_from_friends_event.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/bloc/select_from_friends_state.dart';
@@ -7,10 +9,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SelectFromFriendsBloc extends Bloc<SelectFromFriendsEvent, SelectFromFriendsState> {
+  final UserRepository userRepository;
   final SocialMediaRepository socialMediaRepository;
   final FlutterSecureStorage secureStorage;
 
   SelectFromFriendsBloc({
+    required this.userRepository,
     required this.socialMediaRepository,
     required this.secureStorage
   }): super(const SelectFromFriendsStateInitial()) {
@@ -36,8 +40,14 @@ class SelectFromFriendsBloc extends Bloc<SelectFromFriendsEvent, SelectFromFrien
     if (currentState is FriendsDataLoaded) {
       // emit(FriendsDataLoading(userId: event.userId));
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-      final searchResults =
-        await socialMediaRepository.searchUserFriends(event.userId, event.query, accessToken!, event.limit, event.offset);
+      final List<PublicUserProfile> searchResults;
+      if (event.isRestrictedOnlyToFriends) {
+        searchResults = await socialMediaRepository.searchUserFriends(event.userId, event.query, accessToken!, event.limit, event.offset);
+      }
+      else {
+        searchResults = await userRepository.searchForUsers(event.query, accessToken!, event.limit, event.offset);
+      }
+
       final doesNextPageExist = searchResults.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
       emit(
           FriendsDataLoaded(

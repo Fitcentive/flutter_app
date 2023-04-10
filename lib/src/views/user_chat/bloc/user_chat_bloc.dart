@@ -127,7 +127,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
       emit(HistoricalChatsFetched(
           roomId: event.roomId,
           messages: completeMessages,
-          doesNextPageExist: doesNextPageExist
+          doesNextPageExist: doesNextPageExist,
+          currentChatRoom: currentState.currentChatRoom,
       ));
     }
   }
@@ -143,11 +144,13 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         .map((chatMessage) => chatMessage.copyWithLocalTime())
         .toList();
     final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
+    final currentChatRoom = (await chatRepository.getChatRoomDefinitions([event.roomId], accessToken)).first;
 
     emit(HistoricalChatsFetched(
         roomId: event.roomId,
         messages: chatMessages,
-        doesNextPageExist: doesNextPageExist
+        doesNextPageExist: doesNextPageExist,
+        currentChatRoom: currentChatRoom,
     ));
   }
 
@@ -210,6 +213,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           roomId: currentState.roomId,
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
+          currentChatRoom: currentState.currentChatRoom
       ));
     }
   }
@@ -236,6 +240,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           roomId: currentState.roomId,
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
+          currentChatRoom: currentState.currentChatRoom
       ));
     }
   }
@@ -250,6 +255,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           roomId: currentState.roomId,
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
+          currentChatRoom: currentState.currentChatRoom
       ));
     }
   }
