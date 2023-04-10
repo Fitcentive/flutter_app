@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/websocket/shout_payload.dart';
@@ -18,6 +19,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
+  final UserRepository userRepository;
   final ChatRepository chatRepository;
   final FlutterSecureStorage secureStorage;
   late final WebSocketChannel _chatRoomChannel;
@@ -28,6 +30,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   Timer? _heartbeatTimer;
 
   UserChatBloc({
+    required this.userRepository,
     required this.chatRepository,
     required this.secureStorage,
   }) : super(const UserChatStateInitial()) {
@@ -129,6 +132,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           messages: completeMessages,
           doesNextPageExist: doesNextPageExist,
           currentChatRoom: currentState.currentChatRoom,
+          userProfiles: currentState.userProfiles,
       ));
     }
   }
@@ -144,13 +148,18 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         .map((chatMessage) => chatMessage.copyWithLocalTime())
         .toList();
     final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
+
+    // We also need to fetch users in chat room again because we cant be too sure
     final currentChatRoom = (await chatRepository.getChatRoomDefinitions([event.roomId], accessToken)).first;
+    final chatRoomsWithUser = await chatRepository.getUsersForRoom(event.roomId, accessToken);
+    final publicUserProfiles = await userRepository.getPublicUserProfiles(chatRoomsWithUser.userIds, accessToken);
 
     emit(HistoricalChatsFetched(
         roomId: event.roomId,
         messages: chatMessages,
         doesNextPageExist: doesNextPageExist,
         currentChatRoom: currentChatRoom,
+        userProfiles: publicUserProfiles,
     ));
   }
 
@@ -213,7 +222,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           roomId: currentState.roomId,
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
-          currentChatRoom: currentState.currentChatRoom
+          currentChatRoom: currentState.currentChatRoom,
+          userProfiles: currentState.userProfiles,
       ));
     }
   }
@@ -240,7 +250,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           roomId: currentState.roomId,
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
-          currentChatRoom: currentState.currentChatRoom
+          currentChatRoom: currentState.currentChatRoom,
+          userProfiles: currentState.userProfiles,
       ));
     }
   }
@@ -255,7 +266,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           roomId: currentState.roomId,
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
-          currentChatRoom: currentState.currentChatRoom
+          currentChatRoom: currentState.currentChatRoom,
+          userProfiles: currentState.userProfiles,
       ));
     }
   }

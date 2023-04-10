@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 
 abstract class UserChatState extends Equatable {
   const UserChatState();
@@ -30,14 +31,16 @@ class HistoricalChatsFetched extends UserChatState {
   final List<ChatMessage> messages;
   final bool doesNextPageExist;
   final ChatRoom currentChatRoom;
+  final List<PublicUserProfile> userProfiles; // includes ALL userProfiles
 
   const HistoricalChatsFetched({
     required this.roomId,
     required this.messages,
     required this.doesNextPageExist,
     required this.currentChatRoom,
+    required this.userProfiles,
   });
 
   @override
-  List<Object?> get props => [roomId, messages, doesNextPageExist, currentChatRoom];
+  List<Object?> get props => [roomId, messages, doesNextPageExist, currentChatRoom, userProfiles];
 }

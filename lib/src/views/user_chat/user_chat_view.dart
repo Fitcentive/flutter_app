@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -37,6 +38,7 @@ class UserChatView extends StatefulWidget {
           providers: [
             BlocProvider<UserChatBloc>(
                 create: (context) => UserChatBloc(
+                  userRepository: RepositoryProvider.of<UserRepository>(context),
                   chatRepository: RepositoryProvider.of<ChatRepository>(context),
                   secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                 )),
@@ -70,8 +72,8 @@ class UserChatViewState extends State<UserChatView> {
 
   final ScrollController _scrollController = ScrollController();
 
-  late final types.User _currentUser;
-  late final List<types.User> _otherUsers;
+  types.User? _currentUser;
+  List<types.User>? _otherUsers;
 
   bool isDraftMessageEmpty = true;
   bool isRequestingMoreData = false;
@@ -116,7 +118,55 @@ class UserChatViewState extends State<UserChatView> {
 
   }
 
-  _generateChatPicture() {
+  _generateChatPicture(HistoricalChatsFetched state) {
+    if (state.userProfiles.length > 2) {
+      return Container(
+        width: 40,
+        height: 40,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: ImageUtils.getUserProfileImage(state.userProfiles.first, 100, 100),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: ImageUtils.getUserProfileImage(state.userProfiles[1], 100, 100),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    else {
+      return CircleAvatar(
+        radius: 20,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(widget.otherUserProfiles.first, 100, 100),
+          ),
+        ),
+      );
+    }
+  }
+
+  _generateChatPictureInitial() {
     if (widget.otherUserProfiles.length > 1) {
       return Container(
         width: 40,
@@ -164,10 +214,10 @@ class UserChatViewState extends State<UserChatView> {
     }
   }
 
-  _generateChatTitle(String roomName) {
+  _generateChatTitle(HistoricalChatsFetched state) {
     setState(() {
-      if (widget.otherUserProfiles.length > 1) {
-        chatTitle = roomName;
+      if (state.userProfiles.length > 2) {
+        chatTitle = state.currentChatRoom.name;
       }
       else {
         chatTitle = StringUtils.getUserNameFromUserProfile(widget.otherUserProfiles.first);
@@ -175,13 +225,27 @@ class UserChatViewState extends State<UserChatView> {
     });
   }
 
-  _getChatMessageAuthor(String senderId) {
+  _getChatMessageAuthor(String senderId, HistoricalChatsFetched state) {
     if (senderId == widget.currentUserProfile.userId) {
       return _currentUser;
     }
     else {
-      return _otherUsers.firstWhere((element) => widget.otherUserProfiles.firstWhere((element) => element.userId == senderId).userId == element.id);
+      return _otherUsers!
+          .firstWhere((element) => state.userProfiles.firstWhere((element) => element.userId == senderId).userId == element.id);
     }
+  }
+
+  _redoOtherUsers(HistoricalChatsFetched state) {
+    setState(() {
+      _otherUsers = state.userProfiles
+          .where((element) => element.userId != widget.currentUserProfile.userId)
+          .map((e) => types.User(
+        id: e.userId,
+        firstName: e.firstName,
+        lastName: e.lastName,
+        imageUrl: ImageUtils.getFullImageUrl(e.photoUrl, 100, 100),
+      )).toList();
+    });
   }
 
   @override
@@ -191,24 +255,46 @@ class UserChatViewState extends State<UserChatView> {
         iconTheme: const IconThemeData(
           color: Colors.teal,
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _generateChatPicture(),
-            WidgetUtils.spacer(10),
-            Expanded(
-              child: Text(
-                chatTitle,
-                style: const TextStyle(color: Colors.teal),
-              ),
-            ),
-          ],
+        title: BlocBuilder<UserChatBloc, UserChatState>(
+          builder: (context, state) {
+            if (state is HistoricalChatsFetched) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _generateChatPicture(state),
+                  WidgetUtils.spacer(10),
+                  Expanded(
+                    child: Text(
+                      chatTitle,
+                      style: const TextStyle(color: Colors.teal),
+                    ),
+                  ),
+                ],
+              );
+            }
+            else {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _generateChatPictureInitial(),
+                  WidgetUtils.spacer(10),
+                  Expanded(
+                    child: Text(
+                      chatTitle,
+                      style: const TextStyle(color: Colors.teal),
+                    ),
+                  ),
+                ],
+              );
+            }
+          },
         ),
       ),
       body: BlocListener<UserChatBloc, UserChatState>(
         listener: (context, state) {
           if (state is HistoricalChatsFetched) {
-            _generateChatTitle(state.currentChatRoom.name);
+            _generateChatTitle(state);
+            _redoOtherUsers(state);
           }
         },
         child: BlocBuilder<UserChatBloc, UserChatState>(
@@ -216,7 +302,7 @@ class UserChatViewState extends State<UserChatView> {
             if (state is HistoricalChatsFetched) {
               isRequestingMoreData = false;
               _previousMessages = List<types.Message>.from(state.messages.map((msg) => types.TextMessage(
-                author: _getChatMessageAuthor(msg.senderId),
+                author: _getChatMessageAuthor(msg.senderId, state),
                 createdAt: msg.createdAt.millisecondsSinceEpoch,
                 id: msg.id,
                 text: msg.text,
@@ -242,7 +328,7 @@ class UserChatViewState extends State<UserChatView> {
                   onSendPressed: _handleSendPressed,
                   showUserAvatars: true,
                   showUserNames: true,
-                  user: _currentUser,
+                  user: _currentUser!,
                   onEndReached: () async {
                     if (!isRequestingMoreData) {
                       isRequestingMoreData = true;
@@ -421,7 +507,7 @@ class UserChatViewState extends State<UserChatView> {
   void _handleSendPressed(types.PartialText message) {
     isDraftMessageEmpty = true;
     final textMessage = types.TextMessage(
-      author: _currentUser,
+      author: _currentUser!,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: const Uuid().v4(),
       text: message.text,
