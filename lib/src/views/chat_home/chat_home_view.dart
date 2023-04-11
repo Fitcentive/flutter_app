@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -43,17 +44,71 @@ class ChatHomeViewState extends State<ChatHomeView> {
 
   late final ChatHomeBloc _chatBloc;
 
+  bool _isFloatingButtonVisible = true;
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
 
     _chatBloc = BlocProvider.of<ChatHomeBloc>(context);
     _chatBloc.add(FetchUserRooms(userId: widget.currentUserProfile.userId));
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  _goToChatSearchView() {
+    Navigator.pushAndRemoveUntil<void>(
+        context,
+        ChatSearchView.route(widget.currentUserProfile), (route) => true
+    );
+  }
+
+  void _onScroll() {
+    if(_scrollController.hasClients) {
+      // Handle floating action button visibility
+      if(_scrollController.position.userScrollDirection == ScrollDirection.reverse){
+        if(_isFloatingButtonVisible == true) {
+          setState((){
+            _isFloatingButtonVisible = false;
+          });
+        }
+      } else {
+        if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+          if (_isFloatingButtonVisible == false) {
+            setState(() {
+              _isFloatingButtonVisible = true;
+            });
+          }
+        }
+      }
+
+    }
+  }
+
+  _animatedButton() {
+    return AnimatedOpacity(
+      opacity: _isFloatingButtonVisible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      child: Visibility(
+        visible: _isFloatingButtonVisible,
+        child: FloatingActionButton(
+          heroTag: "MeetupHomeViewCreateNewMeetupButton",
+          onPressed: () {
+            _goToChatSearchView();
+          },
+          tooltip: 'Create new meetup!',
+          backgroundColor: Colors.teal,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: _animatedButton(),
       body: BlocBuilder<ChatHomeBloc, ChatHomeState>(
         builder: (context, state) {
           if (state is UserRoomsLoaded) {
@@ -80,10 +135,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
   _searchBar() {
     return InkWell(
       onTap: () {
-        Navigator.pushAndRemoveUntil<void>(
-            context,
-            ChatSearchView.route(widget.currentUserProfile), (route) => true
-        );
+        _goToChatSearchView();
       },
       child: Card(
           shape: RoundedRectangleBorder(
@@ -121,7 +173,9 @@ class ChatHomeViewState extends State<ChatHomeView> {
     return RefreshIndicator(
         onRefresh: _pullRefresh,
         child: Scrollbar(
+          controller: _scrollController,
           child: ListView.builder(
+            controller: _scrollController,
             shrinkWrap: true,
             itemCount: state.rooms.length,
             itemBuilder: (context, index) {
