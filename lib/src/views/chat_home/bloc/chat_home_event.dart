@@ -15,3 +15,12 @@ class FetchUserRooms extends ChatHomeEvent {
   @override
   List<Object?> get props => [userId];
 }
+
+class FilterSearchQueryChanged extends ChatHomeEvent {
+  final String query;
+
+  const FilterSearchQueryChanged({required this.query});
+
+  @override
+  List<Object?> get props => [query];
+}

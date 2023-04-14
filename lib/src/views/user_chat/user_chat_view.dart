@@ -7,6 +7,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/detailed_chat/detailed_chat_view.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_bloc.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_event.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_state.dart';
@@ -120,34 +121,43 @@ class UserChatViewState extends State<UserChatView> {
 
   _generateChatPicture(HistoricalChatsFetched state) {
     if (state.userProfiles.length > 2) {
-      return Container(
-        width: 40,
-        height: 40,
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: ImageUtils.getUserProfileImage(state.userProfiles.first, 100, 100),
+      return InkWell(
+        onTap: () {
+          Navigator.push(context, DetailedChatView.route(
+              currentChatRoom: state.currentChatRoom,
+              currentUserProfile: widget.currentUserProfile,
+              otherUserProfiles: widget.otherUserProfiles
+          ));
+        },
+        child: Container(
+          width: 40,
+          height: 40,
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: ImageUtils.getUserProfileImage(state.userProfiles.first, 100, 100),
+                  ),
                 ),
               ),
-            ),
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: ImageUtils.getUserProfileImage(state.userProfiles[1], 100, 100),
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: ImageUtils.getUserProfileImage(state.userProfiles[1], 100, 100),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -248,6 +258,23 @@ class UserChatViewState extends State<UserChatView> {
     });
   }
 
+  _generateTitle(HistoricalChatsFetched state) {
+    return InkWell(
+      onTap: () {
+        // Go to detailed chat view
+        Navigator.push(context, DetailedChatView.route(
+            currentChatRoom: state.currentChatRoom,
+            currentUserProfile: widget.currentUserProfile,
+            otherUserProfiles: widget.otherUserProfiles
+        ));
+      },
+      child: Text(
+        chatTitle,
+        style: const TextStyle(color: Colors.teal),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -263,12 +290,7 @@ class UserChatViewState extends State<UserChatView> {
                 children: [
                   _generateChatPicture(state),
                   WidgetUtils.spacer(10),
-                  Expanded(
-                    child: Text(
-                      chatTitle,
-                      style: const TextStyle(color: Colors.teal),
-                    ),
-                  ),
+                  _generateTitle(state),
                 ],
               );
             }

@@ -23,11 +23,16 @@ class UserRoomsLoading extends ChatHomeState {
 }
 
 class UserRoomsLoaded extends ChatHomeState {
+  final List<ChatRoomWithMostRecentMessage> filteredRooms;
   final List<ChatRoomWithMostRecentMessage> rooms;
   final Map<String, PublicUserProfile> userIdProfileMap;
 
-  const UserRoomsLoaded({required this.rooms, required this.userIdProfileMap});
+  const UserRoomsLoaded({
+    required this.rooms,
+    required this.filteredRooms,
+    required this.userIdProfileMap
+  });
 
   @override
-  List<Object?> get props => [rooms, userIdProfileMap];
+  List<Object?> get props => [rooms, userIdProfileMap, filteredRooms];
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
@@ -14,6 +16,7 @@ import 'package:flutter_app/src/views/chat_search/chat_search_view.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class ChatHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -46,6 +49,11 @@ class ChatHomeViewState extends State<ChatHomeView> {
 
   bool _isFloatingButtonVisible = true;
   final _scrollController = ScrollController();
+
+  final _searchTextController = TextEditingController();
+  final _suggestionsController = SuggestionsBoxController();
+
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -115,7 +123,8 @@ class ChatHomeViewState extends State<ChatHomeView> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _searchBar(),
+                // _searchBar(),
+                _filterSearchBar(),
                 Expanded(
                     child: _chatList(state)
                 )
@@ -132,87 +141,119 @@ class ChatHomeViewState extends State<ChatHomeView> {
     );
   }
 
-  _searchBar() {
-    return InkWell(
-      onTap: () {
-        _goToChatSearchView();
-      },
-      child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          child: Container(
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(
-                    child: Stack(
-                      children: const [
-                        Icon(
-                          Icons.search,
-                          color: Colors.teal,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: Center(
-                            child: Text("Search", style: TextStyle(fontSize: 15)),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              )
-          )
-      ),
+  _filterSearchBar() {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+        child: TypeAheadField<PublicUserProfile>(
+          suggestionsBoxController: _suggestionsController,
+          debounceDuration: const Duration(milliseconds: 300),
+          textFieldConfiguration: TextFieldConfiguration(
+              onSubmitted: (value) {},
+              autocorrect: false,
+              onTap: () => _suggestionsController.toggle(),
+              onChanged: (text) {
+                if (_debounce?.isActive ?? false) _debounce?.cancel();
+                _debounce = Timer(const Duration(milliseconds: 300), () {
+                  _chatBloc.add(FilterSearchQueryChanged(query: text));
+                });
+
+              },
+              autofocus: true,
+              controller: _searchTextController,
+              style: const TextStyle(fontSize: 15),
+              decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: "Search by user, conversation... ",
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      _suggestionsController.close();
+                      _searchTextController.text = "";
+                      _chatBloc.add(const FilterSearchQueryChanged(query: ""));
+                    },
+                    icon: const Icon(Icons.close),
+                  ))),
+          suggestionsCallback: (text)  {
+            // _exerciseSearchBloc.add(FilterSearchQueryChanged(searchQuery: text.trim()));
+            return List.empty();
+          },
+          itemBuilder: (context, suggestion) {
+            final s = suggestion;
+            // This is unused but needed, we will keep it in for now
+            return ListTile(
+              leading: CircleAvatar(
+                radius: 30,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: ImageUtils.getUserProfileImage(suggestion, 100, 100),
+                  ),
+                ),
+              ),
+              title: Text("${s.firstName ?? ""} ${s.lastName ?? ""}"),
+              subtitle: Text(suggestion.username ?? ""),
+            );
+          },
+          onSuggestionSelected: (suggestion) {},
+          hideOnEmpty: true,
+        )
     );
   }
 
   _chatList(UserRoomsLoaded state) {
-    return RefreshIndicator(
+    if (state.filteredRooms.isNotEmpty) {
+      return RefreshIndicator(
         onRefresh: _pullRefresh,
         child: Scrollbar(
           controller: _scrollController,
           child: ListView.builder(
-            controller: _scrollController,
-            shrinkWrap: true,
-            itemCount: state.rooms.length,
-            itemBuilder: (context, index) {
-              final currentChatRoom = state.rooms[index];
-              final otherUserIdsInChatRoom = currentChatRoom
-                  .userIds
-                  .where((element) => element != widget.currentUserProfile.userId)
-                  .toList();
+              controller: _scrollController,
+              shrinkWrap: true,
+              itemCount: state.filteredRooms.length,
+              itemBuilder: (context, index) {
+                final currentChatRoom = state.filteredRooms[index];
+                final otherUserIdsInChatRoom = currentChatRoom
+                    .userIds
+                    .where((element) => element != widget.currentUserProfile.userId)
+                    .toList();
 
-              final List<PublicUserProfile> otherUserProfiles = state
-                  .userIdProfileMap
-                  .entries
-                  .where((element) => otherUserIdsInChatRoom.contains(element.value.userId))
-                  .map((e) => e.value).toList();
+                final List<PublicUserProfile> otherUserProfiles = state
+                    .userIdProfileMap
+                    .entries
+                    .where((element) => otherUserIdsInChatRoom.contains(element.value.userId))
+                    .map((e) => e.value).toList();
 
-              return ListTile(
-                  title: Text(
-                    currentChatRoom.isGroupChat ? currentChatRoom.roomName : StringUtils.getUserNameFromUserProfile(otherUserProfiles.first),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600
+                return ListTile(
+                    title: Text(
+                      currentChatRoom.isGroupChat ? currentChatRoom.roomName : StringUtils.getUserNameFromUserProfile(otherUserProfiles.first),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600
+                      ),
                     ),
-                  ),
-                  subtitle: Text(currentChatRoom.mostRecentMessage),
-                  leading: GestureDetector(
-                    onTap: () async {
+                    subtitle: Text(currentChatRoom.mostRecentMessage),
+                    leading: GestureDetector(
+                      onTap: () async {
+                        _openUserChatView(currentChatRoom, otherUserProfiles);
+                      },
+                      child: _generateChatPicture(currentChatRoom, widget.currentUserProfile.userId, otherUserIdsInChatRoom, state.userIdProfileMap),
+                    ),
+                    onTap: () {
                       _openUserChatView(currentChatRoom, otherUserProfiles);
-                    },
-                    child: _generateChatPicture(currentChatRoom, widget.currentUserProfile.userId, otherUserIdsInChatRoom, state.userIdProfileMap),
-                  ),
-                  onTap: () {
-                    _openUserChatView(currentChatRoom, otherUserProfiles);
-                  }
-              );
-            }
+                    }
+                );
+              }
           ),
         ),
-    );
+      );
+    }
+    else {
+      return const Center(
+        child: Text(
+            "No results... refine search query"
+        ),
+      );
+    }
   }
 
   _generateChatPicture(

@@ -24,8 +24,48 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     required this.secureStorage,
   }) : super(const ChatStateInitial()) {
     on<FetchUserRooms>(_fetchUserRooms);
+    on<FilterSearchQueryChanged>(_filterSearchQueryChanged);
   }
 
+  // Returns true if query matches names of any of the users listed in userIds
+  bool _doesQueryMatchUserIds(String query, List<String> userIds, Map<String, PublicUserProfile> userIdProfileMap) {
+    return userIds
+        .map((e) => userIdProfileMap[e]!)
+        .where((element) =>
+                element.firstName!.toLowerCase().contains(query.toLowerCase()) ||
+                element.lastName!.toLowerCase().contains(query.toLowerCase()))
+        .isNotEmpty;
+  }
+
+  void _filterSearchQueryChanged(FilterSearchQueryChanged event, Emitter<ChatHomeState> emit) async {
+    final currentState = state;
+    if (currentState is UserRoomsLoaded) {
+      if (event.query.isNotEmpty) {
+        final filteredRooms = currentState.rooms
+            .where((element) =>
+        element.roomName.contains(event.query) || _doesQueryMatchUserIds(event.query, element.userIds, currentState.userIdProfileMap)
+        )
+            .toList();
+        emit(
+            UserRoomsLoaded(
+              rooms: currentState.rooms,
+              filteredRooms: filteredRooms,
+              userIdProfileMap: currentState.userIdProfileMap,
+            )
+        );
+      }
+      else {
+        emit(
+            UserRoomsLoaded(
+              rooms: currentState.rooms,
+              filteredRooms: currentState.rooms,
+              userIdProfileMap: currentState.userIdProfileMap,
+            )
+        );
+      }
+    }
+  }
+  
   void _fetchUserRooms(FetchUserRooms event, Emitter<ChatHomeState> emit) async {
     emit(const UserRoomsLoading());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
@@ -51,7 +91,13 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
-    emit(UserRoomsLoaded(rooms: chatRoomsWithMostRecentMessage, userIdProfileMap: userIdProfileMap));
+    emit(
+        UserRoomsLoaded(
+            rooms: chatRoomsWithMostRecentMessage,
+            filteredRooms: chatRoomsWithMostRecentMessage,
+            userIdProfileMap: userIdProfileMap,
+        )
+    );
   }
 
   List<String> _getDistinctUserIdsFromChatRooms(List<ChatRoomWithUsers> rooms) {
