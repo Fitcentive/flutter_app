@@ -12,6 +12,60 @@ import 'package:http/http.dart' as http;
 class ChatRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/chat";
 
+  Future<void> addUserToChatRoom(String roomId, String userId, String accessToken) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/room/$roomId/users/$userId"),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken'
+      },
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    } else {
+      throw Exception(
+          "addUserToChatRoom: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> removeUserFromChatRoom(String roomId, String userId, String accessToken) async {
+    final response = await http.delete(
+        Uri.parse("$BASE_URL/room/$roomId/users/$userId"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    } else {
+      throw Exception(
+          "removeUserFromChatRoom: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> updateChatRoomName(String roomId, String newName, String accessToken) async {
+    final response = await http.put(
+        Uri.parse("$BASE_URL/room/$roomId"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+        body: jsonEncode({
+          "room_name": newName,
+        })
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    } else {
+      throw Exception(
+          "updateChatRoomName: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<void> upsertChatUser(String accessToken) async {
     final response = await http.post(
         Uri.parse(BASE_URL),

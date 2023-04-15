@@ -201,6 +201,9 @@ class ChatHomeViewState extends State<ChatHomeView> {
     );
   }
 
+  // todo - think about pagination - what happens if a LOT of chats??
+  // todo - think about meetup chats now - and how to name chatRoom?
+  // todo - think about how to edit a chat - (leave/remove user, view users, change chat room name)
   _chatList(UserRoomsLoaded state) {
     if (state.filteredRooms.isNotEmpty) {
       return RefreshIndicator(

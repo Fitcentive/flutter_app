@@ -88,6 +88,7 @@ class FriendsViewState extends State<FriendsView> {
             currentUserProfile: widget.currentUserProfile,
             fetchMoreResultsCallback: _fetchMoreResultsCallback,
             doesNextPageExist: state.doesNextPageExist,
+            swipeToDismissUserCallback: null,
         ),
     );
   }

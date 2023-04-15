@@ -22,7 +22,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   final UserRepository userRepository;
   final ChatRepository chatRepository;
   final FlutterSecureStorage secureStorage;
-  late final WebSocketChannel _chatRoomChannel;
+  WebSocketChannel? _chatRoomChannel;
 
   final joinRef = const Uuid().v4();
   final userTypingMessageId = const Uuid().v4();
@@ -46,7 +46,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
   _setUpHeartbeats(String roomId, String currentUserId) {
     _heartbeatTimer = Timer(const Duration(seconds: 30), () {
-      _chatRoomChannel.sink.add(jsonEncode({
+      _chatRoomChannel?.sink.add(jsonEncode({
         "topic": "chat_room:$roomId",
         "event": "ping",
         "payload": {
@@ -68,7 +68,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
       Uri.parse('wss://${ConstantUtils.API_HOSTNAME}/api/chat/socket/websocket?token=${accessToken!}'),
     );
 
-    _chatRoomChannel.sink.add(jsonEncode({
+    _chatRoomChannel?.sink.add(jsonEncode({
       "topic": "chat_room:$roomId",
       "event": "phx_join",
       "payload": {
@@ -80,7 +80,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
     _setUpHeartbeats(roomId, currentUserId);
 
-    _chatRoomChannel.stream.listen((event) {
+    _chatRoomChannel?.stream.listen((event) {
       final decodedJson = jsonDecode(event);
       final websocketEvent = WebsocketEvent.fromJson(decodedJson);
 
@@ -164,7 +164,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   }
 
   void _addCurrentUserStartedTypingEventToChannel(String roomId, String userId) {
-    _chatRoomChannel.sink.add(jsonEncode({
+    _chatRoomChannel?.sink.add(jsonEncode({
       "topic": "chat_room:$roomId",
       "event": "typing_started",
       "payload": {
@@ -176,7 +176,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   }
 
   void _addCurrentUserStoppedTypingEventToChannel(String roomId, String userId) {
-    _chatRoomChannel.sink.add(jsonEncode({
+    _chatRoomChannel?.sink.add(jsonEncode({
       "topic": "chat_room:$roomId",
       "event": "typing_stopped",
       "payload": {
@@ -189,7 +189,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
   void _addMessageToChatRoom(AddMessageToChatRoom event, Emitter<UserChatState> emit) async {
     _addCurrentUserStoppedTypingEventToChannel(event.roomId, event.userId);
-    _chatRoomChannel.sink.add(jsonEncode({
+    _chatRoomChannel?.sink.add(jsonEncode({
       "topic": "chat_room:${event.roomId}",
       "event": "shout",
       "payload": {
@@ -281,7 +281,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   }
 
   void dispose() {
-    _chatRoomChannel.sink.close();
+    _chatRoomChannel?.sink.close();
     _heartbeatTimer?.cancel();
   }
 }

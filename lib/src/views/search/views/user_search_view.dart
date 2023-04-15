@@ -175,6 +175,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                     currentUserProfile: widget.currentUserProfile,
                     fetchMoreResultsCallback: _fetchMoreResultsCallback,
                     doesNextPageExist: state.doesNextPageExist,
+                    swipeToDismissUserCallback: null,
                 )
               );
         } else {

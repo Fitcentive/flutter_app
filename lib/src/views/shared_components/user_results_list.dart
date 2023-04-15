@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 
 typedef FetchMoreResultsCallback = void Function();
 typedef GoToChatRoomCallBack = void Function(PublicUserProfile targetUserProfile);
+typedef SwipeToDismissUserCallback = void Function(PublicUserProfile targetUserProfile);
 
 class UserResultsList extends StatefulWidget {
 
@@ -12,18 +14,22 @@ class UserResultsList extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final bool doesNextPageExist;
   final bool shouldTapGoToChatRoom;
+  final bool shouldListBeSwipable;
 
   final FetchMoreResultsCallback fetchMoreResultsCallback;
   final GoToChatRoomCallBack? goToChatRoomCallBack;
+  final SwipeToDismissUserCallback? swipeToDismissUserCallback;
 
   const UserResultsList({
     Key? key,
+    this.shouldListBeSwipable = false,
     this.shouldTapGoToChatRoom = false,
     this.goToChatRoomCallBack,
     required this.userProfiles,
     required this.currentUserProfile,
     required this.doesNextPageExist,
     required this.fetchMoreResultsCallback,
+    required this.swipeToDismissUserCallback,
   }): super(key: key);
 
   @override
@@ -38,10 +44,13 @@ class UserResultsListState extends State<UserResultsList> {
   final _scrollController = ScrollController();
   bool isDataBeingRequested = false;
 
+  late final List<PublicUserProfile> participantUserProfiles;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    participantUserProfiles = widget.userProfiles;
   }
 
   @override
@@ -84,7 +93,7 @@ class UserResultsListState extends State<UserResultsList> {
   }
 
   Widget _userSearchResultItem(PublicUserProfile userProfile) {
-    return ListTile(
+    final plainTile = ListTile(
       title: Text("${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""}",
           style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: const Text(""),
@@ -113,6 +122,46 @@ class UserResultsListState extends State<UserResultsList> {
         }
       },
     );
+
+    if (widget.shouldListBeSwipable) {
+      return Dismissible(
+          key: Key(userProfile.userId),
+          background: Container(
+            color: Colors.teal,
+          ),
+          confirmDismiss: (direction) {
+            // todo - fix this with alert dialog asking confirmation
+            return Future.value(true);
+          },
+          direction: DismissDirection.endToStart,
+          onDismissed: (direction) {
+            if (direction == DismissDirection.endToStart) {
+              _removeUserFromConversation(userProfile);
+            }
+          },
+          child: plainTile
+      );
+    }
+    else {
+      return plainTile;
+    }
+  }
+
+  // todo - there is an error here, need to fix
+  // todo - add UI for adding new user to chat - similar to adding users to meetup!?
+  _removeUserFromConversation(PublicUserProfile userProfile) {
+    if (widget.shouldListBeSwipable) {
+      if (userProfile.userId != widget.currentUserProfile.userId) {
+        setState(() {
+          participantUserProfiles.removeWhere((element) => element.userId == userProfile.userId);
+        });
+        SnackbarUtils.showSnackBar(context, "Removed ${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""} from this chat!");
+        widget.swipeToDismissUserCallback!(userProfile);
+      }
+      else {
+        SnackbarUtils.showSnackBar(context, "Cannot remove yourself from a chat! Use leave chat button instead.");
+      }
+    }
   }
 
   void _onScroll() {

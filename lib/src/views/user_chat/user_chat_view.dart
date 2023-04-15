@@ -123,11 +123,7 @@ class UserChatViewState extends State<UserChatView> {
     if (state.userProfiles.length > 2) {
       return InkWell(
         onTap: () {
-          Navigator.push(context, DetailedChatView.route(
-              currentChatRoom: state.currentChatRoom,
-              currentUserProfile: widget.currentUserProfile,
-              otherUserProfiles: widget.otherUserProfiles
-          ));
+          _goToDetailedChatView(state);
         },
         child: Container(
           width: 40,
@@ -258,15 +254,24 @@ class UserChatViewState extends State<UserChatView> {
     });
   }
 
+  _goToDetailedChatView(HistoricalChatsFetched state) {
+    Navigator.push(context, DetailedChatView.route(
+        currentChatRoom: state.currentChatRoom,
+        currentUserProfile: widget.currentUserProfile,
+        otherUserProfiles: widget.otherUserProfiles
+    )).then((value) {
+      _userChatBloc.add(ConnectWebsocketAndFetchHistoricalChats(
+          roomId: widget.currentRoomId,
+          currentUserId: widget.currentUserProfile.userId
+      ));
+    });
+  }
+
   _generateTitle(HistoricalChatsFetched state) {
     return InkWell(
       onTap: () {
         // Go to detailed chat view
-        Navigator.push(context, DetailedChatView.route(
-            currentChatRoom: state.currentChatRoom,
-            currentUserProfile: widget.currentUserProfile,
-            otherUserProfiles: widget.otherUserProfiles
-        ));
+        _goToDetailedChatView(state);
       },
       child: Text(
         chatTitle,

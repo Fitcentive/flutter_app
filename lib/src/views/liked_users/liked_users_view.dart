@@ -74,6 +74,7 @@ class LikedUsersViewState extends State<LikedUsersView> {
         currentUserProfile: widget.currentUserProfile,
         fetchMoreResultsCallback: () {},
         doesNextPageExist: false,
+        swipeToDismissUserCallback: null,
       );
     } else {
       return const Center(
