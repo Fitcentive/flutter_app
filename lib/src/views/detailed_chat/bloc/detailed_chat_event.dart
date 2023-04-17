@@ -9,39 +9,39 @@ abstract class DetailedChatEvent extends Equatable {
 
 class ChatRoomNameChanged extends DetailedChatEvent {
   final String newName;
-  final String roomId;
+  final String roomIds;
 
   const ChatRoomNameChanged({
     required this.newName,
-    required this.roomId
+    required this.roomIds
   });
 
   @override
-  List<Object?> get props => [newName, roomId];
+  List<Object?> get props => [newName, roomIds];
 }
 
-class UserRemovedFromChatRoom extends DetailedChatEvent {
-  final String userId;
+class UsersRemovedFromChatRoom extends DetailedChatEvent {
+  final List<String> userIds;
   final String roomId;
 
-  const UserRemovedFromChatRoom({
-    required this.userId,
+  const UsersRemovedFromChatRoom({
+    required this.userIds,
     required this.roomId
   });
 
   @override
-  List<Object?> get props => [userId, roomId];
+  List<Object?> get props => [userIds, roomId];
 }
 
-class UserAddedToChatRoom extends DetailedChatEvent {
-  final String userId;
+class UsersAddedToChatRoom extends DetailedChatEvent {
+  final List<String> userIds;
   final String roomId;
 
-  const UserAddedToChatRoom({
-    required this.userId,
+  const UsersAddedToChatRoom({
+    required this.userIds,
     required this.roomId
   });
 
   @override
-  List<Object?> get props => [userId, roomId];
+  List<Object?> get props => [userIds, roomId];
 }

@@ -14,23 +14,29 @@ class DetailedChatBloc extends Bloc<DetailedChatEvent, DetailedChatState> {
     required this.chatRepository,
   }) : super(const DetailedChatStateInitial()) {
     on<ChatRoomNameChanged>(_chatRoomNameChanged);
-    on<UserRemovedFromChatRoom>(_userRemovedFromChatRoom);
-    on<UserAddedToChatRoom>(_userAddedToChatRoom);
+    on<UsersRemovedFromChatRoom>(_usersRemovedFromChatRoom);
+    on<UsersAddedToChatRoom>(_usersAddedToChatRoom);
   }
 
-  void _userAddedToChatRoom(UserAddedToChatRoom event, Emitter<DetailedChatState> emit) async {
+  void _usersAddedToChatRoom(UsersAddedToChatRoom event, Emitter<DetailedChatState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await chatRepository.addUserToChatRoom(event.roomId, event.userId, accessToken!);
+    await Future.forEach<String>(
+        event.userIds,
+            (userId) => chatRepository.addUserToChatRoom(event.roomId, userId, accessToken!)
+    );
   }
 
-  void _userRemovedFromChatRoom(UserRemovedFromChatRoom event, Emitter<DetailedChatState> emit) async {
+  void _usersRemovedFromChatRoom(UsersRemovedFromChatRoom event, Emitter<DetailedChatState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await chatRepository.removeUserFromChatRoom(event.roomId, event.userId, accessToken!);
+    await Future.forEach<String>(
+        event.userIds,
+            (userId) => chatRepository.removeUserFromChatRoom(event.roomId, userId, accessToken!)
+    );
   }
 
   void _chatRoomNameChanged(ChatRoomNameChanged event, Emitter<DetailedChatState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await chatRepository.updateChatRoomName(event.roomId, event.newName, accessToken!);
+    await chatRepository.updateChatRoomName(event.roomIds, event.newName, accessToken!);
   }
 
 }

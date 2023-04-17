@@ -120,7 +120,7 @@ class UserChatViewState extends State<UserChatView> {
   }
 
   _generateChatPicture(HistoricalChatsFetched state) {
-    if (state.userProfiles.length > 2) {
+    if (state.chatRoomUserProfiles.length > 2) {
       return InkWell(
         onTap: () {
           _goToDetailedChatView(state);
@@ -137,7 +137,7 @@ class UserChatViewState extends State<UserChatView> {
                   height: 26,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: ImageUtils.getUserProfileImage(state.userProfiles.first, 100, 100),
+                    image: ImageUtils.getUserProfileImage(state.chatRoomUserProfiles.first, 100, 100),
                   ),
                 ),
               ),
@@ -148,7 +148,7 @@ class UserChatViewState extends State<UserChatView> {
                   height: 26,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: ImageUtils.getUserProfileImage(state.userProfiles[1], 100, 100),
+                    image: ImageUtils.getUserProfileImage(state.chatRoomUserProfiles[1], 100, 100),
                   ),
                 ),
               ),
@@ -222,7 +222,7 @@ class UserChatViewState extends State<UserChatView> {
 
   _generateChatTitle(HistoricalChatsFetched state) {
     setState(() {
-      if (state.userProfiles.length > 2) {
+      if (state.chatRoomUserProfiles.length > 2) {
         chatTitle = state.currentChatRoom.name;
       }
       else {
@@ -237,13 +237,13 @@ class UserChatViewState extends State<UserChatView> {
     }
     else {
       return _otherUsers!
-          .firstWhere((element) => state.userProfiles.firstWhere((element) => element.userId == senderId).userId == element.id);
+          .firstWhere((element) => state.allMessagingUserProfiles.firstWhere((element) => element.userId == senderId).userId == element.id);
     }
   }
 
   _redoOtherUsers(HistoricalChatsFetched state) {
     setState(() {
-      _otherUsers = state.userProfiles
+      _otherUsers = state.allMessagingUserProfiles
           .where((element) => element.userId != widget.currentUserProfile.userId)
           .map((e) => types.User(
         id: e.userId,
@@ -258,7 +258,7 @@ class UserChatViewState extends State<UserChatView> {
     Navigator.push(context, DetailedChatView.route(
         currentChatRoom: state.currentChatRoom,
         currentUserProfile: widget.currentUserProfile,
-        otherUserProfiles: widget.otherUserProfiles
+        otherUserProfiles: List.from(state.chatRoomUserProfiles)..removeWhere((element) => element.userId == widget.currentUserProfile.userId),
     )).then((value) {
       _userChatBloc.add(ConnectWebsocketAndFetchHistoricalChats(
           roomId: widget.currentRoomId,
@@ -280,6 +280,8 @@ class UserChatViewState extends State<UserChatView> {
     );
   }
 
+
+  // todo - nasty bug here, user msgs are sometimes is 2x/4x, especially right after adding new person to chat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -346,7 +348,7 @@ class UserChatViewState extends State<UserChatView> {
               return Scrollbar(
                 controller: _scrollController,
                 child: Chat(
-                  scrollController: _scrollController,
+                  // scrollController: _scrollController,
                   messages: _previousMessages,
                   onTextChanged: _handleTextChanged,
                   onAttachmentPressed: _handleAttachmentPressed,

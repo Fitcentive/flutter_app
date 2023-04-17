@@ -44,13 +44,10 @@ class UserResultsListState extends State<UserResultsList> {
   final _scrollController = ScrollController();
   bool isDataBeingRequested = false;
 
-  late final List<PublicUserProfile> participantUserProfiles;
-
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    participantUserProfiles = widget.userProfiles;
   }
 
   @override
@@ -58,7 +55,6 @@ class UserResultsListState extends State<UserResultsList> {
     _scrollController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +74,7 @@ class UserResultsListState extends State<UserResultsList> {
     return Scrollbar(
       controller: _scrollController,
       child: ListView.builder(
+        shrinkWrap: true,
         physics: const AlwaysScrollableScrollPhysics(),
         controller: _scrollController,
         itemCount: widget.doesNextPageExist ? items.length + 1 : items.length,
@@ -130,8 +127,44 @@ class UserResultsListState extends State<UserResultsList> {
             color: Colors.teal,
           ),
           confirmDismiss: (direction) {
-            // todo - fix this with alert dialog asking confirmation
-            return Future.value(true);
+            Widget cancelButton = TextButton(
+              child: const Text("Cancel", style: TextStyle(color: Colors.teal),),
+              onPressed:  () {
+                Navigator.pop(context, false);
+              },
+            );
+            Widget confirmButton = TextButton(
+              child: const Text("Confirm", style: TextStyle(color: Colors.teal)),
+              onPressed:  () {
+                // Add callback here
+                Navigator.pop(context, true);
+              },
+            );
+
+            // set up the AlertDialog
+            AlertDialog alert = AlertDialog(
+              title: const Text("Remove user from chat?"),
+              content: const Text("Are you sure? This cannot be undone"),
+              actions: [
+                cancelButton,
+                confirmButton,
+              ],
+            );
+
+
+            if (widget.currentUserProfile.userId == userProfile.userId) {
+              return Future.value(false);
+            }
+            else {
+              // show the dialog
+              return showDialog<bool>(
+                context: context,
+                builder: (BuildContext context) {
+                  return alert;
+                },
+              );
+            }
+
           },
           direction: DismissDirection.endToStart,
           onDismissed: (direction) {
@@ -152,14 +185,7 @@ class UserResultsListState extends State<UserResultsList> {
   _removeUserFromConversation(PublicUserProfile userProfile) {
     if (widget.shouldListBeSwipable) {
       if (userProfile.userId != widget.currentUserProfile.userId) {
-        setState(() {
-          participantUserProfiles.removeWhere((element) => element.userId == userProfile.userId);
-        });
-        SnackbarUtils.showSnackBar(context, "Removed ${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""} from this chat!");
         widget.swipeToDismissUserCallback!(userProfile);
-      }
-      else {
-        SnackbarUtils.showSnackBar(context, "Cannot remove yourself from a chat! Use leave chat button instead.");
       }
     }
   }

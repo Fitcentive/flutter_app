@@ -31,16 +31,29 @@ class HistoricalChatsFetched extends UserChatState {
   final List<ChatMessage> messages;
   final bool doesNextPageExist;
   final ChatRoom currentChatRoom;
-  final List<PublicUserProfile> userProfiles; // includes ALL userProfiles
+
+  // includes only userProfiles of those in the chat room
+  final List<PublicUserProfile> chatRoomUserProfiles;
+
+  // includes ALL userProfiles, including currentUserProfile and previous chat room users who have sent messages
+  final List<PublicUserProfile> allMessagingUserProfiles;
 
   const HistoricalChatsFetched({
     required this.roomId,
     required this.messages,
     required this.doesNextPageExist,
     required this.currentChatRoom,
-    required this.userProfiles,
+    required this.chatRoomUserProfiles,
+    required this.allMessagingUserProfiles,
   });
 
   @override
-  List<Object?> get props => [roomId, messages, doesNextPageExist, currentChatRoom, userProfiles];
+  List<Object?> get props => [
+    roomId,
+    messages,
+    doesNextPageExist,
+    currentChatRoom,
+    allMessagingUserProfiles,
+    chatRoomUserProfiles
+  ];
 }

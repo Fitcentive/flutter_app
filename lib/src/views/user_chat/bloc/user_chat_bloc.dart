@@ -127,12 +127,19 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           .toList();
       final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
       final completeMessages = [...chatMessages, ...currentState.messages];
+
+      // We use this instead of chatRoom userIds as previously existing users in chatRoom may have also sent messages
+      final distinctChatMessageSenderIds = (chatMessages.map((e) => e.senderId).toSet()
+        ..addAll(currentState.chatRoomUserProfiles.map((e) => e.userId).toList())).toList();
+      final publicUserProfiles = await userRepository.getPublicUserProfiles(distinctChatMessageSenderIds, accessToken);
+
       emit(HistoricalChatsFetched(
           roomId: event.roomId,
           messages: completeMessages,
           doesNextPageExist: doesNextPageExist,
           currentChatRoom: currentState.currentChatRoom,
-          userProfiles: currentState.userProfiles,
+          allMessagingUserProfiles: publicUserProfiles,
+          chatRoomUserProfiles: currentState.chatRoomUserProfiles,
       ));
     }
   }
@@ -149,17 +156,26 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         .toList();
     final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
 
+
     // We also need to fetch users in chat room again because we cant be too sure
     final currentChatRoom = (await chatRepository.getChatRoomDefinitions([event.roomId], accessToken)).first;
     final chatRoomsWithUser = await chatRepository.getUsersForRoom(event.roomId, accessToken);
-    final publicUserProfiles = await userRepository.getPublicUserProfiles(chatRoomsWithUser.userIds, accessToken);
+
+    // We use this instead of chatRoom userIds as previously existing users in chatRoom may have also sent messages
+    final distinctChatMessageSenderIds = (chatMessages.map((e) => e.senderId).toSet()..addAll(chatRoomsWithUser.userIds)).toList();
+
+    final publicUserProfiles = await userRepository.getPublicUserProfiles(distinctChatMessageSenderIds, accessToken);
+    final chatRoomUserProfiles = publicUserProfiles
+        .where((element) => chatRoomsWithUser.userIds.contains(element.userId))
+        .toList();
 
     emit(HistoricalChatsFetched(
         roomId: event.roomId,
         messages: chatMessages,
         doesNextPageExist: doesNextPageExist,
         currentChatRoom: currentChatRoom,
-        userProfiles: publicUserProfiles,
+        allMessagingUserProfiles: publicUserProfiles,
+        chatRoomUserProfiles: chatRoomUserProfiles,
     ));
   }
 
@@ -223,7 +239,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
           currentChatRoom: currentState.currentChatRoom,
-          userProfiles: currentState.userProfiles,
+          allMessagingUserProfiles: currentState.allMessagingUserProfiles,
+          chatRoomUserProfiles: currentState.chatRoomUserProfiles,
       ));
     }
   }
@@ -251,7 +268,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
           currentChatRoom: currentState.currentChatRoom,
-          userProfiles: currentState.userProfiles,
+          allMessagingUserProfiles: currentState.allMessagingUserProfiles,
+          chatRoomUserProfiles: currentState.chatRoomUserProfiles,
       ));
     }
   }
@@ -267,7 +285,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           messages: updatedMessages,
           doesNextPageExist: currentState.doesNextPageExist,
           currentChatRoom: currentState.currentChatRoom,
-          userProfiles: currentState.userProfiles,
+          allMessagingUserProfiles: currentState.allMessagingUserProfiles,
+          chatRoomUserProfiles: currentState.chatRoomUserProfiles,
       ));
     }
   }
@@ -280,8 +299,9 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     _addCurrentUserStoppedTypingEventToChannel(event.roomId, event.userId);
   }
 
+  // todo - error [Unhandled Exception: Bad state: Cannot add event after closing]
   void dispose() {
-    _chatRoomChannel?.sink.close();
     _heartbeatTimer?.cancel();
+    _chatRoomChannel?.sink.close();
   }
 }

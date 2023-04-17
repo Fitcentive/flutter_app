@@ -6,6 +6,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_chat/bloc/detailed_chat_bloc.dart';
 import 'package:flutter_app/src/views/detailed_chat/bloc/detailed_chat_event.dart';
+import 'package:flutter_app/src/views/select_chat_users/select_chat_users_view.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -71,11 +72,13 @@ class DetailedChatViewState extends State<DetailedChatView> {
   );
 
   bool isEditParticipantsButtonEnabled = false;
+  List<PublicUserProfile> chatParticipantUserProfiles = [];
 
   @override
   void initState() {
     super.initState();
 
+    chatParticipantUserProfiles = [widget.currentUserProfile, ...widget.otherUserProfiles];
     currentChatTitleEdited = widget.currentChatRoom.name;
     currentChatTitleWidget = Text(
       widget.currentChatRoom.name,
@@ -92,39 +95,101 @@ class DetailedChatViewState extends State<DetailedChatView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: Visibility(visible: isEditParticipantsButtonEnabled, child: _addParticipantsToChatButton()),
+      floatingActionButton: Visibility(
+          visible: isEditParticipantsButtonEnabled,
+          child: _addParticipantsToChatButton()
+      ),
       appBar: AppBar(
         iconTheme: const IconThemeData(
           color: Colors.teal,
         ),
         title: const Text('Chat Info', style: TextStyle(color: Colors.teal),),
       ),
-      body: Scrollbar(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: WidgetUtils.skipNulls([
-            WidgetUtils.spacer(5),
-            _renderChatTitle(),
-            WidgetUtils.spacer(10),
-            _renderChatPictures(),
-            WidgetUtils.spacer(10),
-            _renderEditParticipantsButtonIfNeeded(),
-            WidgetUtils.spacer(5),
-            _renderHintIfNeeded(),
-            WidgetUtils.spacer(10),
-            WidgetUtils.spacer(2.5),
-            _renderChatParticipants(),
-          ]),
+      body: WillPopScope(
+        onWillPop: () async {
+          await _updateChatParticipantsViaApiCall();
+          return true;
+        },
+        child: Scrollbar(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: WidgetUtils.skipNulls([
+              WidgetUtils.spacer(5),
+              _renderChatTitle(),
+              WidgetUtils.spacer(10),
+              _renderChatPictures(),
+              WidgetUtils.spacer(10),
+              _renderEditParticipantsButtonIfNeeded(),
+              WidgetUtils.spacer(5),
+              _renderHintIfNeeded(),
+              WidgetUtils.spacer(10),
+              _renderChatParticipants(),
+              WidgetUtils.spacer(5),
+              _renderLeaveChatButtonIfNeeded(),
+            ]),
+          ),
         ),
       ),
     );
+  }
+
+  _updateChatParticipantsViaApiCall() {
+    final List<PublicUserProfile> otherParticipants = List.from(chatParticipantUserProfiles)
+      ..removeWhere((element) => element.userId == widget.currentUserProfile.userId);
+    final List<PublicUserProfile> removedParticipants = widget.otherUserProfiles.toSet().difference(otherParticipants.toSet()).toList();
+    final List<PublicUserProfile> addedParticipants = otherParticipants.toSet().difference(widget.otherUserProfiles.toSet()).toList();
+    _detailedChatBloc.add(
+        UsersAddedToChatRoom(
+            userIds: addedParticipants.map((e) => e.userId).toList(),
+            roomId: widget.currentChatRoom.id)
+    );
+    _detailedChatBloc.add(
+        UsersRemovedFromChatRoom(
+            userIds: removedParticipants.map((e) => e.userId).toList(),
+            roomId: widget.currentChatRoom.id)
+    );
+  }
+
+  _renderLeaveChatButtonIfNeeded() {
+    if (widget.currentChatRoom.type == "group") {
+      return Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: ElevatedButton.icon(
+            icon: const Icon(
+              Icons.exit_to_app
+            ),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+            ),
+            onPressed: () async {
+              // Leave chat room and pop screens
+            },
+            label: const Text("Leave Chat", style: TextStyle(fontSize: 15, color: Colors.white)),
+          ),
+        ),
+      );
+    }
   }
 
   _addParticipantsToChatButton() {
     return FloatingActionButton(
       heroTag: "DetailedChatViewAddParticipantToChatButton",
       onPressed: () {
-        // Do something here
+        Navigator.push<List<PublicUserProfile>>(
+            context,
+            SelectChatUsersView.route(
+                currentChatRoom: widget.currentChatRoom,
+                currentUserProfile: widget.currentUserProfile,
+                otherUserProfiles: List.from(chatParticipantUserProfiles)
+                    ..removeWhere((element) => element.userId == widget.currentUserProfile.userId)
+            )
+        ).then((value) {
+          setState(() {
+            chatParticipantUserProfiles = value ?? chatParticipantUserProfiles;
+          });
+        });
       },
       tooltip: 'Add participants to conversation!',
       backgroundColor: Colors.teal,
@@ -132,32 +197,37 @@ class DetailedChatViewState extends State<DetailedChatView> {
     );
   }
 
-  _renderChatParticipants() {
-    final plainList = UserResultsList(
-      userProfiles: [widget.currentUserProfile, ...widget.otherUserProfiles],
-      currentUserProfile: widget.currentUserProfile,
-      doesNextPageExist: false,
-      fetchMoreResultsCallback:  () {},
-      shouldListBeSwipable: isEditParticipantsButtonEnabled,
-      swipeToDismissUserCallback: _swipeToDismissUserCallback,
-    );
 
+  _renderChatParticipants() {
     return Expanded(
+      flex: 1,
       child: Container(
         margin: const EdgeInsets.all(5.0),
         decoration: BoxDecoration(
             border: Border.all(
-              color: isEditParticipantsButtonEnabled ? Colors.teal : Colors.white,
+              color: isEditParticipantsButtonEnabled ? Colors.teal : Colors.transparent,
               width: 2.5
             ),
         ),
-        child: plainList,
+        child: UserResultsList(
+          userProfiles: chatParticipantUserProfiles,
+          currentUserProfile: widget.currentUserProfile,
+          doesNextPageExist: false,
+          fetchMoreResultsCallback:  () {},
+          shouldListBeSwipable: isEditParticipantsButtonEnabled,
+          swipeToDismissUserCallback: _swipeToDismissUserCallback,
+        ),
       ),
     );
   }
 
   _swipeToDismissUserCallback(PublicUserProfile dismissedUserProfile) {
-    _detailedChatBloc.add(UserRemovedFromChatRoom(userId: dismissedUserProfile.userId, roomId: widget.currentChatRoom.id));
+    // Only save state on WillPopScope
+    // _detailedChatBloc.add(UsersRemovedFromChatRoom(userIds: [dismissedUserProfile.userId], roomId: widget.currentChatRoom.id));
+    setState(() {
+      chatParticipantUserProfiles = List.from(chatParticipantUserProfiles)
+        ..removeWhere((element) => element.userId == dismissedUserProfile.userId);
+    });
   }
 
   _handleEditParticipantsButtonPressed() {
@@ -205,21 +275,24 @@ class DetailedChatViewState extends State<DetailedChatView> {
   }
 
   _renderChatPictures() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [widget.currentUserProfile, ...widget.otherUserProfiles].map((e) {
-        return [
-          WidgetUtils.spacer(2.5),
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: ImageUtils.getUserProfileImage(e, 100, 100),
-            ),
-          )
-        ];
-      }).expand((element) => element).toList(),
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Wrap(
+        spacing: 4.0,
+        runSpacing: 4.0,
+        children: chatParticipantUserProfiles.map((e) {
+          return [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: ImageUtils.getUserProfileImage(e, 100, 100),
+              ),
+            )
+          ];
+        }).expand((element) => element).toList(),
+      ),
     );
   }
 
@@ -303,7 +376,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
         ),
       );
       // Update chat room title via bloc-API call
-      _detailedChatBloc.add(ChatRoomNameChanged(newName: currentChatTitleEdited, roomId: widget.currentChatRoom.id));
+      _detailedChatBloc.add(ChatRoomNameChanged(newName: currentChatTitleEdited, roomIds: widget.currentChatRoom.id));
     }
   }
 
