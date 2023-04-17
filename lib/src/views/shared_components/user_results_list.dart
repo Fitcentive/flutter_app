@@ -151,8 +151,12 @@ class UserResultsListState extends State<UserResultsList> {
               ],
             );
 
-
             if (widget.currentUserProfile.userId == userProfile.userId) {
+              SnackbarUtils.showSnackBar(context, "Cannot remove yourself! Please use the leave chat button instead.");
+              return Future.value(false);
+            }
+            else if (widget.userProfiles.length <= 3) {
+              SnackbarUtils.showSnackBar(context, "A minimum of 3 users is required in a group chat!");
               return Future.value(false);
             }
             else {
@@ -180,8 +184,6 @@ class UserResultsListState extends State<UserResultsList> {
     }
   }
 
-  // todo - there is an error here, need to fix
-  // todo - add UI for adding new user to chat - similar to adding users to meetup!?
   _removeUserFromConversation(PublicUserProfile userProfile) {
     if (widget.shouldListBeSwipable) {
       if (userProfile.userId != widget.currentUserProfile.userId) {

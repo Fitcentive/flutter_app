@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/select_chat_users/bloc/select_chat_users_bloc.dart';
 import 'package:flutter_app/src/views/shared_components/participants_list.dart';
@@ -100,13 +101,20 @@ class SelectChatUsersViewState extends State<SelectChatUsersView> {
   }
 
   _onParticipantRemoved(PublicUserProfile removedUser) {
-    if (removedUser.userId != widget.currentUserProfile.userId) {
+    if (removedUser.userId == widget.currentUserProfile.userId) {
+      SnackbarUtils.showSnackBar(context, "Cannot remove yourself! Use the leave chat button instead.");
+    }
+    else if (chatParticipantUserProfiles.length <= 3) {
+      SnackbarUtils.showSnackBar(context, "A minimum of 3 users is required in a group chat!");
+      selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemSelected(removedUser.userId);
+    }
+    else {
       setState(() {
         chatParticipantUserProfiles = List.from(chatParticipantUserProfiles)
           ..removeWhere((element) => element.userId == removedUser.userId);
       });
+      selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(removedUser.userId);
     }
-    selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(removedUser.userId);
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile selectedUserProfile) {

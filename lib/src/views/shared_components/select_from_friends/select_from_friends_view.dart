@@ -114,6 +114,12 @@ class SelectFromUsersViewState extends State<SelectFromUsersView> {
     });
   }
 
+  void makeUserListItemSelected(String userId) {
+    setState(() {
+      userIdToBoolCheckedMap[userId] = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<SelectFromFriendsBloc, SelectFromFriendsState>(
