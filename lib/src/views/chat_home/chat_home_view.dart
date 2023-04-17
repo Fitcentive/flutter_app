@@ -66,10 +66,12 @@ class ChatHomeViewState extends State<ChatHomeView> {
   }
 
   _goToChatSearchView() {
-    Navigator.pushAndRemoveUntil<void>(
+    Navigator.push<void>(
         context,
-        ChatSearchView.route(widget.currentUserProfile), (route) => true
-    );
+        ChatSearchView.route(widget.currentUserProfile),
+    ).then((value) {
+      _chatBloc.add(FetchUserRooms(userId: widget.currentUserProfile.userId));
+    });
   }
 
   void _onScroll() {
@@ -101,11 +103,11 @@ class ChatHomeViewState extends State<ChatHomeView> {
       child: Visibility(
         visible: _isFloatingButtonVisible,
         child: FloatingActionButton(
-          heroTag: "MeetupHomeViewCreateNewMeetupButton",
+          heroTag: "ChatHomeViewCreateNewChatButton",
           onPressed: () {
             _goToChatSearchView();
           },
-          tooltip: 'Create new meetup!',
+          tooltip: 'Create new chat!',
           backgroundColor: Colors.teal,
           child: const Icon(Icons.add, color: Colors.white),
         ),
@@ -314,15 +316,14 @@ class ChatHomeViewState extends State<ChatHomeView> {
   }
 
   _openUserChatView(ChatRoomWithMostRecentMessage room, List<PublicUserProfile> otherUserProfiles) {
-    Navigator.pushAndRemoveUntil(
+    Navigator.push(
         context,
         UserChatView.route(
             currentRoomId: room.roomId,
             currentUserProfile: widget.currentUserProfile,
             otherUserProfiles: otherUserProfiles
         ),
-            (route) => true
-    );
+    ).then((value) => _chatBloc.add(FetchUserRooms(userId: widget.currentUserProfile.userId)));
   }
 
   Future<void> _pullRefresh() async {

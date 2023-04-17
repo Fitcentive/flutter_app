@@ -3,9 +3,11 @@ import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_chat/bloc/detailed_chat_bloc.dart';
 import 'package:flutter_app/src/views/detailed_chat/bloc/detailed_chat_event.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/select_chat_users/select_chat_users_view.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -150,6 +152,48 @@ class DetailedChatViewState extends State<DetailedChatView> {
     );
   }
 
+  _leaveChatAndGoToChatHomeView() {
+    Widget cancelButton = TextButton(
+      child: const Text("Cancel", style: TextStyle(color: Colors.teal),),
+      onPressed:  () {
+        Navigator.pop(context, false);
+      },
+    );
+
+    Widget confirmButton = TextButton(
+      child: const Text("Confirm", style: TextStyle(color: Colors.teal)),
+      onPressed:  () {
+        // Add callback here
+        _detailedChatBloc.add(
+            UsersRemovedFromChatRoom(
+                userIds: [widget.currentUserProfile.userId],
+                roomId: widget.currentChatRoom.id
+            )
+        );
+        Navigator.pushReplacement(context, HomePage.route(defaultSelectedTab: HomePageState.chat));
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text("Leave this chat?"),
+      content: const Text("Are you sure? This cannot be undone"),
+      actions: [
+        cancelButton,
+        confirmButton,
+      ],
+    );
+
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+
+
+  }
+
   _renderLeaveChatButtonIfNeeded() {
     if (widget.currentChatRoom.type == "group") {
       return Align(
@@ -164,7 +208,13 @@ class DetailedChatViewState extends State<DetailedChatView> {
               backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
             ),
             onPressed: () async {
-              // Leave chat room and pop screens
+              // Leave chat room and pop screens if possible
+              if (chatParticipantUserProfiles.length <= 3) {
+                SnackbarUtils.showSnackBar(context, "Cannot leave chat, a minimum of 3 users is required in a group chat!");
+              }
+              else {
+                _leaveChatAndGoToChatHomeView();
+              }
             },
             label: const Text("Leave Chat", style: TextStyle(fontSize: 15, color: Colors.white)),
           ),
