@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 
 abstract class UserChatState extends Equatable {
@@ -38,6 +39,8 @@ class HistoricalChatsFetched extends UserChatState {
   // includes ALL userProfiles, including currentUserProfile and previous chat room users who have sent messages
   final List<PublicUserProfile> allMessagingUserProfiles;
 
+  final Meetup? associatedMeetup;
+
   const HistoricalChatsFetched({
     required this.roomId,
     required this.messages,
@@ -45,6 +48,7 @@ class HistoricalChatsFetched extends UserChatState {
     required this.currentChatRoom,
     required this.chatRoomUserProfiles,
     required this.allMessagingUserProfiles,
+    required this.associatedMeetup,
   });
 
   @override
@@ -54,6 +58,7 @@ class HistoricalChatsFetched extends UserChatState {
     doesNextPageExist,
     currentChatRoom,
     allMessagingUserProfiles,
-    chatRoomUserProfiles
+    chatRoomUserProfiles,
+    associatedMeetup
   ];
 }

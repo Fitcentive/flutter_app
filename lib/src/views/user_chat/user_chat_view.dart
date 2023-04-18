@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_chat/detailed_chat_view.dart';
+import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_bloc.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_event.dart';
 import 'package:flutter_app/src/views/user_chat/bloc/user_chat_state.dart';
@@ -39,6 +41,7 @@ class UserChatView extends StatefulWidget {
           providers: [
             BlocProvider<UserChatBloc>(
                 create: (context) => UserChatBloc(
+                  meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
                   userRepository: RepositoryProvider.of<UserRepository>(context),
                   chatRepository: RepositoryProvider.of<ChatRepository>(context),
                   secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
@@ -256,6 +259,7 @@ class UserChatViewState extends State<UserChatView> {
 
   _goToDetailedChatView(HistoricalChatsFetched state) {
     Navigator.push(context, DetailedChatView.route(
+        associatedMeetup: state.associatedMeetup,
         currentChatRoom: state.currentChatRoom,
         currentUserProfile: widget.currentUserProfile,
         otherUserProfiles: List.from(state.chatRoomUserProfiles)..removeWhere((element) => element.userId == widget.currentUserProfile.userId),
@@ -345,30 +349,16 @@ class UserChatViewState extends State<UserChatView> {
               // todo -  this could be a problem at scale
               _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
 
-              return Scrollbar(
-                controller: _scrollController,
-                child: Chat(
-                  // scrollController: _scrollController,
-                  messages: _previousMessages,
-                  onTextChanged: _handleTextChanged,
-                  onAttachmentPressed: _handleAttachmentPressed,
-                  onMessageTap: _handleMessageTap,
-                  onPreviewDataFetched: _handlePreviewDataFetched,
-                  onSendPressed: _handleSendPressed,
-                  showUserAvatars: true,
-                  showUserNames: true,
-                  user: _currentUser!,
-                  onEndReached: () async {
-                    if (!isRequestingMoreData) {
-                      isRequestingMoreData = true;
-                      _userChatBloc.add(FetchMoreChatData(
-                          roomId: widget.currentRoomId,
-                          currentUserId: widget.currentUserProfile.userId,
-                          sentBefore: _previousMessages.last.createdAt!
-                      ));
-                    }
-                  },
-                ),
+              return Column(
+                children: WidgetUtils.skipNulls([
+                  _renderMeetupMiniCard(state),
+                  Expanded(
+                    child: Scrollbar(
+                      controller: _scrollController,
+                      child: _renderChatView(),
+                    ),
+                  )
+                ]),
               );
             }
             else {
@@ -379,6 +369,70 @@ class UserChatViewState extends State<UserChatView> {
           },
         ),
       )
+    );
+  }
+
+  _goToDetailedMeetupView(String meetupId) {
+    Navigator.push(
+        context,
+        DetailedMeetupView.route(meetupId: meetupId, currentUserProfile: widget.currentUserProfile)
+    );
+  }
+
+  _renderMeetupMiniCard(HistoricalChatsFetched state) {
+    if (state.associatedMeetup != null) {
+      return Align(
+        alignment: Alignment.topCenter,
+        child: ListTile(
+          onTap: () {
+            _goToDetailedMeetupView(state.associatedMeetup!.id);
+          },
+          tileColor: Colors.teal,
+          title: Center(
+            child: Text(
+                state.associatedMeetup!.name ?? "Unnamed Meetup",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16
+              ),
+            ),
+          ),
+          subtitle: const Center(
+            child: Text(
+              "This chat is associated with a meetup!",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  _renderChatView() {
+    return Chat(
+      // scrollController: _scrollController,
+      messages: _previousMessages,
+      onTextChanged: _handleTextChanged,
+      onAttachmentPressed: _handleAttachmentPressed,
+      onMessageTap: _handleMessageTap,
+      onPreviewDataFetched: _handlePreviewDataFetched,
+      onSendPressed: _handleSendPressed,
+      showUserAvatars: true,
+      showUserNames: true,
+      user: _currentUser!,
+      onEndReached: () async {
+        if (!isRequestingMoreData) {
+          isRequestingMoreData = true;
+          _userChatBloc.add(FetchMoreChatData(
+              roomId: widget.currentRoomId,
+              currentUserId: widget.currentUserProfile.userId,
+              sentBefore: _previousMessages.last.createdAt!
+          ));
+        }
+      },
     );
   }
 

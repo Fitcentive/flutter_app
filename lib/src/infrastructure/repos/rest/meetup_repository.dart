@@ -19,6 +19,28 @@ class MeetupRepository {
 
   final logger = Logger("MeetupRepository");
 
+  Future<Meetup?> getMeetupByChatRoomId(
+      String chatRoomId,
+      String accessToken,
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups/chat-room/$chatRoomId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return Meetup.fromJson(jsonResponse);
+    }
+    else if (response.statusCode == HttpStatus.notFound) {
+      return null;
+    }
+    else {
+      throw Exception(
+          "getMeetupByChatRoomId: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<void> deleteMeetupCommentForUser(
       String meetupId,
       String commentId,
@@ -96,7 +118,8 @@ class MeetupRepository {
           "name" : updatedMeetup.name,
           "time" : updatedMeetup.time?.toUtc().toIso8601String(),
           "durationInMinutes" : updatedMeetup.durationInMinutes,
-          "locationId" : updatedMeetup.locationId
+          "locationId" : updatedMeetup.locationId,
+          "chatRoomId": updatedMeetup.chatRoomId,
         })
     );
 
@@ -289,6 +312,7 @@ class MeetupRepository {
     }
   }
 
+  // This is unused at the moment
   Future<void> removeAllParticipantsFromMeetup(
       String meetupId,
       String accessToken

@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
@@ -7,13 +9,22 @@ import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_card/bloc/meetup_card_bloc.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_card/bloc/meetup_card_event.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_card/bloc/meetup_card_state.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter_app/src/views/shared_components/participants_list.dart';
+import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
-class MeetupCardView extends StatelessWidget {
+typedef GoToChatRoomCallback = void Function(String chatRoomId, List<PublicUserProfile> otherUserProfiles);
+
+class MeetupCardView extends StatefulWidget {
 
   final VoidCallback onCardTapped;
+  final GoToChatRoomCallback onChatButtonPressed;
 
   final PublicUserProfile currentUserProfile;
   final Meetup meetup;
@@ -22,6 +33,39 @@ class MeetupCardView extends StatelessWidget {
   final List<MeetupDecision> decisions;
   final Map<String, PublicUserProfile> userIdProfileMap;
 
+  static Widget withBloc({
+    required PublicUserProfile currentUserProfile,
+    required Meetup meetup,
+    required MeetupLocation? meetupLocation,
+    required List<MeetupParticipant> participants,
+    required List<MeetupDecision> decisions,
+    required Map<String, PublicUserProfile> userIdProfileMap,
+    required VoidCallback onCardTapped,
+    required GoToChatRoomCallback onChatButtonPressed,
+  }) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<MeetupCardBloc>(
+            create: (context) =>
+                MeetupCardBloc(
+                  chatRepository: RepositoryProvider.of<ChatRepository>(context),
+                  meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
+                  secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+                )
+        ),
+      ],
+      child: MeetupCardView(
+        currentUserProfile: currentUserProfile,
+        meetup: meetup,
+        meetupLocation: meetupLocation,
+        participants: participants,
+        decisions: decisions,
+        userIdProfileMap: userIdProfileMap,
+        onCardTapped: onCardTapped,
+        onChatButtonPressed: onChatButtonPressed,
+      ),
+    );
+  }
 
   const MeetupCardView({
     super.key,
@@ -31,12 +75,46 @@ class MeetupCardView extends StatelessWidget {
     required this.participants,
     required this.decisions,
     required this.userIdProfileMap,
-    required this.onCardTapped
+    required this.onCardTapped,
+    required this.onChatButtonPressed,
   });
+
+
+  @override
+  State createState() {
+    return MeetupCardViewState();
+  }
+}
+
+class MeetupCardViewState extends State<MeetupCardView> {
+
+  late final MeetupCardBloc _meetupCardBloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _meetupCardBloc = BlocProvider.of<MeetupCardBloc>(context);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return _meetupCardItem(meetup, meetupLocation, participants, decisions, userIdProfileMap, context);
+    return BlocListener<MeetupCardBloc, MeetupCardState>(
+      listener: (context, state) {
+        if (state is MeetupChatRoomCreated) {
+          final otherUserProfiles = widget.userIdProfileMap.entries.map((e) => e.value).where((element) => element.userId != widget.currentUserProfile.userId).toList();
+          widget.onChatButtonPressed(state.chatRoomId, otherUserProfiles);
+        }
+      },
+      child: _meetupCardItem(
+          widget.meetup,
+          widget.meetupLocation,
+          widget.participants,
+          widget.decisions,
+          widget.userIdProfileMap,
+          context
+      ),
+    );
   }
 
   _meetupCardItem(
@@ -53,7 +131,7 @@ class MeetupCardView extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           // _goToEditMeetupView(meetup, meetupLocation, participants, decisions, relevantUserProfiles);
-          onCardTapped();
+          widget.onCardTapped();
         },
         child: Card(
             elevation: 0,
@@ -75,6 +153,8 @@ class MeetupCardView extends StatelessWidget {
                         _renderTop(meetup),
                         WidgetUtils.spacer(10),
                         _renderBottom(meetup, meetupLocation, participants, decisions, relevantUserProfiles),
+                        WidgetUtils.spacer(10),
+                        _renderGoToChatRoomButton(),
                       ]
                   ),
                 ),
@@ -83,6 +163,51 @@ class MeetupCardView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _renderGoToChatRoomButton() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ElevatedButton.icon(
+        icon: const Icon(
+            Icons.chat
+        ),
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () async {
+          _goToChatRoom();
+        },
+        label: const Text("Chat", style: TextStyle(fontSize: 15, color: Colors.white)),
+      ),
+    );
+  }
+
+  // If < 3 - DMs, otherwise meetup group chat (need to create it)
+  // Add LISTENER FOR MeetupChatRoomCreated and update it
+  _goToChatRoom() {
+    if (widget.participants.length < 3) {
+      _meetupCardBloc.add(
+          GetDirectMessagePrivateChatRoomForMeetup(
+              meetup: widget.meetup,
+              currentUserProfileId: widget.currentUserProfile.userId,
+              participants: widget.participants.map((e) => e.userId).toList()
+          )
+      );
+    }
+    else if (widget.meetup.chatRoomId != null) {
+      final otherUserProfiles = widget.userIdProfileMap.entries.map((e) => e.value).where((element) => element.userId != widget.currentUserProfile.userId).toList();
+      widget.onChatButtonPressed(widget.meetup.chatRoomId!, otherUserProfiles);
+    }
+    else {
+      _meetupCardBloc.add(
+          CreateChatRoomForMeetup(
+              meetup: widget.meetup,
+              roomName: widget.meetup.name ?? "Unnamed meetup",
+              participants: widget.participants.map((e) => e.userId).toList()
+          )
+      );
+    }
   }
 
   _renderBottom(
@@ -134,7 +259,7 @@ class MeetupCardView extends StatelessWidget {
     return SizedBox(
       height: 200,
       child: MeetupLocationView(
-        currentUserProfile: currentUserProfile,
+        currentUserProfile: widget.currentUserProfile,
         meetupLocation: meetupLocation,
         userProfiles: userProfiles,
         onTapCallback: () {
@@ -194,7 +319,7 @@ class MeetupCardView extends StatelessWidget {
   }
 
   Widget? _showMeetupOwnerIfNeeded(Meetup meetup) {
-    if (meetup.ownerId == currentUserProfile.userId) {
+    if (meetup.ownerId == widget.currentUserProfile.userId) {
       return const Text(
         "You created this meetup!",
         style: TextStyle(

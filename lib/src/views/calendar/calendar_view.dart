@@ -1,6 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:calendar_view/calendar_view.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -14,7 +13,8 @@ import 'package:flutter_app/src/views/calendar/bloc/calendar_bloc.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_event.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_state.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_card_view.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_card/meetup_card_view.dart';
+import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -349,7 +349,7 @@ class CalendarViewState extends State<CalendarView> {
           final currentMeetupDecisions = state.meetupDecisions[currentMeetup.id]!;
           final currentMeetupParticipants = state.meetupParticipants[currentMeetup.id]!;
           return Center(
-            child: MeetupCardView(
+            child: MeetupCardView.withBloc(
                 currentUserProfile: widget.currentUserProfile,
                 meetup: currentMeetup,
                 participants: currentMeetupParticipants,
@@ -363,6 +363,16 @@ class CalendarViewState extends State<CalendarView> {
                       currentMeetupParticipants,
                       currentMeetupDecisions,
                       state.userIdProfileMap.values.where((element) => currentMeetupParticipants.map((e) => e.userId).contains(element.userId)).toList()
+                  );
+                },
+                onChatButtonPressed: (chatRoomId, otherUserProfiles) {
+                  Navigator.push(
+                      context,
+                      UserChatView.route(
+                        currentRoomId: chatRoomId,
+                        currentUserProfile: widget.currentUserProfile,
+                        otherUserProfiles: otherUserProfiles,
+                      )
                   );
                 }
             ),

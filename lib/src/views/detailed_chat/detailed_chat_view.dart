@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
@@ -16,11 +17,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class DetailedChatView extends StatefulWidget {
   static const String routeName = "chat/user/info";
 
+  final Meetup? associatedMeetup;
   final ChatRoom currentChatRoom;
   final PublicUserProfile currentUserProfile;
   final List<PublicUserProfile> otherUserProfiles;
 
   static Route route({
+    required Meetup? associatedMeetup,
     required ChatRoom currentChatRoom,
     required PublicUserProfile currentUserProfile,
     required List<PublicUserProfile> otherUserProfiles,
@@ -38,6 +41,7 @@ class DetailedChatView extends StatefulWidget {
                 )),
           ],
           child: DetailedChatView(
+              associatedMeetup: associatedMeetup,
               currentChatRoom: currentChatRoom,
               otherUserProfiles: otherUserProfiles,
               currentUserProfile: currentUserProfile
@@ -48,6 +52,7 @@ class DetailedChatView extends StatefulWidget {
 
   const DetailedChatView({
     Key? key,
+    required this.associatedMeetup,
     required this.currentChatRoom,
     required this.currentUserProfile,
     required this.otherUserProfiles
@@ -306,7 +311,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
   }
 
   _renderEditParticipantsButtonIfNeeded() {
-    if (widget.currentChatRoom.type == "group") {
+    if (widget.currentChatRoom.type == "group" && widget.associatedMeetup == null) {
       return InkWell(
         onTap: () {
           _handleEditParticipantsButtonPressed();

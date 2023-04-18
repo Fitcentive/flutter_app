@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_card_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
@@ -17,6 +16,8 @@ import 'package:flutter_app/src/views/create_new_meetup/create_new_meetup_view.d
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_bloc.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_event.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_state.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_card/meetup_card_view.dart';
+import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -360,7 +361,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
               final currentMeetupLocation = state.meetupLocations[index];
               final currentMeetupParticipants = state.meetupParticipants[currentMeetupItem.id]!;
               final currentMeetupDecisions = state.meetupDecisions[currentMeetupItem.id]!;
-              return MeetupCardView(
+              return MeetupCardView.withBloc(
                   currentUserProfile: widget.currentUserProfile,
                   meetup: currentMeetupItem,
                   meetupLocation: currentMeetupLocation,
@@ -376,6 +377,16 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
                         state.userIdProfileMap.values.where((element) => currentMeetupParticipants.map((e) => e.userId).contains(element.userId)).toList()
                     );
                   },
+                onChatButtonPressed: (chatRoomId, otherUserProfiles) {
+                  Navigator.push(
+                      context,
+                      UserChatView.route(
+                        currentRoomId: chatRoomId,
+                        currentUserProfile: widget.currentUserProfile,
+                        otherUserProfiles: otherUserProfiles,
+                      )
+                  );
+                }
               );
             }
           },

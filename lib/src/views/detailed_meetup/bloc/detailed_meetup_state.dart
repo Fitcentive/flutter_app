@@ -60,3 +60,11 @@ class DetailedMeetupDataFetched extends DetailedMeetupState {
     userProfiles,
   ];
 }
+
+class MeetupUpdatedAndReadyToPop extends DetailedMeetupState {
+
+  const MeetupUpdatedAndReadyToPop();
+
+  @override
+  List<Object?> get props => [];
+}

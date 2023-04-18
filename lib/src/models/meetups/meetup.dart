@@ -13,6 +13,7 @@ class Meetup extends Equatable {
   final DateTime? time;
   final int? durationInMinutes;
   final String? locationId;
+  final String? chatRoomId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -26,6 +27,7 @@ class Meetup extends Equatable {
       this.time,
       this.durationInMinutes,
       this.locationId,
+      this.chatRoomId,
       this.createdAt,
       this.updatedAt
   );
@@ -44,6 +46,7 @@ class Meetup extends Equatable {
     time,
     durationInMinutes,
     locationId,
+    chatRoomId,
     createdAt,
     updatedAt,
   ];
@@ -87,6 +90,7 @@ class MeetupUpdate extends Equatable {
   final DateTime? time;
   final int? durationInMinutes;
   final String? locationId;
+  final String? chatRoomId;
 
 
   const MeetupUpdate({
@@ -94,7 +98,8 @@ class MeetupUpdate extends Equatable {
     this.name,
     this.time,
     this.durationInMinutes,
-    this.locationId
+    this.locationId,
+    this.chatRoomId
   });
 
   @override
@@ -104,6 +109,7 @@ class MeetupUpdate extends Equatable {
     time,
     durationInMinutes,
     locationId,
+    chatRoomId,
   ];
 
 }

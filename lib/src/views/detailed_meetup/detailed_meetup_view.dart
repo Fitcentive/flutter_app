@@ -262,6 +262,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
               selectedUserProfilesToShowAvailabilitiesFor = List.from(state.userProfiles);
             });
           }
+          else if (state is MeetupUpdatedAndReadyToPop) {
+            Navigator.pop(context);
+          }
         },
         child: BlocBuilder<DetailedMeetupBloc, DetailedMeetupState>(
           builder: (context, state) {
@@ -385,10 +388,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         meetupTime: selectedMeetupDate,
         meetupName: selectedMeetupName,
         location: selectedMeetupLocation,
-        meetupParticipantUserIds: selectedMeetupParticipantUserProfiles.map((e) => e.userId).toList()
+        meetupParticipantUserIds: selectedMeetupParticipantUserProfiles.map((e) => e.userId).toList(),
     ));
     SnackbarUtils.showSnackBar(context, "Meetup updated successfully!");
-    Navigator.pop(context);
   }
 
 

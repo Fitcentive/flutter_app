@@ -15,6 +15,7 @@ Meetup _$MeetupFromJson(Map<String, dynamic> json) => Meetup(
       json['time'] == null ? null : DateTime.parse(json['time'] as String),
       json['durationInMinutes'] as int?,
       json['locationId'] as String?,
+      json['chatRoomId'] as String?,
       DateTime.parse(json['createdAt'] as String),
       DateTime.parse(json['updatedAt'] as String),
     );
@@ -28,6 +29,7 @@ Map<String, dynamic> _$MeetupToJson(Meetup instance) => <String, dynamic>{
       'time': instance.time?.toIso8601String(),
       'durationInMinutes': instance.durationInMinutes,
       'locationId': instance.locationId,
+      'chatRoomId': instance.chatRoomId,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

@@ -86,12 +86,15 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
   void _updateMeetupDetails(UpdateMeetupDetails event, Emitter<DetailedMeetupState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
+    final originalMeetup = await meetupRepository.getMeetupById(event.meetupId, accessToken!);
+
     final updatedMeetup = MeetupUpdate(
       meetupType: "Workout",
       name: event.meetupName,
       time: event.meetupTime,
       durationInMinutes: null, // Need to update things to include a time duration
       locationId: event.location?.locationId,
+      chatRoomId: originalMeetup.chatRoomId,
     );
 
     final meetup = await meetupRepository.updateMeetup(event.meetupId, updatedMeetup, accessToken!);
@@ -113,6 +116,8 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
       await Future.wait(participantsToRemove.map((e) =>
           meetupRepository.removeParticipantFromMeetup(meetup.id, e, accessToken)));
     }
+
+    emit(const MeetupUpdatedAndReadyToPop());
   }
 
   void _saveAvailabilitiesForCurrentUser(SaveAvailabilitiesForCurrentUser event, Emitter<DetailedMeetupState> emit) async {

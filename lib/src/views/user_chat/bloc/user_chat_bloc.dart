@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
@@ -19,6 +20,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
+  final MeetupRepository meetupRepository;
   final UserRepository userRepository;
   final ChatRepository chatRepository;
   final FlutterSecureStorage secureStorage;
@@ -30,6 +32,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   Timer? _heartbeatTimer;
 
   UserChatBloc({
+    required this.meetupRepository,
     required this.userRepository,
     required this.chatRepository,
     required this.secureStorage,
@@ -140,10 +143,12 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           currentChatRoom: currentState.currentChatRoom,
           allMessagingUserProfiles: publicUserProfiles,
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
+          associatedMeetup: currentState.associatedMeetup,
       ));
     }
   }
 
+  // todo - fetch associated Meetup over here if relevant
   void _fetchHistoricalChats(ConnectWebsocketAndFetchHistoricalChats event, Emitter<UserChatState> emit) async {
     emit(const HistoricalChatsLoading());
 
@@ -156,6 +161,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         .toList();
     final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
 
+    // We check if the chatRoom in question has an associated meetup
+    final meetupOpt = await meetupRepository.getMeetupByChatRoomId(event.roomId, accessToken);
 
     // We also need to fetch users in chat room again because we cant be too sure
     final currentChatRoom = (await chatRepository.getChatRoomDefinitions([event.roomId], accessToken)).first;
@@ -176,6 +183,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         currentChatRoom: currentChatRoom,
         allMessagingUserProfiles: publicUserProfiles,
         chatRoomUserProfiles: chatRoomUserProfiles,
+        associatedMeetup: meetupOpt,
     ));
   }
 
@@ -241,6 +249,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           currentChatRoom: currentState.currentChatRoom,
           allMessagingUserProfiles: currentState.allMessagingUserProfiles,
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
+        associatedMeetup: currentState.associatedMeetup,
       ));
     }
   }
@@ -270,6 +279,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           currentChatRoom: currentState.currentChatRoom,
           allMessagingUserProfiles: currentState.allMessagingUserProfiles,
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
+          associatedMeetup: currentState.associatedMeetup,
       ));
     }
   }
@@ -287,6 +297,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           currentChatRoom: currentState.currentChatRoom,
           allMessagingUserProfiles: currentState.allMessagingUserProfiles,
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
+          associatedMeetup: currentState.associatedMeetup,
       ));
     }
   }

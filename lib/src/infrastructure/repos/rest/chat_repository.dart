@@ -83,6 +83,33 @@ class ChatRepository {
     }
   }
 
+  Future<ChatRoom> getChatRoomForGroupConversationWithName(
+      List<String> targetUserIds,
+      String roomName,
+      String accessToken
+  ) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/get-chat-room"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+        body: json.encode({
+          "target_users": targetUserIds,
+          "room_name": roomName
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final chatRoom = ChatRoom.fromJson(jsonResponse);
+      return chatRoom;
+    } else {
+      throw Exception(
+          "getChatRoomForGroupConversation: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<ChatRoom> getChatRoomForGroupConversation(List<String> targetUserIds, String accessToken) async {
     final response = await http.post(
         Uri.parse("$BASE_URL/get-chat-room"),
