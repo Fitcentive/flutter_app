@@ -84,6 +84,7 @@ class UserChatViewState extends State<UserChatView> {
 
   final joinRef = const Uuid().v4();
 
+  String lastReadMessageId = "";
   List<types.Message> _previousMessages = [];
   List<types.Message> _newMessages = [];
 
@@ -284,6 +285,10 @@ class UserChatViewState extends State<UserChatView> {
     );
   }
 
+  _updateUserChatRoomLastSeen() {
+    _userChatBloc.add(UpdateCurrentUserChatRoomLastSeen(roomId: widget.currentRoomId));
+  }
+
 
   // todo - nasty bug here, user msgs are sometimes is 2x/4x, especially right after adding new person to chat
   @override
@@ -323,50 +328,86 @@ class UserChatViewState extends State<UserChatView> {
           },
         ),
       ),
-      body: BlocListener<UserChatBloc, UserChatState>(
-        listener: (context, state) {
-          if (state is HistoricalChatsFetched) {
-            _generateChatTitle(state);
-            _redoOtherUsers(state);
-          }
+      body: WillPopScope(
+        onWillPop: () async {
+          _updateUserChatRoomLastSeen();
+          return true;
         },
-        child: BlocBuilder<UserChatBloc, UserChatState>(
-          builder: (context, state) {
+        child: BlocListener<UserChatBloc, UserChatState>(
+          listener: (context, state) {
             if (state is HistoricalChatsFetched) {
-              isRequestingMoreData = false;
-              _previousMessages = List<types.Message>.from(state.messages.map((msg) => types.TextMessage(
-                author: _getChatMessageAuthor(msg.senderId, state),
-                createdAt: msg.createdAt.millisecondsSinceEpoch,
-                id: msg.id,
-                text: msg.text,
-              )));
-
-              // Cannot simply add after, need to sort
-              for (var msg in _newMessages.reversed) {
-                _previousMessages.insert(0, msg);
-              }
-
-              // todo -  this could be a problem at scale
-              _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-
-              return Column(
-                children: WidgetUtils.skipNulls([
-                  _renderMeetupMiniCard(state),
-                  Expanded(
-                    child: Scrollbar(
-                      controller: _scrollController,
-                      child: _renderChatView(),
-                    ),
-                  )
-                ]),
-              );
-            }
-            else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              _generateChatTitle(state);
+              _redoOtherUsers(state);
             }
           },
+          child: BlocBuilder<UserChatBloc, UserChatState>(
+            builder: (context, state) {
+              if (state is HistoricalChatsFetched) {
+                isRequestingMoreData = false;
+                _previousMessages = List<types.Message>.from(state.messages.map((msg) => types.TextMessage(
+                  author: _getChatMessageAuthor(msg.senderId, state),
+                  createdAt: msg.createdAt.millisecondsSinceEpoch,
+                  id: msg.id,
+                  text: msg.text,
+                )));
+
+                // Cannot simply add after, need to sort
+                for (var msg in _newMessages.reversed) {
+                  _previousMessages.insert(0, msg);
+                }
+
+                // todo -  this could be a problem at scale
+                _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+
+                if (state.userLastSeen != null) {
+                  final templastReadMessageId = _previousMessages
+                      .lastWhere(
+                          (element) => DateTime
+                              .fromMillisecondsSinceEpoch(element.createdAt!)
+                              .compareTo(state.userLastSeen!.lastSeen) >= 0 && element.author.id != _currentUser!.id,
+                  orElse: () {
+                            return types.TextMessage(
+                              author: _currentUser!,
+                              id: "random_unused_id",
+                              text: "msg.text",
+                            );
+                  })
+                      .id;
+
+                  if (templastReadMessageId != "random_unused_id") {
+                    final indexOf = _previousMessages[_previousMessages.indexWhere((element) => element.id == templastReadMessageId)];
+                    if (indexOf != _previousMessages.length - 1) {
+                      lastReadMessageId = _previousMessages[_previousMessages.indexWhere((element) => element.id == templastReadMessageId) + 1].id;
+                    }
+                  }
+
+                }
+                else {
+                  if (_previousMessages.isNotEmpty) {
+                    lastReadMessageId = _previousMessages.last.id;
+                  }
+                }
+
+
+                return Column(
+                  children: WidgetUtils.skipNulls([
+                    _renderMeetupMiniCard(state),
+                    Expanded(
+                      child: Scrollbar(
+                        controller: _scrollController,
+                        child: _renderChatView(),
+                      ),
+                    )
+                  ]),
+                );
+              }
+              else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
+          ),
         ),
       )
     );
@@ -415,7 +456,13 @@ class UserChatViewState extends State<UserChatView> {
     return Chat(
       // scrollController: _scrollController,
       messages: _previousMessages,
-      onTextChanged: _handleTextChanged,
+      inputOptions: InputOptions(
+        onTextChanged: _handleTextChanged,
+      ),
+      scrollToUnreadOptions: ScrollToUnreadOptions(
+        lastReadMessageId: lastReadMessageId,
+        scrollOnOpen: true,
+      ),
       onAttachmentPressed: _handleAttachmentPressed,
       onMessageTap: _handleMessageTap,
       onPreviewDataFetched: _handlePreviewDataFetched,

@@ -47,6 +47,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     on<CurrentUserTypingStopped>(_currentUserTypingStopped);
     on<OtherUserTypingStarted>(_otherUserTypingStarted);
     on<OtherUserTypingStopped>(_otherUserTypingStopped);
+    on<UpdateCurrentUserChatRoomLastSeen>(_updateCurrentUserChatRoomLastSeen);
   }
 
   _setUpHeartbeats(String roomId, String currentUserId) {
@@ -123,6 +124,12 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     });
   }
 
+
+  void _updateCurrentUserChatRoomLastSeen(UpdateCurrentUserChatRoomLastSeen event, Emitter<UserChatState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await chatRepository.upsertUserChatRoomLastSeen(event.roomId, accessToken!);
+  }
+
   void _fetchMoreChatData(FetchMoreChatData event, Emitter<UserChatState> emit) async {
     final currentState = state;
     if (currentState is HistoricalChatsFetched && currentState.doesNextPageExist) {
@@ -146,6 +153,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           allMessagingUserProfiles: publicUserProfiles,
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
           associatedMeetup: currentState.associatedMeetup,
+          userLastSeen: currentState.userLastSeen,
       ));
     }
   }
@@ -180,6 +188,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         .where((element) => chatRoomsWithUser.userIds.contains(element.userId))
         .toList();
 
+    final userLastSeen = await chatRepository.getUserChatRoomLastSeen(event.roomId, accessToken);
+
     emit(HistoricalChatsFetched(
         roomId: event.roomId,
         messages: chatMessages,
@@ -188,6 +198,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         allMessagingUserProfiles: publicUserProfiles,
         chatRoomUserProfiles: chatRoomUserProfiles,
         associatedMeetup: meetupOpt,
+        userLastSeen: userLastSeen,
     ));
   }
 
@@ -253,7 +264,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           currentChatRoom: currentState.currentChatRoom,
           allMessagingUserProfiles: currentState.allMessagingUserProfiles,
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
-        associatedMeetup: currentState.associatedMeetup,
+          associatedMeetup: currentState.associatedMeetup,
+          userLastSeen: currentState.userLastSeen,
       ));
     }
   }
@@ -284,6 +296,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           allMessagingUserProfiles: currentState.allMessagingUserProfiles,
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
           associatedMeetup: currentState.associatedMeetup,
+          userLastSeen: currentState.userLastSeen,
       ));
     }
   }
@@ -302,6 +315,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           allMessagingUserProfiles: currentState.allMessagingUserProfiles,
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
           associatedMeetup: currentState.associatedMeetup,
+          userLastSeen: currentState.userLastSeen,
       ));
     }
   }

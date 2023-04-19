@@ -204,8 +204,6 @@ class ChatHomeViewState extends State<ChatHomeView> {
   }
 
   // todo - think about pagination - what happens if a LOT of chats??
-  // todo - think about meetup chats now - and how to name chatRoom?
-  // todo - think about how to edit a chat - (leave/remove user, view users, change chat room name)
   _chatList(UserRoomsLoaded state) {
     if (state.filteredRooms.isNotEmpty) {
       return RefreshIndicator(
@@ -230,13 +228,19 @@ class ChatHomeViewState extends State<ChatHomeView> {
                     .map((e) => e.value).toList();
 
                 return ListTile(
+                    tileColor: _isMessageUnread(state, currentChatRoom) ? Colors.grey.shade200 : Colors.transparent,
                     title: Text(
                       currentChatRoom.isGroupChat ? currentChatRoom.roomName : StringUtils.getUserNameFromUserProfile(otherUserProfiles.first),
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600
+                      style: TextStyle(
+                          fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.normal
                       ),
                     ),
-                    subtitle: Text(currentChatRoom.mostRecentMessage),
+                    subtitle: Text(
+                      currentChatRoom.mostRecentMessage,
+                      style: TextStyle(
+                        fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.normal
+                      ),
+                    ),
                     leading: GestureDetector(
                       onTap: () async {
                         _openUserChatView(currentChatRoom, otherUserProfiles);
@@ -259,6 +263,13 @@ class ChatHomeViewState extends State<ChatHomeView> {
         ),
       );
     }
+  }
+
+  // todo - this is a hacky timezone fix - need fixing again!
+  _isMessageUnread(UserRoomsLoaded state, ChatRoomWithMostRecentMessage currentChatRoom) {
+    final res = (state.roomUserLastSeenMap[currentChatRoom.roomId]?.compareTo(
+                currentChatRoom.mostRecentMessageTime.toUtc().subtract(const Duration(hours: 4))) ?? -1);
+    return res <= 0;
   }
 
   _generateChatPicture(

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/chats/user_last_seen.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 
@@ -41,6 +42,8 @@ class HistoricalChatsFetched extends UserChatState {
 
   final Meetup? associatedMeetup;
 
+  final UserLastSeen? userLastSeen;
+
   const HistoricalChatsFetched({
     required this.roomId,
     required this.messages,
@@ -49,6 +52,7 @@ class HistoricalChatsFetched extends UserChatState {
     required this.chatRoomUserProfiles,
     required this.allMessagingUserProfiles,
     required this.associatedMeetup,
+    required this.userLastSeen,
   });
 
   @override
@@ -59,6 +63,7 @@ class HistoricalChatsFetched extends UserChatState {
     currentChatRoom,
     allMessagingUserProfiles,
     chatRoomUserProfiles,
-    associatedMeetup
+    associatedMeetup,
+    userLastSeen
   ];
 }

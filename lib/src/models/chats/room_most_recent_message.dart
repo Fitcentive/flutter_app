@@ -7,11 +7,12 @@ part 'room_most_recent_message.g.dart';
 class RoomMostRecentMessage extends Equatable {
   final String roomId;
   final String mostRecentMessage;
+  final DateTime mostRecentMessageTime;
 
-  const RoomMostRecentMessage(this.roomId, this.mostRecentMessage);
+  const RoomMostRecentMessage(this.roomId, this.mostRecentMessage, this.mostRecentMessageTime);
 
   @override
-  List<Object> get props => [roomId, mostRecentMessage];
+  List<Object> get props => [roomId, mostRecentMessage, mostRecentMessageTime];
 
   factory RoomMostRecentMessage.fromJson(Map<String, dynamic> json) => _$RoomMostRecentMessageFromJson(json);
 

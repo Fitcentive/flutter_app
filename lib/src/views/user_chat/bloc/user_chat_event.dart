@@ -91,3 +91,14 @@ class CurrentUserTypingStopped extends UserChatEvent {
   List<Object?> get props => [userId, roomId];
 }
 
+class UpdateCurrentUserChatRoomLastSeen extends UserChatEvent {
+  final String roomId;
+
+  const UpdateCurrentUserChatRoomLastSeen({
+    required this.roomId,
+  });
+
+  @override
+  List<Object?> get props => [roomId];
+}
+

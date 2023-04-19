@@ -4,8 +4,10 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
+import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_event.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,6 +53,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
               rooms: currentState.rooms,
               filteredRooms: filteredRooms,
               userIdProfileMap: currentState.userIdProfileMap,
+              roomUserLastSeenMap: currentState.roomUserLastSeenMap,
             )
         );
       }
@@ -60,6 +63,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
               rooms: currentState.rooms,
               filteredRooms: currentState.rooms,
               userIdProfileMap: currentState.userIdProfileMap,
+              roomUserLastSeenMap: currentState.roomUserLastSeenMap,
             )
         );
       }
@@ -74,13 +78,13 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
 
     final roomIds = chatRooms.map((e) => e.roomId).toList();
     final roomMostRecentMessages = await chatRepository.getRoomMostRecentMessage(roomIds, accessToken);
-    final Map<String, String> roomIdMostRecentMessageMap =
-    { for (var e in roomMostRecentMessages) (e).roomId : e.mostRecentMessage };
+    final Map<String, RoomMostRecentMessage> roomIdMostRecentMessageMap = { for (var e in roomMostRecentMessages) (e).roomId : e };
     final chatRoomsWithMostRecentMessage = chatRooms.map((e) =>
         ChatRoomWithMostRecentMessage(
             roomId: e.roomId,
             userIds: e.userIds,
-            mostRecentMessage: roomIdMostRecentMessageMap[e.roomId] ?? "",
+            mostRecentMessage: roomIdMostRecentMessageMap[e.roomId]?.mostRecentMessage ?? "",
+            mostRecentMessageTime: roomIdMostRecentMessageMap[e.roomId]?.mostRecentMessageTime ?? DateTime.now(),
             roomName: chatRoomDefinitions.firstWhere((element) => element.id == e.roomId).name,
             isGroupChat: chatRoomDefinitions.firstWhere((element) => element.id == e.roomId).type == "group"
         )
@@ -91,11 +95,16 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
+    final userRoomsLastSeen = await Future.wait(roomIds.map((e) => chatRepository.getUserChatRoomLastSeen(e, accessToken)));
+    final Map<String, DateTime> roomIdMostRecentMessageTimeMap =
+      { for (var e in WidgetUtils.skipNulls(userRoomsLastSeen))  (e).roomId : e.lastSeen };
+
     emit(
         UserRoomsLoaded(
             rooms: chatRoomsWithMostRecentMessage,
             filteredRooms: chatRoomsWithMostRecentMessage,
             userIdProfileMap: userIdProfileMap,
+            roomUserLastSeenMap: roomIdMostRecentMessageTimeMap,
         )
     );
   }

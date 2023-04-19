@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
+import 'package:flutter_app/src/models/chats/user_last_seen.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 
 import 'package:http/http.dart' as http;
@@ -249,6 +250,44 @@ class ChatRepository {
     } else {
       throw Exception(
           "getRoomMostRecentMessage: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> upsertUserChatRoomLastSeen(String roomId, String accessToken) async {
+    final response = await http.put(
+        Uri.parse("$BASE_URL/room/$roomId/last-seen"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        }
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    } else {
+      throw Exception(
+          "upsertUserChatRoomLastSeen: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<UserLastSeen?> getUserChatRoomLastSeen(String roomId, String accessToken) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/room/$roomId/last-seen"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        }
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final lastSeen = UserLastSeen.fromJson(jsonResponse);
+      return lastSeen;
+    } else if (response.statusCode == HttpStatus.notFound) {
+      return null;
+    } else {
+      throw Exception(
+          "getUserChatRoomLastSeen: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

@@ -55,7 +55,7 @@ dependencies:
   flutter_local_notifications: ^9.6.1
   flutter_typeahead: ^4.0.0
   sliding_up_panel: ^2.0.0+1
-  flutter_chat_ui: ^1.6.3
+  flutter_chat_ui: ^1.6.6
   web_socket_channel: ^2.2.0
   google_maps_flutter: ^2.2.3
   geolocator: ^9.0.1

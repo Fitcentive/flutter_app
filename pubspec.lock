@@ -458,10 +458,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_chat_ui
-      sha256: a3052b1dd17e3ccb177c2854b3b4f7a91ec8fff02af38af43778d6a0b9db69af
+      sha256: f13c48d06dd8be0d2feb0356a22d1cb6a0f83873b923b8d32bb4b55efb07cd39
       url: "https://pub.dev"
     source: hosted
-    version: "1.6.3"
+    version: "1.6.6"
   flutter_expandable_fab:
     dependency: "direct main"
     description:
@@ -1264,6 +1264,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  scroll_to_index:
+    dependency: transitive
+    description:
+      name: scroll_to_index
+      sha256: b707546e7500d9f070d63e5acf74fd437ec7eeeb68d3412ef7b0afada0b4f176
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   shelf:
     dependency: transitive
     description:
