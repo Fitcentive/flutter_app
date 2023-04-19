@@ -102,7 +102,11 @@ class MeetupCardViewState extends State<MeetupCardView> {
     return BlocListener<MeetupCardBloc, MeetupCardState>(
       listener: (context, state) {
         if (state is MeetupChatRoomCreated) {
-          final otherUserProfiles = widget.userIdProfileMap.entries.map((e) => e.value).where((element) => element.userId != widget.currentUserProfile.userId).toList();
+          final otherUserProfiles = widget.userIdProfileMap.entries
+              .map((e) => e.value)
+              .where((element) => widget.participants.map((e) => e.userId).contains(element.userId))
+              .where((element) => element.userId != widget.currentUserProfile.userId)
+              .toList();
           widget.onChatButtonPressed(state.chatRoomId, otherUserProfiles);
         }
       },
@@ -196,7 +200,11 @@ class MeetupCardViewState extends State<MeetupCardView> {
       );
     }
     else if (widget.meetup.chatRoomId != null) {
-      final otherUserProfiles = widget.userIdProfileMap.entries.map((e) => e.value).where((element) => element.userId != widget.currentUserProfile.userId).toList();
+      final otherUserProfiles = widget.userIdProfileMap.entries
+          .map((e) => e.value)
+          .where((element) => widget.participants.map((e) => e.userId).contains(element.userId))
+          .where((element) => element.userId != widget.currentUserProfile.userId)
+          .toList();
       widget.onChatButtonPressed(widget.meetup.chatRoomId!, otherUserProfiles);
     }
     else {

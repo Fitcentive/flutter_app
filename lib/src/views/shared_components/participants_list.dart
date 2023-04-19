@@ -57,64 +57,77 @@ class ParticipantsListState extends State<ParticipantsList> {
   }
 
   Widget _renderParticipantCircleViewWithCloseButton(PublicUserProfile userProfile) {
-    return CircleAvatar(
-      radius: (widget.circleRadius / 2) + ((widget.circleRadius / 2)/10),
-      backgroundColor: widget.onParticipantTapped == null ? Colors.teal : (
-          isParticipantSelectedMap[userProfile.userId] ?? false ? Colors.teal : Colors.red
-      ),
-      child: Stack(
-        children: WidgetUtils.skipNulls([
-          GestureDetector(
-            onTap: () {
-              if (widget.onParticipantTapped != null) {
-                if (isParticipantSelectedMap[userProfile.userId] ?? false) {
-                  setState(() {
-                    isParticipantSelectedMap[userProfile.userId] = false;
-                  });
-                  widget.onParticipantTapped!(userProfile, false);
-                }
-                else {
-                  setState(() {
-                    isParticipantSelectedMap[userProfile.userId] = true;
-                  });
-                  widget.onParticipantTapped!(userProfile, true);
-                }
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: (widget.circleRadius / 2) + ((widget.circleRadius / 2)/10),
+          backgroundColor: widget.onParticipantTapped == null ? Colors.teal : (
+              isParticipantSelectedMap[userProfile.userId] ?? false ? Colors.teal : Colors.red
+          ),
+          child: Stack(
+            children: WidgetUtils.skipNulls([
+              GestureDetector(
+                onTap: () {
+                  if (widget.onParticipantTapped != null) {
+                    if (isParticipantSelectedMap[userProfile.userId] ?? false) {
+                      setState(() {
+                        isParticipantSelectedMap[userProfile.userId] = false;
+                      });
+                      widget.onParticipantTapped!(userProfile, false);
+                    }
+                    else {
+                      setState(() {
+                        isParticipantSelectedMap[userProfile.userId] = true;
+                      });
+                      widget.onParticipantTapped!(userProfile, true);
+                    }
 
-              }
-            },
-            child: Center(
-              child: Container(
-                width: widget.circleRadius,
-                height: widget.circleRadius,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: ImageUtils.getUserProfileImage(userProfile, 500, 500),
+                  }
+                },
+                child: Center(
+                  child: Container(
+                    width: widget.circleRadius,
+                    height: widget.circleRadius,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: ImageUtils.getUserProfileImage(userProfile, 500, 500),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              Align(
+                alignment: Alignment.topRight,
+                child: widget.onParticipantRemoved == null ? null : CircleAvatar(
+                    radius: widget.circleRadius / 6,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    child: GestureDetector(
+                      onTap: () {
+                        if (widget.onParticipantRemoved != null) {
+                          widget.onParticipantRemoved!(userProfile);
+                        }
+                      },
+                      child: Icon(
+                        Icons.remove,
+                        size: widget.circleRadius / 3,
+                        color: Colors.white,
+                      ),
+                    )
+                ),
+              ),
+              _generateAvailabilitySubscriptIconIfNeeded(userProfile),
+            ]),
           ),
-          Align(
-            alignment: Alignment.topRight,
-            child: widget.onParticipantRemoved == null ? null : CircleAvatar(
-                radius: widget.circleRadius / 6,
-                backgroundColor: Theme.of(context).primaryColor,
-                child: GestureDetector(
-                  onTap: () {
-                    if (widget.onParticipantRemoved != null) {
-                      widget.onParticipantRemoved!(userProfile);
-                    }
-                  },
-                  child: Icon(
-                    Icons.remove,
-                    size: widget.circleRadius / 3,
-                    color: Colors.white,
-                  ),
-                )
-            ),
+        ),
+        WidgetUtils.spacer(2),
+        // Render name
+        Text(
+          "${userProfile.firstName} ${userProfile.lastName}",
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.teal,
           ),
-          _generateAvailabilitySubscriptIconIfNeeded(userProfile),
-        ]),
-      ),
+        )
+      ],
     );
   }
 

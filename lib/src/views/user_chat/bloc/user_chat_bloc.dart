@@ -31,6 +31,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
   Timer? _heartbeatTimer;
 
+  bool hasSocketBeenInitialized = false;
+
   UserChatBloc({
     required this.meetupRepository,
     required this.userRepository,
@@ -148,11 +150,13 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     }
   }
 
-  // todo - fetch associated Meetup over here if relevant
   void _fetchHistoricalChats(ConnectWebsocketAndFetchHistoricalChats event, Emitter<UserChatState> emit) async {
     emit(const HistoricalChatsLoading());
 
-    _initializeWebsocketConnections(event.roomId, event.currentUserId);
+    if (!hasSocketBeenInitialized) {
+      _initializeWebsocketConnections(event.roomId, event.currentUserId);
+      hasSocketBeenInitialized = true;
+    }
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     const limit = 50;
     final sentBefore = DateTime.now().millisecondsSinceEpoch;
