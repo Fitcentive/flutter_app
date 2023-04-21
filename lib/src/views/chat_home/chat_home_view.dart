@@ -56,6 +56,12 @@ class ChatHomeViewState extends State<ChatHomeView> {
   Timer? _debounce;
 
   @override
+  void dispose() {
+    _chatBloc.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
 
@@ -92,6 +98,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
           }
         }
       }
+
 
     }
   }

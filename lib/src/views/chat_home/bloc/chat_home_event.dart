@@ -24,3 +24,12 @@ class FilterSearchQueryChanged extends ChatHomeEvent {
   @override
   List<Object?> get props => [query];
 }
+
+class ChatRoomHasNewMessage extends ChatHomeEvent {
+  final String roomId;
+
+  const ChatRoomHasNewMessage({required this.roomId});
+
+  @override
+  List<Object?> get props => [roomId];
+}
