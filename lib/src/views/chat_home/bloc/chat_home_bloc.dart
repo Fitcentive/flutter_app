@@ -150,24 +150,8 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final newRoomWithUpdatedMessage = await chatRepository.getRoomMostRecentMessage([event.roomId], accessToken!);
 
-      final updatedRooms = currentState.rooms.map((r) {
-        if (r.roomId != event.roomId) {
-          return r;
-        }
-        else {
-          return ChatRoomWithMostRecentMessage(
-              roomId: r.roomId,
-              userIds: r.userIds,
-              mostRecentMessage: newRoomWithUpdatedMessage.first.mostRecentMessage ?? "",
-              mostRecentMessageTime: newRoomWithUpdatedMessage.first.mostRecentMessageTime,
-              roomName: r.roomName,
-              isGroupChat: r.isGroupChat
-          );
-        }
-      }).toList();
-
       ChatRoomWithMostRecentMessage? newMessage;
-      currentState.filteredRooms.forEach((r) {
+      currentState.rooms.forEach((r) {
         if (r.roomId == event.roomId) {
           newMessage = ChatRoomWithMostRecentMessage(
               roomId: r.roomId,
@@ -179,11 +163,33 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
           );
         }
       });
-
-      final updatedFilteredRooms;
+      final List<ChatRoomWithMostRecentMessage> updatedRooms;
       if (newMessage != null) {
+        updatedRooms = currentState.rooms.where((element) => element.roomId != event.roomId).toList();
+        updatedRooms.insert(0, newMessage!);
+      }
+      else {
+        updatedRooms = currentState.rooms;
+      }
+
+      ChatRoomWithMostRecentMessage? newFilteredMessage;
+      currentState.filteredRooms.forEach((r) {
+        if (r.roomId == event.roomId) {
+          newFilteredMessage = ChatRoomWithMostRecentMessage(
+              roomId: r.roomId,
+              userIds: r.userIds,
+              mostRecentMessage: newRoomWithUpdatedMessage.first.mostRecentMessage ?? "",
+              mostRecentMessageTime: newRoomWithUpdatedMessage.first.mostRecentMessageTime,
+              roomName: r.roomName,
+              isGroupChat: r.isGroupChat
+          );
+        }
+      });
+
+      final List<ChatRoomWithMostRecentMessage> updatedFilteredRooms;
+      if (newFilteredMessage != null) {
         updatedFilteredRooms = currentState.filteredRooms.where((element) => element.roomId != event.roomId).toList();
-        updatedFilteredRooms.insert(0, newMessage!);
+        updatedFilteredRooms.insert(0, newFilteredMessage!);
       }
       else {
         updatedFilteredRooms = currentState.filteredRooms;
