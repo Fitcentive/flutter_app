@@ -12,12 +12,14 @@ class MenuNavigationInitial extends MenuNavigationState {}
 class MenuItemSelected extends MenuNavigationState {
   final String selectedMenuItem;
   final int unreadNotificationCount;
+  final List<String> unreadChatRoomIds;
 
   const MenuItemSelected({
     required this.selectedMenuItem,
-    required this.unreadNotificationCount
+    required this.unreadNotificationCount,
+    required this.unreadChatRoomIds
   });
 
   @override
-  List<Object> get props => [selectedMenuItem, unreadNotificationCount];
+  List<Object> get props => [selectedMenuItem, unreadNotificationCount, unreadChatRoomIds];
 }

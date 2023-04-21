@@ -66,7 +66,7 @@ class HomePage extends StatefulWidget {
   }
 }
 
-class HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   static const String accountDetails = 'Account Details';
   static const String notifications = 'Notifications';
   static const String discover = 'Discover';
@@ -90,6 +90,7 @@ class HomePageState extends State<HomePage> {
 
   late String selectedMenuItem;
   late int unreadNotificationCount;
+  late int unreadChatRoomCount;
 
   int selectedBottomBarIndex = 0;
 
@@ -147,6 +148,37 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  _reInitWebSockets() {
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      _menuNavigationBloc.add(ReInitWebSockets(currentUserId: currentState.authenticatedUser.user.id));
+    }
+    else if (currentState is AuthSuccessState) {
+      _menuNavigationBloc.add(ReInitWebSockets(currentUserId: currentState.authenticatedUser.user.id));
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch(state) {
+      case AppLifecycleState.resumed:
+        _reInitWebSockets();
+        break;
+      case AppLifecycleState.inactive:
+      // Handle this case
+        break;
+      case AppLifecycleState.paused:
+      // Handle this case
+        break;
+      default:
+        break;
+    }
+
+
+  }
+
   @override
   void initState() {
     super.initState();
@@ -159,6 +191,7 @@ class HomePageState extends State<HomePage> {
 
     selectedMenuItem = widget.defaultSelectedTab;
     unreadNotificationCount = 0;
+    unreadChatRoomCount = 0;
     _updateBloc(selectedMenuItem);
 
     PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
@@ -189,6 +222,7 @@ class HomePageState extends State<HomePage> {
                 if (state is MenuItemSelected) {
                   selectedMenuItem = state.selectedMenuItem;
                   unreadNotificationCount = state.unreadNotificationCount;
+                  unreadChatRoomCount = state.unreadChatRoomIds.length;
                   _updateAppBadgeIfPossible();
                 }
                 return Scaffold(
@@ -205,6 +239,7 @@ class HomePageState extends State<HomePage> {
 
   _bottomNavigationBar() {
     final Widget notificationIcon;
+    final Widget chatIcon;
     if (unreadNotificationCount != 0) {
       notificationIcon = badge.Badge(
         alignment: Alignment.topRight,
@@ -216,6 +251,19 @@ class HomePageState extends State<HomePage> {
     else {
       notificationIcon = const Icon(Icons.notifications);
     }
+
+    if (unreadChatRoomCount != 0) {
+      chatIcon = badge.Badge(
+        alignment: Alignment.topRight,
+        badgeContent: Text(unreadChatRoomCount.toString(), style: const TextStyle(color: Colors.white)),
+        padding: const EdgeInsets.all(4),
+        child: const Icon(Icons.chat),
+      );
+    }
+    else {
+      chatIcon = const Icon(Icons.chat);
+    }
+
     return BottomNavigationBar(
       unselectedItemColor: Theme.of(context).primaryTextTheme.bodyText2?.color!,
       selectedItemColor: Theme.of(context).primaryColor,
@@ -228,8 +276,8 @@ class HomePageState extends State<HomePage> {
           icon: Icon(Icons.explore),
           label: 'Discover',
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.chat),
+        BottomNavigationBarItem(
+          icon: chatIcon,
           label: 'Chat',
         ),
         BottomNavigationBarItem(
@@ -328,12 +376,12 @@ class HomePageState extends State<HomePage> {
   }
 
   _updateBloc(String selectedItem) {
-    final currentState = _authenticationBloc.state;
-    if (currentState is AuthSuccessUserUpdateState) {
+
+    void updateBlocInternal(String currentUserId) {
       _menuNavigationBloc.add(
           MenuItemChosen(
               selectedMenuItem: selectedItem  ,
-              currentUserId: currentState.authenticatedUser.user.id
+              currentUserId: currentUserId
           )
       );
       if (bottomBarToAppDrawerItemMap.values.contains(selectedItem)) {
@@ -342,7 +390,14 @@ class HomePageState extends State<HomePage> {
               bottomBarToAppDrawerItemMap.keys.firstWhere((k) => bottomBarToAppDrawerItemMap[k] == selectedItem);
         });
       }
+    }
 
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      updateBlocInternal(currentState.authenticatedUser.user.id);
+    }
+    else if (currentState is AuthSuccessState) {
+      updateBlocInternal(currentState.authenticatedUser.user.id);
     }
   }
 
@@ -426,6 +481,14 @@ class HomePageState extends State<HomePage> {
       element =  badge.Badge(
         alignment: Alignment.centerLeft,
         badgeContent: Text(unreadNotificationCount.toString(), style: const TextStyle(color: Colors.white)),
+        padding: const EdgeInsets.all(10),
+        child: Text(text),
+      );
+    }
+    else if (text == chat && unreadChatRoomCount != 0) {
+      element =  badge.Badge(
+        alignment: Alignment.centerLeft,
+        badgeContent: Text(unreadChatRoomCount.toString(), style: const TextStyle(color: Colors.white)),
         padding: const EdgeInsets.all(10),
         child: Text(text),
       );
