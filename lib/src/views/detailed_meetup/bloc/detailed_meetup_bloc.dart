@@ -1,3 +1,4 @@
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
@@ -9,16 +10,21 @@ import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
 
 class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> {
   final FlutterSecureStorage secureStorage;
   final MeetupRepository meetupRepository;
   final UserRepository userRepository;
+  final ChatRepository chatRepository;
+
+  Uuid uuid = const Uuid();
 
   DetailedMeetupBloc({
     required this.secureStorage,
     required this.meetupRepository,
-    required this.userRepository
+    required this.userRepository,
+    required this.chatRepository,
   }): super(const DetailedMeetupStateInitial()) {
 
     on<FetchAdditionalMeetupData>(_fetchAdditionalMeetupData);
@@ -26,6 +32,59 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     on<UpdateMeetupDetails>(_updateMeetupDetails);
     on<AddParticipantDecisionToMeetup>(_addParticipantDecisionToMeetup);
     on<FetchAllMeetupData>(_fetchAllMeetupData);
+    on<GetDirectMessagePrivateChatRoomForMeetup>(_getDirectMessagePrivateChatRoomForMeetup);
+    on<CreateChatRoomForMeetup>(_createChatRoomForMeetup);
+  }
+
+  void _createChatRoomForMeetup(CreateChatRoomForMeetup event, Emitter<DetailedMeetupState> emit) async {
+    final currentState = state;
+    if (currentState is DetailedMeetupDataFetched) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+
+      final chatRoom = await chatRepository.getChatRoomForGroupConversationWithName(event.participants, event.roomName, accessToken!);
+      final updatedMeetupParam = MeetupUpdate(
+        meetupType: event.meetup.meetupType,
+        name: event.meetup.name,
+        time: event.meetup.time,
+        locationId: event.meetup.locationId,
+        durationInMinutes: event.meetup.durationInMinutes,
+        chatRoomId: chatRoom.id,
+      );
+      final updatedMeetup = await meetupRepository.updateMeetup(event.meetup.id, updatedMeetupParam, accessToken);
+
+      emit(MeetupChatRoomCreated(chatRoomId: chatRoom.id, randomId: uuid.v4()));
+      emit(DetailedMeetupDataFetched(
+          meetupId: currentState.meetupId,
+          userAvailabilities: currentState.userAvailabilities,
+          meetupLocation: currentState.meetupLocation,
+          meetup: updatedMeetup,
+          participants: currentState.participants,
+          decisions: currentState.decisions,
+          userProfiles: currentState.userProfiles
+      ));
+    }
+
+  }
+
+  void _getDirectMessagePrivateChatRoomForMeetup(GetDirectMessagePrivateChatRoomForMeetup event, Emitter<DetailedMeetupState> emit) async {
+    final currentState = state;
+    if (currentState is DetailedMeetupDataFetched) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final chatRoom = await chatRepository.getChatRoomForPrivateConversation(
+          event.participants.where((element) => element != event.currentUserProfileId).first, accessToken!
+      );
+
+      emit(MeetupChatRoomCreated(chatRoomId: chatRoom.id, randomId: uuid.v4()));
+      emit(DetailedMeetupDataFetched(
+          meetupId: currentState.meetupId,
+          userAvailabilities: currentState.userAvailabilities,
+          meetupLocation: currentState.meetupLocation,
+          meetup: currentState.meetup,
+          participants: currentState.participants,
+          decisions: currentState.decisions,
+          userProfiles: currentState.userProfiles
+      ));
+    }
   }
 
   void _fetchAllMeetupData(FetchAllMeetupData event, Emitter<DetailedMeetupState> emit) async {

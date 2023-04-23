@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/location/location.dart';
@@ -28,6 +29,7 @@ import 'package:flutter_app/src/views/shared_components/select_from_friends/sele
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
+import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
@@ -91,6 +93,7 @@ class DetailedMeetupView extends StatefulWidget {
     providers: [
       BlocProvider<DetailedMeetupBloc>(
           create: (context) => DetailedMeetupBloc(
+            chatRepository: RepositoryProvider.of<ChatRepository>(context),
             userRepository: RepositoryProvider.of<UserRepository>(context),
             meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
@@ -262,6 +265,20 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
               selectedUserProfilesToShowAvailabilitiesFor = List.from(state.userProfiles);
             });
           }
+          else if (state is MeetupChatRoomCreated) {
+            final otherUserProfiles = selectedMeetupParticipantUserProfiles
+                .where((element) => element.userId != widget.currentUserProfile.userId)
+                .toList();
+
+            Navigator.push(
+                context,
+                UserChatView.route(
+                    currentRoomId: state.chatRoomId,
+                    currentUserProfile: widget.currentUserProfile,
+                    otherUserProfiles: otherUserProfiles
+                )
+            );
+          }
           else if (state is MeetupUpdatedAndReadyToPop) {
             Navigator.pop(context);
           }
@@ -411,6 +428,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                   children: WidgetUtils.skipNulls([
                     WidgetUtils.spacer(2.5),
                     _renderMeetupNameView(),
+                    WidgetUtils.spacer(2.5),
+                    _renderMeetupChatButton(),
                     WidgetUtils.spacer(2.5),
                     _renderMeetupDateTime(),
                     WidgetUtils.spacer(2.5),
@@ -697,6 +716,60 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         ),
       );
     }
+  }
+
+  _goToChatRoom() {
+    if (selectedMeetupParticipants.length < 3) {
+      _detailedMeetupBloc.add(
+          // Get chat room and listen for this and jump to it
+          GetDirectMessagePrivateChatRoomForMeetup(
+              meetup: currentMeetup,
+              currentUserProfileId: widget.currentUserProfile.userId,
+              participants: widget.participants!.map((e) => e.userId).toList(),
+          )
+      );
+    }
+    else if (currentMeetup.chatRoomId != null) {
+      final otherUserProfiles = selectedMeetupParticipantUserProfiles
+          .where((element) => element.userId != widget.currentUserProfile.userId)
+          .toList();
+
+      Navigator.push(
+        context,
+        UserChatView.route(
+            currentRoomId: currentMeetup.chatRoomId!,
+            currentUserProfile: widget.currentUserProfile,
+            otherUserProfiles: otherUserProfiles
+        )
+      );
+    }
+    else {
+      // Create chat room first as it doenst exist, and then listen for it and jump
+      _detailedMeetupBloc.add(
+          CreateChatRoomForMeetup(
+              meetup: currentMeetup,
+              roomName: currentMeetup.name ?? "Unnamed meetup",
+              participants: widget.participants!.map((e) => e.userId).toList()
+          )
+      );
+    }
+  }
+
+  _renderMeetupChatButton() {
+    return Center(
+      child: ElevatedButton.icon(
+        icon: const Icon(
+            Icons.chat
+        ),
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () async {
+          _goToChatRoom();
+        },
+        label: const Text("Chat", style: TextStyle(fontSize: 15, color: Colors.white)),
+      ),
+    );
   }
 
   _renderMeetupNameView() {

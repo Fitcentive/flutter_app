@@ -118,3 +118,34 @@ class AddParticipantDecisionToMeetup extends DetailedMeetupEvent {
     hasAccepted
   ];
 }
+
+// This is used when meetup has < 3 participants
+class GetDirectMessagePrivateChatRoomForMeetup extends DetailedMeetupEvent {
+  final Meetup meetup;
+  final String currentUserProfileId;
+  final List<String> participants;
+
+  const GetDirectMessagePrivateChatRoomForMeetup({
+    required this.meetup,
+    required this.currentUserProfileId,
+    required this.participants
+  });
+
+  @override
+  List<Object?> get props => [meetup, currentUserProfileId, participants];
+}
+
+class CreateChatRoomForMeetup extends DetailedMeetupEvent {
+  final Meetup meetup;
+  final String roomName;
+  final List<String> participants;
+
+  const CreateChatRoomForMeetup({
+    required this.meetup,
+    required this.roomName,
+    required this.participants
+  });
+
+  @override
+  List<Object?> get props => [meetup, roomName, participants];
+}
