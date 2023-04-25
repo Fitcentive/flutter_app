@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
-import 'package:flutter_app/src/models/websocket/room_updated_payload.dart';
+import 'package:flutter_app/src/models/websocket/user_room_updated_payload.dart';
 import 'package:flutter_app/src/models/websocket/web_socket_event.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
@@ -83,9 +83,11 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
 
       switch (websocketEvent.event) {
         case "user_room_updated":
-          final Map<String, dynamic> decodedShoutJson = jsonDecode(jsonEncode(websocketEvent.payload));
-          final roomPayload = RoomUpdatedPayload.fromJson(decodedShoutJson); // Same payload type so we reuse the structure RoomUpdatedPayload
+          final Map<String, dynamic> decodedUserRoomUpdatedJson = jsonDecode(jsonEncode(websocketEvent.payload));
+          final roomPayload = UserRoomUpdatedPayload.fromJson(decodedUserRoomUpdatedJson);
+          if (roomPayload.userId != currentUserId) {
             add(NewIncomingChatMessageForRoom(roomId: roomPayload.roomId));
+          }
           break;
 
         default:
