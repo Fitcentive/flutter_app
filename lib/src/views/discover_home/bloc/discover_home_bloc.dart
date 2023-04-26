@@ -17,6 +17,12 @@ class DiscoverHomeBloc extends Bloc<DiscoverHomeEvent, DiscoverHomeState> {
     on<FetchUserDiscoverData>(_fetchUserDiscoverPreferences);
     on<FetchMoreDiscoveredUsers>(_fetchMoreDiscoveredUsers);
     on<RemoveUserFromListOfDiscoveredUsers>(_removeUserFromListOfDiscoveredUsers);
+    on<AddUserToListOfDiscoveredUsers>(_addUserToListOfDiscoveredUsers);
+  }
+
+  void _addUserToListOfDiscoveredUsers(AddUserToListOfDiscoveredUsers event, Emitter<DiscoverHomeState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await discoverRepository.upsertDiscoveredUser(event.currentUserId, event.discoveredUserId, accessToken!);
   }
 
   void _removeUserFromListOfDiscoveredUsers(RemoveUserFromListOfDiscoveredUsers event, Emitter<DiscoverHomeState> emit) async {

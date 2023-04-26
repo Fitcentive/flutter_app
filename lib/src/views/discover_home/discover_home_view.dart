@@ -145,6 +145,16 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
             ),
           ),
           WidgetUtils.spacer(5),
+          const Center(
+            child: Text(
+              "Swipe left on a user to remove from list",
+              style: TextStyle(
+                color: Colors.teal,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          WidgetUtils.spacer(5),
           Expanded(
             child: _userResultsList(state),
           ),
@@ -175,20 +185,43 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
   Widget _userSearchResultItem(PublicUserProfile userProfile) {
     return Dismissible(
       key: Key(userProfile.userId),
+      direction: DismissDirection.endToStart,
       onDismissed: (direction) {
-        if (selectedUserId == userProfile.userId) {
-          selectedUserId = null;
+        if (direction == DismissDirection.endToStart) {
+          if (selectedUserId == userProfile.userId) {
+            selectedUserId = null;
+          }
+          setState(() {
+            discoveredUserProfiles.removeWhere((element) => element.userId == userProfile.userId);
+          });
+          _discoverHomeBloc.add(
+              RemoveUserFromListOfDiscoveredUsers(
+                  currentUserId: widget.currentUserProfile.userId,
+                  discoveredUserId: userProfile.userId
+              )
+          );
+
+          ScaffoldMessenger
+              .of(context)
+              .showSnackBar(
+                SnackBar(
+                  content: Text("Removed ${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""} from list of discovered people"),
+                  action: SnackBarAction(
+                      label: "Undo",
+                      onPressed: () {
+                        _discoverHomeBloc.add(
+                            AddUserToListOfDiscoveredUsers(
+                                currentUserId: widget.currentUserProfile.userId,
+                                discoveredUserId: userProfile.userId
+                            )
+                        );
+                        setState(() {
+                          discoveredUserProfiles.add(userProfile);
+                        });
+                      }) // this is what you needed
+                  ),
+                );
         }
-        _discoverHomeBloc.add(
-            RemoveUserFromListOfDiscoveredUsers(
-                currentUserId: widget.currentUserProfile.userId,
-                discoveredUserId: userProfile.userId
-            )
-        );
-        setState(() {
-          discoveredUserProfiles.removeWhere((element) => element.userId == userProfile.userId);
-        });
-        SnackbarUtils.showSnackBar(context, "Removed ${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""} from list of discovered people");
       },
       background: Container(
         color: Colors.teal,

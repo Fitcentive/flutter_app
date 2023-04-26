@@ -40,3 +40,16 @@ class RemoveUserFromListOfDiscoveredUsers extends DiscoverHomeEvent {
   @override
   List<Object?> get props => [currentUserId, discoveredUserId];
 }
+
+class AddUserToListOfDiscoveredUsers extends DiscoverHomeEvent {
+  final String currentUserId;
+  final String discoveredUserId;
+
+  const AddUserToListOfDiscoveredUsers({
+    required this.currentUserId,
+    required this.discoveredUserId
+  });
+
+  @override
+  List<Object?> get props => [currentUserId, discoveredUserId];
+}
