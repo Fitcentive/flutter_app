@@ -8,7 +8,6 @@ import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_bloc.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
@@ -256,15 +255,26 @@ class DiaryViewState extends State<DiaryView> {
         .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
   }
 
+  // todo - KNOWN DEFICIENCY - if same foodId is present in muliple rawFoodEntries, then inconsistent behaviour
   _caloriesHeader(DiaryDataFetched state) {
-    final foodCalories = allDetailedFoodEntries.isEmpty ? 0 : allDetailedFoodEntries.map((e) {
+    final foodCalories = allFoodEntriesRaw.isEmpty ? 0 : allDetailedFoodEntries.map((e) {
       if (e.isLeft) {
-        final rawEntry = allFoodEntriesRaw.firstWhere((element) => element.foodId.toString() == e.left.food.food_id);
-        return double.parse((e.left.food.servings.serving.firstWhere((element) => element.serving_id == rawEntry.servingId.toString()).calories ?? "0")) * rawEntry.numberOfServings;
+        if (allFoodEntriesRaw.map((e) => e.foodId.toString()).contains(e.left.food.food_id)) {
+          final rawEntry = allFoodEntriesRaw.firstWhere((element) => element.foodId.toString() == e.left.food.food_id);
+          return double.parse((e.left.food.servings.serving.firstWhere((element) => element.serving_id == rawEntry.servingId.toString()).calories ?? "0")) * rawEntry.numberOfServings;
+        }
+        else {
+          return 0;
+        }
       }
       else {
-        final rawEntry = allFoodEntriesRaw.firstWhere((element) => element.foodId.toString() == e.right.food.food_id);
-        return double.parse(e.right.food.servings.serving.calories ?? "0") * rawEntry.numberOfServings;
+        if (allFoodEntriesRaw.map((e) => e.foodId.toString()).contains(e.right.food.food_id)) {
+          final rawEntry = allFoodEntriesRaw.firstWhere((element) => element.foodId.toString() == e.right.food.food_id);
+          return double.parse(e.right.food.servings.serving.calories ?? "0") * rawEntry.numberOfServings;
+        }
+        else {
+          return 0;
+        }
       }
     }).reduce((value, element) => value + element);
     final cardioCalories = cardioEntries.isEmpty ? 0 : cardioEntries.map((e) => e.caloriesBurned).reduce((value, element) => value + element);
@@ -346,7 +356,7 @@ class DiaryViewState extends State<DiaryView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "$remainingCalories",
+                  remainingCalories.toStringAsFixed(2),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -517,7 +527,7 @@ class DiaryViewState extends State<DiaryView> {
 
   _renderDiaryEntries(String heading, DiaryDataFetched state) {
     if (heading == listItemIndexToTitleMap[4]!) {
-      return _renderExerciseDiaryEntries(cardioEntries, strengthEntries);
+      return _renderExerciseDiaryEntries();
     }
     else {
       if (heading == listItemIndexToTitleMap[0]!) {
@@ -558,35 +568,70 @@ class DiaryViewState extends State<DiaryView> {
               background: Container(
                 color: Colors.teal,
               ),
+              direction: DismissDirection.endToStart,
               key: Key(foodEntryForHeadingRaw.id),
               onDismissed: (direction) {
-                _diaryBloc.add(
-                    RemoveFoodDiaryEntryFromDiary(
-                      userId: widget.currentUserProfile.userId,
-                      foodDiaryEntryId: foodEntryForHeadingRaw.id
-                    )
-                );
-                // Now we also have to remove it from the state variable
-                setState(() {
-                  if (heading == "Breakfast") {
-                    breakfastEntries.removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                  }
-                  else if (heading == "Lunch") {
-                    lunchEntries.removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                  }
-                  else if (heading == "Dinner") {
-                    dinnerEntries.removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                  }
-                  else {
-                    snackEntries.removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                  }
+                if (direction == DismissDirection.endToStart) {
+                  // Now we also have to remove it from the state variable
+                  setState(() {
+                    if (heading == "Breakfast") {
+                      breakfastEntries = List.from(breakfastEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                    }
+                    else if (heading == "Lunch") {
+                      lunchEntries = List.from(lunchEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                    }
+                    else if (heading == "Dinner") {
+                      dinnerEntries = List.from(dinnerEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                    }
+                    else {
+                      snackEntries = List.from(snackEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                    }
 
-                  final allFoodEntriesRawIndexToRemove = allFoodEntriesRaw.indexWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                  allFoodEntriesRaw.removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                  allDetailedFoodEntries.removeAt(allFoodEntriesRawIndexToRemove);
-                });
+                    // final allFoodEntriesRawIndexToRemove = allFoodEntriesRaw.indexWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                    allFoodEntriesRaw = List.from(allFoodEntriesRaw)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                    // allDetailedFoodEntries = List.from(allDetailedFoodEntries)..removeAt(allFoodEntriesRawIndexToRemove);
+                  });
 
-                SnackbarUtils.showSnackBar(context, "Successfully removed $heading entry!");
+                  ScaffoldMessenger
+                      .of(context)
+                      .showSnackBar(
+                    SnackBar(
+                        duration: const Duration(milliseconds: 1500),
+                        content: Text("Successfully removed $heading entry!"),
+                        action: SnackBarAction(
+                            label: "Undo",
+                            onPressed: () {
+                              setState(() {
+                                if (heading == "Breakfast") {
+                                  breakfastEntries = List.from(breakfastEntries)..add(foodEntryForHeadingRaw);
+                                }
+                                else if (heading == "Lunch") {
+                                  lunchEntries = List.from(lunchEntries)..add(foodEntryForHeadingRaw);
+                                }
+                                else if (heading == "Dinner") {
+                                  dinnerEntries = List.from(dinnerEntries)..add(foodEntryForHeadingRaw);
+                                }
+                                else {
+                                  snackEntries = List.from(snackEntries)..add(foodEntryForHeadingRaw);
+                                }
+
+                                allFoodEntriesRaw = List.from(allFoodEntriesRaw)..add(foodEntryForHeadingRaw);
+                              });
+                            })
+                    ),
+                  )
+                  .closed
+                  .then((value) {
+                    if (value != SnackBarClosedReason.action) {
+                      _diaryBloc.add(
+                          RemoveFoodDiaryEntryFromDiary(
+                              userId: widget.currentUserProfile.userId,
+                              foodDiaryEntryId: foodEntryForHeadingRaw.id
+                          )
+                      );
+                    }
+                  });
+                }
               },
               child: InkWell(
                 onTap: () {
@@ -646,7 +691,7 @@ class DiaryViewState extends State<DiaryView> {
     }
   }
 
-  _renderCardioDiaryEntries(List<CardioDiaryEntry> cardioEntries) {
+  _renderCardioDiaryEntries() {
     return cardioEntries.isNotEmpty ? ListView.builder(
         shrinkWrap: true,
         itemCount: cardioEntries.length,
@@ -656,21 +701,40 @@ class DiaryViewState extends State<DiaryView> {
             background: Container(
               color: Colors.teal,
             ),
+            direction: DismissDirection.endToStart,
             key: Key(currentCardioEntry.id),
             onDismissed: (direction) {
-              _diaryBloc.add(
-                  RemoveCardioDiaryEntryFromDiary(
-                      userId: widget.currentUserProfile.userId,
-                      cardioDiaryEntryId: currentCardioEntry.id
-                  )
-              );
+              if (direction == DismissDirection.endToStart) {
+                // Now we also have to remove it from the state variable
+                setState(() {
+                  cardioEntries = List.from(cardioEntries)..removeWhere((element) => element.id == currentCardioEntry.id);
+                });
 
-              // Now we also have to remove it from the state variable
-              setState(() {
-                cardioEntries.removeWhere((element) => element.id == currentCardioEntry.id);
-              });
-
-              SnackbarUtils.showSnackBar(context, "Successfully removed cardio entry!");
+                ScaffoldMessenger
+                    .of(context)
+                    .showSnackBar(
+                  SnackBar(
+                      duration: const Duration(milliseconds: 1500),
+                      content: const Text("Successfully removed cardio entry!"),
+                      action: SnackBarAction(
+                          label: "Undo",
+                          onPressed: () {
+                            setState(() {
+                              cardioEntries = List.from(cardioEntries)..add(currentCardioEntry);
+                            });
+                          }) // this is what you needed
+                  ),
+                )
+                .closed
+                .then((value) {
+                  _diaryBloc.add(
+                      RemoveCardioDiaryEntryFromDiary(
+                          userId: widget.currentUserProfile.userId,
+                          cardioDiaryEntryId: currentCardioEntry.id
+                      )
+                  );
+                });
+              }
             },
             child: InkWell(
               onTap: () {
@@ -715,7 +779,7 @@ class DiaryViewState extends State<DiaryView> {
     );
   }
 
-  _renderStrengthDiaryEntries(List<StrengthDiaryEntry> strengthEntries) {
+  _renderStrengthDiaryEntries() {
     return strengthEntries.isNotEmpty ? ListView.builder(
         shrinkWrap: true,
         itemCount: strengthEntries.length,
@@ -726,19 +790,39 @@ class DiaryViewState extends State<DiaryView> {
               color: Colors.teal,
             ),
             key: Key(currentStrengthEntry.id),
+            direction: DismissDirection.endToStart,
             onDismissed: (direction) {
-              _diaryBloc.add(
-                  RemoveStrengthDiaryEntryFromDiary(
-                      userId: widget.currentUserProfile.userId,
-                      strengthDiaryEntryId: currentStrengthEntry.id
-                  )
-              );
-              // Now we also have to remove it from the state variable
-              setState(() {
-                strengthEntries.removeWhere((element) => element.id == currentStrengthEntry.id);
-              });
+              if (direction == DismissDirection.endToStart) {
+                // Now we also have to remove it from the state variable
+                setState(() {
+                  strengthEntries = List.from(strengthEntries)..removeWhere((element) => element.id == currentStrengthEntry.id);
+                });
 
-              SnackbarUtils.showSnackBar(context, "Successfully removed workout entry!");
+                ScaffoldMessenger
+                    .of(context)
+                    .showSnackBar(
+                  SnackBar(
+                      duration: const Duration(milliseconds: 1500),
+                      content: const Text("Successfully removed workout entry!"),
+                      action: SnackBarAction(
+                          label: "Undo",
+                          onPressed: () {
+                            setState(() {
+                              strengthEntries = List.from(strengthEntries)..add(currentStrengthEntry);
+                            });
+                          }) // this is what you needed
+                  ),
+                )
+                .closed
+                .then((value) {
+                  _diaryBloc.add(
+                      RemoveStrengthDiaryEntryFromDiary(
+                          userId: widget.currentUserProfile.userId,
+                          strengthDiaryEntryId: currentStrengthEntry.id
+                      )
+                  );
+                });
+              }
             },
             child: InkWell(
               onTap: () {
@@ -785,7 +869,7 @@ class DiaryViewState extends State<DiaryView> {
     );
   }
 
-  _renderExerciseDiaryEntries(List<CardioDiaryEntry> cardioEntries, List<StrengthDiaryEntry> strengthEntries) {
+  _renderExerciseDiaryEntries() {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
@@ -805,7 +889,7 @@ class DiaryViewState extends State<DiaryView> {
             ),
           ),
           WidgetUtils.spacer(1),
-          _renderCardioDiaryEntries(cardioEntries),
+          _renderCardioDiaryEntries(),
           WidgetUtils.spacer(5),
           Container(
             alignment: Alignment.centerLeft,
@@ -819,7 +903,7 @@ class DiaryViewState extends State<DiaryView> {
             ),
           ),
           WidgetUtils.spacer(1),
-          _renderStrengthDiaryEntries(strengthEntries),
+          _renderStrengthDiaryEntries(),
         ],
       ),
     );
