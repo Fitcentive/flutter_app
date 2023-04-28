@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
@@ -14,6 +15,10 @@ import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_state.dart';
 import 'package:flutter_app/src/views/exercise_search/exercise_search_view.dart';
 import 'package:flutter_app/src/views/food_search/food_search_view.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
+import 'package:flutter_app/src/views/user_fitness_profile/create_user_fitness_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -60,6 +65,7 @@ class DiaryViewState extends State<DiaryView> {
   };
 
   late DiaryBloc _diaryBloc;
+  late MenuNavigationBloc _menuNavigationBloc;
 
   bool _isFloatingButtonVisible = true;
 
@@ -85,6 +91,7 @@ class DiaryViewState extends State<DiaryView> {
   void initState() {
     super.initState();
 
+    _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
     _diaryBloc = BlocProvider.of<DiaryBloc>(context);
     _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
     _scrollController.addListener(_onScroll);
@@ -118,6 +125,27 @@ class DiaryViewState extends State<DiaryView> {
               strengthEntries = state.strengthDiaryEntries;
               cardioEntries = state.cardioDiaryEntries;
             });
+
+            // If no fitness profile is found, we want to force the user to update this
+            if (state.fitnessUserProfile == null) {
+              Navigator.push<FitnessUserProfile>(
+                  context,
+                  CreateUserFitnessProfileView.route(widget.currentUserProfile)
+              )
+              .then((value) {
+                if (value == null) { // This means user did not update profile accordingly, we pop back to previous screen before coming here
+                  final currentMenuNavigationState = _menuNavigationBloc.state;
+                  if (currentMenuNavigationState is MenuItemSelected) {
+                    _menuNavigationBloc.add(
+                        MenuItemChosen(
+                          selectedMenuItem: currentMenuNavigationState.previouslySelectedMenuItem!, // We are guaranteed to have this based on flow
+                          currentUserId: widget.currentUserProfile.userId,
+                        )
+                    );
+                  }
+                }
+              });
+            }
           }
         },
         child: BlocBuilder<DiaryBloc, DiaryState>(

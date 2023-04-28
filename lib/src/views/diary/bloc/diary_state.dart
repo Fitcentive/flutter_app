@@ -1,6 +1,7 @@
 import 'package:either_dart/either.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
@@ -24,6 +25,7 @@ class DiaryDataLoading extends DiaryState {
 }
 
 class DiaryDataFetched extends DiaryState {
+  final FitnessUserProfile? fitnessUserProfile;
   final List<StrengthDiaryEntry> strengthDiaryEntries;
   final List<CardioDiaryEntry> cardioDiaryEntries;
   final List<FoodDiaryEntry> foodDiaryEntriesRaw;
@@ -34,6 +36,7 @@ class DiaryDataFetched extends DiaryState {
     required this.cardioDiaryEntries,
     required this.foodDiaryEntriesRaw,
     required this.foodDiaryEntries,
+    required this.fitnessUserProfile,
 });
 
   @override
@@ -42,5 +45,6 @@ class DiaryDataFetched extends DiaryState {
     cardioDiaryEntries,
     foodDiaryEntriesRaw,
     foodDiaryEntries,
+    fitnessUserProfile,
   ];
 }

@@ -56,12 +56,14 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
         accessToken
     );
     final foodEntries = await Future.wait(foodEntriesRaw.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken)));
+    final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.userId, accessToken);
 
     emit(DiaryDataFetched(
       strengthDiaryEntries: strengthWorkouts,
       cardioDiaryEntries: cardioWorkouts,
       foodDiaryEntriesRaw: foodEntriesRaw,
       foodDiaryEntries: foodEntries,
+      fitnessUserProfile: fitnessUserProfile
     ));
   }
 

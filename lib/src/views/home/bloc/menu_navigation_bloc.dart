@@ -101,6 +101,7 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
     if (currentState is MenuItemSelected) {
       if (!currentState.unreadChatRoomIds.contains(event.roomId)) {
         emit(MenuItemSelected(
+            previouslySelectedMenuItem: currentState.previouslySelectedMenuItem,
             selectedMenuItem: currentState.selectedMenuItem,
             unreadNotificationCount: currentState.unreadNotificationCount,
             unreadChatRoomIds: [...currentState.unreadChatRoomIds, event.roomId]
@@ -117,19 +118,21 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
 
     final currentState = state;
 
-    emit(MenuItemSelected(
-      selectedMenuItem: event.selectedMenuItem,
-      unreadNotificationCount: 0,
-      unreadChatRoomIds: const [],
-    ));
-
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final unreadNotificationCount = await notificationRepository.getUnreadNotificationCount(event.currentUserId, accessToken!);
 
     if (currentState is MenuItemSelected) {
+      emit(MenuItemSelected(
+        previouslySelectedMenuItem: currentState.selectedMenuItem,
+        selectedMenuItem: event.selectedMenuItem,
+        unreadNotificationCount: 0,
+        unreadChatRoomIds: const [],
+      ));
+
       // Check if we are navigating INTO chat, or AWAY from chat (having already been there)
       if (event.selectedMenuItem == HomePageState.chat || currentState.selectedMenuItem == HomePageState.chat ) {
         emit(MenuItemSelected(
+            previouslySelectedMenuItem: currentState.selectedMenuItem,
             selectedMenuItem: event.selectedMenuItem,
             unreadNotificationCount: unreadNotificationCount,
             unreadChatRoomIds: const [],
@@ -137,6 +140,7 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
       }
       else {
         emit(MenuItemSelected(
+            previouslySelectedMenuItem: currentState.selectedMenuItem,
             selectedMenuItem: event.selectedMenuItem,
             unreadNotificationCount: unreadNotificationCount,
             unreadChatRoomIds: currentState.unreadChatRoomIds
@@ -145,6 +149,7 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
     }
     else {
       emit(MenuItemSelected(
+          previouslySelectedMenuItem: null,
           selectedMenuItem: event.selectedMenuItem,
           unreadNotificationCount: unreadNotificationCount,
           unreadChatRoomIds: const []

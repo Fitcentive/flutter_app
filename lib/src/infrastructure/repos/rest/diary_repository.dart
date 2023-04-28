@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:either_dart/either.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
@@ -290,6 +291,49 @@ class DiaryRepository {
     } else {
       throw Exception(
           "deleteFoodEntryFromUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<FitnessUserProfile?> getFitnessUserProfile(String userId, String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/profile"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return FitnessUserProfile.fromJson(jsonResponse);
+    }
+    else if (response.statusCode == HttpStatus.notFound) {
+      return null;
+    }
+    else {
+      throw Exception(
+          "getFitnessUserProfile: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<FitnessUserProfile> upsertFitnessUserProfile(
+      String userId,
+      FitnessUserProfileUpdate update,
+      String accessToken
+  ) async {
+    final response = await http.put(
+      Uri.parse("$BASE_URL/user/$userId/profile"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: jsonEncode({
+        "heightInCm": update.heightInCm,
+        "weightInLbs": update.weightInLbs,
+      })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return FitnessUserProfile.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "upsertFitnessUserProfile: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
