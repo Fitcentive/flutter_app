@@ -1,19 +1,19 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 
-abstract class CreateUserFitnessProfileState extends Equatable {
-  const CreateUserFitnessProfileState();
+abstract class UserFitnessProfileState extends Equatable {
+  const UserFitnessProfileState();
 
   @override
   List<Object?> get props => [];
 }
 
-class CreateUserFitnessProfileStateInitial extends CreateUserFitnessProfileState {
+class UserFitnessProfileStateInitial extends UserFitnessProfileState {
 
-  const CreateUserFitnessProfileStateInitial();
+  const UserFitnessProfileStateInitial();
 }
 
-class UserFitnessProfileUpserted extends CreateUserFitnessProfileState {
+class UserFitnessProfileUpserted extends UserFitnessProfileState {
   final FitnessUserProfile fitnessUserProfile;
 
   const UserFitnessProfileUpserted({

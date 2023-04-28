@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 
 abstract class DiaryEvent extends Equatable {
   const DiaryEvent();
@@ -68,5 +69,18 @@ class RemoveStrengthDiaryEntryFromDiary extends DiaryEvent {
   List<Object?> get props => [
     userId,
     strengthDiaryEntryId
+  ];
+}
+
+class UserFitnessProfileUpdated extends DiaryEvent {
+  final FitnessUserProfile fitnessUserProfile;
+
+  const UserFitnessProfileUpdated({
+    required this.fitnessUserProfile,
+  });
+
+  @override
+  List<Object?> get props => [
+    fitnessUserProfile,
   ];
 }

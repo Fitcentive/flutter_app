@@ -18,6 +18,20 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
     on<RemoveFoodDiaryEntryFromDiary>(_removeFoodDiaryEntryFromDiary);
     on<RemoveCardioDiaryEntryFromDiary>(_removeCardioDiaryEntryFromDiary);
     on<RemoveStrengthDiaryEntryFromDiary>(_removeStrengthDiaryEntryFromDiary);
+    on<UserFitnessProfileUpdated>(_userFitnessProfileUpdated);
+  }
+
+  void _userFitnessProfileUpdated(UserFitnessProfileUpdated event, Emitter<DiaryState> emit) async {
+    final currentState = state;
+    if (currentState is DiaryDataFetched) {
+      emit(DiaryDataFetched(
+          strengthDiaryEntries: currentState.strengthDiaryEntries,
+          cardioDiaryEntries: currentState.cardioDiaryEntries,
+          foodDiaryEntriesRaw: currentState.foodDiaryEntriesRaw,
+          foodDiaryEntries: currentState.foodDiaryEntries,
+          fitnessUserProfile: event.fitnessUserProfile
+      ));
+    }
   }
 
   void _removeFoodDiaryEntryFromDiary(RemoveFoodDiaryEntryFromDiary event, Emitter<DiaryState> emit) async {

@@ -226,7 +226,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   _updateAppBadgeIfPossible();
                 }
                 return Scaffold(
-                  appBar: _appBar(),
+                  appBar: _appBar(state),
                   drawer: _drawer(),
                   body: _generateBody(selectedMenuItem),
                   bottomNavigationBar: _bottomNavigationBar(),
@@ -318,22 +318,38 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
-  _appBar() {
-    return AppBar(
-      title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
-      iconTheme: const IconThemeData(color: Colors.teal),
-      actions: <Widget>[
-        IconButton(
-          icon: const Icon(
-            Icons.search,
-            color: Colors.teal,
-          ),
-          onPressed: () {
-            _updateBloc(search);
-          },
-        )
-      ],
-    );
+  _appBar(MenuNavigationState state) {
+    if (state is MenuItemSelected) {
+      return AppBar(
+        title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
+        iconTheme: const IconThemeData(color: Colors.teal),
+        actions: state.selectedMenuItem == diary ? [
+          IconButton(
+            icon: const Icon(
+              Icons.person,
+              color: Colors.teal,
+            ),
+            onPressed: () {
+              _diaryScreenAppBarButtonPressed();
+            },
+          )
+        ] : [
+          IconButton(
+            icon: const Icon(
+              Icons.search,
+              color: Colors.teal,
+            ),
+            onPressed: () {
+              _updateBloc(search);
+            },
+          )
+        ],
+      );
+    }
+  }
+
+  _diaryScreenAppBarButtonPressed() {
+    diaryViewStateGlobalKey.currentState?.goToUserFitnessProfileView();
   }
 
   Widget _bottomAlignedButtons() {
@@ -567,7 +583,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         case "Calendar":
           return CalendarView.withBloc(publicUserProfile);
         case "Diary":
-          return DiaryView.withBloc(publicUserProfile);
+          return DiaryView.withBloc(diaryViewStateGlobalKey, publicUserProfile);
         default:
           return _oldStuff();
       }

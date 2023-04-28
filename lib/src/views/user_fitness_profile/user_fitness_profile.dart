@@ -5,45 +5,54 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/user_fitness_profile/bloc/update_user_fitness_profile_bloc.dart';
-import 'package:flutter_app/src/views/user_fitness_profile/bloc/update_user_fitness_profile_event.dart';
-import 'package:flutter_app/src/views/user_fitness_profile/bloc/update_user_fitness_profile_state.dart';
+import 'package:flutter_app/src/views/user_fitness_profile/bloc/user_fitness_profile_bloc.dart';
+import 'package:flutter_app/src/views/user_fitness_profile/bloc/user_fitness_profile_event.dart';
+import 'package:flutter_app/src/views/user_fitness_profile/bloc/user_fitness_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class CreateUserFitnessProfileView extends StatefulWidget {
+class UserFitnessProfileView extends StatefulWidget {
   static const String routeName = "user/fitness-profile/update";
 
   final PublicUserProfile currentUserProfile;
+  final FitnessUserProfile? currentFitnessUserProfile;
 
-  const CreateUserFitnessProfileView({Key? key, required this.currentUserProfile}) : super(key: key);
+  const UserFitnessProfileView({
+    Key? key,
+    required this.currentUserProfile,
+    required this.currentFitnessUserProfile,
+  }) : super(key: key);
 
-  static Route<FitnessUserProfile> route(PublicUserProfile currentUserProfile) {
+  static Route<FitnessUserProfile> route(PublicUserProfile currentUserProfile, FitnessUserProfile? currentFitnessUserProfile) {
     return MaterialPageRoute<FitnessUserProfile>(
         settings: const RouteSettings(
             name: routeName
         ),
         builder: (_) => MultiBlocProvider(
           providers: [
-            BlocProvider<CreateUserFitnessProfileBloc>(
-                create: (context) => CreateUserFitnessProfileBloc(
+            BlocProvider<UserFitnessProfileBloc>(
+                create: (context) => UserFitnessProfileBloc(
                   diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
                   secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                 )),
           ],
-          child: CreateUserFitnessProfileView(currentUserProfile: currentUserProfile),
-        ));
+          child: UserFitnessProfileView(
+              currentUserProfile: currentUserProfile,
+              currentFitnessUserProfile: currentFitnessUserProfile
+          ),
+        )
+    );
   }
 
   @override
   State createState() {
-    return CreateUserFitnessProfileViewState();
+    return UserFitnessProfileViewState();
   }
 }
 
-class CreateUserFitnessProfileViewState extends State<CreateUserFitnessProfileView> {
+class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
 
-  late CreateUserFitnessProfileBloc _createUserFitnessProfileBloc;
+  late UserFitnessProfileBloc _createUserFitnessProfileBloc;
 
   double? userInputWeight;
   double? userInputHeight;
@@ -52,7 +61,7 @@ class CreateUserFitnessProfileViewState extends State<CreateUserFitnessProfileVi
   void initState() {
     super.initState();
 
-    _createUserFitnessProfileBloc = BlocProvider.of<CreateUserFitnessProfileBloc>(context);
+    _createUserFitnessProfileBloc = BlocProvider.of<UserFitnessProfileBloc>(context);
   }
 
   @override
@@ -93,7 +102,7 @@ class CreateUserFitnessProfileViewState extends State<CreateUserFitnessProfileVi
   }
 
   Widget _renderBody() {
-    return BlocListener<CreateUserFitnessProfileBloc, CreateUserFitnessProfileState>(
+    return BlocListener<UserFitnessProfileBloc, UserFitnessProfileState>(
       listener: (context, state) {
         if (state is UserFitnessProfileUpserted) {
           SnackbarUtils.showSnackBar(context, "Fitness profile updated successfully!");
@@ -104,7 +113,7 @@ class CreateUserFitnessProfileViewState extends State<CreateUserFitnessProfileVi
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+          children: WidgetUtils.skipNulls([
             WidgetUtils.spacer(5),
             _renderText(),
             WidgetUtils.spacer(10),
@@ -115,7 +124,7 @@ class CreateUserFitnessProfileViewState extends State<CreateUserFitnessProfileVi
             _renderUserWeight(),
             WidgetUtils.spacer(10),
             _renderUserHeight(),
-          ],
+          ]),
         ),
       )
     );
@@ -137,6 +146,7 @@ class CreateUserFitnessProfileViewState extends State<CreateUserFitnessProfileVi
           Expanded(
               flex: 7,
               child: TextFormField(
+                initialValue: widget.currentFitnessUserProfile?.weightInLbs.toStringAsFixed(2),
                 onChanged: (text) {
                   final w = double.parse(text);
                   setState(() {
@@ -184,6 +194,7 @@ class CreateUserFitnessProfileViewState extends State<CreateUserFitnessProfileVi
           Expanded(
               flex: 7,
               child: TextFormField(
+                initialValue: widget.currentFitnessUserProfile?.heightInCm.toStringAsFixed(2),
                 onChanged: (text) {
                   final h = double.parse(text);
                   setState(() {
@@ -216,15 +227,17 @@ class CreateUserFitnessProfileViewState extends State<CreateUserFitnessProfileVi
   }
 
   _renderText() {
-    return const Center(
-      child: Text(
-        "Please tell us a little more about yourself",
-        style: TextStyle(
-          color: Colors.teal,
-          fontSize: 16,
+    if (widget.currentFitnessUserProfile == null) {
+      return const Center(
+        child: Text(
+          "Please tell us a little more about yourself",
+          style: TextStyle(
+            color: Colors.teal,
+            fontSize: 16,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   _renderUserName() {

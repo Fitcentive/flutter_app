@@ -18,11 +18,13 @@ import 'package:flutter_app/src/views/food_search/food_search_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
-import 'package:flutter_app/src/views/user_fitness_profile/create_user_fitness_profile.dart';
+import 'package:flutter_app/src/views/user_fitness_profile/user_fitness_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+
+GlobalKey<DiaryViewState> diaryViewStateGlobalKey = GlobalKey();
 
 class DiaryView extends StatefulWidget {
   static const String routeName = "exercise/search";
@@ -31,7 +33,7 @@ class DiaryView extends StatefulWidget {
 
   const DiaryView({Key? key, required this.currentUserProfile}): super(key: key);
 
-  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
+  static Widget withBloc(Key? key, PublicUserProfile currentUserProfile) => MultiBlocProvider(
     providers: [
       BlocProvider<DiaryBloc>(
           create: (context) => DiaryBloc(
@@ -40,7 +42,7 @@ class DiaryView extends StatefulWidget {
           )
       ),
     ],
-    child: DiaryView(currentUserProfile: currentUserProfile),
+    child: DiaryView(key: key, currentUserProfile: currentUserProfile),
   );
 
 
@@ -104,6 +106,20 @@ class DiaryViewState extends State<DiaryView> {
     super.dispose();
   }
 
+  goToUserFitnessProfileView() {
+    final currentState = _diaryBloc.state;
+    if (currentState is DiaryDataFetched) {
+      Navigator.push<FitnessUserProfile>(
+          context,
+          UserFitnessProfileView.route(widget.currentUserProfile, currentState.fitnessUserProfile)
+      ).then((value) {
+        if (value != null) { // This means user did not update profile accordingly, we pop back to previous screen before coming here
+          _diaryBloc.add(UserFitnessProfileUpdated(fitnessUserProfile: value));
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,7 +146,7 @@ class DiaryViewState extends State<DiaryView> {
             if (state.fitnessUserProfile == null) {
               Navigator.push<FitnessUserProfile>(
                   context,
-                  CreateUserFitnessProfileView.route(widget.currentUserProfile)
+                  UserFitnessProfileView.route(widget.currentUserProfile, null)
               )
               .then((value) {
                 if (value == null) { // This means user did not update profile accordingly, we pop back to previous screen before coming here
@@ -143,6 +159,9 @@ class DiaryViewState extends State<DiaryView> {
                         )
                     );
                   }
+                }
+                else {
+                  _diaryBloc.add(UserFitnessProfileUpdated(fitnessUserProfile: value));
                 }
               });
             }
