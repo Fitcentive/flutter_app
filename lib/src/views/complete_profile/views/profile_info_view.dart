@@ -75,9 +75,23 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
                         Text("Date of birth", style: Theme.of(context).textTheme.headline6,),
                         const Padding(padding: EdgeInsets.all(6)),
                         _datePickerButton(),
+                        WidgetUtils.spacer(5),
+                        _renderDateOfBirthHint(),
                       ],
                     );
                   })),
+        ),
+      ),
+    );
+  }
+
+  _renderDateOfBirthHint() {
+    return const Center(
+      child: Text(
+        "You must be born on or after 2010-01-01",
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.teal
         ),
       ),
     );
@@ -98,8 +112,8 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
               if (newValue != null) {
                 _completeProfileBloc.add(ProfileInfoChanged(
                     user: currentState.user,
-                    firstName: currentState.firstName.value,
-                    lastName: currentState.lastName.value,
+                    firstName: _firstNameController.value.text,
+                    lastName: _lastNameController.value.text,
                     dateOfBirth: DateTime.parse(currentState.dateOfBirth.value),
                     gender: newValue
                 ));
@@ -136,8 +150,8 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
           );
           _completeProfileBloc.add(ProfileInfoChanged(
               user: currentState.user,
-              firstName: currentState.firstName.value,
-              lastName: currentState.lastName.value,
+              firstName: _firstNameController.value.text,
+              lastName: _lastNameController.value.text,
               dateOfBirth: selectedDate ?? DateTime.parse(currentState.dateOfBirth.value),
               gender: currentState.gender,
           ));

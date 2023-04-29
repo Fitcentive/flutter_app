@@ -232,6 +232,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           );
           Widget continueButton = TextButton(
             onPressed:  () {
+              Navigator.pop(context);
               _performAccountDeletion();
             },
             style: ButtonStyle(
