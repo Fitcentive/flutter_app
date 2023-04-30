@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -17,6 +18,7 @@ class DetailedExerciseView extends StatefulWidget {
   static const String routeName = "exercise/search";
 
   final PublicUserProfile currentUserProfile;
+  final FitnessUserProfile currentFitnessUserProfile;
   final ExerciseDefinition exerciseDefinition;
   final bool isCurrentExerciseDefinitionCardio;
   final DateTime selectedDayInQuestion;
@@ -24,6 +26,7 @@ class DetailedExerciseView extends StatefulWidget {
   const DetailedExerciseView({
     Key? key,
     required this.currentUserProfile,
+    required this.currentFitnessUserProfile,
     required this.exerciseDefinition,
     required this.isCurrentExerciseDefinitionCardio,
     required this.selectedDayInQuestion
@@ -31,6 +34,7 @@ class DetailedExerciseView extends StatefulWidget {
 
   static Route route(
       PublicUserProfile currentUserProfile,
+      FitnessUserProfile currentFitnessUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
       DateTime selectedDayInQuestion
@@ -41,6 +45,7 @@ class DetailedExerciseView extends StatefulWidget {
         ),
         builder: (_) => DetailedExerciseView.withBloc(
             currentUserProfile,
+            currentFitnessUserProfile,
             exerciseDefinition,
             isCurrentExerciseDefinitionCardio,
             selectedDayInQuestion
@@ -50,6 +55,7 @@ class DetailedExerciseView extends StatefulWidget {
 
   static Widget withBloc(
       PublicUserProfile currentUserProfile,
+      FitnessUserProfile currentFitnessUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
       DateTime selectedDayInQuestion
@@ -64,6 +70,7 @@ class DetailedExerciseView extends StatefulWidget {
     ],
     child: DetailedExerciseView(
         currentUserProfile: currentUserProfile,
+        currentFitnessUserProfile: currentFitnessUserProfile,
         exerciseDefinition: exerciseDefinition,
         isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
         selectedDayInQuestion: selectedDayInQuestion,
@@ -142,6 +149,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
               context,
               AddExerciseToDiaryView.route(
                   widget.currentUserProfile,
+                  widget.currentFitnessUserProfile,
                   widget.exerciseDefinition,
                   widget.isCurrentExerciseDefinitionCardio,
                   widget.selectedDayInQuestion

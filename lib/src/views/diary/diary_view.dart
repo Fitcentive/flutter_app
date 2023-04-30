@@ -291,9 +291,12 @@ class DiaryViewState extends State<DiaryView> {
   }
 
   _goToExerciseSearchView() {
-    Navigator
-        .push(context, ExerciseSearchView.route(widget.currentUserProfile, currentSelectedDate))
-        .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
+    final currentState = _diaryBloc.state;
+    if (currentState is DiaryDataFetched && currentState.fitnessUserProfile != null) {
+      Navigator
+          .push(context, ExerciseSearchView.route(widget.currentUserProfile, currentState.fitnessUserProfile!, currentSelectedDate))
+          .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
+    }
   }
 
   _goToFoodSearchView(String mealOfDay) {

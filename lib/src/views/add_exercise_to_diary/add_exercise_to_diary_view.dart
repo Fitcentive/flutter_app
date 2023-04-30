@@ -2,10 +2,12 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/exercise_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_exercise_to_diary/bloc/add_exercise_to_diary_bloc.dart';
@@ -20,6 +22,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
   static const String routeName = "exercise/search/add-to-diary";
 
   final PublicUserProfile currentUserProfile;
+  final FitnessUserProfile currentFitnessUserProfile;
   final ExerciseDefinition exerciseDefinition;
   final bool isCurrentExerciseDefinitionCardio;
   final DateTime selectedDayInQuestion;
@@ -27,6 +30,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
   const AddExerciseToDiaryView({
     Key? key,
     required this.currentUserProfile,
+    required this.currentFitnessUserProfile,
     required this.exerciseDefinition,
     required this.isCurrentExerciseDefinitionCardio,
     required this.selectedDayInQuestion,
@@ -34,6 +38,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
 
   static Route route(
       PublicUserProfile currentUserProfile,
+      FitnessUserProfile currentFitnessUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
       DateTime selectedDayInQuestion,
@@ -44,6 +49,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
         ),
         builder: (_) => AddExerciseToDiaryView.withBloc(
             currentUserProfile,
+            currentFitnessUserProfile,
             exerciseDefinition,
             isCurrentExerciseDefinitionCardio,
             selectedDayInQuestion
@@ -53,6 +59,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
 
   static Widget withBloc(
       PublicUserProfile currentUserProfile,
+      FitnessUserProfile currentFitnessUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
       DateTime selectedDayInQuestion,
@@ -67,6 +74,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
     ],
     child: AddExerciseToDiaryView(
       currentUserProfile: currentUserProfile,
+      currentFitnessUserProfile: currentFitnessUserProfile,
       exerciseDefinition: exerciseDefinition,
       isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
       selectedDayInQuestion: selectedDayInQuestion
@@ -197,9 +205,23 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
               child: TextFormField(
                 controller: _repsTextController,
                 onChanged: (text) {
-                  final sets = _setsTextController.value.text.isEmpty ? 1 : int.parse(_setsTextController.value.text);;
-                  final reps = int.parse(text);
-                  _caloriesBurnedTextController.text = (sets * reps * 10).toString(); // todo - change this!
+                  if (text.isNotEmpty) {
+                    final sets = _setsTextController.value.text.isEmpty ? 1 : int.parse(_setsTextController.value.text);
+                    final reps = int.parse(text);
+                    final burnedCalories =  ExerciseUtils.calculateCaloriesBurnedForNonCardioActivity(
+                        widget.currentFitnessUserProfile,
+                        widget.exerciseDefinition.name,
+                        sets,
+                        reps
+                    );
+                    _caloriesBurnedTextController.text =
+                        ExerciseUtils.calculateCaloriesBurnedForNonCardioActivity(
+                            widget.currentFitnessUserProfile,
+                            widget.exerciseDefinition.name,
+                            sets,
+                            reps
+                        ).toStringAsFixed(0);
+                  }
                 },
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
@@ -236,9 +258,23 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
               child: TextFormField(
                 controller: _setsTextController,
                 onChanged: (text) {
-                  final sets = int.parse(text);
-                  final reps = _repsTextController.value.text.isEmpty ? 1 : int.parse(_repsTextController.value.text);
-                  _caloriesBurnedTextController.text = (sets * reps * 10).toString(); // todo - change this!
+                  if (text.isNotEmpty) {
+                    final sets = int.parse(text);
+                    final reps = _repsTextController.value.text.isEmpty ? 1 : int.parse(_repsTextController.value.text);
+                    final burnedCalories =  ExerciseUtils.calculateCaloriesBurnedForNonCardioActivity(
+                        widget.currentFitnessUserProfile,
+                        widget.exerciseDefinition.name,
+                        sets,
+                        reps
+                    );
+                    _caloriesBurnedTextController.text =
+                        ExerciseUtils.calculateCaloriesBurnedForNonCardioActivity(
+                            widget.currentFitnessUserProfile,
+                            widget.exerciseDefinition.name,
+                            sets,
+                            reps
+                        ).toStringAsFixed(0);
+                  }
                 },
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
@@ -310,7 +346,12 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
                 controller: _mintuesPerformedTextController,
                 onChanged: (text) {
                   final minutes = int.parse(text);
-                  _caloriesBurnedTextController.text = (minutes * 10).toString(); // todo - change this!
+                  _caloriesBurnedTextController.text =
+                      ExerciseUtils.calculateCaloriesBurnedForCardioActivity(
+                          widget.currentFitnessUserProfile,
+                          widget.exerciseDefinition.name,
+                          minutes,
+                      ).toStringAsFixed(0);
                 },
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
@@ -550,7 +591,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
                         name: widget.exerciseDefinition.name,
                         cardioDate: selectedWorkoutDateTime,
                         durationInMinutes: durationInMins,
-                        caloriesBurned: (durationInMins * 10).toDouble(), // todo - replace this!
+                        caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
                         meetupId: null,
                     ),
                   )
@@ -573,7 +614,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
                       exerciseDate: selectedWorkoutDateTime,
                       sets: sets,
                       reps: reps,
-                      caloriesBurned: (reps * sets * 15).toDouble(), // todo - replace this
+                      caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
                       weightsInLbs: const [], // todo - update this
                       meetupId: null,
                     ),

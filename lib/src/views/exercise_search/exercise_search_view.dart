@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -17,24 +18,34 @@ class ExerciseSearchView extends StatefulWidget {
   static const String routeName = "exercise/search";
 
   final PublicUserProfile currentUserProfile;
+  final FitnessUserProfile currentFitnessUserProfile;
   final DateTime selectedDayInQuestion; // The day for which a potential diary entry might be added
 
   const ExerciseSearchView({
     Key? key,
     required this.currentUserProfile,
+    required this.currentFitnessUserProfile,
     required this.selectedDayInQuestion,
   }): super(key: key);
 
-  static Route route(PublicUserProfile currentUserProfile, DateTime selectedDayInQuestion) {
+  static Route route(
+      PublicUserProfile currentUserProfile,
+      FitnessUserProfile currentFitnessUserProfile,
+      DateTime selectedDayInQuestion
+      ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
             name: routeName
         ),
-        builder: (_) => ExerciseSearchView.withBloc(currentUserProfile, selectedDayInQuestion)
+        builder: (_) => ExerciseSearchView.withBloc(currentUserProfile, currentFitnessUserProfile, selectedDayInQuestion)
     );
   }
 
-  static Widget withBloc(PublicUserProfile currentUserProfile, DateTime selectedDayInQuestion) => MultiBlocProvider(
+  static Widget withBloc(
+      PublicUserProfile currentUserProfile,
+      FitnessUserProfile currentFitnessUserProfile,
+      DateTime selectedDayInQuestion
+      ) => MultiBlocProvider(
     providers: [
       BlocProvider<ExerciseSearchBloc>(
           create: (context) => ExerciseSearchBloc(
@@ -45,6 +56,7 @@ class ExerciseSearchView extends StatefulWidget {
     ],
     child: ExerciseSearchView(
       currentUserProfile: currentUserProfile,
+      currentFitnessUserProfile: currentFitnessUserProfile,
       selectedDayInQuestion: selectedDayInQuestion,
     ),
   );
@@ -250,7 +262,13 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
         // Move to detailed exercise definition page from here
         Navigator.push(
             context,
-            DetailedExerciseView.route(widget.currentUserProfile, exerciseDefinition, isCardio, widget.selectedDayInQuestion),
+            DetailedExerciseView.route(
+                widget.currentUserProfile,
+                widget.currentFitnessUserProfile,
+                exerciseDefinition,
+                isCardio,
+                widget.selectedDayInQuestion
+            ),
         ).then((value) => Navigator.pop(context));
       },
     );

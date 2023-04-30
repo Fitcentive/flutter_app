@@ -4,9 +4,9 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
-import 'package:flutter_app/src/views/search/bloc/user_search/search_bloc.dart';
-import 'package:flutter_app/src/views/search/bloc/user_search/search_event.dart';
-import 'package:flutter_app/src/views/search/bloc/user_search/search_state.dart';
+import 'package:flutter_app/src/views/search/bloc/user_search/user_search_bloc.dart';
+import 'package:flutter_app/src/views/search/bloc/user_search/user_search_event.dart';
+import 'package:flutter_app/src/views/search/bloc/user_search/user_search_state.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -27,7 +27,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
   @override
   bool wantKeepAlive = true;
 
-  late final SearchBloc _searchBloc;
+  late final UserSearchBloc _searchBloc;
   late final UserRepository _userRepository;
   late final FlutterSecureStorage _flutterSecureStorage;
 
@@ -47,7 +47,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
   @override
   void initState() {
     super.initState();
-    _searchBloc = BlocProvider.of<SearchBloc>(context);
+    _searchBloc = BlocProvider.of<UserSearchBloc>(context);
     _userRepository = RepositoryProvider.of<UserRepository>(context);
     _flutterSecureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
 
@@ -73,9 +73,9 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
   }
 
   Widget _userSearchBar() {
-    return BlocBuilder<SearchBloc, SearchState>(
+    return BlocBuilder<UserSearchBloc, UserSearchState>(
       builder: (context, state) {
-        if (state is SearchQueryModified) {
+        if (state is UserSearchQueryModified) {
           _searchTextController.text = state.query;
           _searchTextController.selection = TextSelection.collapsed(offset: state.query.length);
         }
@@ -156,9 +156,9 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
   }
 
   Widget _userSearchBody() {
-    return BlocBuilder<SearchBloc, SearchState>(
-      builder: (BuildContext context, SearchState state) {
-        if (state is SearchStateInitial || state is SearchQueryModified) {
+    return BlocBuilder<UserSearchBloc, UserSearchState>(
+      builder: (BuildContext context, UserSearchState state) {
+        if (state is UserSearchStateInitial || state is UserSearchQueryModified) {
           return Expanded(
               child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
@@ -168,13 +168,13 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
             ),
           ));
         }
-        if (state is SearchResultsLoading) {
+        if (state is UserSearchResultsLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is SearchResultsError) {
+        if (state is UserSearchResultsError) {
           return Expanded(child: Center(child: Text(state.error)));
         }
-        if (state is SearchResultsLoaded) {
+        if (state is UserSearchResultsLoaded) {
           return state.userData.isEmpty
               ? const Expanded(child: Center(child: Text('No Results')))
               : Expanded(
@@ -195,7 +195,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
 
   _fetchMoreResultsCallback() {
     final currentState = _searchBloc.state;
-    if (currentState is SearchResultsLoaded) {
+    if (currentState is UserSearchResultsLoaded) {
       _searchBloc.add(
           SearchQuerySubmitted(
               query: currentState.query,

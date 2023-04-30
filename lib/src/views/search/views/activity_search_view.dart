@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -13,8 +14,12 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class ActivitySearchView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
+  final FitnessUserProfile currentFitnessUserProfile;
 
-  const ActivitySearchView({Key? key, required this.currentUserProfile}): super(key: key);
+  const ActivitySearchView({Key? key,
+    required this.currentUserProfile,
+    required this.currentFitnessUserProfile,
+  }): super(key: key);
 
   @override
   State createState() {
@@ -171,15 +176,15 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
       ),
       onTap: () {
         // Move to detailed exercise definition page from here
-        Navigator.pushAndRemoveUntil(
+        Navigator.push(
             context,
             DetailedExerciseView.route(
                 widget.currentUserProfile,
+                widget.currentFitnessUserProfile,
                 exerciseDefinition,
                 exerciseDefinition.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION,
                 DateTime.now()
             ),
-                (route) => true
         );
       },
     );

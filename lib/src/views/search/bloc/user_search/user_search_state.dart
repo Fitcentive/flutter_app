@@ -1,45 +1,45 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 
-abstract class SearchState extends Equatable {
-  const SearchState();
+abstract class UserSearchState extends Equatable {
+  const UserSearchState();
 
   @override
   List<Object?> get props => [];
 }
 
-class SearchStateInitial extends SearchState {
+class UserSearchStateInitial extends UserSearchState {
 
-  const SearchStateInitial();
+  const UserSearchStateInitial();
 
   @override
   List<Object> get props => [];
 }
 
-class SearchQueryModified extends SearchState {
+class UserSearchQueryModified extends UserSearchState {
   final String query;
 
-  const SearchQueryModified({required this.query});
+  const UserSearchQueryModified({required this.query});
 
   @override
   List<Object> get props => [query];
 }
 
-class SearchResultsLoading extends SearchState {
+class UserSearchResultsLoading extends UserSearchState {
   final String query;
 
-  const SearchResultsLoading({required this.query});
+  const UserSearchResultsLoading({required this.query});
 
   @override
   List<Object> get props => [query];
 }
 
-class SearchResultsLoaded extends SearchState {
+class UserSearchResultsLoaded extends UserSearchState {
   final String query;
   final List<PublicUserProfile> userData;
   final bool doesNextPageExist;
 
-  const SearchResultsLoaded({
+  const UserSearchResultsLoaded({
     required this.query,
     required this.userData,
     required this.doesNextPageExist,
@@ -49,11 +49,11 @@ class SearchResultsLoaded extends SearchState {
   List<Object> get props => [query, userData, doesNextPageExist];
 }
 
-class SearchResultsError extends SearchState {
+class UserSearchResultsError extends UserSearchState {
   final String query;
   final String error;
 
-  const SearchResultsError({required this.query, required this.error});
+  const UserSearchResultsError({required this.query, required this.error});
 
   @override
   List<Object> get props => [query, error];

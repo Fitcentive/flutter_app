@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
 
-abstract class SearchEvent extends Equatable {
-  const SearchEvent();
+abstract class UserSearchEvent extends Equatable {
+  const UserSearchEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-class FetchUserFriends extends SearchEvent {
+class FetchUserFriends extends UserSearchEvent {
   final String currentUserId;
   final int limit;
   final int offset;
@@ -23,7 +23,7 @@ class FetchUserFriends extends SearchEvent {
 }
 
 
-class SearchQueryChanged extends SearchEvent {
+class SearchQueryChanged extends UserSearchEvent {
   final String query;
 
   const SearchQueryChanged({required this.query});
@@ -32,7 +32,7 @@ class SearchQueryChanged extends SearchEvent {
   List<Object?> get props => [query];
 }
 
-class SearchQuerySubmitted extends SearchEvent {
+class SearchQuerySubmitted extends UserSearchEvent {
   final String query;
   final int limit;
   final int offset;
@@ -47,7 +47,7 @@ class SearchQuerySubmitted extends SearchEvent {
   List<Object?> get props => [query, limit, offset];
 }
 
-class SearchQueryReset extends SearchEvent {
+class SearchQueryReset extends UserSearchEvent {
   final String currentUserId;
 
   const SearchQueryReset({
