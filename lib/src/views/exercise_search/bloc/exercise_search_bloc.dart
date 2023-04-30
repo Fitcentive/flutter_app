@@ -26,16 +26,14 @@ class ExerciseSearchBloc extends Bloc<ExerciseSearchEvent, ExerciseSearchState> 
     ));
   }
 
-  // todo - Very poor perf on exercise api/filtering
   void _filterSearchQueryChanged(FilterSearchQueryChanged event, Emitter<ExerciseSearchState> emit) async {
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final info = await diaryRepository.getAllExerciseInfo(accessToken!);
+    final currentState = state;
 
-    if (state is ExerciseDataFetched) {
-      final filteredList = event.searchQuery.isEmpty ? info :
-        info.where((element) => element.name.toLowerCase().contains(event.searchQuery.toLowerCase())).toList();
+    if (currentState is ExerciseDataFetched) {
+      final filteredList = event.searchQuery.isEmpty ? currentState.allExerciseInfo :
+      currentState.allExerciseInfo.where((element) => element.name.toLowerCase().contains(event.searchQuery.toLowerCase())).toList();
       emit(ExerciseDataFetched(
-          allExerciseInfo: info,
+          allExerciseInfo: currentState.allExerciseInfo,
           filteredExerciseInfo: filteredList
       ));
     }

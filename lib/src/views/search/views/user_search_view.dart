@@ -4,9 +4,9 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
-import 'package:flutter_app/src/views/search/bloc/search_bloc.dart';
-import 'package:flutter_app/src/views/search/bloc/search_event.dart';
-import 'package:flutter_app/src/views/search/bloc/search_state.dart';
+import 'package:flutter_app/src/views/search/bloc/user_search/search_bloc.dart';
+import 'package:flutter_app/src/views/search/bloc/user_search/search_event.dart';
+import 'package:flutter_app/src/views/search/bloc/user_search/search_state.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -50,6 +50,14 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
     _searchBloc = BlocProvider.of<SearchBloc>(context);
     _userRepository = RepositoryProvider.of<UserRepository>(context);
     _flutterSecureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
+
+    _searchBloc.add(
+        FetchUserFriends(
+            currentUserId: widget.currentUserProfile.userId,
+            limit: ConstantUtils.DEFAULT_LIMIT,
+            offset: ConstantUtils.DEFAULT_OFFSET
+        )
+    );
   }
 
   @override
@@ -98,7 +106,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                         onPressed: () {
                           _suggestionsController.close();
                           shouldShow = false;
-                          _searchBloc.add(const SearchQueryReset());
+                          _searchBloc.add(SearchQueryReset(currentUserId: widget.currentUserProfile.userId));
                         },
                         icon: const Icon(Icons.close),
                       ))),

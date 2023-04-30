@@ -403,7 +403,7 @@ class DiaryViewState extends State<DiaryView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  remainingCalories.toStringAsFixed(2),
+                  remainingCalories.toStringAsFixed(0),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_exercise/detailed_exercise_view.dart';
@@ -82,10 +83,6 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text("View Exercises", style: TextStyle(color: Colors.teal)),
-      //   iconTheme: const IconThemeData(color: Colors.teal),
-      // ),
       body: BlocListener<ExerciseSearchBloc, ExerciseSearchState>(
         listener: (context, state) {
           if (state is ExerciseDataFetched) {
@@ -134,8 +131,8 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
             controller: _tabController,
             children: [
               _showExerciseList([], false),
-              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id == 15).toList(), true),
-              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id != 15).toList(), false),
+              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION).toList(), true),
+              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id != ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION).toList(), false),
             ],
           ),
         )
@@ -251,11 +248,10 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
       ),
       onTap: () {
         // Move to detailed exercise definition page from here
-        Navigator.pushAndRemoveUntil(
+        Navigator.push(
             context,
             DetailedExerciseView.route(widget.currentUserProfile, exerciseDefinition, isCardio, widget.selectedDayInQuestion),
-                (route) => true
-        );
+        ).then((value) => Navigator.pop(context));
       },
     );
   }

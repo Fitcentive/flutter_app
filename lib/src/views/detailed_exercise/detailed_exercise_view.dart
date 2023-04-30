@@ -138,7 +138,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
           backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
         ),
         onPressed: () async {
-          Navigator.pushAndRemoveUntil(
+          Navigator.push(
               context,
               AddExerciseToDiaryView.route(
                   widget.currentUserProfile,
@@ -146,8 +146,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                   widget.isCurrentExerciseDefinitionCardio,
                   widget.selectedDayInQuestion
               ),
-                  (route) => true
-          );
+          ).then((value) => Navigator.pop(context));
         },
         child: const Text("Add to diary", style: TextStyle(fontSize: 15, color: Colors.white)),
       ),

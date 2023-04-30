@@ -77,4 +77,6 @@ class ConstantUtils {
   static const String staticDeletedUserId = "aaaaaaaa-aaaa-8bbb-8bbb-aaaaaaaaaaaa";
 
   static const String timestampFormat = "hh:mm a     yyyy-MM-dd";
+
+  static const int CARDIO_EXERCISE_CATEGORY_DEFINITION = 15;
 }

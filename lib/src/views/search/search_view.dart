@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
-import 'package:flutter_app/src/views/search/bloc/search_bloc.dart';
-import 'package:flutter_app/src/views/search/bloc/search_state.dart';
+import 'package:flutter_app/src/views/search/bloc/activity_search/activity_bloc.dart';
+import 'package:flutter_app/src/views/search/bloc/user_search/search_bloc.dart';
+import 'package:flutter_app/src/views/search/bloc/user_search/search_state.dart';
 import 'package:flutter_app/src/views/search/views/activity_search_view.dart';
 import 'package:flutter_app/src/views/search/views/user_search_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,8 +21,16 @@ class SearchView extends StatefulWidget {
       BlocProvider<SearchBloc>(
           create: (context) => SearchBloc(
             userRepository: RepositoryProvider.of<UserRepository>(context),
+            socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
-          )),
+          )
+      ),
+      BlocProvider<ActivitySearchBloc>(
+          create: (context) => ActivitySearchBloc(
+            diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+          )
+      ),
     ],
     child: SearchView(currentUserProfile: currentUserProfile),
   );
@@ -75,7 +86,7 @@ class SearchViewState extends State<SearchView> with SingleTickerProviderStateMi
               controller: _tabController,
               children: [
                 UserSearchView(currentUserProfile: widget.currentUserProfile),
-                const ActivitySearchView(),
+                ActivitySearchView(currentUserProfile: widget.currentUserProfile),
               ],
             ),
           )

@@ -121,8 +121,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
       body: BlocListener<AddExerciseToDiaryBloc, AddExerciseToDiaryState>(
         listener: (context, state) {
           if (state is ExerciseDiaryEntryAdded) {
-            var count = 0;
-            Navigator.popUntil(context, (route) => count++ == 3);
+            Navigator.pop(context);
           }
         },
         child: _displayMainBody(),
