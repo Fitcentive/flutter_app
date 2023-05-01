@@ -8,11 +8,14 @@ abstract class ExerciseSearchEvent extends Equatable {
 }
 
 class FetchAllExerciseInfo extends ExerciseSearchEvent {
+  final String currentUserId;
 
-  const FetchAllExerciseInfo();
+  const FetchAllExerciseInfo({
+    required this.currentUserId
+  });
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [currentUserId];
 }
 
 class FilterSearchQueryChanged extends ExerciseSearchEvent {

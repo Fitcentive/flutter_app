@@ -9,6 +9,7 @@ import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_exercise_to_diary/add_exercise_to_diary_view.dart';
 import 'package:flutter_app/src/views/detailed_exercise/bloc/detailed_exercise_bloc.dart';
+import 'package:flutter_app/src/views/detailed_exercise/bloc/detailed_exercise_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/svg.dart';
@@ -98,6 +99,12 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
     super.initState();
 
     _detailedExerciseBloc = BlocProvider.of<DetailedExerciseBloc>(context);
+    _detailedExerciseBloc.add(
+        AddCurrentExerciseToUserMostRecentlyViewed(
+          currentUserId: widget.currentUserProfile.userId,
+          currentExerciseId: widget.exerciseDefinition.uuid
+        )
+    );
     _tabController = TabController(vsync: this, length: MAX_TABS);
   }
 

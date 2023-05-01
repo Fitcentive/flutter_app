@@ -20,9 +20,11 @@ class ExerciseSearchBloc extends Bloc<ExerciseSearchEvent, ExerciseSearchState> 
   void _fetchAllExerciseInfo(FetchAllExerciseInfo event, Emitter<ExerciseSearchState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final info = await diaryRepository.getAllExerciseInfo(accessToken!);
+    final recentlyViewedWorkoutIds = await diaryRepository.getUserMostRecentlyViewedWorkoutIds(event.currentUserId, accessToken);
     emit(ExerciseDataFetched(
         allExerciseInfo: info,
-        filteredExerciseInfo: info
+        filteredExerciseInfo: info,
+        recentlyViewedWorkoutIds: recentlyViewedWorkoutIds
     ));
   }
 
@@ -34,7 +36,8 @@ class ExerciseSearchBloc extends Bloc<ExerciseSearchEvent, ExerciseSearchState> 
       currentState.allExerciseInfo.where((element) => element.name.toLowerCase().contains(event.searchQuery.toLowerCase())).toList();
       emit(ExerciseDataFetched(
           allExerciseInfo: currentState.allExerciseInfo,
-          filteredExerciseInfo: filteredList
+          filteredExerciseInfo: filteredList,
+          recentlyViewedWorkoutIds: currentState.recentlyViewedWorkoutIds
       ));
     }
   }

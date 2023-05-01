@@ -21,15 +21,18 @@ class ExerciseDataLoading extends ExerciseSearchState {
 class ExerciseDataFetched extends ExerciseSearchState {
   final List<ExerciseDefinition> allExerciseInfo;
   final List<ExerciseDefinition> filteredExerciseInfo;
+  final List<String> recentlyViewedWorkoutIds;
 
   const ExerciseDataFetched({
     required this.allExerciseInfo,
     required this.filteredExerciseInfo,
+    required this.recentlyViewedWorkoutIds,
   });
 
   @override
   List<Object?> get props => [
     allExerciseInfo,
-    filteredExerciseInfo
+    filteredExerciseInfo,
+    recentlyViewedWorkoutIds,
   ];
 }

@@ -23,6 +23,43 @@ class DiaryRepository {
 
   final logger = Logger("DiaryRepository");
 
+  Future<void> addUserMostRecentlyViewedWorkouts(String userId, String workoutId, String accessToken) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/user/$userId/recently-viewed-workouts"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: jsonEncode({
+        "id": workoutId
+      })
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    }
+    else {
+      throw Exception(
+          "addUserMostRecentlyViewedWorkouts: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<String>> getUserMostRecentlyViewedWorkoutIds(String userId, String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/recently-viewed-workouts"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<String> results = jsonResponse.map((e) {
+        return e.toString();
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getUserMostRecentlyViewedWorkouts: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<List<ExerciseDefinition>> getAllExerciseInfo(
       String accessToken
       ) async {

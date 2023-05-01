@@ -89,7 +89,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
     _tabController = TabController(vsync: this, length: MAX_TABS);
 
     _exerciseSearchBloc = BlocProvider.of<ExerciseSearchBloc>(context);
-    _exerciseSearchBloc.add(const FetchAllExerciseInfo());
+    _exerciseSearchBloc.add(FetchAllExerciseInfo(currentUserId: widget.currentUserProfile.userId));
   }
 
   @override
@@ -142,16 +142,24 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
           body: TabBarView(
             controller: _tabController,
             children: [
-              _showExerciseList([], false),
-              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION).toList(), true),
-              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id != ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION).toList(), false),
+              _showExerciseList(
+                  List.from(
+                      state
+                          .filteredExerciseInfo
+                          .where((element) => state.recentlyViewedWorkoutIds.contains(element.uuid))
+                          .toList()
+                  )
+                      ..sort((a,b) => state.recentlyViewedWorkoutIds.indexOf(a.uuid) - state.recentlyViewedWorkoutIds.indexOf(b.uuid))
+              ),
+              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION).toList()),
+              _showExerciseList(state.filteredExerciseInfo.where((element) => element.category.id != ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION).toList()),
             ],
           ),
         )
     );
   }
 
-  _showExerciseList(List<ExerciseDefinition> exercises, bool isCardio) {
+  _showExerciseList(List<ExerciseDefinition> exercises) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -161,7 +169,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
           title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
           trailing: Text(exercises.length.toString(), style: const TextStyle(color: Colors.teal)),
         ),
-        Expanded(child: _searchResults(exercises, isCardio))
+        Expanded(child: _searchResults(exercises))
       ],
     );
   }
@@ -220,14 +228,14 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
     );
   }
 
-  Widget _searchResults(List<ExerciseDefinition> items, bool isCardio) {
+  Widget _searchResults(List<ExerciseDefinition> items) {
     if (items.isNotEmpty) {
       return Scrollbar(
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
           itemCount: items.length,
           itemBuilder: (BuildContext context, int index) {
-            return exerciseResultItem(items[index], isCardio);
+            return exerciseResultItem(items[index]);
           },
         ),
       );
@@ -241,7 +249,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
     }
   }
 
-  Widget exerciseResultItem(ExerciseDefinition exerciseDefinition, bool isCardio) {
+  Widget exerciseResultItem(ExerciseDefinition exerciseDefinition) {
     return ListTile(
       title: Text(exerciseDefinition.name,
           style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -266,7 +274,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
                 widget.currentUserProfile,
                 widget.currentFitnessUserProfile,
                 exerciseDefinition,
-                isCardio,
+                exerciseDefinition.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION,
                 widget.selectedDayInQuestion
             ),
         ).then((value) => Navigator.pop(context));
