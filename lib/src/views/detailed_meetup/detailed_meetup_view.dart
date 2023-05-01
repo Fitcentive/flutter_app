@@ -243,57 +243,64 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     return Scaffold(
       appBar: _renderAppBar(),
       floatingActionButton:  _dynamicFloatingActionButtons(),
-      body: BlocListener<DetailedMeetupBloc, DetailedMeetupState>(
-        listener: (context, state) {
-          if (state is DetailedMeetupDataFetched) {
-            setState(() {
-              _setUpTimeSegmentDateTimeMap(state.meetup.createdAt);
-
-              selectedMeetupLocation = state.meetupLocation;
-              userMeetupAvailabilities = state.userAvailabilities
-                  .map((key, value) => MapEntry(key, value.map((e) => e.toUpsert()).toList()));
-
-              currentMeetup = state.meetup;
-              selectedMeetupDate = state.meetup.time;
-              selectedMeetupParticipantUserProfiles = List.from(state.userProfiles);
-              selectedMeetupParticipants = List.from(state.participants);
-              selectedMeetupParticipantDecisions = List.from(state.decisions);
-              selectedMeetupName = state.meetup.name;
-              selectedMeetupLocationId = state.meetupLocation?.locationId;
-              selectedMeetupLocationFsqId = state.meetupLocation?.location.fsqId;
-
-              selectedUserProfilesToShowAvailabilitiesFor = List.from(state.userProfiles);
-            });
-          }
-          else if (state is MeetupChatRoomCreated) {
-            final otherUserProfiles = selectedMeetupParticipantUserProfiles
-                .where((element) => element.userId != widget.currentUserProfile.userId)
-                .toList();
-
-            Navigator.push(
-                context,
-                UserChatView.route(
-                    currentRoomId: state.chatRoomId,
-                    currentUserProfile: widget.currentUserProfile,
-                    otherUserProfiles: otherUserProfiles
-                )
-            );
-          }
-          else if (state is MeetupUpdatedAndReadyToPop) {
-            Navigator.pop(context);
-          }
+      body: WillPopScope(
+        onWillPop: () {
+          _updateMeetingDetails();
+          return Future.value(false);
         },
-        child: BlocBuilder<DetailedMeetupBloc, DetailedMeetupState>(
-          builder: (context, state) {
+        child: BlocListener<DetailedMeetupBloc, DetailedMeetupState>(
+          listener: (context, state) {
             if (state is DetailedMeetupDataFetched) {
-              return _mainBody(state);
+              setState(() {
+                _setUpTimeSegmentDateTimeMap(state.meetup.createdAt);
+
+                selectedMeetupLocation = state.meetupLocation;
+                userMeetupAvailabilities = state.userAvailabilities
+                    .map((key, value) => MapEntry(key, value.map((e) => e.toUpsert()).toList()));
+
+                currentMeetup = state.meetup;
+                selectedMeetupDate = state.meetup.time;
+                selectedMeetupParticipantUserProfiles = List.from(state.userProfiles);
+                selectedMeetupParticipants = List.from(state.participants);
+                selectedMeetupParticipantDecisions = List.from(state.decisions);
+                selectedMeetupName = state.meetup.name;
+                selectedMeetupLocationId = state.meetupLocation?.locationId;
+                selectedMeetupLocationFsqId = state.meetupLocation?.location.fsqId;
+
+                selectedUserProfilesToShowAvailabilitiesFor = List.from(state.userProfiles);
+              });
             }
-            else {
-              return const Center(
-                child: CircularProgressIndicator(),
+            else if (state is MeetupChatRoomCreated) {
+              final otherUserProfiles = selectedMeetupParticipantUserProfiles
+                  .where((element) => element.userId != widget.currentUserProfile.userId)
+                  .toList();
+
+              Navigator.push(
+                  context,
+                  UserChatView.route(
+                      currentRoomId: state.chatRoomId,
+                      currentUserProfile: widget.currentUserProfile,
+                      otherUserProfiles: otherUserProfiles
+                  )
               );
             }
+            else if (state is MeetupUpdatedAndReadyToPop) {
+              SnackbarUtils.showSnackBar(context, "Meetup updated successfully!");
+              Navigator.pop(context);
+            }
           },
+          child: BlocBuilder<DetailedMeetupBloc, DetailedMeetupState>(
+            builder: (context, state) {
+              if (state is DetailedMeetupDataFetched) {
+                return _mainBody(state);
+              }
+              else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
@@ -375,11 +382,15 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             );
           }
           else {
-            return FloatingActionButton(
-                heroTag: "saveButtonDetailedMeetupView",
-                onPressed: _updateMeetingDetails,
-                backgroundColor: Colors.teal,
-                child: const Icon(Icons.save, color: Colors.white)
+            // Hide FAB as saving is now done implicitly on WillPopScope
+            return Visibility(
+              visible: false,
+              child: FloatingActionButton(
+                  heroTag: "saveButtonDetailedMeetupView",
+                  onPressed: _updateMeetingDetails,
+                  backgroundColor: Colors.teal,
+                  child: const Icon(Icons.save, color: Colors.white)
+              ),
             );
           }
         }
@@ -407,7 +418,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         location: selectedMeetupLocation,
         meetupParticipantUserIds: selectedMeetupParticipantUserProfiles.map((e) => e.userId).toList(),
     ));
-    SnackbarUtils.showSnackBar(context, "Meetup updated successfully!");
+    ScaffoldMessenger
+        .of(context)
+        .showSnackBar(const SnackBar(
+          content: Text("Please wait... updating meetup..."),
+          duration: SnackbarUtils.shortDuration
+    ));
   }
 
 
