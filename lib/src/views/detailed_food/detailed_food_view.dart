@@ -106,7 +106,12 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
     _detailedFoodBloc = BlocProvider.of<DetailedFoodBloc>(context);
     _tabController = TabController(vsync: this, length: MAX_TABS);
 
-    _detailedFoodBloc.add(FetchDetailedFoodInfo(foodId: widget.foodSearchResult.food_id));
+    _detailedFoodBloc.add(
+        FetchDetailedFoodInfo(
+            foodId: widget.foodSearchResult.food_id,
+            currentUserId: widget.currentUserProfile.userId
+        )
+    );
   }
 
   @override

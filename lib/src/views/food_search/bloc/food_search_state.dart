@@ -1,4 +1,7 @@
+import 'package:either_dart/either.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/fatsecret/food_search_results.dart';
 
 abstract class FoodSearchState extends Equatable {
@@ -18,12 +21,26 @@ class FoodDataLoading extends FoodSearchState {
   const FoodDataLoading();
 }
 
+class OnlyRecentFoodDataFetched extends FoodSearchState {
+  final List<Either<FoodGetResult, FoodGetResultSingleServing>> recentFoods;
+
+  const OnlyRecentFoodDataFetched({
+    required this.recentFoods
+  });
+
+  @override
+  List<Object?> get props => [
+    recentFoods,
+  ];
+}
+
 class FoodDataFetched extends FoodSearchState {
   final String query;
   final int suppliedPageNumber;
   final int suppliedMaxResults;
   final FoodSearchResults results;
   final bool doesNextPageExist;
+  final List<Either<FoodGetResult, FoodGetResultSingleServing>> recentFoods;
 
   const FoodDataFetched({
     required this.query,
@@ -31,6 +48,7 @@ class FoodDataFetched extends FoodSearchState {
     required this.suppliedMaxResults,
     required this.results,
     required this.doesNextPageExist,
+    required this.recentFoods,
   });
 
   @override
@@ -40,5 +58,6 @@ class FoodDataFetched extends FoodSearchState {
     suppliedMaxResults,
     results,
     doesNextPageExist,
+    recentFoods,
   ];
 }

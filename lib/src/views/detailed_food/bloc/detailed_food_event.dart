@@ -8,14 +8,17 @@ abstract class DetailedFoodEvent extends Equatable {
 }
 
 class FetchDetailedFoodInfo extends DetailedFoodEvent {
+  final String currentUserId;
   final String foodId;
 
   const FetchDetailedFoodInfo({
+    required this.currentUserId,
     required this.foodId,
   });
 
   @override
   List<Object?> get props => [
     foodId,
+    currentUserId,
   ];
 }

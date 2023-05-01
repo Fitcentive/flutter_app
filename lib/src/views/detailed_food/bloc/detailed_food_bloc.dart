@@ -20,7 +20,9 @@ class DetailedFoodBloc extends Bloc<DetailedFoodEvent, DetailedFoodState> {
     emit(const DetailedFoodInfoLoading());
 
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final result = await diaryRepository.getFoodById(event.foodId, accessToken!);
+
+    await diaryRepository.addUserMostRecentlyViewedFoods(event.currentUserId, int.parse(event.foodId ), accessToken!);
+    final result = await diaryRepository.getFoodById(event.foodId, accessToken);
 
     emit(
         DetailedFoodDataFetched(

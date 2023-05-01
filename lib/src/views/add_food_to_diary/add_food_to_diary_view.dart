@@ -16,7 +16,6 @@ import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_e
 import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AddFoodToDiaryView extends StatefulWidget {

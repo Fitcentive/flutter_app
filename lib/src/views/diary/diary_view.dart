@@ -62,7 +62,7 @@ class DiaryViewState extends State<DiaryView> {
     0: "Breakfast",
     1: "Lunch",
     2: "Dinner",
-    3: "Snacks",
+    3: "Snack",
     4: "Exercise",
   };
 
@@ -281,7 +281,7 @@ class DiaryViewState extends State<DiaryView> {
                   color: Colors.white
               ),
               onPressed: () {
-                _goToFoodSearchView("Snacks");
+                _goToFoodSearchView("Snack");
               },
             )
           ],

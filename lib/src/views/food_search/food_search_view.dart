@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/fatsecret/food_search_result.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -99,16 +102,17 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     _tabController = TabController(vsync: this, length: MAX_TABS);
 
     _foodSearchBloc = BlocProvider.of<FoodSearchBloc>(context);
+    _foodSearchBloc.add(
+        FetchRecentFoodSearchInfo(
+          currentUserId: widget.currentUserProfile.userId
+        )
+    );
     _scrollController.addListener(_onScroll);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text("View Exercises", style: TextStyle(color: Colors.teal)),
-      //   iconTheme: const IconThemeData(color: Colors.teal),
-      // ),
       body: BlocListener<FoodSearchBloc, FoodSearchState>(
         listener: (context, state) {
           if (state is FoodDataFetched) {
@@ -138,6 +142,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
           if (currentState is FoodDataFetched) {
             _foodSearchBloc.add(
                 FetchFoodSearchInfo(
+                  currentUserId: widget.currentUserProfile.userId,
                   query: currentState.query,
                   pageNumber: currentState.suppliedPageNumber + 1,
                   maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
@@ -206,12 +211,36 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
       return [
         ListTile(
           title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
-          trailing: Text(state.results.foods.food.length.toString(), style: const TextStyle(color: Colors.teal)),
+          trailing: Text(showOnlyRecent ? state.recentFoods.length.toString() : state.results.foods.food.length.toString(), style: const TextStyle(color: Colors.teal)),
         ),
         Expanded(
-            child: _searchResults(showOnlyRecent ? [] : state.results.foods.food, state) // todo - fix this when recent is available
+            child: showOnlyRecent ? _recentFoodSearchResults(state.recentFoods) : _searchResults(state.results.foods.food, state)
         )
       ];
+    }
+    else if (state is OnlyRecentFoodDataFetched) {
+      if (showOnlyRecent) {
+        return [
+          ListTile(
+            title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
+            trailing: Text(state.recentFoods.length.toString(), style: const TextStyle(color: Colors.teal)),
+          ),
+          Expanded(
+            child: _recentFoodSearchResults(state.recentFoods),
+          )
+        ];
+      }
+      else {
+        return [
+          const ListTile(
+            title: Text("Total Results", style: TextStyle(color: Colors.teal)),
+            trailing: Text("0", style: TextStyle(color: Colors.teal)),
+          ),
+          Expanded(
+              child: _searchResults([], null)
+          )
+        ];
+      }
     }
     else {
       return const [
@@ -243,6 +272,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                   if (text.trim().isNotEmpty) {
                     _foodSearchBloc.add(
                         FetchFoodSearchInfo(
+                          currentUserId: widget.currentUserProfile.userId,
                           query: text.trim(),
                           pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
                           maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
@@ -292,6 +322,34 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     );
   }
 
+  Widget _recentFoodSearchResults(List<Either<FoodGetResult, FoodGetResultSingleServing>> recentFoods) {
+    if (recentFoods.isNotEmpty) {
+      return Scrollbar(
+        controller: _scrollController,
+        child: ListView.builder(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: recentFoods.length,
+          itemBuilder: (BuildContext context, int index) {
+            if (index % 2 == 0) {
+              return _recentFoodResultItem(recentFoods[index], true);
+            } else {
+              return _recentFoodResultItem(recentFoods[index], false);
+            }
+
+          },
+        ),
+      );
+    }
+    else {
+      return const Center(
+        child: Text(
+            "No results... refine search query"
+        ),
+      );
+    }
+  }
+
   Widget _searchResults(List<FoodSearchResult> items, FoodDataFetched? state) {
     if (items.isNotEmpty) {
       return Scrollbar(
@@ -302,7 +360,12 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
           itemCount: (state?.doesNextPageExist ?? false) ? items.length + 1 : items.length,
           itemBuilder: (BuildContext context, int index) {
             if (index != items.length) {
-              return foodResultItem(items[index]);
+              if (index % 2 == 0) {
+                return foodResultItem(items[index], true);
+
+              } else {
+                return foodResultItem(items[index], false);
+              }
             }
             else {
               return const Center(
@@ -324,8 +387,9 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     }
   }
 
-  Widget foodResultItem(FoodSearchResult foodSearchResult) {
+  Widget foodResultItem(FoodSearchResult foodSearchResult, bool toShadeBackground) {
     return ListTile(
+      tileColor: toShadeBackground ? Colors.grey.shade100 : null,
       title: Text(foodSearchResult.food_name,
           style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: Text(foodSearchResult.food_type),
@@ -342,6 +406,53 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
         );
       },
     );
+  }
+
+
+  Widget _recentFoodResultItem(Either<FoodGetResult, FoodGetResultSingleServing> recentFood, bool toShadeBackground) {
+    if (recentFood.isLeft) {
+      final currentFood = recentFood.left.food;
+      return ListTile(
+        tileColor: toShadeBackground ? Colors.grey.shade100 : null,
+        title: Text(currentFood.food_name,
+            style: const TextStyle(fontWeight: FontWeight.w500)),
+        trailing: Text(currentFood.food_type),
+        // subtitle: Text(recentFood.left.food.),
+        onTap: () {
+          Navigator.push(
+              context,
+              DetailedFoodView.route(
+                  widget.currentUserProfile,
+                  FoodSearchResult("", "", currentFood.food_id, currentFood.food_name, currentFood.food_type, currentFood.food_url),
+                  widget.mealOfDay,
+                  widget.selectedDayInQuestion
+              )
+          );
+        },
+      );
+    }
+    else {
+      final currentFood = recentFood.right.food;
+      return ListTile(
+        tileColor: toShadeBackground ? Colors.grey.shade100 : null,
+        title: Text(currentFood.food_name,
+            style: const TextStyle(fontWeight: FontWeight.w500)),
+        trailing: Text(currentFood.food_type),
+        // subtitle: Text(recentFood.right.food.),
+        onTap: () {
+          Navigator.push(
+              context,
+              DetailedFoodView.route(
+                  widget.currentUserProfile,
+                  FoodSearchResult("", "", currentFood.food_id, currentFood.food_name, currentFood.food_type, currentFood.food_url),
+                  widget.mealOfDay,
+                  widget.selectedDayInQuestion
+              )
+          );
+        },
+      );
+    }
+
   }
 
 }

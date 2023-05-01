@@ -17,12 +17,25 @@ class ClearFoodSearchQuery extends FoodSearchEvent {
 
 }
 
+class FetchRecentFoodSearchInfo extends FoodSearchEvent {
+  final String currentUserId;
+
+  const FetchRecentFoodSearchInfo({
+    required this.currentUserId
+  });
+
+  @override
+  List<Object?> get props => [currentUserId];
+}
+
 class FetchFoodSearchInfo extends FoodSearchEvent {
+  final String currentUserId;
   final String query;
   final int pageNumber;
   final int maxResults;
 
   const FetchFoodSearchInfo({
+    required this.currentUserId,
     required this.query,
     this.pageNumber = DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
     this.maxResults = DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
@@ -30,6 +43,7 @@ class FetchFoodSearchInfo extends FoodSearchEvent {
 
   @override
   List<Object?> get props => [
+    currentUserId,
     query,
     pageNumber,
     maxResults,
