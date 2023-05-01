@@ -12,6 +12,9 @@ class ConstantUtils {
 
   static const String FALLBACK_URL = "https://www.google.ca";
 
+  static const String FATSECRET_ATTRIBUTION_URL = "https://platform.fatsecret.com";
+  static const String WGER_ATTRIBUTION_URL = "https://wger.de/en/software/api";
+
   static const int DEFAULT_LIMIT = 20;
   static const int DEFAULT_NEWSFEED_LIMIT = 10;
   static const int DEFAULT_CHAT_MESSAGES_LIMIT = 50;

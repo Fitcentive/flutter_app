@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_app/src/views/exercise_search/bloc/exercise_search_state
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ExerciseSearchView extends StatefulWidget {
   static const String routeName = "exercise/search";
@@ -163,6 +165,9 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        WidgetUtils.spacer(5),
+        _renderWgerApiAttribution(),
+        WidgetUtils.spacer(5),
         _exerciseSearchBar(),
         WidgetUtils.spacer(2.5),
         ListTile(
@@ -171,6 +176,24 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
         ),
         Expanded(child: _searchResults(exercises))
       ],
+    );
+  }
+
+  _renderWgerApiAttribution() {
+    return Center(
+      child: RichText(
+          text: TextSpan(
+              children: [
+                TextSpan(
+                    text: "Powered by Wger",
+                    style: Theme.of(context).textTheme.subtitle2?.copyWith(color: Colors.teal),
+                    recognizer: TapGestureRecognizer()..onTap = () {
+                      launchUrl(Uri.parse(ConstantUtils.WGER_ATTRIBUTION_URL));
+                    }
+                ),
+              ]
+          )
+      ),
     );
   }
 

@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:either_dart/either.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/fatsecret/food_search_result.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_food/detailed_food_view.dart';
@@ -16,6 +18,7 @@ import 'package:flutter_app/src/views/food_search/bloc/food_search_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FoodSearchView extends StatefulWidget {
   static const String routeName = "food/search";
@@ -71,7 +74,6 @@ class FoodSearchView extends StatefulWidget {
   }
 }
 
-// TODO  + PROVIDE ATTRIBUTEION TO WGER AND FATSECRET API
 class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProviderStateMixin {
   static const int MAX_TABS = 2;
   static const double _scrollThreshold = 400.0;
@@ -184,10 +186,31 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     );
   }
 
+  _renderFatsecretAttribution() {
+    return Center(
+      child: RichText(
+          text: TextSpan(
+              children: [
+                TextSpan(
+                    text: "Powered by Fatsecret",
+                    style: Theme.of(context).textTheme.subtitle2?.copyWith(color: Colors.teal),
+                    recognizer: TapGestureRecognizer()..onTap = () {
+                      launchUrl(Uri.parse(ConstantUtils.FATSECRET_ATTRIBUTION_URL));
+                    }
+                ),
+              ]
+          )
+      ),
+    );
+  }
+
   _showFoodList(FoodSearchState state, bool showOnlyRecent) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        WidgetUtils.spacer(5),
+        _renderFatsecretAttribution(),
+        WidgetUtils.spacer(5),
         _foodSearchBar(),
         WidgetUtils.spacer(2.5),
         ..._renderResultsOrProgressIndicator(state, showOnlyRecent)
