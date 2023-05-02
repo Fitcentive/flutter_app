@@ -324,24 +324,6 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   void _applyUserDecisionToFriendRequest(ApplyUserDecisionToFriendRequest event, Emitter<UserProfileState> emit) async {
     final currentState = state;
     if (currentState is RequiredDataResolved) {
-      final newFollowStatus = UserFriendStatus(
-          event.userFollowStatus.currentUserId,
-          event.userFollowStatus.otherUserId,
-          event.isFollowRequestApproved,
-          event.userFollowStatus.hasCurrentUserRequestedToFriendOtherUser,
-          event.userFollowStatus.hasOtherUserRequestedToFriendCurrentUser
-      );
-      emit(RequiredDataResolved(
-          userFollowStatus: newFollowStatus,
-          currentUser: event.currentUser,
-          userPosts: event.userPosts,
-          usersWhoLikedPosts: event.usersWhoLikedPosts,
-          postIdCommentsMap: currentState.postIdCommentsMap,
-          userIdProfileMap: currentState.userIdProfileMap,
-          selectedPostId: null,
-          chatRoomId: null,
-          doesNextPageExist: currentState.doesNextPageExist
-      ));
       final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       await socialMediaRepository.applyUserDecisionToFriendRequest(
           event.targetUserId,

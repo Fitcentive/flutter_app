@@ -20,6 +20,7 @@ import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart'
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
 
 class UserProfileView extends StatefulWidget {
   static const String routeName = "user/profile";
@@ -62,6 +63,11 @@ class UserProfileViewState extends State<UserProfileView> {
 
   late final UserProfileBloc _userProfileBloc;
   late final AuthenticationBloc _authenticationBloc;
+
+  String keyStateId = (const Uuid()..v4()).toString();
+  bool? isCurrentUserFriendsWithOtherUserState;
+  bool? hasCurrentUserRequestedToFriendOtherUserState;
+  bool? hasOtherUserRequestedToFriendCurrentUserState;
 
   List<SocialPost>? postsState = List.empty();
   List<PostsWithLikedUserIds>? likedUsersForPosts = List.empty();
@@ -119,6 +125,13 @@ class UserProfileViewState extends State<UserProfileView> {
       ),
       body: BlocListener<UserProfileBloc, UserProfileState>(
         listener: (context, state) {
+          if (state is RequiredDataResolved) {
+            setState(() {
+              isCurrentUserFriendsWithOtherUserState = state.userFollowStatus.isCurrentUserFriendsWithOtherUser;
+              hasCurrentUserRequestedToFriendOtherUserState = state.userFollowStatus.hasCurrentUserRequestedToFriendOtherUser;
+              hasOtherUserRequestedToFriendCurrentUserState = state.userFollowStatus.hasOtherUserRequestedToFriendCurrentUser;
+            });
+          }
           if (state is GoToUserChatView) {
             _openUserChatView(state.roomId, widget.userProfile);
           }
@@ -158,7 +171,7 @@ class UserProfileViewState extends State<UserProfileView> {
               const Padding(padding: EdgeInsets.all(10)),
               _messageUserButtonOpt(state),
               _friendUserButtonOpt(state),
-              _acceptFriendRequestButtonOpt(state),
+              _acceptFriendRequestButtonOpt(),
               _showUserPostsIfRequired(state)
             ]),
           ),
@@ -333,11 +346,11 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
-  _getText(RequiredDataResolved state) {
-    if (state.userFollowStatus.hasCurrentUserRequestedToFriendOtherUser) {
+  _getText() {
+    if (hasCurrentUserRequestedToFriendOtherUserState ?? false) {
       return "Friend request already sent!";
     } else {
-      if (state.userFollowStatus.isCurrentUserFriendsWithOtherUser) {
+      if (isCurrentUserFriendsWithOtherUserState ?? false) {
         return "Unfriend";
       } else {
         return "Add as friend";
@@ -382,7 +395,7 @@ class UserProfileViewState extends State<UserProfileView> {
           onPressed: () {
             _friendUserButtonOnPressed();
           },
-          label: Text(_getText(state),
+          label: Text(_getText(),
               style: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
         ),
         WidgetUtils.spacer(5),
@@ -390,11 +403,10 @@ class UserProfileViewState extends State<UserProfileView> {
     );
   }
 
-  Widget? _acceptFriendRequestButtonOpt(RequiredDataResolved state) {
-    if (!state.userFollowStatus.isCurrentUserFriendsWithOtherUser &&
-        !state.userFollowStatus.hasOtherUserRequestedToFriendCurrentUser) {
+  Widget? _acceptFriendRequestButtonOpt() {
+    if (!(isCurrentUserFriendsWithOtherUserState ?? false) && !(hasOtherUserRequestedToFriendCurrentUserState ?? false)) {
       return null;
-    } else if (state.userFollowStatus.hasOtherUserRequestedToFriendCurrentUser) {
+    } else if (hasOtherUserRequestedToFriendCurrentUserState ?? false) {
       return Column(
         children: [
           Container(
@@ -442,6 +454,10 @@ class UserProfileViewState extends State<UserProfileView> {
     final currentAuthState = _authenticationBloc.state;
     final currentUserProfileState = _userProfileBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState && currentUserProfileState is RequiredDataResolved) {
+      setState(() {
+        isCurrentUserFriendsWithOtherUserState = isFollowRequestApproved;
+        hasOtherUserRequestedToFriendCurrentUserState = false;
+      });
       _userProfileBloc.add(ApplyUserDecisionToFriendRequest(
           targetUserId: widget.userProfile.userId,
           currentUser: currentAuthState.authenticatedUser,
