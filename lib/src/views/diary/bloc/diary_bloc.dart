@@ -56,17 +56,20 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
     final cardioWorkouts = await diaryRepository.getCardioWorkoutsForUserByDay(
         event.userId,
         DateFormat("yyyy-MM-dd").format(event.diaryDate),
+        DateTime.now().timeZoneOffset.inMinutes,
         accessToken!
     );
     final strengthWorkouts = await diaryRepository.getStrengthWorkoutsForUserByDay(
         event.userId,
         DateFormat("yyyy-MM-dd").format(event.diaryDate),
+        DateTime.now().timeZoneOffset.inMinutes,
         accessToken
     );
 
     final foodEntriesRaw = await diaryRepository.getFoodEntriesForUserByDay(
         event.userId,
         DateFormat("yyyy-MM-dd").format(event.diaryDate),
+        DateTime.now().timeZoneOffset.inMinutes,
         accessToken
     );
     final foodEntries = await Future.wait(foodEntriesRaw.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken)));

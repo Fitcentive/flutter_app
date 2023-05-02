@@ -215,10 +215,11 @@ class DiaryRepository {
   Future<List<CardioDiaryEntry>> getCardioWorkoutsForUserByDay(
       String userId,
       String dateString,
+      int timeZoneOffsetInMinutes,
       String accessToken,
       ) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/user/$userId/date/$dateString/cardio"),
+      Uri.parse("$BASE_URL/user/$userId/date/$dateString/cardio?offsetInMinutes=$timeZoneOffsetInMinutes"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
@@ -238,10 +239,11 @@ class DiaryRepository {
   Future<List<StrengthDiaryEntry>> getStrengthWorkoutsForUserByDay(
       String userId,
       String dateString,
+      int timeZoneOffsetInMinutes,
       String accessToken,
       ) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/user/$userId/date/$dateString/strength"),
+      Uri.parse("$BASE_URL/user/$userId/date/$dateString/strength?offsetInMinutes=$timeZoneOffsetInMinutes"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
@@ -303,10 +305,11 @@ class DiaryRepository {
   Future<List<FoodDiaryEntry>> getFoodEntriesForUserByDay(
       String userId,
       String dateString,
+      int timeZoneOffsetInMinutes,
       String accessToken,
       ) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/user/$userId/date/$dateString/food"),
+      Uri.parse("$BASE_URL/user/$userId/date/$dateString/food?offsetInMinutes=$timeZoneOffsetInMinutes"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
