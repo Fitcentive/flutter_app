@@ -458,7 +458,7 @@ class NotificationsViewState extends State<NotificationsView> {
         subtitle: Padding(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
           child: Text(
-            DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+            DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.toLocal()),
             style: const TextStyle(fontSize: 10),
           ),
         ),

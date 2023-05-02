@@ -272,10 +272,9 @@ class ChatHomeViewState extends State<ChatHomeView> {
     }
   }
 
-  // todo - this is a hacky timezone fix - need fixing again!
   _isMessageUnread(UserRoomsLoaded state, ChatRoomWithMostRecentMessage currentChatRoom) {
     final res = (state.roomUserLastSeenMap[currentChatRoom.roomId]?.compareTo(
-                currentChatRoom.mostRecentMessageTime.toUtc().subtract(const Duration(hours: 4))) ?? -1);
+                currentChatRoom.mostRecentMessageTime.toLocal()) ?? -1);
     return res <= 0;
   }
 

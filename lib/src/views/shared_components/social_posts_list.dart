@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_app/src/views/liked_users/liked_users_view.dart';
 import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
+import 'package:intl/intl.dart';
 
 typedef ButtonInteractionCallback = void Function(SocialPost post, PostsWithLikedUserIds likedUserIds);
 
@@ -97,6 +99,8 @@ class SocialPostsListState extends State<SocialPostsList> {
             mainAxisSize: MainAxisSize.min,
             children: WidgetUtils.skipNulls(
                 [
+                  _renderPostCreationTime(post),
+                  WidgetUtils.spacer(5),
                   _userHeader(publicUser),
                   WidgetUtils.spacer(10),
                   _userPostText(post),
@@ -109,6 +113,17 @@ class SocialPostsListState extends State<SocialPostsList> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  _renderPostCreationTime(SocialPost post) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        // Force conversion as Neo4J db stores only in UTC but agnostically
+        DateFormat(ConstantUtils.timestampFormat).format(post.updatedAt.add(DateTime.now().timeZoneOffset)),
+        style: const TextStyle(fontSize: 10),
       ),
     );
   }

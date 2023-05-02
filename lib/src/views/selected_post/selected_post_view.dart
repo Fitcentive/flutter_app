@@ -342,6 +342,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
               child: Text(
+                // Force conversion as Neo4J db stores only in UTC but agnostically
                 DateFormat(ConstantUtils.timestampFormat).format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
                 style: const TextStyle(
                     fontSize: 10
