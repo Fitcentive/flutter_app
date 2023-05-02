@@ -16,6 +16,7 @@ class ConstantUtils {
   static const String WGER_ATTRIBUTION_URL = "https://wger.de/en/software/api";
 
   static const int DEFAULT_LIMIT = 20;
+  static const int DEFAULT_MAX_LIMIT = 100000;
   static const int DEFAULT_NEWSFEED_LIMIT = 10;
   static const int DEFAULT_CHAT_MESSAGES_LIMIT = 50;
   static const int DEFAULT_OFFSET = 0;

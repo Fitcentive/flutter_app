@@ -58,13 +58,12 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
   void _saveNewMeetup(SaveNewMeetup event, Emitter<CreateNewMeetupState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    // For some reason, this callback only is going ahead by 10.5 hours. Fix dirty hack
     List <MeetupAvailabilityUpsert> availabilitiesToSave = MiscUtils.convertBooleanMatrixToAvailabilities(
         event.currentUserAvailabilities,
         timeSegmentToDateTimeMap,
     ).map((e) => MeetupAvailabilityUpsert(
-      e.availabilityStart.subtract(const Duration(hours: 10, minutes: 30)),
-      e.availabilityEnd.subtract(const Duration(hours: 10, minutes: 30)),
+      e.availabilityStart,
+      e.availabilityEnd,
     )).toList();
 
     final newMeetup = MeetupCreate(

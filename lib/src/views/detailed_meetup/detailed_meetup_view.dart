@@ -148,9 +148,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     var k = 0;
     while (i < intervalsList.length) {
       timeSegmentToDateTimeMap[i] =
-          DateTime.utc(baseTime.year, baseTime.month, baseTime.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
+          DateTime(baseTime.year, baseTime.month, baseTime.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
       timeSegmentToDateTimeMap[i+1] =
-          DateTime.utc(baseTime.year, baseTime.month, baseTime.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
+          DateTime(baseTime.year, baseTime.month, baseTime.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
 
       i += 2;
       k += 1;
@@ -245,14 +245,19 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       floatingActionButton:  _dynamicFloatingActionButtons(),
       body: WillPopScope(
         onWillPop: () {
-          _updateMeetingDetails();
-          return Future.value(false);
+          if (widget.meetup?.ownerId == widget.currentUserProfile.userId) {
+            _updateMeetingDetails();
+            return Future.value(false);
+          }
+          else {
+            return Future.value(true);
+          }
         },
         child: BlocListener<DetailedMeetupBloc, DetailedMeetupState>(
           listener: (context, state) {
             if (state is DetailedMeetupDataFetched) {
               setState(() {
-                _setUpTimeSegmentDateTimeMap(state.meetup.createdAt);
+                _setUpTimeSegmentDateTimeMap(state.meetup.createdAt.toLocal());
 
                 selectedMeetupLocation = state.meetupLocation;
                 userMeetupAvailabilities = state.userAvailabilities
@@ -563,13 +568,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   // This is only triggered if the supplied currentUserAcceptingAvailabilityFor is not null
   _availabilityChangedCallback(List<List<bool>> availabilitiesChanged) {
-    // For some reason, this callback only is going ahead by 5.5 hours. Fix dirty hack
     final updatedCurrentUserAvailabilities = MiscUtils.convertBooleanMatrixToAvailabilities(
         availabilitiesChanged,
         timeSegmentToDateTimeMap
     ).map((e) => MeetupAvailabilityUpsert(
-        e.availabilityStart.subtract(const Duration(hours: 5, minutes: 30)),
-        e.availabilityEnd.subtract(const Duration(hours: 5, minutes: 30)),
+        e.availabilityStart,
+        e.availabilityEnd,
     )).toList();
 
     setState(() {
@@ -592,13 +596,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             // cellWidth: 60,
             showScrollBar: true,
           ),
-          headers: _renderAvailabilityHeaders(currentMeetup.createdAt),
+          headers: _renderAvailabilityHeaders(currentMeetup.createdAt.toLocal()),
           tasks: const [],
-          availabilityInitialDay: currentMeetup.createdAt,
+          availabilityInitialDay: currentMeetup.createdAt.toLocal(),
           meetupAvailabilities: Map.fromEntries(userMeetupAvailabilities
               .entries
               .where((element) =>
-                  selectedUserProfilesToShowAvailabilitiesFor.map((e) => e.userId).contains(element.key))),
+                  selectedUserProfilesToShowAvailabilitiesFor.map((e) => e.userId).contains(element.key))
+          ),
         ),
       ),
     );

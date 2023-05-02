@@ -147,9 +147,9 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
       var k = 0;
       while (i < intervalsList.length) {
         timeSegmentToDateTimeMap[i] =
-            DateTime.utc(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
+            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
         timeSegmentToDateTimeMap[i+1] =
-            DateTime.utc(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
+            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
 
         i += 2;
         k += 1;
@@ -334,7 +334,6 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
             SizedBox(
               height: (config.totalHours * config.cellHeight!) + 80,
               width: (config.cellWidth!).toDouble(),
-              // todo - set up an overall drag listener here?
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[

@@ -261,12 +261,6 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
                   if (text.isNotEmpty) {
                     final sets = int.parse(text);
                     final reps = _repsTextController.value.text.isEmpty ? 1 : int.parse(_repsTextController.value.text);
-                    final burnedCalories =  ExerciseUtils.calculateCaloriesBurnedForNonCardioActivity(
-                        widget.currentFitnessUserProfile,
-                        widget.exerciseDefinition.name,
-                        sets,
-                        reps
-                    );
                     _caloriesBurnedTextController.text =
                         ExerciseUtils.calculateCaloriesBurnedForNonCardioActivity(
                             widget.currentFitnessUserProfile,

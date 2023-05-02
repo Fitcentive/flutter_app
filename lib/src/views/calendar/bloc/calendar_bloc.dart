@@ -30,7 +30,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     final meetups = await meetupRepository.getMeetupsForUser(
       event.userId,
       accessToken!,
-      100, // todo - what if there are more than a 100 per month?
+      ConstantUtils.DEFAULT_MAX_LIMIT,
       ConstantUtils.DEFAULT_OFFSET,
       null,
       null

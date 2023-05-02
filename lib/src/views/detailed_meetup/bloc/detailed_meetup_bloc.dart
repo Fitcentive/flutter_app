@@ -106,9 +106,22 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
 
     final participantIds = meetupParticipants.map((e) => e.userId).toList();
     Map<String, List<MeetupAvailability>> availabilityMap = {};
-    final availabilities = await Future.wait(participantIds.map((e) =>
+    final availabilities = (await Future.wait(participantIds.map((e) =>
         meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))
-    );
+    )).map((mList) =>
+        mList.map((m) {
+          return MeetupAvailability(
+              m.id,
+              m.meetupId,
+              m.userId,
+              m.availabilityStart.toLocal(),
+              m.availabilityEnd.toLocal(),
+              m.createdAt.toLocal(),
+              m.updatedAt.toLocal()
+          );
+        }
+        ).toList()
+    ).toList();
 
     var i = 0;
     while(i < availabilities.length) {
@@ -197,9 +210,21 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
       await meetupRepository.getLocationByFsqId(event.meetupLocationFsqId!, accessToken!);
 
     Map<String, List<MeetupAvailability>> availabilityMap = {};
-    final availabilities = await Future.wait(event.participantIds.map((e) =>
-        meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))
-    );
+    final availabilities = (await Future.wait(event.participantIds.map((e) => meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))))
+        .map((mList) =>
+            mList.map((m) {
+              return MeetupAvailability(
+                  m.id,
+                  m.meetupId,
+                  m.userId,
+                  m.availabilityStart.toLocal(),
+                  m.availabilityEnd.toLocal(),
+                  m.createdAt.toLocal(),
+                  m.updatedAt.toLocal()
+              );
+            }
+            ).toList()
+    ).toList();
 
     var i = 0;
     while(i < availabilities.length) {

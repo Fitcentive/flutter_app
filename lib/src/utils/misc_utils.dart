@@ -21,9 +21,8 @@ class MiscUtils {
           final intervalDateTimeEnd = timeSegmentToDateTimeMap[j]!;
           resultsSoFar
               .add(MeetupAvailabilityUpsert(
-            // todo - fix this whole 5.5 hour offset nonsense
-            intervalDatetimeStart.add(Duration(days: dayIntIndex)).toUtc().add(const Duration(hours: 5, minutes: 30)),
-            intervalDateTimeEnd.add(Duration(days: dayIntIndex)).toUtc().add(const Duration(hours: 5, minutes: 30)),
+            intervalDatetimeStart.add(Duration(days: dayIntIndex)).toUtc(),
+            intervalDateTimeEnd.add(Duration(days: dayIntIndex)).toUtc(),
           ));
 
           hasContinuousWindowStarted = false;

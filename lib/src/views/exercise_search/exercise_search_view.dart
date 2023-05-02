@@ -218,7 +218,6 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
                     onPressed: () {
                       _suggestionsController.close();
                       _searchTextController.text = "";
-                      // todo - fetch recently logged exercises too, need to save in be
                       _exerciseSearchBloc.add(const FilterSearchQueryChanged(searchQuery: ""));
                     },
                     icon: const Icon(Icons.close),
@@ -227,7 +226,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
             _exerciseSearchBloc.add(FilterSearchQueryChanged(searchQuery: text.trim()));
             return List.empty();
           },
-          itemBuilder: (context, suggestion) { // todo - there is an error here and maybe this is not needed?
+          itemBuilder: (context, suggestion) {
             final s = suggestion;
             return ListTile(
               leading: CircleAvatar(
