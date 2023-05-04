@@ -362,8 +362,36 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
             ListTile(
               title: const Text("Logout"),
               onTap: () {
-                Navigator.pop(context);
-                _signOutIfApplicable();
+                showDialog(context: context, builder: (context) {
+                  Widget cancelButton = TextButton(
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                    ),
+                    onPressed:  () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Cancel"),
+                  );
+                  Widget continueButton = TextButton(
+                    onPressed:  () {
+                      Navigator.pop(context);
+                      _signOutIfApplicable();
+                    },
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+                    ),
+                    child: const Text("Logout"),
+                  );
+
+                  return AlertDialog(
+                    title: const Text("You are about to log out of your account!"),
+                    content: const Text("Are you sure?"),
+                    actions: [
+                      cancelButton,
+                      continueButton,
+                    ],
+                  );
+                });
               },
             )
           ],
