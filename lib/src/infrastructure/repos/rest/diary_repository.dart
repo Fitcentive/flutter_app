@@ -11,6 +11,7 @@ import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/fatsecret/food_search_results.dart';
+import 'package:flutter_app/src/models/fatsecret/food_search_suggestions.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
@@ -19,6 +20,7 @@ class DiaryRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/diary";
 
   static const int DEFAULT_MAX_SEARCH_FOOD_RESULTS = 50;
+  static const int DEFAULT_MAX_AUTOCOMPLETE_SEARCH_FOOD_RESULTS = 5;
   static const int DEFAULT_SEARCH_FOOD_RESULTS_PAGE = 0;
 
   final logger = Logger("DiaryRepository");
@@ -257,6 +259,27 @@ class DiaryRepository {
     else {
       throw Exception(
           "getStrengthWorkoutsForUserByDay: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+
+  Future<FoodSearchSuggestions> autocompleteFoods(
+      String query,
+      String accessToken, {
+        int maxResults = DEFAULT_MAX_AUTOCOMPLETE_SEARCH_FOOD_RESULTS
+      }) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/food/search/autocomplete?query=$query&maxResults=$maxResults"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return FoodSearchSuggestions.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "autocompleteFoods: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

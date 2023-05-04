@@ -4,9 +4,12 @@ import 'package:either_dart/either.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/fatsecret/food_search_result.dart';
+import 'package:flutter_app/src/models/fatsecret/food_search_suggestions.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -89,6 +92,11 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
   Timer? _scrollControllerDebounceTimer;
   final _scrollController = ScrollController();
 
+  late final DiaryRepository _diaryRepository;
+  late final FlutterSecureStorage _flutterSecureStorage;
+
+  bool shouldShow = false;
+
   @override
   void dispose() {
     _searchTextController.dispose();
@@ -103,6 +111,8 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     super.initState();
     _tabController = TabController(vsync: this, length: MAX_TABS);
 
+    _diaryRepository = RepositoryProvider.of<DiaryRepository>(context);
+    _flutterSecureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
     _foodSearchBloc = BlocProvider.of<FoodSearchBloc>(context);
     _foodSearchBloc.add(
         FetchRecentFoodSearchInfo(
@@ -282,27 +292,38 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
   _foodSearchBar() {
     return Padding(
         padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-        child: TypeAheadField<PublicUserProfile>(
+        child: TypeAheadField<String>(
           suggestionsBoxController: _suggestionsController,
           debounceDuration: const Duration(milliseconds: 300),
           textFieldConfiguration: TextFieldConfiguration(
-              onSubmitted: (value) {},
+              onSubmitted: (value) {
+                _foodSearchBloc.add(
+                    FetchFoodSearchInfo(
+                      currentUserId: widget.currentUserProfile.userId,
+                      query: value.trim(),
+                      pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
+                      maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
+                    )
+                );
+              },
               autocorrect: false,
               onTap: () => _suggestionsController.toggle(),
               onChanged: (text) {
-                if (_searchQueryDebounceTimer?.isActive ?? false) _searchQueryDebounceTimer?.cancel();
-                _searchQueryDebounceTimer = Timer(const Duration(milliseconds: 300), () {
-                  if (text.trim().isNotEmpty) {
-                    _foodSearchBloc.add(
-                        FetchFoodSearchInfo(
-                          currentUserId: widget.currentUserProfile.userId,
-                          query: text.trim(),
-                          pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
-                          maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
-                        )
-                    );
-                  }
-                });
+                shouldShow = true;
+
+                // if (_searchQueryDebounceTimer?.isActive ?? false) _searchQueryDebounceTimer?.cancel();
+                // _searchQueryDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+                //   if (text.trim().isNotEmpty) {
+                //     _foodSearchBloc.add(
+                //         FetchFoodSearchInfo(
+                //           currentUserId: widget.currentUserProfile.userId,
+                //           query: text.trim(),
+                //           pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
+                //           maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
+                //         )
+                //     );
+                //   }
+                // });
               },
               autofocus: true,
               controller: _searchTextController,
@@ -315,36 +336,47 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                       _suggestionsController.close();
                       _searchTextController.text = "";
                       _foodSearchBloc.add(const ClearFoodSearchQuery());
+                      shouldShow = false;
                     },
                     icon: const Icon(Icons.close),
                   ))),
-          suggestionsCallback: (text)  {
-            return List.empty();
+          suggestionsCallback: (pattern) async {
+            if (pattern.trim().isNotEmpty) {
+              // _foodSearchBloc.add(SearchQueryChanged(query: pattern));
+              if (shouldShow) {
+                const limit = 5;
+                final accessToken = await _flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+                return (await _diaryRepository.autocompleteFoods(pattern.trim(), accessToken!)).suggestions.suggestion;
+              } else {
+                return List.empty();
+              }
+            }
+            else {
+              return List.empty();
+            }
           },
           itemBuilder: (context, suggestion) { // this might not be needed
-            final s = suggestion;
             return ListTile(
-              leading: CircleAvatar(
-                radius: 30,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: ImageUtils.getUserProfileImage(suggestion, 100, 100),
-                  ),
-                ),
-              ),
-              title: Text("${s.firstName ?? ""} ${s.lastName ?? ""}"),
-              subtitle: Text(suggestion.username ?? ""),
+              title: Text(suggestion),
             );
           },
-          onSuggestionSelected: (suggestion) {},
+          onSuggestionSelected: (suggestion) {
+            _searchTextController.text = suggestion;
+            _foodSearchBloc.add(
+                FetchFoodSearchInfo(
+                  currentUserId: widget.currentUserProfile.userId,
+                  query: suggestion.trim(),
+                  pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
+                  maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
+                )
+            );
+          },
           hideOnEmpty: true,
         )
     );
   }
 
+  // Note - no filter by query done for recent foods
   Widget _recentFoodSearchResults(List<Either<FoodGetResult, FoodGetResultSingleServing>> recentFoods) {
     if (recentFoods.isNotEmpty) {
       return Scrollbar(
