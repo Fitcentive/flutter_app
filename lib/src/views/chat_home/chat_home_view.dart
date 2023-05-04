@@ -239,13 +239,17 @@ class ChatHomeViewState extends State<ChatHomeView> {
                     title: Text(
                       currentChatRoom.isGroupChat ? currentChatRoom.roomName : StringUtils.getUserNameFromUserProfile(otherUserProfiles.first),
                       style: TextStyle(
-                          fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.normal
+                          fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.w500,
+                          fontSize: 17,
                       ),
                     ),
-                    subtitle: Text(
-                      currentChatRoom.mostRecentMessage,
-                      style: TextStyle(
-                        fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.normal
+                    subtitle: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                      child: Text(
+                        StringUtils.truncateLongString(currentChatRoom.mostRecentMessage),
+                        style: TextStyle(
+                          fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.normal
+                        ),
                       ),
                     ),
                     leading: GestureDetector(

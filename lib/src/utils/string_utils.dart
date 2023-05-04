@@ -15,6 +15,15 @@ class UpperCaseTextFormatter extends TextInputFormatter {
 
 class StringUtils {
 
+  static String truncateLongString(String s) {
+    if (s.length <= 40) {
+      return s;
+    }
+    else {
+      return "${s.substring(0, 50)}...";
+    }
+  }
+
   static String generateRandomString(int len) {
     var r = Random();
     return String.fromCharCodes(List.generate(len, (index) => r.nextInt(33) + 89));
