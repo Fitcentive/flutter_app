@@ -7,4 +7,8 @@ class SnackbarUtils {
   static void showSnackBar(BuildContext context, String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
+
+  static void showSnackBarShort(BuildContext context, String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), duration: shortDuration,));
+  }
 }

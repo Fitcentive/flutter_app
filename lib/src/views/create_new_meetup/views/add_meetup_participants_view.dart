@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
@@ -94,7 +96,14 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile selectedUserProfile) {
-    _updateBlocState({...selectedParticipants, selectedUserProfile.userId}.toList());
+    // Restrict number of users here
+    if (selectedParticipants.length >= ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS) {
+      SnackbarUtils.showSnackBarShort(context, "Cannot add more than ${ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS} users to meetup!");
+      selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(selectedUserProfile.userId);
+    }
+    else {
+      _updateBlocState({...selectedParticipants, selectedUserProfile.userId}.toList());
+    }
   }
 
   _removeSelectedUserFromToParticipantsCallback(PublicUserProfile removedUserProfile) {

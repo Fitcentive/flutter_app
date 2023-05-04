@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_bloc.dart';
@@ -82,6 +83,12 @@ class ChatSearchViewState extends State<ChatSearchView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        heroTag: "GoToChatRoomButton",
+        onPressed: _goToChatRoomCallback,
+        backgroundColor: Colors.teal,
+        child: const Icon(Icons.chat, color: Colors.white)
+      ),
       appBar: AppBar(
         title: const Text("New message", style: TextStyle(color: Colors.teal)),
         iconTheme: const IconThemeData(color: Colors.teal),
@@ -151,7 +158,13 @@ class ChatSearchViewState extends State<ChatSearchView> {
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile selectedUserProfile) {
-    _updateBlocState({...selectedParticipants, selectedUserProfile.userId}.toList());
+    if (selectedParticipants.length >= ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS) {
+      SnackbarUtils.showSnackBarShort(context, "Cannot add more than ${ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS} users to a conversation!");
+      selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(selectedUserProfile.userId);
+    }
+    else {
+      _updateBlocState({...selectedParticipants, selectedUserProfile.userId}.toList());
+    }
   }
 
   _renderSearchUserSelectView(ChatParticipantsModified state) {
@@ -226,28 +239,33 @@ class ChatSearchViewState extends State<ChatSearchView> {
   }
 
   _goToChatRoomCallback() {
-    _chatSearchBloc.add(GetChatRoom(targetUserProfiles: selectedMeetupParticipantProfiles));
+    if (selectedMeetupParticipantProfiles.isEmpty) {
+      SnackbarUtils.showSnackBarShort(context, "Please select at least one user to chat with!");
+    }
+    else {
+      _chatSearchBloc.add(GetChatRoom(targetUserProfiles: selectedMeetupParticipantProfiles));
+    }
   }
 
   _openUserChatView(String roomId, List<PublicUserProfile> targetUserProfiles) {
     if (targetUserProfiles.length == 1) {
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushReplacement(
           context,
           UserChatView.route(
               currentRoomId: roomId,
               currentUserProfile: widget.currentUserProfile,
               otherUserProfiles: [targetUserProfiles.single]
-          ), (route) => true
+          ),
       );
     }
     else {
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushReplacement(
           context,
           UserChatView.route(
               currentRoomId: roomId,
               currentUserProfile: widget.currentUserProfile,
               otherUserProfiles: targetUserProfiles
-          ), (route) => true
+          ),
       );
     }
   }

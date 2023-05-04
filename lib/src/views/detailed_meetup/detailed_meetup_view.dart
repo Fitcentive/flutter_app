@@ -312,9 +312,16 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
-    setState(() {
-      selectedMeetupParticipantUserProfiles.add(userProfile);
-    });
+    // +1 because currentUser included in selectedMeetupParticipantUserProfiles
+    if (selectedMeetupParticipantUserProfiles.length >= ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS + 1) {
+      SnackbarUtils.showSnackBarShort(context, "Cannot add more than ${ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS} users to meetup!");
+      selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(userProfile.userId);
+    }
+    else {
+      setState(() {
+        selectedMeetupParticipantUserProfiles.add(userProfile);
+      });
+    }
   }
 
 

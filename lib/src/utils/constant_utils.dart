@@ -83,4 +83,8 @@ class ConstantUtils {
   static const String timestampFormat = "hh:mm a     yyyy-MM-dd";
 
   static const int CARDIO_EXERCISE_CATEGORY_DEFINITION = 15;
+
+  // 7 + 1 = 8
+  static const int MAX_OTHER_MEETUP_PARTICIPANTS = 7;
+  static const int MAX_OTHER_CHAT_PARTICIPANTS = 7;
 }
