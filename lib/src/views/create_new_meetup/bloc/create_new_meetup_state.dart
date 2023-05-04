@@ -25,6 +25,8 @@ class MeetupModified extends CreateNewMeetupState {
   final DateTime? meetupTime;
   final String? meetupName;
   final Location? location;
+  // Cache holds all profiles ever seen for easy access
+  final Map<String, PublicUserProfile> participantUserProfilesCache;
   final List<PublicUserProfile> participantUserProfiles;
 
   // mxn matrix of booleans
@@ -40,6 +42,7 @@ class MeetupModified extends CreateNewMeetupState {
     this.meetupTime,
     this.meetupName,
     this.location,
+    required this.participantUserProfilesCache,
     required this.participantUserProfiles,
     required this.currentUserAvailabilities,
     required this.userIdToMapMarkerIconSet,
@@ -52,6 +55,7 @@ class MeetupModified extends CreateNewMeetupState {
     meetupTime,
     meetupName,
     location,
+    participantUserProfilesCache,
     participantUserProfiles,
     currentUserAvailabilities,
     userIdToMapMarkerIconSet,

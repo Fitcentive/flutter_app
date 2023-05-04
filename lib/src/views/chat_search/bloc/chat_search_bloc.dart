@@ -38,6 +38,7 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
       emit(ChatParticipantsModified(
         currentUserProfile: event.currentUserProfile,
         participantUserProfiles: userProfiles,
+        participantUserProfilesCache: Map.fromEntries(userProfiles.map((e) => MapEntry(e.userId, e))),
       ));
     }
     else if (currentState is ChatParticipantsModified) {
@@ -50,7 +51,13 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
         if (doProfilesAlreadyExistForAll) {
           emit(ChatParticipantsModified(
             currentUserProfile: event.currentUserProfile,
-            participantUserProfiles: currentState.participantUserProfiles,
+            participantUserProfiles: currentState
+                .participantUserProfilesCache
+                .entries
+                .map((e) => e.value)
+                .where((element) => event.participantUserIds.contains(element.userId))
+                .toList(),
+            participantUserProfilesCache: currentState.participantUserProfilesCache
           ));
         }
         else {
@@ -62,9 +69,12 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
           final additionalUserProfiles =
             await userRepository.getPublicUserProfiles(additionalUserIdsToGetProfilesFor, accessToken!);
 
+          final updatedProfiles = {...currentState.participantUserProfiles, ...additionalUserProfiles}.toList();
+
           emit(ChatParticipantsModified(
               currentUserProfile: event.currentUserProfile,
-              participantUserProfiles: {...currentState.participantUserProfiles, ...additionalUserProfiles}.toList(),
+              participantUserProfiles: updatedProfiles,
+              participantUserProfilesCache: Map.fromEntries(updatedProfiles.map((e) => MapEntry(e.userId, e))),
           ));
         }
       }
@@ -72,6 +82,7 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
         emit(ChatParticipantsModified(
           currentUserProfile: event.currentUserProfile,
           participantUserProfiles: const [],
+          participantUserProfilesCache: currentState.participantUserProfilesCache,
         ));
       }
 
@@ -100,7 +111,8 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
         emit(
             ChatParticipantsModified(
                 currentUserProfile: currentState.currentUserProfile,
-                participantUserProfiles: currentState.participantUserProfiles
+                participantUserProfiles: currentState.participantUserProfiles,
+                participantUserProfilesCache: currentState.participantUserProfilesCache
             )
         );
       } catch (ex) {
@@ -108,7 +120,8 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
         emit(
             ChatParticipantsModified(
                 currentUserProfile: currentState.currentUserProfile,
-                participantUserProfiles: currentState.participantUserProfiles
+                participantUserProfiles: currentState.participantUserProfiles,
+                participantUserProfilesCache: currentState.participantUserProfilesCache
             )
         );
       }

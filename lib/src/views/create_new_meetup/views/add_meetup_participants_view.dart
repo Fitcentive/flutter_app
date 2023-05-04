@@ -49,7 +49,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
       listener: (context, state) {
         if (state is MeetupModified) {
           setState(() {
-            selectedMeetupParticipantProfiles  = List.from(state.participantUserProfiles);
+            selectedMeetupParticipantProfiles = List.from(state.participantUserProfiles);
           });
         }
        },
@@ -102,7 +102,8 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
     newParticipants.removeWhere((element) => element == removedUserProfile.userId);
     _updateBlocState(newParticipants);
     setState(() {
-      selectedMeetupParticipantProfiles.removeWhere((element) => element.userId == removedUserProfile.userId);
+      selectedMeetupParticipantProfiles = List.from(selectedMeetupParticipantProfiles)
+        ..removeWhere((element) => element.userId == removedUserProfile.userId);
     });
   }
 
@@ -114,7 +115,8 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
     _updateUserSearchResultsListIfNeeded(removedUser.userId);
 
     setState(() {
-      selectedMeetupParticipantProfiles.removeWhere((element) => element.userId == removedUser.userId);
+      selectedMeetupParticipantProfiles = List.from(selectedMeetupParticipantProfiles)
+        ..removeWhere((element) => element.userId == removedUser.userId);
     });
   }
 

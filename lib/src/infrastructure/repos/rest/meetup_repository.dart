@@ -29,7 +29,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       return Meetup.fromJson(jsonResponse);
     }
     else if (response.statusCode == HttpStatus.notFound) {
@@ -74,7 +74,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       return MeetupComment.fromJson(jsonResponse);
     }
     else {
@@ -93,7 +93,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final List<MeetupComment> results = jsonResponse.map((e) {
         return MeetupComment.fromJson(e);
       }).toList();
@@ -124,7 +124,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       return Meetup.fromJson(jsonResponse);
     }
     else {
@@ -151,7 +151,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       return Meetup.fromJson(jsonResponse);
     }
     else {
@@ -194,7 +194,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final List<Meetup> results = jsonResponse.map((e) {
         return Meetup.fromJson(e);
       }).toList();
@@ -216,7 +216,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       return Meetup.fromJson(jsonResponse);
     }
     else {
@@ -235,7 +235,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final List<MeetupDecision> results = jsonResponse.map((e) {
         return MeetupDecision.fromJson(e);
       }).toList();
@@ -262,7 +262,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       return MeetupDecision.fromJson(jsonResponse);
     }
     else {
@@ -300,7 +300,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final List<MeetupParticipant> results = jsonResponse.map((e) {
         return MeetupParticipant.fromJson(e);
       }).toList();
@@ -361,7 +361,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       return MeetupParticipant.fromJson(jsonResponse);
     }
     else {
@@ -381,7 +381,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final List<MeetupAvailability> results = jsonResponse.map((e) {
         return MeetupAvailability.fromJson(e);
       }).toList();
@@ -408,7 +408,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final List<MeetupAvailability> results = jsonResponse.map((e) {
         return MeetupAvailability.fromJson(e);
       }).toList();
@@ -449,7 +449,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final result = Location.fromJson(jsonResponse);
       return result;
     }
@@ -469,7 +469,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final result = MeetupLocation.fromJson(jsonResponse);
       return result;
     }
@@ -500,7 +500,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final List<Location> results = jsonResponse.map((e) {
         return Location.fromJson(e);
       }).toList();
@@ -529,7 +529,7 @@ class MeetupRepository {
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final meetupLocation = MeetupLocation.fromJson(jsonResponse);
       return meetupLocation;
     }

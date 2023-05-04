@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/misc_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
@@ -124,6 +125,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
           meetupName: event.meetupName,
           location: event.location,
           participantUserProfiles: userProfiles,
+          participantUserProfilesCache: Map.fromEntries(userProfiles.map((e) => MapEntry(e.userId, e))),
           currentUserAvailabilities: event.currentUserAvailabilities,
           userIdToMapMarkerIconSet: userIdToMapMarkerIconSet,
           userIdToColorSet: userIdToColorSet,
@@ -133,7 +135,10 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
       if (event.meetupParticipantUserIds.isNotEmpty) {
         bool doProfilesAlreadyExistForAll = event
             .meetupParticipantUserIds
-            .map((element) => currentState.participantUserProfiles.map((e) => e.userId).contains(element))
+            .map((element) => currentState
+              .participantUserProfilesCache
+              .entries
+              .map((e) => e.key).contains(element))
             .reduce((value, element) => value && element);
 
         if (doProfilesAlreadyExistForAll) {
@@ -142,7 +147,13 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
             meetupTime: event.meetupTime,
             meetupName: event.meetupName,
             location: event.location,
-            participantUserProfiles: currentState.participantUserProfiles,
+            participantUserProfiles: currentState
+                .participantUserProfilesCache
+                .entries
+                .map((e) => e.value)
+                .where((element) => event.meetupParticipantUserIds.contains(element.userId))
+                .toList(),
+            participantUserProfilesCache: currentState.participantUserProfilesCache,
             currentUserAvailabilities: event.currentUserAvailabilities,
             userIdToMapMarkerIconSet: currentState.userIdToMapMarkerIconSet,
             userIdToColorSet: currentState.userIdToColorSet,
@@ -154,8 +165,20 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
               .where((meetupParticipantId) => !currentState.participantUserProfiles.map((e) => e.userId).contains(meetupParticipantId))
               .toList();
 
-          final additionalUserProfiles =
-          await userRepository.getPublicUserProfiles(additionalUserIdsToGetProfilesFor, accessToken!);
+          // Check cache to see if it exists
+          final cacheProfilesOpt = additionalUserIdsToGetProfilesFor
+              .map((e) => currentState.participantUserProfilesCache[e])
+              .toList();
+
+          final cacheHits = WidgetUtils.skipNulls(cacheProfilesOpt);
+          final cacheMissesToFetchFor = additionalUserIdsToGetProfilesFor
+              .where((element) => currentState.participantUserProfilesCache[element] == null)
+              .toList();
+
+          final additionalUserProfilesFetched =
+            await userRepository.getPublicUserProfiles(cacheMissesToFetchFor, accessToken!);
+
+          final additionalUserProfiles = [...additionalUserProfilesFetched, ...cacheHits];
 
           Map<String, BitmapDescriptor> additionalUserIdToMapMarkerIconSet = {};
           Map<String, Color> additionalUserIdToColorSet = {};
@@ -173,12 +196,14 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
             additionalUserIdToMapMarkerIconSet[element.userId] = await _generateCustomMarkerForUser(element, additionalUserIdToColorSet[element.userId]!);
           }
 
+          final updatedProfileList = {...currentState.participantUserProfiles, ...additionalUserProfiles}.toList();
           emit(MeetupModified(
             currentUserProfile: event.currentUserProfile,
             meetupTime: event.meetupTime,
             meetupName: event.meetupName,
             location: event.location,
-            participantUserProfiles: {...currentState.participantUserProfiles, ...additionalUserProfiles}.toList(),
+            participantUserProfiles: updatedProfileList,
+            participantUserProfilesCache: Map.fromEntries(updatedProfileList.map((e) => MapEntry(e.userId, e))),
             currentUserAvailabilities: event.currentUserAvailabilities,
             userIdToMapMarkerIconSet: {...currentState.userIdToMapMarkerIconSet, ...additionalUserIdToMapMarkerIconSet},
             userIdToColorSet: {...currentState.userIdToColorSet, ...additionalUserIdToColorSet}
@@ -197,6 +222,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
           meetupName: event.meetupName,
           location: event.location,
           participantUserProfiles: const [],
+          participantUserProfilesCache: currentState.participantUserProfilesCache,
           currentUserAvailabilities: event.currentUserAvailabilities,
           userIdToMapMarkerIconSet: nextIconMap,
           userIdToColorSet: nextColorMap,
