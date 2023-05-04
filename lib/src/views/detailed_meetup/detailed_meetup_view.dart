@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
@@ -245,7 +246,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       floatingActionButton:  _dynamicFloatingActionButtons(),
       body: WillPopScope(
         onWillPop: () {
-          if (widget.meetup?.ownerId == widget.currentUserProfile.userId) {
+          if (_isCurrentMeetupOwnedByCurrentUser() && _hasMeetingBeenUpdated()) {
             _updateMeetingDetails();
             return Future.value(false);
           }
@@ -258,21 +259,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             if (state is DetailedMeetupDataFetched) {
               setState(() {
                 _setUpTimeSegmentDateTimeMap(state.meetup.createdAt.toLocal());
-
-                selectedMeetupLocation = state.meetupLocation;
-                userMeetupAvailabilities = state.userAvailabilities
-                    .map((key, value) => MapEntry(key, value.map((e) => e.toUpsert()).toList()));
-
-                currentMeetup = state.meetup;
-                selectedMeetupDate = state.meetup.time;
-                selectedMeetupParticipantUserProfiles = List.from(state.userProfiles);
-                selectedMeetupParticipants = List.from(state.participants);
-                selectedMeetupParticipantDecisions = List.from(state.decisions);
-                selectedMeetupName = state.meetup.name;
-                selectedMeetupLocationId = state.meetupLocation?.locationId;
-                selectedMeetupLocationFsqId = state.meetupLocation?.location.fsqId;
-
-                selectedUserProfilesToShowAvailabilitiesFor = List.from(state.userProfiles);
+                _setLocalStateFromBlocState(state);
               });
             }
             else if (state is MeetupChatRoomCreated) {
@@ -309,6 +296,43 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         ),
       ),
     );
+  }
+
+  _isCurrentMeetupOwnedByCurrentUser() {
+    return widget.meetup?.ownerId == widget.currentUserProfile.userId;
+  }
+
+  _setLocalStateFromBlocState(DetailedMeetupDataFetched state) {
+    selectedMeetupLocation = state.meetupLocation;
+    userMeetupAvailabilities = state.userAvailabilities
+        .map((key, value) => MapEntry(key, value.map((e) => e.toUpsert()).toList()));
+
+    currentMeetup = state.meetup;
+    selectedMeetupDate = state.meetup.time;
+    selectedMeetupParticipantUserProfiles = List.from(state.userProfiles);
+    selectedMeetupParticipants = List.from(state.participants);
+    selectedMeetupParticipantDecisions = List.from(state.decisions);
+    selectedMeetupName = state.meetup.name;
+    selectedMeetupLocationId = state.meetupLocation?.locationId;
+    selectedMeetupLocationFsqId = state.meetupLocation?.location.fsqId;
+
+    selectedUserProfilesToShowAvailabilitiesFor = List.from(state.userProfiles);
+  }
+
+  _hasMeetingBeenUpdated() {
+    if (selectedMeetupName != widget.meetup?.name) {
+      return true;
+    }
+    else if (selectedMeetupLocationId != widget.meetupLocation?.id) {
+      return true;
+    }
+    else if (selectedMeetupDate != widget.meetup?.time) {
+      return true;
+    }
+    else if (!(selectedMeetupParticipants.map((e) => e.userId).toSet() == widget.participants?.map((e) => e.userId).toSet())) {
+      return true;
+    }
+    return false;
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
