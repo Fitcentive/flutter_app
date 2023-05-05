@@ -69,6 +69,14 @@ class MeetupUpdatedAndReadyToPop extends DetailedMeetupState {
   List<Object?> get props => [];
 }
 
+class MeetupDeletedAndReadyToPop extends DetailedMeetupState {
+
+  const MeetupDeletedAndReadyToPop();
+
+  @override
+  List<Object?> get props => [];
+}
+
 class MeetupChatRoomCreated extends DetailedMeetupState {
   final String chatRoomId;
   // RandomId used with Equatable to force fetch chat room id each time

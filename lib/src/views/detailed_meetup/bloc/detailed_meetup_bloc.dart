@@ -34,6 +34,14 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     on<FetchAllMeetupData>(_fetchAllMeetupData);
     on<GetDirectMessagePrivateChatRoomForMeetup>(_getDirectMessagePrivateChatRoomForMeetup);
     on<CreateChatRoomForMeetup>(_createChatRoomForMeetup);
+    on<DeleteMeetupForUser>(_deleteMeetupForUser);
+  }
+
+  void _deleteMeetupForUser(DeleteMeetupForUser event, Emitter<DetailedMeetupState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await meetupRepository.deleteMeetupForUser(event.meetupId, accessToken!);
+
+    emit(const MeetupDeletedAndReadyToPop());
   }
 
   void _createChatRoomForMeetup(CreateChatRoomForMeetup event, Emitter<DetailedMeetupState> emit) async {

@@ -280,6 +280,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
               SnackbarUtils.showSnackBar(context, "Meetup updated successfully!");
               Navigator.pop(context);
             }
+            else if (state is MeetupDeletedAndReadyToPop) {
+              SnackbarUtils.showSnackBar(context, "Meetup deleted successfully!");
+              Navigator.pop(context);
+            }
           },
           child: BlocBuilder<DetailedMeetupBloc, DetailedMeetupState>(
             builder: (context, state) {
@@ -333,6 +337,62 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       return true;
     }
     return false;
+  }
+
+  _performMeetupDeletion() {
+    ScaffoldMessenger
+        .of(context)
+        .showSnackBar(const SnackBar(
+        content: Text("Please wait... deleting meetup..."),
+        duration: SnackbarUtils.shortDuration
+    ));
+    _detailedMeetupBloc.add(
+        DeleteMeetupForUser(
+            currentUserId: widget.currentUserProfile.userId,
+            meetupId: widget.meetupId
+        )
+    );
+  }
+
+  _deleteMeetupButton() {
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+      ),
+      onPressed: () async {
+        showDialog(context: context, builder: (context) {
+          Widget cancelButton = TextButton(
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+            ),
+            onPressed:  () {
+              Navigator.pop(context);
+            },
+            child: const Text("Cancel"),
+          );
+          Widget continueButton = TextButton(
+            onPressed:  () {
+              Navigator.pop(context);
+              _performMeetupDeletion();
+            },
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+            ),
+            child: const Text("Confirm"),
+          );
+
+          return AlertDialog(
+            title: const Text("Delete Meetup Confirmation"),
+            content: const Text("Are you sure you want to delete this meetup? This action is irreversible!"),
+            actions: [
+              cancelButton,
+              continueButton,
+            ],
+          );
+        });
+      },
+      child: const Text("Delete Meetup", style: TextStyle(fontSize: 15, color: Colors.white)),
+    );
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
@@ -470,39 +530,46 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         WidgetUtils.spacer(2.5),
         const Center(child: Text("Tap on a participant to view their availability"),),
         Divider(color: Theme.of(context).primaryColor),
-        isParticipantSelectHappening ? _participantSelectView(state) : Expanded(
-          child: SingleChildScrollView(
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 75), //FAB is 56 pixels by default
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: WidgetUtils.skipNulls([
-                    WidgetUtils.spacer(2.5),
-                    _renderMeetupNameView(),
-                    WidgetUtils.spacer(2.5),
-                    _renderMeetupChatButton(),
-                    WidgetUtils.spacer(2.5),
-                    _renderMeetupDateTime(),
-                    WidgetUtils.spacer(2.5),
-                    _renderEditAvailabilitiesButton(),
-                    WidgetUtils.spacer(2.5),
-                    _renderAvailabilitiesView(),
-                    WidgetUtils.spacer(2.5),
-                    _renderMeetupLocation(),
-                    WidgetUtils.spacer(2.5),
-                    _renderMeetupFsqLocationCardIfNeeded(),
-                    WidgetUtils.spacer(5),
-                    _renderMeetupCommentsHeader(),
-                    WidgetUtils.spacer(5),
-                    _renderMeetupComments(),
-                  ]),
-                ),
-              ),
+        isParticipantSelectHappening ? _participantSelectView(state) : _detailedMeetupView,
+      ],
+    );
+  }
+
+  _detailedMeetupView() {
+    return Expanded(
+      child: SingleChildScrollView(
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 75), //FAB is 56 pixels by default
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: WidgetUtils.skipNulls([
+                WidgetUtils.spacer(2.5),
+                _renderMeetupNameView(),
+                WidgetUtils.spacer(2.5),
+                _renderMeetupChatButton(),
+                WidgetUtils.spacer(2.5),
+                _renderMeetupDateTime(),
+                WidgetUtils.spacer(2.5),
+                _renderEditAvailabilitiesButton(),
+                WidgetUtils.spacer(2.5),
+                _renderAvailabilitiesView(),
+                WidgetUtils.spacer(2.5),
+                _renderMeetupLocation(),
+                WidgetUtils.spacer(2.5),
+                _renderMeetupFsqLocationCardIfNeeded(),
+                WidgetUtils.spacer(5),
+                _renderMeetupCommentsHeader(),
+                WidgetUtils.spacer(5),
+                _renderMeetupComments(),
+                WidgetUtils.spacer(12),
+                _deleteMeetupButton(),
+                WidgetUtils.spacer(20),
+              ]),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 

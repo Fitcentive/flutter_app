@@ -149,3 +149,16 @@ class CreateChatRoomForMeetup extends DetailedMeetupEvent {
   @override
   List<Object?> get props => [meetup, roomName, participants];
 }
+
+class DeleteMeetupForUser extends DetailedMeetupEvent {
+  final String currentUserId;
+  final String meetupId;
+
+  const DeleteMeetupForUser({
+    required this.currentUserId,
+    required this.meetupId
+  });
+
+  @override
+  List<Object?> get props => [currentUserId, meetupId];
+}
