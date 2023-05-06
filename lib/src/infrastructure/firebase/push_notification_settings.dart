@@ -254,10 +254,9 @@ class PushNotificationSettings {
     return filePath;
   }
 
-  // todo - handle pics for iOS
   static _handleShowingNotification(RemoteNotification? notification, String imageUrl, String payload) async {
-    final String largeIconPath = await _downloadAndSaveFile(imageUrl, 'largeIcon');
-    final String bigPicturePath = await _downloadAndSaveFile(imageUrl, 'bigPicture');
+    final String largeIconPath = await _downloadAndSaveFile(imageUrl, 'largeIcon.jpg');
+    final String bigPicturePath = await _downloadAndSaveFile(imageUrl, 'bigPicture.jpg');
 
     final BigPictureStyleInformation bigPictureStyleInformation = BigPictureStyleInformation(
       FilePathAndroidBitmap(bigPicturePath),
@@ -276,7 +275,21 @@ class PushNotificationSettings {
         largeIcon: FilePathAndroidBitmap(largeIconPath),
         styleInformation: bigPictureStyleInformation
     );
-    final NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    // todo - despite these settings, pictures do not show up because delivery is handled automagically by FCM
+    //        for notifications that arent purely data notifications
+    // If we enable localnotifications for iOS, then notifications are delivered 2x
+    // Need to find a way around this
+    final iosNotificationDetails = IOSNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      attachments: [IOSNotificationAttachment(bigPicturePath)]
+    );
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iosNotificationDetails,
+    );
 
     if (notification != null) {
       flutterLocalNotificationsPlugin.show(
