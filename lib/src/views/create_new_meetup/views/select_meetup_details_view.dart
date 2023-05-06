@@ -279,7 +279,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
         }
       },
       child: Text(
-          "${selectedMeetupDate.hour}:${selectedMeetupDate.minute}",
+          DateFormat("hh:mm a").format(selectedMeetupDate),
           style: const TextStyle(
               fontSize: 16,
               color: Colors.white
