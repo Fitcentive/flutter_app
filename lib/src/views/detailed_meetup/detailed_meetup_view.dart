@@ -137,6 +137,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   late List<PublicUserProfile> selectedUserProfilesToShowAvailabilitiesFor;
   late Meetup currentMeetup;
 
+  String initialMeetupOwnerId = "";
+  String? initialMeetupName;
+  String? initialMeetupLocationId;
+  DateTime? initialMeetupDate;
+  List<String> initialMeetupParticipantIds = [];
+
   Map<int, DateTime> timeSegmentToDateTimeMap = {};
 
   bool isAvailabilitySelectHappening = false;
@@ -199,6 +205,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     ));
 
     selectedUserProfilesToShowAvailabilitiesFor = List.from(widget.userProfiles!);
+    initialMeetupOwnerId = currentMeetup.ownerId;
+    initialMeetupName = currentMeetup.name;
+    initialMeetupLocationId = currentMeetup.locationId;
+    initialMeetupDate = currentMeetup.time?.toLocal();
   }
 
 
@@ -302,10 +312,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     );
   }
 
-  // todo - this returns false erroneously at times because meetup.ownerId is null when this widget is sometimes called
-  //        as a result, meetup changes cannot be saved
   _isCurrentMeetupOwnedByCurrentUser() {
-    return widget.meetup?.ownerId == widget.currentUserProfile.userId;
+    return initialMeetupOwnerId == widget.currentUserProfile.userId;
   }
 
   _setLocalStateFromBlocState(DetailedMeetupDataFetched state) {
@@ -323,20 +331,26 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     selectedMeetupLocationFsqId = state.meetupLocation?.location.fsqId;
 
     selectedUserProfilesToShowAvailabilitiesFor = List.from(state.userProfiles);
+
+    initialMeetupOwnerId = currentMeetup.ownerId;
+    initialMeetupLocationId = currentMeetup.locationId;
+    initialMeetupDate = currentMeetup.time?.toLocal();
+    initialMeetupName = currentMeetup.name;
+    initialMeetupParticipantIds = selectedMeetupParticipants.map((e) => e.userId).toList();
   }
 
   _hasMeetingBeenUpdated() {
-    if (selectedMeetupName != widget.meetup?.name) {
+    if (selectedMeetupName != initialMeetupName) {
       return true;
     }
-    else if (selectedMeetupLocationId != widget.meetupLocation?.id) {
+    else if (selectedMeetupLocationId != initialMeetupLocationId) {
       return true;
     }
-    else if (selectedMeetupDate != widget.meetup?.time?.toLocal()) {
+    else if (selectedMeetupDate != initialMeetupDate) {
       return true;
     }
     else if ((selectedMeetupParticipants.map((e) => e.userId).toSet()
-        .difference(widget.participants?.map((e) => e.userId).toSet() ?? Set())).isNotEmpty) {
+                .difference(initialMeetupParticipantIds.toSet())).isNotEmpty) {
       return true;
     }
     return false;
