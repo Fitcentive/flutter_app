@@ -180,7 +180,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _setupWidgetWhenParentSuppliedData() {
     currentMeetup = widget.meetup!;
-    selectedMeetupDate = widget.meetup!.time;
+    selectedMeetupDate = widget.meetup!.time?.toLocal();
     selectedMeetupParticipantUserProfiles = List.from(widget.userProfiles!);
     selectedMeetupParticipants = List.from(widget.participants!);
     selectedMeetupParticipantDecisions = List.from(widget.decisions!);
@@ -302,6 +302,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     );
   }
 
+  // todo - this returns false erroneously at times because meetup.ownerId is null when this widget is sometimes called
+  //        as a result, meetup changes cannot be saved
   _isCurrentMeetupOwnedByCurrentUser() {
     return widget.meetup?.ownerId == widget.currentUserProfile.userId;
   }
@@ -312,7 +314,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         .map((key, value) => MapEntry(key, value.map((e) => e.toUpsert()).toList()));
 
     currentMeetup = state.meetup;
-    selectedMeetupDate = state.meetup.time;
+    selectedMeetupDate = state.meetup.time?.toLocal();
     selectedMeetupParticipantUserProfiles = List.from(state.userProfiles);
     selectedMeetupParticipants = List.from(state.participants);
     selectedMeetupParticipantDecisions = List.from(state.decisions);
@@ -330,10 +332,11 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     else if (selectedMeetupLocationId != widget.meetupLocation?.id) {
       return true;
     }
-    else if (selectedMeetupDate != widget.meetup?.time) {
+    else if (selectedMeetupDate != widget.meetup?.time?.toLocal()) {
       return true;
     }
-    else if (!(selectedMeetupParticipants.map((e) => e.userId).toSet() == widget.participants?.map((e) => e.userId).toSet())) {
+    else if ((selectedMeetupParticipants.map((e) => e.userId).toSet()
+        .difference(widget.participants?.map((e) => e.userId).toSet() ?? Set())).isNotEmpty) {
       return true;
     }
     return false;
@@ -530,7 +533,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         WidgetUtils.spacer(2.5),
         const Center(child: Text("Tap on a participant to view their availability"),),
         Divider(color: Theme.of(context).primaryColor),
-        isParticipantSelectHappening ? _participantSelectView(state) : _detailedMeetupView,
+        isParticipantSelectHappening ? _participantSelectView(state) : _detailedMeetupView(),
       ],
     );
   }
@@ -562,9 +565,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                 _renderMeetupCommentsHeader(),
                 WidgetUtils.spacer(5),
                 _renderMeetupComments(),
-                WidgetUtils.spacer(12),
+                WidgetUtils.spacer(10),
                 _deleteMeetupButton(),
-                WidgetUtils.spacer(20),
               ]),
             ),
           ),

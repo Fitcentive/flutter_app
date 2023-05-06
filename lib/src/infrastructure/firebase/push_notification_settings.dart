@@ -9,6 +9,7 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/notification/push_notification_metadata.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/chat_message_push_notification_metadata.dart';
+import 'package:flutter_app/src/models/push/meetup_reminder_push_notification_metadata.dart';
 import 'package:flutter_app/src/models/push/participant_added_to_meetup_push_notification_metadata.dart';
 import 'package:flutter_app/src/models/push/user_friend_request_push_notification_metadata.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
@@ -102,6 +103,25 @@ class PushNotificationSettings {
     );
   }
 
+  static _openMeetupView(
+      BuildContext context,
+      FlutterSecureStorage secureStorage,
+      UserRepository userRepository,
+      String payload
+  ) async {
+    final notificationMetadata = MeetupReminderPushNotificationMetadata.fromJson(jsonDecode(payload));
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final userProfiles = await userRepository.getPublicUserProfiles(
+        [notificationMetadata.targetUser],
+        accessToken!
+    );
+    Navigator.pushAndRemoveUntil(
+        context,
+        DetailedMeetupView.route(meetupId: notificationMetadata.meetupId, currentUserProfile: userProfiles.first),
+            (route) => true
+    );
+  }
+
   static _openUserChatView(
       BuildContext context,
       FlutterSecureStorage secureStorage,
@@ -161,6 +181,7 @@ class PushNotificationSettings {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String? payload) async {
           if (payload != null) {
+            print("IN FLUTTER LOCAL NOTIFS SHOWING THINGY");
             final pushNotificationMetadata = PushNotificationMetadata.fromJson(jsonDecode(payload));
             switch(pushNotificationMetadata.type) {
               case "user_follow_request":
@@ -173,6 +194,10 @@ class PushNotificationSettings {
 
               case "participant_added_to_meetup":
                 _openNotificationsView(context);
+                break;
+
+              case "meetup_reminder":
+                _openMeetupView(context, secureStorage, userRepository, payload);
                 break;
 
               default:
@@ -229,6 +254,7 @@ class PushNotificationSettings {
     return filePath;
   }
 
+  // todo - handle pics for iOS
   static _handleShowingNotification(RemoteNotification? notification, String imageUrl, String payload) async {
     final String largeIconPath = await _downloadAndSaveFile(imageUrl, 'largeIcon');
     final String bigPicturePath = await _downloadAndSaveFile(imageUrl, 'bigPicture');
@@ -249,6 +275,27 @@ class PushNotificationSettings {
         icon: android?.smallIcon,
         largeIcon: FilePathAndroidBitmap(largeIconPath),
         styleInformation: bigPictureStyleInformation
+    );
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    if (notification != null) {
+      flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          platformChannelSpecifics,
+          payload: payload
+      );
+    }
+  }
+
+  static _handleShowingNotificationWithoutImage(RemoteNotification? notification, String payload) async {
+    AndroidNotification? android = notification?.android;
+    final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        channel.id,
+        channel.name,
+        channelDescription: channel.description,
+        icon: android?.smallIcon,
     );
     final NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
 
@@ -288,6 +335,13 @@ class PushNotificationSettings {
           final notificationMetadata = ParticipantAddedToMeetupPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
           if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
             _handleShowingNotification(notification, notificationMetadata.meetupOwnerPhotoUrl, jsonPayload);
+          }
+          break;
+
+        case "meetup_reminder":
+          final notificationMetadata = MeetupReminderPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
+          if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
+            _handleShowingNotificationWithoutImage(notification, jsonPayload);
           }
           break;
 
@@ -340,6 +394,10 @@ class PushNotificationSettings {
 
         case "participant_added_to_meetup":
           _openDetailedMeetupView(context, secureStorage, userRepository, meetupRepository, jsonEncode(message.data));
+          break;
+
+        case "meetup_reminder":
+          _openMeetupView(context, secureStorage, userRepository, jsonEncode(message.data));
           break;
 
         default:
