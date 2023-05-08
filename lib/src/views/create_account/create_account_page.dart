@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/login/email_and_password.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
@@ -15,8 +16,8 @@ class CreateAccountPage extends StatefulWidget {
 
   const CreateAccountPage({Key? key}) : super(key: key);
 
-  static Route route() {
-    return MaterialPageRoute<void>(
+  static Route<EmailAndPassword> route() {
+    return MaterialPageRoute<EmailAndPassword>(
         settings: const RouteSettings(
             name: routeName
         ),
@@ -141,7 +142,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Account created successfully!')),
           );
-          Navigator.pop(context);
+          Navigator.pop(context, EmailAndPassword(email: state.email, password: state.password));
         }
         if (state is InvalidEmailVerificationToken) {
           ScaffoldMessenger.of(context).showSnackBar(

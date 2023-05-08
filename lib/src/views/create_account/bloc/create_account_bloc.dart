@@ -116,7 +116,7 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
         event.privacyPolicy
     );
     await userRepository.resetUserPassword(event.email, event.password, event.verificationToken.toUpperCase());
-    emit(const AccountCreatedSuccessfully());
+    emit(AccountCreatedSuccessfully(email: event.email, password: event.password));
   }
 
   void _emailAddressChanged(

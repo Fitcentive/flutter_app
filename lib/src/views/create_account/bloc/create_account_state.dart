@@ -173,9 +173,14 @@ class TermsAndConditionsModified extends CreateAccountState {
 }
 
 class AccountCreatedSuccessfully extends CreateAccountState {
+  final String email;
+  final String password;
 
-  const AccountCreatedSuccessfully();
+  const AccountCreatedSuccessfully({
+    required this.email,
+    required this.password,
+  });
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [email, password];
 }

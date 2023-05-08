@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
+import 'package:flutter_app/src/models/login/email_and_password.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -218,7 +219,16 @@ class LoginFormState extends State<LoginForm> {
   _createAccountButton() {
     return GestureDetector(
       onTap: () {
-        Navigator.pushAndRemoveUntil<void>(context, CreateAccountPage.route(), (route) => true);
+        Navigator.push<EmailAndPassword>(
+            context,
+            CreateAccountPage.route()
+        ).then((emailAndPassword) {
+          if (emailAndPassword != null) {
+            context
+                .read<AuthenticationBloc>()
+                .add(SignInWithEmailEvent(email: emailAndPassword.email, password: emailAndPassword.password));
+          }
+        });
       },
       child: const Text(
         "New user? Create new account",

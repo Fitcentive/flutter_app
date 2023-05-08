@@ -35,6 +35,13 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
     if (currentState is ProfileInfoModified) {
       final userFirstName = currentState.user.userProfile?.firstName ?? "";
       final userLastName = currentState.user.userProfile?.lastName ?? "";
+      _populateUserNameFromUserProfileIfNeeded(userFirstName, userLastName, currentState);
+    }
+  }
+
+  // This is done to capture user name from SSO logins
+  _populateUserNameFromUserProfileIfNeeded(String userFirstName, String userLastName, ProfileInfoModified currentState) {
+    if (userFirstName.isNotEmpty || userLastName.isNotEmpty) {
       _firstNameController.text = userFirstName;
       _lastNameController.text = userLastName;
       _completeProfileBloc.add(ProfileInfoChanged(
@@ -88,7 +95,7 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
   _renderDateOfBirthHint() {
     return const Center(
       child: Text(
-        "You must be born on or after 2010-01-01",
+        "You must be born on or before 2010-12-31",
         style: TextStyle(
           fontSize: 12,
           color: Colors.teal
