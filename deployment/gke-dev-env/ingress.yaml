@@ -16,8 +16,8 @@ spec:
     - host: app.fitcentive.xyz
       http:
         paths:
-          - path: /
-            pathType: Exact
+          - path: /app
+            pathType: Prefix
             backend:
               service:
                 name: flutter-web-app
