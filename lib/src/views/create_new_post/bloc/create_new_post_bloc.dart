@@ -1,7 +1,7 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/social/new_post.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_event.dart';
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_state.dart';
@@ -11,7 +11,7 @@ import 'package:formz/formz.dart';
 
 class CreateNewPostBloc extends Bloc<CreateNewPostEvent, CreateNewPostState> {
   final SocialMediaRepository socialMediaRepository;
-  final ImageRepository imageRepository;
+  final PublicGatewayRepository imageRepository;
   final FlutterSecureStorage secureStorage;
 
   CreateNewPostBloc({

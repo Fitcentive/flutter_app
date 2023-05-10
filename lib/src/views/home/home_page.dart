@@ -31,9 +31,13 @@ import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/notifications_view.dart';
 import 'package:flutter_app/src/views/search/search_view.dart';
+import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_bloc.dart';
+import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_event.dart';
+import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_state.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logging/logging.dart';
 
 class HomePage extends StatefulWidget {
@@ -98,9 +102,13 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   late AuthenticationBloc _authenticationBloc;
   late MenuNavigationBloc _menuNavigationBloc;
+  late AdBloc _adBloc;
 
   late NotificationRepository _notificationRepository;
   late FlutterSecureStorage _secureStorage;
+
+  BannerAd? _bannerAd;
+  bool _isLoaded = false;
 
   void syncFirebaseDeviceRegistrationToken() async {
     final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
@@ -185,6 +193,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
+    _adBloc = BlocProvider.of<AdBloc>(context);
 
     _notificationRepository = RepositoryProvider.of<NotificationRepository>(context);
     _secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
@@ -195,6 +204,15 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     _updateBloc(selectedMenuItem);
 
     PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
+
+    // todo - need to distinguish between premium and non premium
+    final authState = _authenticationBloc.state;
+    if (authState is AuthSuccessUserUpdateState && authState.authenticatedUser.userProfile != null) {
+      _adBloc.add(FetchAdUnitIds(user: authState.authenticatedUser.userProfile!));
+    }
+    else if (authState is AuthSuccessState && authState.authenticatedUser.userProfile != null) {
+      _adBloc.add(FetchAdUnitIds(user: authState.authenticatedUser.userProfile!));
+    }
   }
 
   _updateAppBadgeIfPossible() async {
@@ -264,45 +282,158 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       chatIcon = const Icon(Icons.chat);
     }
 
-    return BottomNavigationBar(
-      unselectedItemColor: Theme.of(context).primaryTextTheme.bodyText2?.color!,
-      selectedItemColor: Theme.of(context).primaryColor,
-      items: <BottomNavigationBarItem>[
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.newspaper),
-          label: 'News Feed',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.explore),
-          label: 'Discover',
-        ),
-        BottomNavigationBarItem(
-          icon: chatIcon,
-          label: 'Chat',
-        ),
-        BottomNavigationBarItem(
-          icon: notificationIcon,
-          label: 'Notifications',
-        ),
-      ],
-      currentIndex: selectedBottomBarIndex,
-      onTap: (selectedItemIndex) {
-        if (selectedItemIndex != selectedBottomBarIndex) {
-          final currentState = _authenticationBloc.state;
-          if (currentState is AuthSuccessUserUpdateState) {
-            _menuNavigationBloc.add(
-                MenuItemChosen(
-                    selectedMenuItem: bottomBarToAppDrawerItemMap[selectedItemIndex]!,
-                    currentUserId: currentState.authenticatedUser.user.id
-                )
-            );
-            setState(() {
-              selectedBottomBarIndex = selectedItemIndex;
-            });
-          }
+    return SizedBox(
+      height: 125,
+      child: Column(
+        children: [
+          BottomNavigationBar(
+            unselectedItemColor: Theme.of(context).primaryTextTheme.bodyText2?.color!,
+            selectedItemColor: Theme.of(context).primaryColor,
+            items: <BottomNavigationBarItem>[
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.newspaper),
+                label: 'News Feed',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.explore),
+                label: 'Discover',
+              ),
+              BottomNavigationBarItem(
+                icon: chatIcon,
+                label: 'Chat',
+              ),
+              BottomNavigationBarItem(
+                icon: notificationIcon,
+                label: 'Notifications',
+              ),
+            ],
+            currentIndex: selectedBottomBarIndex,
+            onTap: (selectedItemIndex) {
+              if (selectedItemIndex != selectedBottomBarIndex) {
+                final currentState = _authenticationBloc.state;
+                if (currentState is AuthSuccessUserUpdateState) {
+                  _menuNavigationBloc.add(
+                      MenuItemChosen(
+                          selectedMenuItem: bottomBarToAppDrawerItemMap[selectedItemIndex]!,
+                          currentUserId: currentState.authenticatedUser.user.id
+                      )
+                  );
+                  setState(() {
+                    selectedBottomBarIndex = selectedItemIndex;
+                  });
+                }
+              }
+            },
+          ),
+          // Ad container
+          _showAdContainer(),
+        ],
+      ),
+    );
+  }
+
+  // todo - ios does not work
+  _showAdContainer() {
+    return BlocListener<AdBloc, AdState>(
+      listener: (context, state) {
+        if (state is NewAdLoadRequested) {
+          print("LOADING A NEW ADD");
+          // loadAd(state.adUnitId);
+          setState(() {
+            _loadAd(state.adUnitId);
+          });
+        }
+        else if (state is AdUnitIdFetched) {
+          print("FETCHING A NEW AD");
+          _adBloc.add(FetchNewAd(user: state.user));
         }
       },
+      child: _displayAd(),
     );
+  }
+
+  _displayAd() {
+    if (_bannerAd != null) {
+      return Align(
+        alignment: Alignment.bottomCenter,
+        child: SafeArea(
+          child: SizedBox(
+            width: _bannerAd!.size.width.toDouble(),
+            height: _bannerAd!.size.height.toDouble(),
+            child: AdWidget(ad: _bannerAd!),
+          ),
+        ),
+      );
+    }
+    else {
+      return const Align(
+        alignment: Alignment.bottomCenter,
+        child: SafeArea(
+          child: Center(
+            child:  CircularProgressIndicator(
+              color: Colors.teal,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  void _loadAd(String adUnitId) async {
+    // Get an AnchoredAdaptiveBannerAdSize before loading the ad.
+    final AnchoredAdaptiveBannerAdSize? size =
+    await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+        MediaQuery.of(context).size.width.truncate());
+
+    if (size == null) {
+      print('Unable to get height of anchored banner.');
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: adUnitId,
+      size: size,
+      request: AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          print('$ad loaded: ${ad.responseInfo}');
+          setState(() {
+            // When the ad is loaded, get the ad size and use it to set
+            // the height of the ad container.
+            _bannerAd = ad as BannerAd;
+            _isLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          print('Anchored adaptive banner failedToLoad: $error');
+          ad.dispose();
+        },
+      ),
+    );
+    return _bannerAd!.load();
+  }
+
+  void loadAd(String adUnitId) {
+    _bannerAd = BannerAd(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        // Called when an ad is successfully received.
+        onAdLoaded: (ad) {
+          debugPrint('$ad loaded.');
+          setState(() {
+            _isLoaded = true;
+          });
+        },
+        // Called when an ad request failed.
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          // Dispose the ad here to free resources.
+          ad.dispose();
+        },
+      ),
+    )..load();
   }
 
   _drawer() {

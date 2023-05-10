@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -28,7 +28,7 @@ class ChatHomeView extends StatefulWidget {
       BlocProvider<ChatHomeBloc>(
           create: (context) => ChatHomeBloc(
             chatRepository: RepositoryProvider.of<ChatRepository>(context),
-            imageRepository: RepositoryProvider.of<ImageRepository>(context),
+            imageRepository: RepositoryProvider.of<PublicGatewayRepository>(context),
             userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),

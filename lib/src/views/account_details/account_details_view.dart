@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/image_picker/custom_image_picker.dart';
 import 'package:flutter_app/src/infrastructure/permissions/location_permissions.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
@@ -34,7 +34,7 @@ class AccountDetailsView extends StatefulWidget {
           BlocProvider<AccountDetailsBloc>(
               create: (context) => AccountDetailsBloc(
                     userRepository: RepositoryProvider.of<UserRepository>(context),
-                    imageRepository: RepositoryProvider.of<ImageRepository>(context),
+                    imageRepository: RepositoryProvider.of<PublicGatewayRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                     authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
                   )

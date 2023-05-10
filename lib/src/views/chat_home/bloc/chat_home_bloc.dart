@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
@@ -23,7 +23,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
   final ChatRepository chatRepository;
   final UserRepository userRepository;
-  final ImageRepository imageRepository;
+  final PublicGatewayRepository imageRepository;
   final FlutterSecureStorage secureStorage;
 
   Map<String, WebSocketChannel>? _roomObserverChannels;

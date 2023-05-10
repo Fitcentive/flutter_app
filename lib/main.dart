@@ -3,13 +3,14 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/ads/bloc/ad_bloc.dart';
 import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/proxies/custom_proxy.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/authentication_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
@@ -30,9 +31,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
 
   if(kIsWeb){
     await Firebase.initializeApp(
@@ -89,7 +92,7 @@ class App extends StatelessWidget {
         RepositoryProvider<DiscoverRepository>(create: (context) => DiscoverRepository()),
         RepositoryProvider<UserRepository>(create: (context) => UserRepository()),
         RepositoryProvider<ChatRepository>(create: (context) => ChatRepository()),
-        RepositoryProvider<ImageRepository>(create: (context) => ImageRepository()),
+        RepositoryProvider<PublicGatewayRepository>(create: (context) => PublicGatewayRepository()),
         RepositoryProvider<SocialMediaRepository>(create: (context) => SocialMediaRepository()),
         RepositoryProvider<NotificationRepository>(create: (context) => NotificationRepository()),
         RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage()),
@@ -109,7 +112,14 @@ class App extends StatelessWidget {
                     authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
                   )),
           BlocProvider<CreateAccountBloc>(
-              create: (context) => CreateAccountBloc(userRepository: RepositoryProvider.of<UserRepository>(context))),
+              create: (context) => CreateAccountBloc(userRepository: RepositoryProvider.of<UserRepository>(context))
+          ),
+          BlocProvider<AdBloc>(
+              create: (context) => AdBloc(
+                  publicGatewayRepository: RepositoryProvider.of<PublicGatewayRepository>(context),
+                  secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+              )
+          ),
         ],
         child: AppView(),
       ),

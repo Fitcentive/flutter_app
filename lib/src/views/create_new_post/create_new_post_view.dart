@@ -3,10 +3,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/image_picker/custom_image_picker.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_bloc.dart';
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_event.dart';
@@ -35,7 +36,7 @@ class CreateNewPostView extends StatefulWidget {
                 BlocProvider<CreateNewPostBloc>(
                     create: (context) => CreateNewPostBloc(
                       socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
-                      imageRepository: RepositoryProvider.of<ImageRepository>(context),
+                      imageRepository: RepositoryProvider.of<PublicGatewayRepository>(context),
                       secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                     )),
               ],
@@ -97,6 +98,9 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                               selectedImageName: state.selectedImageName
                           )
                       );
+                    }
+                    else {
+                      SnackbarUtils.showSnackBarShort(context, "Please complete the required fields!");
                     }
                   },
                   child: const Text("Post"),
@@ -164,6 +168,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                               hintText: "What's on your mind?",
                               errorText: state.text.invalid ? 'This cannot be left blank' : null,
                             ),
+                            textCapitalization: TextCapitalization.sentences,
                             onChanged: (text)  {
                               _createNewPostBloc.add(
                                   PostDetailsChanged(

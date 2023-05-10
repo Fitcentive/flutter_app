@@ -1,4 +1,4 @@
-import 'package:flutter_app/src/infrastructure/repos/rest/image_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
@@ -12,7 +12,7 @@ import 'package:formz/formz.dart';
 
 class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> {
   final UserRepository userRepository;
-  final ImageRepository imageRepository;
+  final PublicGatewayRepository imageRepository;
   final FlutterSecureStorage secureStorage;
   final AuthenticatedUserStreamRepository authUserStreamRepository;
 

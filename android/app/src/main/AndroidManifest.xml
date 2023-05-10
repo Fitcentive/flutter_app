@@ -7,6 +7,10 @@
         android:label="Fitcentive"
         android:icon="@mipmap/ic_launcher">
 
+       <meta-data
+               android:name="com.google.android.gms.ads.APPLICATION_ID"
+               android:value="ca-app-pub-4219705164614594~1833998173"/>
+
        <meta-data android:name="com.google.android.geo.API_KEY"
                   android:value="AIzaSyBK6_1sXpa-BnTtAZw2uKmVsYuQQoupL7Y"/>
 

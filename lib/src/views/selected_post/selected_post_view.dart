@@ -228,6 +228,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
                 constraints: const BoxConstraints(maxHeight: 150),
                 child: TextField(
                   controller: _textEditingController,
+                  textCapitalization: TextCapitalization.sentences,
                   onChanged: (text) {
                     setState(() {
                       if (text.trim().isNotEmpty) {
