@@ -11,7 +11,7 @@ class AdUtils {
   static const String testNativeAdUnitIdAndroid = "ca-app-pub-3940256099942544/2247696110";
   static const String testNativeAdUnitIdIos = "ca-app-pub-3940256099942544/3986624511";
 
-  static const int adRefreshTimeInSeconds = 300; // 5 minutes
+  static const int adRefreshTimeInSeconds = 60; // 1 minute
 }
 
 enum AdType { banner, interstitial, native }

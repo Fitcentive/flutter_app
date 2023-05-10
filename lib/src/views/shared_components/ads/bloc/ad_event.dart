@@ -9,20 +9,26 @@ abstract class AdEvent extends Equatable {
 }
 
 class FetchAdUnitIds extends AdEvent {
-  final UserProfile user;
 
-  const FetchAdUnitIds({required this.user});
+  const FetchAdUnitIds();
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [];
 }
 
 
 class FetchNewAd extends AdEvent {
-  final UserProfile user;
 
-  const FetchNewAd({required this.user});
+  const FetchNewAd();
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [];
+}
+
+class NoAdsRequiredAsUserIsPremium extends AdEvent {
+
+  const NoAdsRequiredAsUserIsPremium();
+
+  @override
+  List<Object> get props => [];
 }

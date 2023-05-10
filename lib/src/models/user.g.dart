@@ -18,6 +18,7 @@ User _$UserFromJson(Map<String, dynamic> json) {
     json['accountStatus'] as String,
     json['authProvider'] as String,
     json['enabled'] as bool,
+    json['isPremiumEnabled'] as bool,
     DateTime.parse(json['createdAt'] as String),
     DateTime.parse(json['updatedAt'] as String),
   );
@@ -30,6 +31,7 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'accountStatus': instance.accountStatus,
       'authProvider': instance.authProvider,
       'enabled': instance.enabled,
+      'isPremiumEnabled': instance.isPremiumEnabled,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

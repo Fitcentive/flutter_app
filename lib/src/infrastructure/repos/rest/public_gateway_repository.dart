@@ -21,7 +21,7 @@ class PublicGatewayRepository {
     }
   }
 
-  // todo - create this API
+  // todo - guard against web asking for this
   Future<String> getAdUnitId(bool isDebug, bool isAndroid, AdType adType,  String accessToken) async {
     if (isDebug) {
       if (isAndroid) {
@@ -49,7 +49,7 @@ class PublicGatewayRepository {
     }
     else {
       final response = await http.get(
-        Uri.parse("$BASE_URL/ad-unit-id"),
+        Uri.parse("$BASE_URL/admob-ad-unit-id?isAndroid=$isAndroid&adType=$adType"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
       );
 

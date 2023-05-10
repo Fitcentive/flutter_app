@@ -15,6 +15,7 @@ class User extends Equatable {
   final String accountStatus;
   final String authProvider;
   final bool enabled;
+  final bool isPremiumEnabled;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -22,8 +23,17 @@ class User extends Equatable {
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
 
-  const User(this.id, this.email, this.username, this.accountStatus, this.authProvider, this.enabled, this.createdAt,
-      this.updatedAt);
+  const User(
+      this.id,
+      this.email,
+      this.username,
+      this.accountStatus,
+      this.authProvider,
+      this.enabled,
+      this.isPremiumEnabled,
+      this.createdAt,
+      this.updatedAt
+  );
 
   @override
   List<Object?> get props => [
@@ -33,6 +43,7 @@ class User extends Equatable {
         accountStatus,
         authProvider,
         enabled,
+        isPremiumEnabled,
         createdAt,
         updatedAt,
       ];

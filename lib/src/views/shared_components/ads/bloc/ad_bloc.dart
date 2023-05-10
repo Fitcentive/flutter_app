@@ -26,10 +26,15 @@ class AdBloc extends Bloc<AdEvent, AdState> {
   }) : super(const InitialAdState()) {
     on<FetchNewAd>(_fetchNewAd);
     on<FetchAdUnitIds>(_fetchAdUnitIds);
+    on<NoAdsRequiredAsUserIsPremium>(_noAdsRequiredAsUserIsPremium);
   }
 
   void dispose() {
     _refreshAdTimer?.cancel();
+  }
+
+  void _noAdsRequiredAsUserIsPremium(NoAdsRequiredAsUserIsPremium event, Emitter<AdState> emit) async {
+    emit(const AdsDisabled());
   }
 
   void _fetchNewAd(FetchNewAd event, Emitter<AdState> emit) async {
@@ -38,24 +43,22 @@ class AdBloc extends Bloc<AdEvent, AdState> {
       emit(
           NewAdLoadRequested(
             adUnitId: currentState.adUnitId,
-            user: event.user,
             randomId: StringUtils.generateRandomString(32)
           )
       );
       _refreshAdTimer = Timer(const Duration(seconds: AdUtils.adRefreshTimeInSeconds), () {
-        add(FetchNewAd(user: event.user));
+        add(const FetchNewAd());
       });
     }
     else if (currentState is NewAdLoadRequested) {
       emit(
           NewAdLoadRequested(
               adUnitId: currentState.adUnitId,
-              user: event.user,
               randomId: StringUtils.generateRandomString(32)
           )
       );
       _refreshAdTimer = Timer(const Duration(seconds: AdUtils.adRefreshTimeInSeconds), () {
-        add(FetchNewAd(user: event.user));
+        add(const FetchNewAd());
       });
     }
   }
@@ -67,7 +70,6 @@ class AdBloc extends Bloc<AdEvent, AdState> {
     emit(
         AdUnitIdFetched(
             adUnitId: adUnitId,
-            user: event.user
         )
     );
   }

@@ -188,8 +188,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _spacer(12),
-                  _userProfileImageView(state),
-                  _deleteImageCrossButton(state),
+                  _headerElement(state),
                   _spacer(12),
                   _fullLengthRowElement(_nameField("First Name", state)),
                   _spacer(6),
@@ -392,6 +391,50 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         decoration: const InputDecoration(labelText: "Username", errorText: null));
   }
 
+  _userPremiumStatus(AccountDetailsState state) {
+    final currentState = state;
+    if (currentState is AccountDetailsModified) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 12, 0),
+        child: _premiumStatusIconButton(currentState),
+      );
+    } else {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+  }
+
+  _premiumStatusIconButton(AccountDetailsModified currentState) {
+    if (currentState.user.user.isPremiumEnabled) {
+      return ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () async {
+          SnackbarUtils.showSnackBarShort(context, "You already have premium enabled!");
+        },
+        child: const Text("Premium enabled", style: TextStyle(fontSize: 15, color: Colors.white)),
+      );
+    }
+    else {
+      return ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+        ),
+        onPressed: () async {
+            // todo - show dialog and upgrade to premium here, show payment options and all
+            // show dialog, press button to upgrade for now. Can integrate SDK later
+            final authState = _authenticationBloc.state;
+            if (authState is AuthSuccessUserUpdateState) {
+              // do something here
+            }
+        },
+        child: const Text("Activate premium", style: TextStyle(fontSize: 15, color: Colors.white)),
+      );
+    }
+  }
+
   _genderField(AccountDetailsState state) {
     if (state is AccountDetailsModified) {
       return Column(
@@ -459,6 +502,32 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     } else {
       return InputDecoration(labelText: key, errorText: null);
     }
+  }
+
+  Widget _headerElement(AccountDetailsState state) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _userProfileImageView(state),
+                _deleteImageCrossButton(state),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: _userPremiumStatus(state),
+          ),
+        )
+      ],
+    );
   }
 
   Widget _userProfileImageView(AccountDetailsState state) {
