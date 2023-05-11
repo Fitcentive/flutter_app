@@ -3,7 +3,7 @@ import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
-import 'package:flutter_app/src/views/shared_components/ads/custom_ad_widget.dart';
+import 'package:flutter_app/src/views/shared_components/ads/bottom_bar_ad_widget.dart';
 import 'package:flutter_app/src/views/shared_components/ads/home_page_ad_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gauges/gauges.dart';
@@ -105,7 +105,7 @@ class WidgetUtils {
           return null;
         }
         else {
-          return CustomAdWidget(maxHeight: maxHeight);
+          return BottomBarAdWidget(maxHeight: maxHeight);
         }
       }
       else if (authState is AuthSuccessState) {
@@ -113,7 +113,7 @@ class WidgetUtils {
           return null;
         }
         else {
-          return CustomAdWidget(maxHeight: maxHeight);
+          return BottomBarAdWidget(maxHeight: maxHeight);
         }
       }
     }

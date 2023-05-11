@@ -36,11 +36,10 @@ import 'package:flutter_app/src/views/search/search_view.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_bloc.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_event.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_state.dart';
-import 'package:flutter_app/src/views/shared_components/ads/custom_ad_widget.dart';
+import 'package:flutter_app/src/views/shared_components/ads/bottom_bar_ad_widget.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logging/logging.dart';
 
 class HomePage extends StatefulWidget {

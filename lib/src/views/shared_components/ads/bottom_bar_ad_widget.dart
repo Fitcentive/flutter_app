@@ -9,21 +9,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logging/logging.dart';
 
-class CustomAdWidget extends StatefulWidget {
+class BottomBarAdWidget extends StatefulWidget {
   final double maxHeight;
 
-  const CustomAdWidget({
+  const BottomBarAdWidget({
     super.key,
     required this.maxHeight
   });
 
   @override
   State createState() {
-    return CustomAdWidgetState();
+    return BottomBarAdWidgetState();
   }
 }
 
-class CustomAdWidgetState extends State<CustomAdWidget> {
+class BottomBarAdWidgetState extends State<BottomBarAdWidget> {
 
   final logger = Logger("CustomAdWidgetState");
 
