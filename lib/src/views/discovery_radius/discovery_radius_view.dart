@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discovery_radius/bloc/discovery_radius_bloc.dart';
 import 'package:flutter_app/src/views/discovery_radius/bloc/discovery_radius_event.dart';
 import 'package:flutter_app/src/views/discovery_radius/bloc/discovery_radius_state.dart';
@@ -64,7 +66,10 @@ class DiscoveryRadiusViewState extends State<DiscoveryRadiusView> {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
+      bottomNavigationBar: adWidget,
       appBar: AppBar(
         title: const Text("Discovery Radius", style: TextStyle(color: Colors.teal)),
         iconTheme: const IconThemeData(

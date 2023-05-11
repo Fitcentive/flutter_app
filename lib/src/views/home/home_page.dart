@@ -12,6 +12,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
@@ -299,8 +300,8 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       chatIcon = const Icon(Icons.chat);
     }
 
-    final maxHeight = ScreenUtils.getScreenHeight(context) / 6;
-    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
+    final maxHeight = AdUtils.defaultBannerAdHeight(context) * 2;
+    final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
     if (adWidget == null) {
       return _bottomNavigationBarInternal(chatIcon, notificationIcon);
     }

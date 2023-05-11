@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/select_chat_users/bloc/select_chat_users_bloc.dart';
@@ -69,7 +70,10 @@ class SelectChatUsersViewState extends State<SelectChatUsersView> {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
+      bottomNavigationBar: adWidget,
       appBar: AppBar(
         title: const Text("Select chat users", style: TextStyle(color: Colors.teal),),
         iconTheme: const IconThemeData(

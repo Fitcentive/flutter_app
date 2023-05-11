@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/models/discover/discover_recommendation.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -69,6 +70,8 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Discover Buddies', style: TextStyle(color: Colors.teal),),
@@ -78,6 +81,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
       ),
       body: _generateBody(),
       floatingActionButton: _generateFloatingActionButtons(),
+      bottomNavigationBar: adWidget,
     );
   }
 

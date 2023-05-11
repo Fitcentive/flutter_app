@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
+
 class AdUtils {
   // More info on AdMob setup - https://developers.google.com/admob/flutter/quick-start
   // These are all test Ad Unit Ids - for the real one, we query our backend via public-gateway
@@ -12,6 +15,11 @@ class AdUtils {
   static const String testNativeAdUnitIdIos = "ca-app-pub-3940256099942544/3986624511";
 
   static const int adRefreshTimeInSeconds = 60; // 1 minute
+
+  static double defaultBannerAdHeight(BuildContext context) => ScreenUtils.getScreenHeight(context) / 12;
+
+  static double defaultBannerAdHeightForDetailedFoodAndExerciseView(BuildContext context) =>
+      ScreenUtils.getScreenHeight(context) / 11;
 }
 
 enum AdType { banner, interstitial, native }

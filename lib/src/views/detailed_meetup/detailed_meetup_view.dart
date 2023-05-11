@@ -11,6 +11,7 @@ import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile_with_location.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
 import 'package:flutter_app/src/utils/misc_utils.dart';
@@ -251,7 +252,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
+      bottomNavigationBar: adWidget,
       appBar: _renderAppBar(),
       floatingActionButton:  _dynamicFloatingActionButtons(),
       body: WillPopScope(

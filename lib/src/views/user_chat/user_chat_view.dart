@@ -5,6 +5,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -289,11 +290,13 @@ class UserChatViewState extends State<UserChatView> {
     _userChatBloc.add(UpdateCurrentUserChatRoomLastSeen(roomId: widget.currentRoomId));
   }
 
-
   // todo - nasty bug here, user msgs are sometimes is 2x/4x, especially right after adding new person to chat
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
+      bottomNavigationBar: adWidget,
       appBar: AppBar(
         iconTheme: const IconThemeData(
           color: Colors.teal,

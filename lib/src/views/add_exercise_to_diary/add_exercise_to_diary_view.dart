@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/exercise_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
@@ -111,14 +112,37 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
     selectedWorkoutDateTime = widget.selectedDayInQuestion;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: BottomAppBar(
+  _bottomBarWithOptAd() {
+    final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
+    final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
+    if (adWidget == null) {
+      return BottomAppBar(
         color: Colors.transparent,
         child: _showAddToDiaryButton(),
         elevation: 0,
-      ),
+      );
+    }
+    else {
+      return SizedBox(
+        height: maxHeight,
+        child: Column(
+          children: [
+            BottomAppBar(
+              color: Colors.transparent,
+              child: _showAddToDiaryButton(),
+              elevation: 0,
+            ),
+            adWidget,
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      bottomNavigationBar: _bottomBarWithOptAd(),
       appBar: AppBar(
         iconTheme: const IconThemeData(
           color: Colors.teal,

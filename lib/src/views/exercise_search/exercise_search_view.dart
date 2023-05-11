@@ -4,6 +4,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart'
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -96,7 +97,10 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
+      bottomNavigationBar: adWidget,
       body: BlocListener<ExerciseSearchBloc, ExerciseSearchState>(
         listener: (context, state) {
           if (state is ExerciseDataFetched) {

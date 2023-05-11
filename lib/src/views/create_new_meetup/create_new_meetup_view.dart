@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
@@ -12,7 +14,6 @@ import 'package:flutter_app/src/views/create_new_meetup/views/select_meetup_deta
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// todo - add limit to number of selected participants
 class CreateNewMeetupView extends StatefulWidget {
   static const String routeName = "create-meetup";
 
@@ -76,6 +77,8 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Meetup', style: TextStyle(color: Colors.teal),),
@@ -85,6 +88,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
       ),
       body: _pageViews(),
       floatingActionButton: dynamicActionButtons,
+      bottomNavigationBar: adWidget,
     );
   }
 

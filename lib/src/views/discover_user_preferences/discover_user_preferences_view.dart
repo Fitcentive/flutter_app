@@ -5,7 +5,9 @@ import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
@@ -102,6 +104,8 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Discover Preferences', style: TextStyle(color: Colors.teal),),
@@ -111,6 +115,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
       ),
       body: _pageViews(),
       floatingActionButton: dynamicActionButtons,
+      bottomNavigationBar: adWidget,
     );
   }
 

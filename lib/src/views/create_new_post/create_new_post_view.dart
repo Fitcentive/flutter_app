@@ -5,6 +5,7 @@ import 'package:flutter_app/src/infrastructure/image_picker/custom_image_picker.
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
@@ -68,6 +69,8 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return BlocListener<CreateNewPostBloc, CreateNewPostState>(
         listener: (context, state) {
           if (state is PostSubmittedSuccessfully) {
@@ -75,6 +78,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
           }
         },
         child: Scaffold(
+          bottomNavigationBar: adWidget,
           appBar: AppBar(
             title: const Text(
                 "Create Post",

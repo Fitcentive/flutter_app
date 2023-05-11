@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
@@ -116,6 +117,8 @@ class SelectedPostViewState extends State<SelectedPostView> {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
       appBar: AppBar(
         title: const Text("View Post", style: TextStyle(color: Colors.teal),),
@@ -137,6 +140,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
           }
         },
       ),
+      bottomNavigationBar: adWidget,
     );
   }
 

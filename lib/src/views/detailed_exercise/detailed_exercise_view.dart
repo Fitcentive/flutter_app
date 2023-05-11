@@ -5,6 +5,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart'
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_exercise_to_diary/add_exercise_to_diary_view.dart';
@@ -108,16 +109,39 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
     _tabController = TabController(vsync: this, length: MAX_TABS);
   }
 
+  _bottomBarWithOptAd() {
+    final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
+    final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
+    if (adWidget == null) {
+      return BottomAppBar(
+        color: Colors.transparent,
+        child: _showAddToDiaryButton(),
+        elevation: 0,
+      );
+    }
+    else {
+      return SizedBox(
+        height: maxHeight,
+        child: Column(
+          children: [
+            BottomAppBar(
+              color: Colors.transparent,
+              child: _showAddToDiaryButton(),
+              elevation: 0,
+            ),
+            adWidget,
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
         length: MAX_TABS,
         child: Scaffold(
-          bottomNavigationBar: BottomAppBar(
-            color: Colors.transparent,
-            child: _showAddToDiaryButton(),
-            elevation: 0,
-          ),
+          bottomNavigationBar: _bottomBarWithOptAd(),
           appBar: AppBar(
             iconTheme: const IconThemeData(
               color: Colors.teal,

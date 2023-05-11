@@ -369,7 +369,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         }
       },
       child: Align(
-        alignment: const Alignment(1 / 5, 0),
+        alignment: const Alignment(1 / 2, 0),
         child: Container(
           width: 25,
           height: 25,

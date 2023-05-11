@@ -11,6 +11,7 @@ import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.
 import 'package:flutter_app/src/models/fatsecret/food_search_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_search_suggestions.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -124,7 +125,10 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
+      bottomNavigationBar: adWidget,
       body: BlocListener<FoodSearchBloc, FoodSearchState>(
         listener: (context, state) {
           if (state is FoodDataFetched) {
@@ -297,33 +301,21 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
           debounceDuration: const Duration(milliseconds: 300),
           textFieldConfiguration: TextFieldConfiguration(
               onSubmitted: (value) {
-                _foodSearchBloc.add(
-                    FetchFoodSearchInfo(
-                      currentUserId: widget.currentUserProfile.userId,
-                      query: value.trim(),
-                      pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
-                      maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
-                    )
-                );
+                if (value.trim().isNotEmpty) {
+                  _foodSearchBloc.add(
+                      FetchFoodSearchInfo(
+                        currentUserId: widget.currentUserProfile.userId,
+                        query: value.trim(),
+                        pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
+                        maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
+                      )
+                  );
+                }
               },
               autocorrect: false,
               onTap: () => _suggestionsController.toggle(),
               onChanged: (text) {
                 shouldShow = true;
-
-                // if (_searchQueryDebounceTimer?.isActive ?? false) _searchQueryDebounceTimer?.cancel();
-                // _searchQueryDebounceTimer = Timer(const Duration(milliseconds: 300), () {
-                //   if (text.trim().isNotEmpty) {
-                //     _foodSearchBloc.add(
-                //         FetchFoodSearchInfo(
-                //           currentUserId: widget.currentUserProfile.userId,
-                //           query: text.trim(),
-                //           pageNumber: DiaryRepository.DEFAULT_SEARCH_FOOD_RESULTS_PAGE,
-                //           maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
-                //         )
-                //     );
-                //   }
-                // });
               },
               autofocus: true,
               controller: _searchTextController,

@@ -6,6 +6,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart'
 import 'package:flutter_app/src/models/fatsecret/food_search_result.dart';
 import 'package:flutter_app/src/models/fatsecret/serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_food_to_diary/add_food_to_diary_view.dart';
@@ -120,6 +121,33 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
     super.dispose();
   }
 
+  _bottomBarWithOptAd(DetailedFoodState state) {
+    final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
+    final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
+    if (adWidget == null) {
+      return BottomAppBar(
+        color: Colors.transparent,
+        child: _showAddToFoodDiaryButton(state),
+        elevation: 0,
+      );
+    }
+    else {
+      return SizedBox(
+        height: maxHeight,
+        child: Column(
+          children: [
+            BottomAppBar(
+              color: Colors.transparent,
+              child: _showAddToFoodDiaryButton(state),
+              elevation: 0,
+            ),
+            adWidget,
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DetailedFoodBloc, DetailedFoodState>(
@@ -127,11 +155,7 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
           return DefaultTabController(
               length: MAX_TABS,
               child: Scaffold(
-                bottomNavigationBar: BottomAppBar(
-                  color: Colors.transparent,
-                  child: _showAddToFoodDiaryButton(state),
-                  elevation: 0,
-                ),
+                bottomNavigationBar: _bottomBarWithOptAd(state),
                 appBar: AppBar(
                   iconTheme: const IconThemeData(
                     color: Colors.teal,

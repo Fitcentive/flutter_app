@@ -49,27 +49,29 @@ class LocationPreferenceViewState extends State<LocationPreferenceView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Center(
-            child: FittedBox(
-                child: Container(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: const Text("Tell us where you would like to find fitness buddies", style: TextStyle(fontSize: 16),)
-                )
-            )
-        ),
-        WidgetUtils.spacer(10),
-        ProvideLocationView(
-          latitude: locationViewLatitude,
-          longitude: locationViewLongitude,
-          radius: locationViewRadius.toDouble(),
-          updateBlocState: _updateBlocState,
-          mapScreenHeightProportion: 0.6,
-          mapControlsHeightProportion: 0.2,
-        )
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Center(
+              child: FittedBox(
+                  child: Container(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      child: const Text("Tell us where you would like to find fitness buddies", style: TextStyle(fontSize: 16),)
+                  )
+              )
+          ),
+          WidgetUtils.spacer(10),
+          ProvideLocationView(
+            latitude: locationViewLatitude,
+            longitude: locationViewLongitude,
+            radius: locationViewRadius.toDouble(),
+            updateBlocState: _updateBlocState,
+            mapScreenHeightProportion: 0.6,
+            mapControlsHeightProportion: 0.2,
+          )
+        ],
+      ),
     );
   }
 

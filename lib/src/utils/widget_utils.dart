@@ -4,6 +4,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/ads/custom_ad_widget.dart';
+import 'package:flutter_app/src/views/shared_components/ads/home_page_ad_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gauges/gauges.dart';
 
@@ -113,6 +114,33 @@ class WidgetUtils {
         }
         else {
           return CustomAdWidget(maxHeight: maxHeight);
+        }
+      }
+    }
+    else {
+      // todo - handle web implementation of ads using AdSense
+      return null;
+    }
+    return null;
+  }
+
+  static Widget? showHomePageAdIfNeeded(BuildContext context, double maxHeight) {
+    if (DeviceUtils.isMobileDevice()) {
+      final authState = context.read<AuthenticationBloc>().state;
+      if (authState is AuthSuccessUserUpdateState) {
+        if (authState.authenticatedUser.user.isPremiumEnabled) {
+          return null;
+        }
+        else {
+          return HomePageAdWidget(maxHeight: maxHeight);
+        }
+      }
+      else if (authState is AuthSuccessState) {
+        if (authState.authenticatedUser.user.isPremiumEnabled) {
+          return null;
+        }
+        else {
+          return HomePageAdWidget(maxHeight: maxHeight);
         }
       }
     }

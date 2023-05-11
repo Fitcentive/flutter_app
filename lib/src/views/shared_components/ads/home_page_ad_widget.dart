@@ -9,23 +9,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logging/logging.dart';
 
-class CustomAdWidget extends StatefulWidget {
+class HomePageAdWidget extends StatefulWidget {
   final double maxHeight;
 
-  const CustomAdWidget({
+  const HomePageAdWidget({
     super.key,
     required this.maxHeight
   });
 
   @override
   State createState() {
-    return CustomAdWidgetState();
+    return HomePageAdWidgetState();
   }
 }
 
-class CustomAdWidgetState extends State<CustomAdWidget> {
+class HomePageAdWidgetState extends State<HomePageAdWidget> {
 
-  final logger = Logger("CustomAdWidgetState");
+  final logger = Logger("HomePageAdWidgetState");
 
   late AdBloc _adBloc;
   bool initialLoad = true;
@@ -54,21 +54,21 @@ class CustomAdWidgetState extends State<CustomAdWidget> {
       },
       child: BlocBuilder<AdBloc, AdState>(
         builder: (context, state) {
-         if (state is NewAdLoadRequested) {
-           if (initialLoad) {
-             _loadAd(state.adUnitId);
-             initialLoad = false;
-           }
-           return Container(
-             color: Colors.white,
-             child: _displayAd(),
-           );
-         }
-         else {
-           return const CircularProgressIndicator(
-             color: Colors.teal,
-           );
-         }
+          if (state is NewAdLoadRequested) {
+            if (initialLoad) {
+              _loadAd(state.adUnitId);
+              initialLoad = false;
+            }
+            return Container(
+              color: Colors.white,
+              child: _displayAd(),
+            );
+          }
+          else {
+            return const CircularProgressIndicator(
+              color: Colors.teal,
+            );
+          }
         },
       ),
     );
@@ -76,17 +76,13 @@ class CustomAdWidgetState extends State<CustomAdWidget> {
 
   _displayAd() {
     if (_bannerAd != null) {
-      return SizedBox(
-        width: ScreenUtils.getScreenWidth(context),
-        height: widget.maxHeight,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: SafeArea(
-            child: SizedBox(
-              width: max(_bannerAd!.size.width.toDouble(), ScreenUtils.getScreenWidth(context)),
-              height: min(_bannerAd!.size.height.toDouble(), widget.maxHeight),
-              child: AdWidget(ad: _bannerAd!),
-            ),
+      return Align(
+        alignment: Alignment.bottomCenter,
+        child: SafeArea(
+          child: SizedBox(
+            width: max(_bannerAd!.size.width.toDouble(), ScreenUtils.getScreenWidth(context)),
+            height: min(_bannerAd!.size.height.toDouble(), widget.maxHeight),
+            child: AdWidget(ad: _bannerAd!),
           ),
         ),
       );
