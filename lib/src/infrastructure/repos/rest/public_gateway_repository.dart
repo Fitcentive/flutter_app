@@ -36,45 +36,55 @@ class PublicGatewayRepository {
     }
   }
 
-  Future<String> getAdUnitId(bool isDebug, bool isAndroid, AdType adType,  String accessToken) async {
+  Future<String> getAdUnitId(bool isDebug, bool isMobileDevice, bool isAndroid, AdType adType,  String accessToken) async {
     if (isDebug) {
-      if (isAndroid) {
-        if (adType == AdType.banner) {
-          return Future.value(AdUtils.testBannerAdUnitIdAndroid);
+      if (isMobileDevice) {
+        if (isAndroid) {
+          if (adType == AdType.banner) {
+            return Future.value(AdUtils.testBannerAdUnitIdAndroid);
+          }
+          else if (adType == AdType.interstitial) {
+            return Future.value(AdUtils.testInterstitialAdUnitIdAndroid);
+          }
+          else /*if (adType == AdType.native)*/ {
+            return Future.value(AdUtils.testNativeAdUnitIdAndroid);
+          }
         }
-        else if (adType == AdType.interstitial) {
-          return Future.value(AdUtils.testInterstitialAdUnitIdAndroid);
-        }
-        else /*if (adType == AdType.native)*/ {
-          return Future.value(AdUtils.testNativeAdUnitIdAndroid);
+        else {
+          if (adType == AdType.banner) {
+            return Future.value(AdUtils.testBannerAdUnitIdIos);
+          }
+          else if (adType == AdType.interstitial) {
+            return Future.value(AdUtils.testInterstitialAdUnitIdIos);
+          }
+          else /*if (adType == AdType.native)*/ {
+            return Future.value(AdUtils.testNativeAdUnitIdIos);
+          }
         }
       }
       else {
-        if (adType == AdType.banner) {
-          return Future.value(AdUtils.testBannerAdUnitIdIos);
-        }
-        else if (adType == AdType.interstitial) {
-          return Future.value(AdUtils.testInterstitialAdUnitIdIos);
-        }
-        else /*if (adType == AdType.native)*/ {
-          return Future.value(AdUtils.testNativeAdUnitIdIos);
-        }
+        return Future.value(AdUtils.testBannerAdUnitIdAndroid); // change this
       }
     }
     else {
-      final response = await http.get(
-        Uri.parse("$BASE_URL/admob-ad-unit-id?isAndroid=$isAndroid&adType=$adType"),
-        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
-      );
+      if (isMobileDevice) {
+        final response = await http.get(
+          Uri.parse("$BASE_URL/admob-ad-unit-id?isAndroid=$isAndroid&adType=$adType"),
+          headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        );
 
-      if (response.statusCode == HttpStatus.ok) {
-        final jsonResponse = jsonDecode(response.body);
-        final String result = jsonResponse.toString();
-        return result;
+        if (response.statusCode == HttpStatus.ok) {
+          final jsonResponse = jsonDecode(response.body);
+          final String result = jsonResponse.toString();
+          return result;
+        }
+        else {
+          throw Exception(
+              "getAdUnitId: Received bad response with status: ${response.statusCode} and body ${response.body}");
+        }
       }
       else {
-        throw Exception(
-            "getAdUnitId: Received bad response with status: ${response.statusCode} and body ${response.body}");
+        return Future.value(AdUtils.testBannerAdUnitIdAndroid); // change this
       }
     }
   }

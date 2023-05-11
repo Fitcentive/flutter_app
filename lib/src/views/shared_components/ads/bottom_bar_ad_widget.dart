@@ -25,7 +25,7 @@ class BottomBarAdWidget extends StatefulWidget {
 
 class BottomBarAdWidgetState extends State<BottomBarAdWidget> {
 
-  final logger = Logger("CustomAdWidgetState");
+  final logger = Logger("BottomBarAdWidgetState");
 
   late AdBloc _adBloc;
   bool initialLoad = true;

@@ -36,7 +36,10 @@ import 'src/views/shared_components/ads/bloc/ad_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MobileAds.instance.initialize();
+
+  if (!kIsWeb) {
+    MobileAds.instance.initialize();
+  }
 
   if(kIsWeb){
     await Firebase.initializeApp(

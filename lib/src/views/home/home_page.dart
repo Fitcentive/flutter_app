@@ -208,27 +208,22 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   _initializeAdsIfNeeded() {
-    if (DeviceUtils.isMobileDevice()) {
-      final authState = _authenticationBloc.state;
-      if (authState is AuthSuccessUserUpdateState) {
-        if (authState.authenticatedUser.user.isPremiumEnabled) {
-          _adBloc.add(const NoAdsRequiredAsUserIsPremium());
-        }
-        else {
-          _adBloc.add(const FetchAdUnitIds());
-        }
+    final authState = _authenticationBloc.state;
+    if (authState is AuthSuccessUserUpdateState) {
+      if (authState.authenticatedUser.user.isPremiumEnabled) {
+        _adBloc.add(const NoAdsRequiredAsUserIsPremium());
       }
-      else if (authState is AuthSuccessState) {
-        if (authState.authenticatedUser.user.isPremiumEnabled) {
-          _adBloc.add(const NoAdsRequiredAsUserIsPremium());
-        }
-        else {
-          _adBloc.add(const FetchAdUnitIds());
-        }
+      else {
+        _adBloc.add(const FetchAdUnitIds());
       }
     }
-    else {
-      // todo - handle web implementation of ads using AdSense
+    else if (authState is AuthSuccessState) {
+      if (authState.authenticatedUser.user.isPremiumEnabled) {
+        _adBloc.add(const NoAdsRequiredAsUserIsPremium());
+      }
+      else {
+        _adBloc.add(const FetchAdUnitIds());
+      }
     }
   }
 
@@ -299,7 +294,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       chatIcon = const Icon(Icons.chat);
     }
 
-    final maxHeight = AdUtils.defaultBannerAdHeight(context) * 2;
+    final double maxHeight = AdUtils.defaultBannerAdHeight(context) * 2;
     final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
     if (adWidget == null) {
       return _bottomNavigationBarInternal(chatIcon, notificationIcon);

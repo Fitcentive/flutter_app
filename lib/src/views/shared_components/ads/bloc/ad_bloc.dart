@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_event.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_state.dart';
@@ -65,8 +66,14 @@ class AdBloc extends Bloc<AdEvent, AdState> {
 
   void _fetchAdUnitIds(FetchAdUnitIds event, Emitter<AdState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final isMobileDevice = DeviceUtils.isMobileDevice();
     final adUnitId = await publicGatewayRepository.getAdUnitId(
-        kDebugMode, Platform.isAndroid, AdType.banner, accessToken!);
+        kDebugMode,
+        isMobileDevice,
+        isMobileDevice ? Platform.isAndroid : false,
+        AdType.banner,
+        accessToken!
+    );
     emit(
         AdUnitIdFetched(
             adUnitId: adUnitId,

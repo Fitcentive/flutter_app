@@ -5,6 +5,8 @@ import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bottom_bar_ad_widget.dart';
 import 'package:flutter_app/src/views/shared_components/ads/home_page_ad_widget.dart';
+import 'package:flutter_app/src/views/shared_components/ads/home_page_web_horizontal_display_ad_widget.dart';
+import 'package:flutter_app/src/views/shared_components/ads/web_horizontal_display_ad_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gauges/gauges.dart';
 
@@ -118,8 +120,23 @@ class WidgetUtils {
       }
     }
     else {
-      // todo - handle web implementation of ads using AdSense
-      return null;
+      final authState = context.read<AuthenticationBloc>().state;
+      if (authState is AuthSuccessUserUpdateState) {
+        if (authState.authenticatedUser.user.isPremiumEnabled) {
+          return null;
+        }
+        else {
+          return WebHorizontalDisplayAdWidget(maxHeight: maxHeight);
+        }
+      }
+      else if (authState is AuthSuccessState) {
+        if (authState.authenticatedUser.user.isPremiumEnabled) {
+          return null;
+        }
+        else {
+          return WebHorizontalDisplayAdWidget(maxHeight: maxHeight);
+        }
+      }
     }
     return null;
   }
@@ -145,8 +162,23 @@ class WidgetUtils {
       }
     }
     else {
-      // todo - handle web implementation of ads using AdSense
-      return null;
+      final authState = context.read<AuthenticationBloc>().state;
+      if (authState is AuthSuccessUserUpdateState) {
+        if (authState.authenticatedUser.user.isPremiumEnabled) {
+          return null;
+        }
+        else {
+          return HomePageWebHorizontalDisplayAdWidget(maxHeight: maxHeight);
+        }
+      }
+      else if (authState is AuthSuccessState) {
+        if (authState.authenticatedUser.user.isPremiumEnabled) {
+          return null;
+        }
+        else {
+          return HomePageWebHorizontalDisplayAdWidget(maxHeight: maxHeight);
+        }
+      }
     }
     return null;
   }
