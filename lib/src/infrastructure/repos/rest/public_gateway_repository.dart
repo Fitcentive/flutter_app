@@ -9,6 +9,21 @@ import 'package:http/http.dart' as http;
 class PublicGatewayRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/gateway";
 
+  Future<void> enablePremiumForUser(String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/enable-premium"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.accepted) {
+      return;
+    }
+    else {
+      throw Exception(
+          "enablePremiumForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<String> uploadImage(String filePath, Uint8List rawImage, String accessToken) async {
     var request = http.MultipartRequest('POST', Uri.parse("$BASE_URL/image/upload/$filePath"))
       ..headers["Authorization"] = "Bearer $accessToken"
@@ -21,7 +36,6 @@ class PublicGatewayRepository {
     }
   }
 
-  // todo - guard against web asking for this
   Future<String> getAdUnitId(bool isDebug, bool isAndroid, AdType adType,  String accessToken) async {
     if (isDebug) {
       if (isAndroid) {

@@ -13,6 +13,7 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_bloc.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_event.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_state.dart';
@@ -20,6 +21,8 @@ import 'package:flutter_app/src/views/discovery_radius/discovery_radius_view.dar
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_card/meetup_card_view.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -34,7 +37,7 @@ class AccountDetailsView extends StatefulWidget {
           BlocProvider<AccountDetailsBloc>(
               create: (context) => AccountDetailsBloc(
                     userRepository: RepositoryProvider.of<UserRepository>(context),
-                    imageRepository: RepositoryProvider.of<PublicGatewayRepository>(context),
+                    publicGatewayRepository: RepositoryProvider.of<PublicGatewayRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                     authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
                   )
@@ -71,6 +74,14 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   CircleId circleId = const CircleId('radius_circle');
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
+
+  static const String premiumFeatures = """
+  - #### No ads!
+  - #### Ability to discover users!
+  - #### Ability to create meetups!
+  - #### Support the developer!
+  - #### And so much more!
+  """;
 
   _getUserCurrentPosition() async {
     final livePosition = await LocationPermissions.determinePosition();
@@ -423,16 +434,95 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
         ),
         onPressed: () async {
-            // todo - show dialog and upgrade to premium here, show payment options and all
-            // show dialog, press button to upgrade for now. Can integrate SDK later
-            final authState = _authenticationBloc.state;
-            if (authState is AuthSuccessUserUpdateState) {
-              // do something here
-            }
+          showDialog(context: context, builder: (context) {
+            return Dialog(
+              child: _dialogContentCard(),
+            );
+          });
         },
         child: const Text("Activate premium", style: TextStyle(fontSize: 15, color: Colors.white)),
       );
     }
+  }
+
+  _performUpgradeToPremium() {
+    final authState = _authenticationBloc.state;
+    if (authState is AuthSuccessUserUpdateState) {
+      _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: authState.authenticatedUser));
+    }
+  }
+
+  _dialogContentCard() {
+    return IntrinsicHeight(
+      child: Card(
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              child: _dialogContent(),
+            ),
+          )
+      ),
+    );
+  }
+
+  _dialogContent() {
+    return Column(
+      children: [
+        const Text(
+          "For a one time cost of \$10, you get...",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.teal
+          ),
+        ),
+        WidgetUtils.spacer(5),
+        const SizedBox(
+            height: 200,
+            child: Markdown(data: premiumFeatures)
+        ),
+        WidgetUtils.spacer(10),
+        Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                ),
+                onPressed: () async {
+                  Navigator.pop(context);
+                },
+                child: const Text("Cancel", style: TextStyle(fontSize: 15, color: Colors.white)),
+              ),
+            ),
+            const Expanded(
+              flex: 1,
+              child: Visibility(
+                visible: false,
+                child: Text(""),
+              )
+            ),
+            Expanded(
+              flex: 3,
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                ),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  _performUpgradeToPremium();
+                },
+                child: const Text("Upgrade", style: TextStyle(fontSize: 15, color: Colors.white)),
+              ),
+            ),
+
+          ],
+        )
+      ],
+    );
   }
 
   _genderField(AccountDetailsState state) {

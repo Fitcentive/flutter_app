@@ -52,3 +52,14 @@ class AccountDetailsSaved extends AccountDetailsEvent {
   @override
   List<Object?> get props => [user, firstName, lastName, gender, photoUrl, selectedImage, selectedImageName];
 }
+
+class EnablePremiumAccountStatusForUser extends AccountDetailsEvent {
+  final AuthenticatedUser user;
+
+  const EnablePremiumAccountStatusForUser({
+    required this.user
+  });
+
+  @override
+  List<Object?> get props => [user];
+}

@@ -1,8 +1,10 @@
 import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
+import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_event.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_state.dart';
@@ -12,18 +14,56 @@ import 'package:formz/formz.dart';
 
 class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> {
   final UserRepository userRepository;
-  final PublicGatewayRepository imageRepository;
+  final PublicGatewayRepository publicGatewayRepository;
   final FlutterSecureStorage secureStorage;
   final AuthenticatedUserStreamRepository authUserStreamRepository;
 
   AccountDetailsBloc({
     required this.userRepository,
-    required this.imageRepository,
+    required this.publicGatewayRepository,
     required this.secureStorage,
     required this.authUserStreamRepository,
   }) : super(const InitialState()) {
     on<AccountDetailsChanged>(_accountDetailsChanged);
     on<AccountDetailsSaved>(_accountDetailsSaved);
+    on<EnablePremiumAccountStatusForUser>(_enablePremiumAccountStatusForUser);
+  }
+
+  void _enablePremiumAccountStatusForUser(EnablePremiumAccountStatusForUser event, Emitter<AccountDetailsState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await publicGatewayRepository.enablePremiumForUser(accessToken!);
+
+    final newPremiumUser = User(
+        event.user.user.id,
+        event.user.user.email,
+        event.user.user.username,
+        event.user.user.accountStatus,
+        event.user.user.authProvider,
+        event.user.user.enabled,
+        true,
+        event.user.user.createdAt,
+        event.user.user.updatedAt
+    );
+    final updatedAuthenticatedUser = AuthenticatedUser(
+        user: newPremiumUser,
+        userAgreements: event.user.userAgreements,
+        userProfile: event.user.userProfile,
+        authTokens: event.user.authTokens,
+        authProvider: event.user.authProvider
+    );
+    authUserStreamRepository.newUser(updatedAuthenticatedUser);
+
+    final currentState = state;
+    if (currentState is AccountDetailsModified) {
+      emit(AccountDetailsUpdatedSuccessfully(
+        user: updatedAuthenticatedUser,
+        status: currentState.status,
+        firstName: currentState.firstName,
+        lastName: currentState.lastName,
+        photoUrl: currentState.photoUrl,
+        gender: currentState.gender,
+      ));
+    }
   }
 
   void _accountDetailsChanged(AccountDetailsChanged event, Emitter<AccountDetailsState> emit) async {
@@ -70,7 +110,7 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
     String? newPhotoUrl;
     if (event.selectedImage != null) {
       final filePath = "users/${event.user.user.id}/profile-photos/${event.selectedImageName}";
-      newPhotoUrl = await imageRepository.uploadImage(filePath, event.selectedImage!, accessToken!);
+      newPhotoUrl = await publicGatewayRepository.uploadImage(filePath, event.selectedImage!, accessToken!);
     }
     final updateUserProfile = UpdateUserProfile(
       firstName: event.firstName,
