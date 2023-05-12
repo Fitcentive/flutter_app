@@ -75,14 +75,6 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
-  static const String premiumFeatures = """
-  - #### No ads!
-  - #### Ability to discover users!
-  - #### Ability to create meetups!
-  - #### Support the developer!
-  - #### And so much more!
-  """;
-
   _getUserCurrentPosition() async {
     final livePosition = await LocationPermissions.determinePosition();
     setState(() {
@@ -434,11 +426,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
         ),
         onPressed: () async {
-          showDialog(context: context, builder: (context) {
-            return Dialog(
-              child: _dialogContentCard(),
-            );
-          });
+          WidgetUtils.showUpgradeToPremiumDialog(context, _performUpgradeToPremium, isCurrentlyInAccountDetailsScreen: true);
         },
         child: const Text("Activate premium", style: TextStyle(fontSize: 15, color: Colors.white)),
       );
@@ -450,79 +438,6 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     if (authState is AuthSuccessUserUpdateState) {
       _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: authState.authenticatedUser));
     }
-  }
-
-  _dialogContentCard() {
-    return IntrinsicHeight(
-      child: Card(
-          elevation: 0,
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              child: _dialogContent(),
-            ),
-          )
-      ),
-    );
-  }
-
-  _dialogContent() {
-    return Column(
-      children: [
-        const Text(
-          "For a one time cost of \$10, you get...",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.teal
-          ),
-        ),
-        WidgetUtils.spacer(5),
-        const SizedBox(
-            height: 200,
-            child: Markdown(data: premiumFeatures)
-        ),
-        WidgetUtils.spacer(10),
-        Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
-                ),
-                onPressed: () async {
-                  Navigator.pop(context);
-                },
-                child: const Text("Cancel", style: TextStyle(fontSize: 15, color: Colors.white)),
-              ),
-            ),
-            const Expanded(
-              flex: 1,
-              child: Visibility(
-                visible: false,
-                child: Text(""),
-              )
-            ),
-            Expanded(
-              flex: 3,
-              child: ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-                ),
-                onPressed: () async {
-                  Navigator.pop(context);
-                  _performUpgradeToPremium();
-                },
-                child: const Text("Upgrade", style: TextStyle(fontSize: 15, color: Colors.white)),
-              ),
-            ),
-
-          ],
-        )
-      ],
-    );
   }
 
   _genderField(AccountDetailsState state) {

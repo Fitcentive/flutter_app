@@ -22,6 +22,7 @@ import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabi
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_bloc.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_state.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/meetup_comments_list.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
@@ -119,6 +120,9 @@ class DetailedMeetupView extends StatefulWidget {
 }
 
 class DetailedMeetupViewState extends State<DetailedMeetupView> {
+  bool isPremiumEnabled = false;
+  int maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_FREE;
+
   late DetailedMeetupBloc _detailedMeetupBloc;
 
   DateTime earliestPossibleMeetupDateTime = DateTime.now().add(const Duration(hours: 3));
@@ -177,6 +181,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       _fetchAllRequiredDataFromScratch();
     }
 
+    isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
+    if (isPremiumEnabled) {
+      maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_PREMIUM;
+    }
   }
 
   _fetchAllRequiredDataFromScratch() {
@@ -418,8 +426,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
     // +1 because currentUser included in selectedMeetupParticipantUserProfiles
-    if (selectedMeetupParticipantUserProfiles.length >= ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS + 1) {
-      SnackbarUtils.showSnackBarShort(context, "Cannot add more than ${ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS} users to meetup!");
+    if (selectedMeetupParticipantUserProfiles.length >= maxOtherChatParticipants + 1) {
+      if (maxOtherChatParticipants == ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS_PREMIUM) {
+        SnackbarUtils.showSnackBarShort(context, "Cannot add more than $maxOtherChatParticipants users to a conversation!");
+      }
+      else {
+        WidgetUtils.showUpgradeToPremiumDialog(context, _goToAccountDetailsView);
+        SnackbarUtils.showSnackBarShort(context, "Upgrade to premium to add more users to a meetup!");
+      }
       selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(userProfile.userId);
     }
     else {
@@ -427,6 +441,13 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         selectedMeetupParticipantUserProfiles.add(userProfile);
       });
     }
+  }
+
+  _goToAccountDetailsView() {
+    Navigator.pushReplacement(
+      context,
+      HomePage.route(defaultSelectedTab: HomePageState.accountDetails),
+    );
   }
 
 

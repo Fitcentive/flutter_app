@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -147,23 +148,26 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
                 .toList(),
             initialSelectedLocationId: state.location?.locationId,
             initialSelectedLocationFsqId: state.location?.location.fsqId,
-            updateBlocCallback: (location) {
-              final currentState = _createNewMeetupBloc.state;
-              if(currentState is MeetupModified) {
-                _createNewMeetupBloc.add(
-                    NewMeetupChanged(
-                      currentUserProfile: currentState.currentUserProfile,
-                      meetupName: currentState.meetupName,
-                      meetupTime: selectedMeetupDate,
-                      location: location,
-                      meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
-                      currentUserAvailabilities: currentState.currentUserAvailabilities,
-                    )
-                );
-              }
-            }),
+            updateBlocCallback: _updateBlocCallback
+        ),
             (route) => true
     );
+  }
+
+  _updateBlocCallback(Location location) {
+    final currentState = _createNewMeetupBloc.state;
+    if(currentState is MeetupModified) {
+      _createNewMeetupBloc.add(
+          NewMeetupChanged(
+            currentUserProfile: currentState.currentUserProfile,
+            meetupName: currentState.meetupName,
+            meetupTime: selectedMeetupDate,
+            location: location,
+            meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
+            currentUserAvailabilities: currentState.currentUserAvailabilities,
+          )
+      );
+    }
   }
 
   _renderMeetupLocation(MeetupModified state) {

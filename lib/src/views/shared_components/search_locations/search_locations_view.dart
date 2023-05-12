@@ -114,6 +114,8 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   static const String currentLocationMarkerId = "camera_centre_marker_id";
   static const int defaultLocationSearchQuerySearchRadiusInMetres = 10000;  // todo - avoid hardcoding radius
 
+  bool isPremiumEnabled = false;
+
   Map<String, BitmapDescriptor?> userIdToMapMarkerIcon = {};
   Map<String, Color> userIdToMapMarkerColor = {};
 
@@ -155,6 +157,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   void initState() {
     super.initState();
     _setupColorsForUsers();
+    isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
     widget.userProfilesWithLocations.forEach((e) => userIdToMapMarkerIcon[e.currentUserProfile.userId] = null);
 
     _setupMap(widget.userProfilesWithLocations.map((e) => e.currentUserProfile).toList());
@@ -269,15 +272,15 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                 children: WidgetUtils.skipNulls([
                   Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: [
-                       _renderSearchTextBar(),
+                    children: WidgetUtils.skipNulls([
+                      _renderSearchTextBar(),
                       WidgetUtils.spacer(2.5),
                       _renderHelpText(),
                       WidgetUtils.spacer(2.5),
                       Expanded(
-                        child: _renderMap(state)
+                          child: _renderMap(state)
                       ),
-                    ],
+                    ]),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
@@ -368,20 +371,21 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   }
 
   _renderSearchTextBar() {
-    return Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: TypeAheadField<PublicUserProfile>(
-          suggestionsBoxController: _suggestionsController,
-          debounceDuration: const Duration(milliseconds: 300),
-          textFieldConfiguration: TextFieldConfiguration(
-              onSubmitted: (value) {},
-              autocorrect: false,
-              onTap: () => _suggestionsController.toggle(),
-              onChanged: (text) {},
-              autofocus: true,
-              controller: _searchTextController,
-              style: const TextStyle(fontSize: 15),
-              decoration: InputDecoration(
+    if (isPremiumEnabled) {
+      return Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: TypeAheadField<PublicUserProfile>(
+            suggestionsBoxController: _suggestionsController,
+            debounceDuration: const Duration(milliseconds: 300),
+            textFieldConfiguration: TextFieldConfiguration(
+                onSubmitted: (value) {},
+                autocorrect: false,
+                onTap: () => _suggestionsController.toggle(),
+                onChanged: (text) {},
+                autofocus: true,
+                controller: _searchTextController,
+                style: const TextStyle(fontSize: 15),
+                decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: "Search by location name",
                   prefixIcon: IconButton(
@@ -412,35 +416,36 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                     },
                     icon: const Icon(Icons.search),
                   ),
-              )),
-          suggestionsCallback: (text)  {
-            if (text.trim().isNotEmpty) {
-              // Do nothing?
-            }
-            return List.empty();
-          },
-          itemBuilder: (context, suggestion) {
-            final s = suggestion;
-            return ListTile(
-              leading: CircleAvatar(
-                radius: 30,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: ImageUtils.getUserProfileImage(suggestion, 100, 100),
+                )),
+            suggestionsCallback: (text)  {
+              if (text.trim().isNotEmpty) {
+                // Do nothing?
+              }
+              return List.empty();
+            },
+            itemBuilder: (context, suggestion) {
+              final s = suggestion;
+              return ListTile(
+                leading: CircleAvatar(
+                  radius: 30,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: ImageUtils.getUserProfileImage(suggestion, 100, 100),
+                    ),
                   ),
                 ),
-              ),
-              title: Text("${s.firstName ?? ""} ${s.lastName ?? ""}"),
-              subtitle: Text(suggestion.username ?? ""),
-            );
-          },
-          onSuggestionSelected: (suggestion) {},
-          hideOnEmpty: true,
-        )
-    );
+                title: Text("${s.firstName ?? ""} ${s.lastName ?? ""}"),
+                subtitle: Text(suggestion.username ?? ""),
+              );
+            },
+            onSuggestionSelected: (suggestion) {},
+            hideOnEmpty: true,
+          )
+      );
+    }
   }
 
   _renderHelpText() {

@@ -3,8 +3,10 @@ import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/select_chat_users/bloc/select_chat_users_bloc.dart';
 import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
@@ -58,7 +60,8 @@ class SelectChatUsersView extends StatefulWidget {
 }
 
 class SelectChatUsersViewState extends State<SelectChatUsersView> {
-
+  bool isPremiumEnabled = false;
+  int maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_FREE;
   List<PublicUserProfile> chatParticipantUserProfiles = [];
 
   @override
@@ -66,6 +69,10 @@ class SelectChatUsersViewState extends State<SelectChatUsersView> {
     super.initState();
 
     chatParticipantUserProfiles = [widget.currentUserProfile, ...widget.otherUserProfiles];
+    isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
+    if (isPremiumEnabled) {
+      maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_PREMIUM;
+    }
   }
 
   @override
@@ -122,10 +129,30 @@ class SelectChatUsersViewState extends State<SelectChatUsersView> {
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile selectedUserProfile) {
-    setState(() {
-      chatParticipantUserProfiles = List.from(chatParticipantUserProfiles)
-        ..add(selectedUserProfile);
-    });
+    // + 1 because chatParticipantUserProfiles includes currentUserProfile
+    if (chatParticipantUserProfiles.length >= maxOtherChatParticipants + 1) {
+      if (maxOtherChatParticipants == ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_PREMIUM) {
+        SnackbarUtils.showSnackBarShort(context, "Cannot add more than $maxOtherChatParticipants users to a conversation!");
+      }
+      else {
+        WidgetUtils.showUpgradeToPremiumDialog(context, _goToAccountDetailsView);
+        SnackbarUtils.showSnackBarShort(context, "Upgrade to premium for group chats!");
+      }
+      selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(selectedUserProfile.userId);
+    }
+    else {
+      setState(() {
+        chatParticipantUserProfiles = List.from(chatParticipantUserProfiles)
+          ..add(selectedUserProfile);
+      });
+    }
+  }
+
+  _goToAccountDetailsView() {
+    Navigator.pushReplacement(
+      context,
+      HomePage.route(defaultSelectedTab: HomePageState.accountDetails),
+    );
   }
 
   _renderSearchUserSelectView() {

@@ -53,6 +53,7 @@ class DiscoverRecommendationsView extends StatefulWidget {
 }
 
 class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView> {
+  bool isPremiumEnabled = false;
   late final DiscoverRecommendationsBloc _discoverRecommendationsBloc;
   List<DiscoverRecommendation> fetchedRecommendations = List.empty(growable: true);
 
@@ -63,9 +64,10 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
   @override
   void initState() {
     super.initState();
+    isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
 
     _discoverRecommendationsBloc = BlocProvider.of<DiscoverRecommendationsBloc>(context);
-    _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile));
+    _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile, isPremiumEnabled));
   }
 
   @override

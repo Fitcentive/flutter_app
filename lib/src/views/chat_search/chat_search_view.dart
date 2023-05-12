@@ -12,6 +12,7 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_bloc.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_event.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_state.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
@@ -54,6 +55,8 @@ class ChatSearchView extends StatefulWidget {
 }
 
 class ChatSearchViewState extends State<ChatSearchView> {
+  bool isPremiumEnabled = false;
+  int maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_FREE;
   late final ChatSearchBloc _chatSearchBloc;
 
   final _searchTextController = TextEditingController();
@@ -79,6 +82,11 @@ class ChatSearchViewState extends State<ChatSearchView> {
       currentUserProfile: widget.currentUserProfile,
       participantUserIds: const [],
     ));
+
+    isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
+    if (isPremiumEnabled) {
+      maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_PREMIUM;
+    }
   }
 
   @override
@@ -161,9 +169,22 @@ class ChatSearchViewState extends State<ChatSearchView> {
     });
   }
 
+  _goToAccountDetailsView() {
+    Navigator.pushReplacement(
+        context,
+        HomePage.route(defaultSelectedTab: HomePageState.accountDetails),
+    );
+  }
+
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile selectedUserProfile) {
-    if (selectedParticipants.length >= ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS) {
-      SnackbarUtils.showSnackBarShort(context, "Cannot add more than ${ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS} users to a conversation!");
+    if (selectedParticipants.length >= maxOtherChatParticipants) {
+      if (maxOtherChatParticipants == ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_PREMIUM) {
+        SnackbarUtils.showSnackBarShort(context, "Cannot add more than $maxOtherChatParticipants users to a conversation!");
+      }
+      else {
+        WidgetUtils.showUpgradeToPremiumDialog(context, _goToAccountDetailsView);
+        SnackbarUtils.showSnackBarShort(context, "Upgrade to premium for group chats!");
+      }
       selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(selectedUserProfile.userId);
     }
     else {

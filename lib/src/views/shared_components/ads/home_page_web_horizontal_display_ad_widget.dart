@@ -1,4 +1,4 @@
-import 'dart:html';
+import 'dart:html' as html;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -101,12 +101,12 @@ class HomePageWebHorizontalDisplayAdWidgetState extends State<HomePageWebHorizon
     // ignore: undefined_prefixed_name
     ui.platformViewRegistry.registerViewFactory(
         'adview',
-            (int viewID) => IFrameElement()
+            (int viewID) => html.IFrameElement()
           ..width = '320'
           ..height = '100'
           ..src = 'adview.html'
-          // ..style.border = 'none'
-          ..style.border = 'solid'
+          ..style.border = 'none'
+          // ..style.border = 'solid'
     );
 
     return SizedBox(

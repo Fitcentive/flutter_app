@@ -78,6 +78,16 @@ class ConstantUtils {
     "Bulky": "assets/images/bulky_body_type.png",
   };
 
+  static const String premiumFeatures = """
+  - #### No ads
+  - #### Discover unlimited users
+  - #### Unlimited meetups per month
+  - #### Multi user meetups
+  - #### Group chats
+  - #### Support the developer
+  - #### And so much more!
+  """;
+
   static const String staticDeletedUserId = "aaaaaaaa-aaaa-8bbb-8bbb-aaaaaaaaaaaa";
 
   static const String timestampFormat = "hh:mm a     yyyy-MM-dd";
@@ -85,6 +95,12 @@ class ConstantUtils {
   static const int CARDIO_EXERCISE_CATEGORY_DEFINITION = 15;
 
   // 7 + 1 = 8
-  static const int MAX_OTHER_MEETUP_PARTICIPANTS = 7;
-  static const int MAX_OTHER_CHAT_PARTICIPANTS = 7;
+  static const int MAX_OTHER_MEETUP_PARTICIPANTS_PREMIUM = 7;
+  static const int MAX_OTHER_CHAT_PARTICIPANTS_PREMIUM = 7;
+
+  static const int MAX_OTHER_MEETUP_PARTICIPANTS_FREE = 1;
+  static const int MAX_OTHER_CHAT_PARTICIPANTS_FREE = 1;
+
+  static const int MAX_FREE_USER_MEETUPS_PER_MONTH_LIMIT = 4;
+  static const int MAX_DISCOVERABLE_USERS_PER_MONTH_FREE = 5;
 }

@@ -3,6 +3,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
@@ -45,6 +46,7 @@ class CreateNewMeetupView extends StatefulWidget {
 }
 
 class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
+  bool isPremiumEnabled = false;
   bool isRequestingMoreData = false;
   late final CreateNewMeetupBloc _createNewMeetupBloc;
 
@@ -67,6 +69,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
     ));
 
     dynamicActionButtons = _singleFloatingActionButton();
+    isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
   }
 
   @override
@@ -86,7 +89,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
           color: Colors.teal,
         ),
       ),
-      body: _pageViews(),
+      body: _pageViews(isPremiumEnabled),
       floatingActionButton: dynamicActionButtons,
       bottomNavigationBar: adWidget,
     );
@@ -252,7 +255,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
     }
   }
 
-  Widget _pageViews() {
+  Widget _pageViews(bool isPremiumEnabled) {
     return BlocBuilder<CreateNewMeetupBloc, CreateNewMeetupState>(
         builder: (context, state) {
           if (state is MeetupModified) {
@@ -267,6 +270,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
                 AddMeetupParticipantsView(
                   currentUserProfile: widget.currentUserProfile,
                   participantUserIds: state.participantUserProfiles.map((e) => e.userId).toList(),
+                  maxOtherParticipantsLimit: isPremiumEnabled ? ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS_PREMIUM : ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS_FREE,
                 ),
                 SelectMeetupDetailsView(
                     currentUserProfile: widget.currentUserProfile,

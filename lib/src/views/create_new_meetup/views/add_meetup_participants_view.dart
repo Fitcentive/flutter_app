@@ -6,6 +6,7 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_bloc.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_event.dart';
 import 'package:flutter_app/src/views/create_new_meetup/bloc/create_new_meetup_state.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,11 +14,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class AddMeetupParticipantsView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final List<String> participantUserIds;
+  final int maxOtherParticipantsLimit;
 
   const AddMeetupParticipantsView({
     Key? key,
     required this.currentUserProfile,
     required this.participantUserIds,
+    required this.maxOtherParticipantsLimit,
   }): super(key: key);
 
   @override
@@ -97,13 +100,26 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile selectedUserProfile) {
     // Restrict number of users here
-    if (selectedParticipants.length >= ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS) {
-      SnackbarUtils.showSnackBarShort(context, "Cannot add more than ${ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS} users to meetup!");
+    if (selectedParticipants.length >= widget.maxOtherParticipantsLimit) {
+      if (widget.maxOtherParticipantsLimit == ConstantUtils.MAX_OTHER_MEETUP_PARTICIPANTS_PREMIUM) {
+        SnackbarUtils.showSnackBarShort(context, "Cannot add more than ${widget.maxOtherParticipantsLimit} users to a conversation!");
+      }
+      else {
+        WidgetUtils.showUpgradeToPremiumDialog(context, _goToAccountDetailsView);
+        SnackbarUtils.showSnackBarShort(context, "Upgrade to premium to add more users to a meetup!");
+      }
       selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(selectedUserProfile.userId);
     }
     else {
       _updateBlocState({...selectedParticipants, selectedUserProfile.userId}.toList());
     }
+  }
+
+  _goToAccountDetailsView() {
+    Navigator.pushReplacement(
+      context,
+      HomePage.route(defaultSelectedTab: HomePageState.accountDetails),
+    );
   }
 
   _removeSelectedUserFromToParticipantsCallback(PublicUserProfile removedUserProfile) {

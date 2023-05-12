@@ -68,52 +68,8 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
           _setupMap(widget.meetupLocation, widget.userProfiles);
           return Stack(
             children: [
-              GoogleMap(
-                  onTap: (_) {
-                    widget.onTapCallback();
-                  },
-                  mapType: MapType.normal,
-                  mapToolbarEnabled: false,
-                  zoomControlsEnabled: false,
-                  myLocationButtonEnabled: false,
-                  myLocationEnabled: true,
-                  rotateGesturesEnabled: true,
-                  scrollGesturesEnabled: true,
-                  zoomGesturesEnabled: true,
-                  markers: markers,
-                  circles: Set<Circle>.of(circles.values),
-                  initialCameraPosition: _initialCameraPosition,
-                  onMapCreated: (GoogleMapController controller) {
-                    _mapController.complete(controller);
-                    // _snapCameraToMarkers();
-                  },
-                  gestureRecognizers: <Factory<OneSequenceGestureRecognizer>> {
-                    Factory<OneSequenceGestureRecognizer> (() => EagerGestureRecognizer()),
-                  }
-              ),
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(2),
-                  child: SizedBox(
-                    height: 40,
-                    width: 40,
-                    child: FloatingActionButton(
-                      heroTag: "MeetupLocationViewSnapToMarkersButton-${StringUtils.generateRandomString(10)}",
-                      onPressed: () {
-                        _snapCameraToMarkers();
-                      },
-                      backgroundColor: Colors.teal,
-                      tooltip: "Re-center",
-                      child: const Icon(
-                          Icons.location_searching_outlined,
-                          color: Colors.white,
-                        size: 16
-                      )
-                    ),
-                  ),
-                ),
-              )
+              _mapView(),
+              _recenterButton(),
             ],
           );
         }
@@ -126,6 +82,57 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
     );
   }
 
+  Widget _mapView() {
+    return GoogleMap(
+        onTap: (_) {
+          widget.onTapCallback();
+        },
+        mapType: MapType.normal,
+        mapToolbarEnabled: false,
+        zoomControlsEnabled: false,
+        myLocationButtonEnabled: false,
+        myLocationEnabled: true,
+        rotateGesturesEnabled: true,
+        scrollGesturesEnabled: true,
+        zoomGesturesEnabled: true,
+        markers: markers,
+        circles: Set<Circle>.of(circles.values),
+        initialCameraPosition: _initialCameraPosition,
+        onMapCreated: (GoogleMapController controller) {
+          _mapController.complete(controller);
+          // _snapCameraToMarkers();
+        },
+        gestureRecognizers: <Factory<OneSequenceGestureRecognizer>> {
+          Factory<OneSequenceGestureRecognizer> (() => EagerGestureRecognizer()),
+        }
+    );
+  }
+
+  Widget _recenterButton() {
+    return Align(
+      alignment: Alignment.topRight,
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: SizedBox(
+          height: 40,
+          width: 40,
+          child: FloatingActionButton(
+              heroTag: "MeetupLocationViewSnapToMarkersButton-${StringUtils.generateRandomString(10)}",
+              onPressed: () {
+                _snapCameraToMarkers();
+              },
+              backgroundColor: Colors.teal,
+              tooltip: "Re-center",
+              child: const Icon(
+                  Icons.location_searching_outlined,
+                  color: Colors.white,
+                  size: 16
+              )
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<int> _setupMapIconsForUsers(List<PublicUserProfile> users) async {
     _setupColorsForUsers(users);

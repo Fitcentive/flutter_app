@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,6 +15,9 @@ import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/create_new_meetup_view.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_bloc.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_event.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_state.dart';
@@ -72,6 +77,8 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   String? selectedFilterByOption;
   String? selectedStatusOption;
 
+  bool isPremiumEnabled = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +90,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
         )
     );
     _scrollController.addListener(_onScroll);
+    isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
   }
 
   void _onScroll() {
@@ -434,13 +442,47 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
         child: FloatingActionButton(
           heroTag: "MeetupHomeViewCreateNewMeetupButton",
           onPressed: () {
-            _goToCreateNewMeetupView();
+            // tood - block here based on user prem status
+            if (isPremiumEnabled) {
+              _goToCreateNewMeetupView();
+            }
+            else {
+              _goToCreateNewMeetupViewIfAllowed();
+            }
           },
           tooltip: 'Create new meetup!',
           backgroundColor: Colors.teal,
           child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
+    );
+  }
+
+  _goToCreateNewMeetupViewIfAllowed() {
+    final currentState = _meetupHomeBloc.state;
+    if (currentState is MeetupUserDataFetched) {
+      final now = DateTime.now();
+      if (currentState
+          .meetups
+          .where((element) =>
+          element.createdAt.toLocal()
+              .isAfter(
+              DateTime(now.year, now.month).toLocal())
+      ).length < ConstantUtils.MAX_FREE_USER_MEETUPS_PER_MONTH_LIMIT) {
+        _goToCreateNewMeetupView();
+      }
+      else {
+        WidgetUtils.showUpgradeToPremiumDialog(context, _goToAccountDetailsView);
+      }
+    }
+  }
+
+  _goToAccountDetailsView() {
+    context.read<MenuNavigationBloc>().add(
+        MenuItemChosen(
+            selectedMenuItem: HomePageState.accountDetails,
+            currentUserId: widget.currentUserProfile.userId,
+        )
     );
   }
 
