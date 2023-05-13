@@ -15,6 +15,8 @@ class ConstantUtils {
   static const String FATSECRET_ATTRIBUTION_URL = "https://platform.fatsecret.com";
   static const String WGER_ATTRIBUTION_URL = "https://wger.de/en/software/api";
 
+  static const double WEB_APP_MAX_WIDTH = 600;
+
   static const int DEFAULT_LIMIT = 20;
   static const int DEFAULT_MAX_LIMIT = 100000;
   static const int DEFAULT_NEWSFEED_LIMIT = 10;

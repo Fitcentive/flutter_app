@@ -257,9 +257,9 @@ class WidgetUtils {
                     Navigator.pop(context);
                     upgradeToPremiumCallback();
                   },
-                  child: Text(
-                      isCurrentlyInAccountDetailsScreen ? "Upgrade" : "Account",
-                      style: const TextStyle(fontSize: 15, color: Colors.white)
+                  child: const Text(
+                      "Upgrade",
+                      style: TextStyle(fontSize: 15, color: Colors.white)
                   ),
                 ),
               ),

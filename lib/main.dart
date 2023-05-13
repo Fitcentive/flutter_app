@@ -15,6 +15,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/notification_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
@@ -125,9 +126,25 @@ class App extends StatelessWidget {
               )
           ),
         ],
-        child: AppView(),
+        child: renderAppView(),
       ),
     );
+  }
+
+  renderAppView() {
+    if (kIsWeb) {
+      return Center(
+        child: ClipRect(
+          child: SizedBox(
+            width: ConstantUtils.WEB_APP_MAX_WIDTH,
+            child: AppView(),
+          ),
+        ),
+      );
+    }
+    else {
+      return AppView();
+    }
   }
 }
 

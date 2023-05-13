@@ -608,12 +608,12 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         _generateListTile(notifications),
         _generateListTile(search),
         _generateListTile(discover),
-        _generateListTile(friends),
         _generateListTile(meetup),
+        _generateListTile(diary),
+        _generateListTile(friends),
+        _generateListTile(chat),
         _generateListTile(calendar),
         _generateListTile(newsFeed),
-        _generateListTile(chat),
-        _generateListTile(diary),
       ],
     );
   }
