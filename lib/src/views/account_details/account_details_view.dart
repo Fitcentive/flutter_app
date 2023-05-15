@@ -8,6 +8,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_reposit
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
@@ -22,7 +23,8 @@ import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_card/meetup_card_view.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_app/src/views/upgrade_to_premium/upgrade_to_premium_view.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -30,9 +32,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tuple/tuple.dart';
 
 class AccountDetailsView extends StatefulWidget {
-  const AccountDetailsView({Key? key}): super(key: key);
+  final PublicUserProfile currentUserProfile;
 
-  static Widget withBloc() => MultiBlocProvider(
+  const AccountDetailsView({Key? key, required this.currentUserProfile}): super(key: key);
+
+  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
         providers: [
           BlocProvider<AccountDetailsBloc>(
               create: (context) => AccountDetailsBloc(
@@ -43,7 +47,7 @@ class AccountDetailsView extends StatefulWidget {
                   )
           ),
         ],
-        child: const AccountDetailsView(),
+        child: AccountDetailsView(currentUserProfile: currentUserProfile),
       );
 
   @override
@@ -64,6 +68,9 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   late AccountDetailsBloc _accountDetailsBloc;
 
   late String selectedUserGender;
+
+  CardFieldInputDetails? cardFieldInputDetails;
+  bool isDialogShown = false;
 
   late int locationRadius;
   Position? currentUserLivePosition;
@@ -91,7 +98,9 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       onTap: () {
         final currentState = _authenticationBloc.state;
         if (currentState is AuthSuccessUserUpdateState) {
-          _goToDiscoveryRadiusView(currentState);
+          if (!isDialogShown) {
+            _goToDiscoveryRadiusView(currentState);
+          }
         }
       },
       fillColor: Colors.teal.withOpacity(0.5),
@@ -216,24 +225,38 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     );
   }
 
+  // Hack to get around web elements under dialog getting tapped
+  _setDialogShownToFalse() {
+    Future.delayed(Duration(milliseconds: 250), () {
+      setState(() {
+        isDialogShown = false;
+      });
+    });
+  }
+
   _deleteAccountButton() {
     return ElevatedButton(
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
       ),
       onPressed: () async {
+        setState(() {
+          isDialogShown = true;
+        });
         showDialog(context: context, builder: (context) {
           Widget cancelButton = TextButton(
             style: ButtonStyle(
               foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
             ),
             onPressed:  () {
+              _setDialogShownToFalse();
               Navigator.pop(context);
             },
             child: const Text("Cancel"),
           );
           Widget continueButton = TextButton(
             onPressed:  () {
+              _setDialogShownToFalse();
               Navigator.pop(context);
               _performAccountDeletion();
             },
@@ -276,7 +299,9 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
             height: 300,
             child: GoogleMap(
                 onTap: (_) {
-                  _goToDiscoveryRadiusView(currentState);
+                  if (!isDialogShown) {
+                    _goToDiscoveryRadiusView(currentState);
+                  }
                 },
                 mapType: MapType.hybrid,
                 myLocationButtonEnabled: true,
@@ -426,7 +451,16 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
         ),
         onPressed: () async {
-          WidgetUtils.showUpgradeToPremiumDialog(context, _performUpgradeToPremium, isCurrentlyInAccountDetailsScreen: true);
+          setState(() {
+            isDialogShown = true;
+          });
+          WidgetUtils.showUpgradeToPremiumDialog(
+              context,
+              _performUpgradeToPremium,
+              isCurrentlyInAccountDetailsScreen: true,
+              cancelCallback: () {
+                _setDialogShownToFalse();
+          });
         },
         child: const Text("Activate premium", style: TextStyle(fontSize: 15, color: Colors.white)),
       );
@@ -434,10 +468,16 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   }
 
   _performUpgradeToPremium() {
-    final authState = _authenticationBloc.state;
-    if (authState is AuthSuccessUserUpdateState) {
-      _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: authState.authenticatedUser));
-    }
+    // todo - replace this with something in the next screen
+    // final authState = _authenticationBloc.state;
+    // if (authState is AuthSuccessUserUpdateState) {
+    //   _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: authState.authenticatedUser));
+    // }
+    _setDialogShownToFalse();
+    Navigator.push(
+        context,
+        UpgradeToPremiumView.route(currentUserProfile: widget.currentUserProfile)
+    );
   }
 
   _genderField(AccountDetailsState state) {

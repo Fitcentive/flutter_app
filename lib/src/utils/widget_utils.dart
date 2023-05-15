@@ -196,8 +196,12 @@ class WidgetUtils {
     return false;
   }
 
-  static void showUpgradeToPremiumDialog(BuildContext context, VoidCallback upgradeToPremiumCallback, {
-    bool isCurrentlyInAccountDetailsScreen = false
+  static void showUpgradeToPremiumDialog(
+      BuildContext context,
+      VoidCallback upgradeToPremiumCallback,
+      {
+      VoidCallback? cancelCallback,
+      bool isCurrentlyInAccountDetailsScreen = false
   }) {
     _dialogContent() {
       return Column(
@@ -235,6 +239,9 @@ class WidgetUtils {
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
                   ),
                   onPressed: () async {
+                    if (cancelCallback != null) {
+                      cancelCallback();
+                    }
                     Navigator.pop(context);
                   },
                   child: const Text("Cancel", style: TextStyle(fontSize: 15, color: Colors.white)),

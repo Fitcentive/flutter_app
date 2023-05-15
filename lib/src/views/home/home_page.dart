@@ -40,6 +40,7 @@ import 'package:flutter_app/src/views/shared_components/ads/bottom_bar_ad_widget
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:logging/logging.dart';
 
 class HomePage extends StatefulWidget {
@@ -642,7 +643,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       );
       switch (selectedMenuItem) {
         case "Account Details":
-          return AccountDetailsView.withBloc();
+          return AccountDetailsView.withBloc(publicUserProfile);
         case "Notifications":
           return NotificationsView.withBloc(publicUserProfile);
         case "Search":

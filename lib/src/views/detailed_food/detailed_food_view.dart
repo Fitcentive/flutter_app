@@ -93,7 +93,6 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
   int _current = 0;
   final CarouselController _carouselController = CarouselController();
 
-  WebViewController controller = WebViewController();
   final ScrollController _scrollController = ScrollController();
 
   List<Serving> servingOptions = [];

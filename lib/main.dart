@@ -28,8 +28,10 @@ import 'package:flutter_app/src/views/create_account/create_account_page.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/login/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -37,6 +39,7 @@ import 'src/views/shared_components/ads/bloc/ad_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   if (!kIsWeb) {
     MobileAds.instance.initialize();
@@ -53,6 +56,8 @@ void main() async {
         options: DefaultFirebaseOptions.currentPlatform
     );
   }
+
+  Stripe.publishableKey = ConstantUtils.stripePublishableKey;
 
   // await _initializeProxy();
   runApp(const App());

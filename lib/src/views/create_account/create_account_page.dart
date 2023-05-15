@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/login/email_and_password.dart';
+import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
@@ -46,9 +47,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   static const int ENTER_VERIFICATION_TOKENS_PAGE = 1;
   static const int ENTER_PASSWORD_PAGE = 2;
   static const int ENTER_TERMS_PAGE = 3;
-
-  static const MaterialColor BUTTON_AVAILABLE = Colors.teal;
-  static const MaterialColor BUTTON_DISABLED = Colors.grey;
 
   @override
   void dispose() {
@@ -111,15 +109,15 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   MaterialColor _getBackgroundColor() {
     final currentState = _createAccountBloc.state;
     if (currentState is EmailAddressModified && currentState.status.isValid) {
-      return BUTTON_AVAILABLE;
+      return ColorUtils.BUTTON_AVAILABLE;
     } else if (currentState is VerificationTokenModified && currentState.status.isValid) {
-      return BUTTON_AVAILABLE;
+      return ColorUtils.BUTTON_AVAILABLE;
     } else if (currentState is PasswordModified && currentState.status.isValid) {
-      return BUTTON_AVAILABLE;
+      return ColorUtils.BUTTON_AVAILABLE;
     } else if (currentState is TermsAndConditionsModified && currentState.isValidState()) {
-      return BUTTON_AVAILABLE;
+      return ColorUtils.BUTTON_AVAILABLE;
     } else {
-      return BUTTON_DISABLED;
+      return ColorUtils.BUTTON_DISABLED;
     }
   }
 

@@ -462,6 +462,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.6"
+  flutter_dotenv:
+    dependency: "direct main"
+    description:
+      name: flutter_dotenv
+      sha256: d9283d92059a22e9834bc0a31336658ffba77089fb6f3cc36751f1fc7c6661a3
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.2"
   flutter_expandable_fab:
     dependency: "direct main"
     description:
@@ -662,6 +670,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  flutter_stripe:
+    dependency: "direct main"
+    description:
+      name: flutter_stripe
+      sha256: "51c3ab5f7a705d864d719eb13882abbb3964c4f61983a13af6dc56607537b1e4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.2.0"
+  flutter_stripe_web:
+    dependency: "direct main"
+    description:
+      name: flutter_stripe_web
+      sha256: "46483e0928ee49fd50904d950d27ce270755c9c6f8cda91df37d252973f29972"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -712,6 +736,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.0"
+  freezed_annotation:
+    dependency: transitive
+    description:
+      name: freezed_annotation
+      sha256: aeac15850ef1b38ee368d4c53ba9a847e900bb2c53a4db3f6881cbb3cb684338
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   frontend_server_client:
     dependency: transitive
     description:
@@ -1397,6 +1429,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  stripe_android:
+    dependency: transitive
+    description:
+      name: stripe_android
+      sha256: "89c6c9a9e6fbe6eea4b15b6c0eb012490155c37a6b4298851f77987fde4fee43"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.2.0"
+  stripe_ios:
+    dependency: transitive
+    description:
+      name: stripe_ios
+      sha256: "74f4871c2f5bc6585057f4311be98b6fcdde5b2b14069c7b556163d032a7521f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.2.0"
+  stripe_js:
+    dependency: transitive
+    description:
+      name: stripe_js
+      sha256: "2d4ff88360b304207f950004e2768168bad977f15f0d5f3e44a9c069225c4cd3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
+  stripe_platform_interface:
+    dependency: transitive
+    description:
+      name: stripe_platform_interface
+      sha256: c1e90deb6e9939181f0fbc39b4f81c2e640b1b9fe4b3586ff84af7e8c46df2e4
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.2.0"
   term_glyph:
     dependency: transitive
     description:
@@ -1614,37 +1678,37 @@ packages:
     source: hosted
     version: "1.2.0"
   webview_flutter:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: webview_flutter
-      sha256: "47663d51a9061451aa3880a214ee9a65dcbb933b77bc44388e194279ab3ccaf6"
+      sha256: "1a37bdbaaf5fbe09ad8579ab09ecfd473284ce482f900b5aea27cf834386a567"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.7"
+    version: "4.2.0"
   webview_flutter_android:
     dependency: transitive
     description:
       name: webview_flutter_android
-      sha256: "34f83c2f0f64c75ad75c77a2ccfc8d2e531afbe8ad41af1fd787d6d33336aa90"
+      sha256: "1acea8def62592123e2fbbca164ed8681a98a890bdcbb88f916d5b4a22687759"
       url: "https://pub.dev"
     source: hosted
-    version: "3.4.3"
+    version: "3.7.0"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
       name: webview_flutter_platform_interface
-      sha256: "1939c39e2150fb4d30fd3cc59a891a49fed9935db53007df633ed83581b6117b"
+      sha256: "78715dc442b7849dbde74e92bb67de1cecf5addf95531c5fb474e72f5fe9a507"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.0"
+    version: "2.3.0"
   webview_flutter_wkwebview:
     dependency: transitive
     description:
       name: webview_flutter_wkwebview
-      sha256: ab12479f7a0cf112b9420c36aaf206a1ca47cd60cd42de74a4be2e97a697587b
+      sha256: "4646bb68297803bdbb96d46853e8fcb560d6cb5e04153fa64581535767875dfe"
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.1"
+    version: "3.4.3"
   win32:
     dependency: transitive
     description:

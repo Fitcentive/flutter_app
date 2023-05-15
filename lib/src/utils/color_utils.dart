@@ -20,4 +20,7 @@ class ColorUtils {
     Colors.greenAccent,
     Colors.deepPurple,
   ];
+
+  static const MaterialColor BUTTON_AVAILABLE = Colors.teal;
+  static const MaterialColor BUTTON_DISABLED = Colors.grey;
 }
