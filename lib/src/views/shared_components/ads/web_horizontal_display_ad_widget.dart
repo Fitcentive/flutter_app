@@ -65,8 +65,10 @@ class WebHorizontalDisplayAdWidgetState extends State<WebHorizontalDisplayAdWidg
             );
           }
           else {
-            return const CircularProgressIndicator(
-              color: Colors.teal,
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.teal,
+              ),
             );
           }
         },

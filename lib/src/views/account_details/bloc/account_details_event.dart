@@ -63,3 +63,14 @@ class EnablePremiumAccountStatusForUser extends AccountDetailsEvent {
   @override
   List<Object?> get props => [user];
 }
+
+class DisablePremiumAccountStatusForUser extends AccountDetailsEvent {
+  final AuthenticatedUser user;
+
+  const DisablePremiumAccountStatusForUser({
+    required this.user
+  });
+
+  @override
+  List<Object?> get props => [user];
+}

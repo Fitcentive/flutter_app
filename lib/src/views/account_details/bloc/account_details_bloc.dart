@@ -27,6 +27,41 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
     on<AccountDetailsChanged>(_accountDetailsChanged);
     on<AccountDetailsSaved>(_accountDetailsSaved);
     on<EnablePremiumAccountStatusForUser>(_enablePremiumAccountStatusForUser);
+    on<DisablePremiumAccountStatusForUser>(_disablePremiumAccountStatusForUser);
+  }
+
+  void _disablePremiumAccountStatusForUser(DisablePremiumAccountStatusForUser event, Emitter<AccountDetailsState> emit) async {
+    final newPleb = User(
+        event.user.user.id,
+        event.user.user.email,
+        event.user.user.username,
+        event.user.user.accountStatus,
+        event.user.user.authProvider,
+        event.user.user.enabled,
+        false,
+        event.user.user.createdAt,
+        event.user.user.updatedAt
+    );
+    final updatedAuthenticatedUser = AuthenticatedUser(
+        user: newPleb,
+        userAgreements: event.user.userAgreements,
+        userProfile: event.user.userProfile,
+        authTokens: event.user.authTokens,
+        authProvider: event.user.authProvider
+    );
+    authUserStreamRepository.newUser(updatedAuthenticatedUser);
+
+    final currentState = state;
+    if (currentState is AccountDetailsModified) {
+      emit(AccountDetailsUpdatedSuccessfully(
+        user: updatedAuthenticatedUser,
+        status: currentState.status,
+        firstName: currentState.firstName,
+        lastName: currentState.lastName,
+        photoUrl: currentState.photoUrl,
+        gender: currentState.gender,
+      ));
+    }
   }
 
   void _enablePremiumAccountStatusForUser(EnablePremiumAccountStatusForUser event, Emitter<AccountDetailsState> emit) async {

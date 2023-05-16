@@ -21,6 +21,7 @@ import 'package:flutter_app/src/views/discovery_radius/discovery_radius_view.dar
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/manage_premium/manage_premium_view.dart';
 import 'package:flutter_app/src/views/upgrade_to_premium/upgrade_to_premium_view.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:geolocator/geolocator.dart';
@@ -446,8 +447,16 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
         ),
         onPressed: () async {
-          SnackbarUtils.showSnackBarShort(context, "You already have premium enabled!");
-          // todo - go to manage premium page here
+          Navigator.push(
+              context,
+              ManagePremiumView.route(
+                currentUserProfile: widget.currentUserProfile,
+                authenticatedUser: widget.authenticatedUser,
+              )
+          ).then((value) {
+            // DISABLE HERE
+            _accountDetailsBloc.add(DisablePremiumAccountStatusForUser(user: widget.authenticatedUser));
+          });
         },
         child: const Text("Manage Fitcentive+", style: TextStyle(fontSize: 15, color: Colors.white)),
       );

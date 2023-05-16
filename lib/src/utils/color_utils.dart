@@ -23,4 +23,6 @@ class ColorUtils {
 
   static const MaterialColor BUTTON_AVAILABLE = Colors.teal;
   static const MaterialColor BUTTON_DISABLED = Colors.grey;
+  static const MaterialColor BUTTON_DANGER = Colors.red
+  ;
 }

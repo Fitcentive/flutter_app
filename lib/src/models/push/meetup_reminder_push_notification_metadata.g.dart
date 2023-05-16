@@ -20,5 +20,5 @@ Map<String, dynamic> _$MeetupReminderPushNotificationMetadataToJson(
     <String, dynamic>{
       'type': instance.type,
       'meetupId': instance.meetupId,
-      'targetUser': instance.meetupId,
+      'targetUser': instance.targetUser,
     };
