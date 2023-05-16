@@ -208,7 +208,7 @@ class WidgetUtils {
         children: [
           WidgetUtils.spacer(5),
           const Text(
-            "Upgrade to Premium",
+            "Upgrade to Fitcentive+",
             style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -217,7 +217,7 @@ class WidgetUtils {
           ),
           WidgetUtils.spacer(10),
           const Text(
-            "For just \$1.99 a month, you get...",
+            "For just \$2.99 a month, you get...",
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

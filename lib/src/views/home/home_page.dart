@@ -643,7 +643,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       );
       switch (selectedMenuItem) {
         case "Account Details":
-          return AccountDetailsView.withBloc(publicUserProfile);
+          return AccountDetailsView.withBloc(publicUserProfile, authState.authenticatedUser);
         case "Notifications":
           return NotificationsView.withBloc(publicUserProfile);
         case "Search":

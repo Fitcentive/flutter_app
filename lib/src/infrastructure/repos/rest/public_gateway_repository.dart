@@ -9,18 +9,21 @@ import 'package:http/http.dart' as http;
 class PublicGatewayRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/gateway";
 
-  Future<void> enablePremiumForUser(String accessToken) async {
-    final response = await http.get(
-      Uri.parse("$BASE_URL/enable-premium"),
-      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+  // Returns subscription ID of newly created subscription
+  Future<String> createStripeSubscription(String paymentMethodId, String accessToken) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/payment/subscribe?p_id=$paymentMethodId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
-    if (response.statusCode == HttpStatus.accepted) {
-      return;
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final String result = jsonResponse.toString();
+      return result;
     }
     else {
       throw Exception(
-          "enablePremiumForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+          "createStripeSubscription: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

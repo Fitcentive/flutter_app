@@ -14,7 +14,6 @@ import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
-import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_bloc.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_event.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_state.dart';
@@ -22,7 +21,6 @@ import 'package:flutter_app/src/views/discovery_radius/discovery_radius_view.dar
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_card/meetup_card_view.dart';
 import 'package:flutter_app/src/views/upgrade_to_premium/upgrade_to_premium_view.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:geolocator/geolocator.dart';
@@ -33,10 +31,18 @@ import 'package:tuple/tuple.dart';
 
 class AccountDetailsView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
+  final AuthenticatedUser authenticatedUser;
 
-  const AccountDetailsView({Key? key, required this.currentUserProfile}): super(key: key);
+  const AccountDetailsView({
+    Key? key,
+    required this.currentUserProfile,
+    required this.authenticatedUser
+  }): super(key: key);
 
-  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
+  static Widget withBloc(
+      PublicUserProfile currentUserProfile,
+      AuthenticatedUser authenticatedUser
+      ) => MultiBlocProvider(
         providers: [
           BlocProvider<AccountDetailsBloc>(
               create: (context) => AccountDetailsBloc(
@@ -47,7 +53,7 @@ class AccountDetailsView extends StatefulWidget {
                   )
           ),
         ],
-        child: AccountDetailsView(currentUserProfile: currentUserProfile),
+        child: AccountDetailsView(currentUserProfile: currentUserProfile, authenticatedUser: authenticatedUser),
       );
 
   @override
@@ -441,8 +447,9 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         ),
         onPressed: () async {
           SnackbarUtils.showSnackBarShort(context, "You already have premium enabled!");
+          // todo - go to manage premium page here
         },
-        child: const Text("Premium enabled", style: TextStyle(fontSize: 15, color: Colors.white)),
+        child: const Text("Manage Fitcentive+", style: TextStyle(fontSize: 15, color: Colors.white)),
       );
     }
     else {
@@ -451,33 +458,23 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
         ),
         onPressed: () async {
-          setState(() {
-            isDialogShown = true;
-          });
-          WidgetUtils.showUpgradeToPremiumDialog(
-              context,
-              _performUpgradeToPremium,
-              isCurrentlyInAccountDetailsScreen: true,
-              cancelCallback: () {
-                _setDialogShownToFalse();
-          });
+          _goToUpgradeToPremiumRoute();
         },
-        child: const Text("Activate premium", style: TextStyle(fontSize: 15, color: Colors.white)),
+        child: const Text("Activate Fitcentive+", style: TextStyle(fontSize: 15, color: Colors.white)),
       );
     }
   }
 
-  _performUpgradeToPremium() {
-    // todo - replace this with something in the next screen
-    // final authState = _authenticationBloc.state;
-    // if (authState is AuthSuccessUserUpdateState) {
-    //   _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: authState.authenticatedUser));
-    // }
-    _setDialogShownToFalse();
+  _goToUpgradeToPremiumRoute() {
     Navigator.push(
         context,
-        UpgradeToPremiumView.route(currentUserProfile: widget.currentUserProfile)
-    );
+        UpgradeToPremiumView.route(
+            currentUserProfile: widget.currentUserProfile,
+            authenticatedUser: widget.authenticatedUser,
+        )
+    ).then((value) {
+      _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: widget.authenticatedUser));
+    });
   }
 
   _genderField(AccountDetailsState state) {

@@ -30,9 +30,6 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
   }
 
   void _enablePremiumAccountStatusForUser(EnablePremiumAccountStatusForUser event, Emitter<AccountDetailsState> emit) async {
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await publicGatewayRepository.enablePremiumForUser(accessToken!);
-
     final newPremiumUser = User(
         event.user.user.id,
         event.user.user.email,

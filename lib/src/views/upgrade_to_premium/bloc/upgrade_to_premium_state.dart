@@ -12,3 +12,13 @@ class UpgradeToPremiumStateInitial extends UpgradeToPremiumState {
   const UpgradeToPremiumStateInitial();
 }
 
+class UpgradeLoading extends UpgradeToPremiumState {
+
+  const UpgradeLoading();
+}
+
+class UpgradeToPremiumComplete extends UpgradeToPremiumState {
+
+  const UpgradeToPremiumComplete();
+}
+

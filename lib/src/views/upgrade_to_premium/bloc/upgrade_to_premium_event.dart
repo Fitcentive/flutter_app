@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/authenticated_user.dart';
 
 abstract class UpgradeToPremiumEvent extends Equatable {
   const UpgradeToPremiumEvent();
@@ -8,10 +9,15 @@ abstract class UpgradeToPremiumEvent extends Equatable {
 }
 
 class InitiateUpgradeToPremium extends UpgradeToPremiumEvent {
+  final AuthenticatedUser user;
+  final String paymentMethodId;
 
-  const InitiateUpgradeToPremium();
+  const InitiateUpgradeToPremium({
+    required this.paymentMethodId,
+    required this.user,
+  });
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [paymentMethodId, user];
 
 }
