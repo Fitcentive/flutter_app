@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/image_picker/custom_image_picker.dart';
 import 'package:flutter_app/src/infrastructure/permissions/location_permissions.dart';
@@ -449,7 +450,12 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         onPressed: () async {
           _goToManagePremiumRoute();
         },
-        child: const Text("Manage Fitcentive+", style: TextStyle(fontSize: 15, color: Colors.white)),
+        child: const AutoSizeText(
+            "Manage Fitcentive+",
+            maxLines: 1,
+            maxFontSize: 15,
+            style: TextStyle(fontSize: 15, color: Colors.white)
+        ),
       );
     }
     else {
@@ -460,7 +466,12 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         onPressed: () async {
           _goToUpgradeToPremiumRoute();
         },
-        child: const Text("Activate Fitcentive+", style: TextStyle(fontSize: 15, color: Colors.white)),
+        child: const AutoSizeText(
+            "Activate Fitcentive+",
+            maxLines: 1,
+            maxFontSize: 15,
+            style: TextStyle(fontSize: 15, color: Colors.white)
+        ),
       );
     }
   }
