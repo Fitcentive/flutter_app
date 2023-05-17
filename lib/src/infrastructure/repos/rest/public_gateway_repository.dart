@@ -12,6 +12,37 @@ import 'package:http/http.dart' as http;
 class PublicGatewayRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/gateway";
 
+
+  Future<void> deletePaymentMethodForCustomer(String paymentMethodId, String accessToken) async {
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/payment/method?p_id=$paymentMethodId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    }
+    else {
+      throw Exception(
+          "deletePaymentMethodForCustomer: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> makePaymentMethodDefaultForCustomer(String paymentMethodId, String accessToken) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/payment/method/default?p_id=$paymentMethodId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    }
+    else {
+      throw Exception(
+          "makePaymentMethodDefaultForCustomer: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<CustomerPaymentMethod> addPaymentMethodToCustomer(String paymentMethodId, String accessToken) async {
     final response = await http.post(
       Uri.parse("$BASE_URL/payment/method?p_id=$paymentMethodId"),

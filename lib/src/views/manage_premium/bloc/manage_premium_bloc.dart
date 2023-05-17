@@ -8,7 +8,6 @@ import 'package:flutter_app/src/views/manage_premium/bloc/manage_premium_event.d
 import 'package:flutter_app/src/views/manage_premium/bloc/manage_premium_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 
 class ManagePremiumBloc extends Bloc<ManagePremiumEvent, ManagePremiumState> {
   final UserRepository userRepository;
@@ -24,6 +23,76 @@ class ManagePremiumBloc extends Bloc<ManagePremiumEvent, ManagePremiumState> {
   }) : super(const ManagePremiumStateInitial()) {
     on<CancelPremium>(_cancelPremium);
     on<FetchUserPremiumSubscription>(_fetchUserPremiumSubscription);
+    on<AddPaymentMethodToUser>(_addPaymentMethodToUser);
+    on<MakePaymentMethodUsersDefault>(_makePaymentMethodUsersDefault);
+    on<RemovePaymentMethodForUser>(_removePaymentMethodForUser);
+  }
+
+  void _removePaymentMethodForUser(RemovePaymentMethodForUser event, Emitter<ManagePremiumState> emit) async {
+    final currentState = state;
+    if (currentState is SubscriptionInfoLoaded) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      await publicGatewayRepository.deletePaymentMethodForCustomer(event.paymentMethodId, accessToken!);
+
+      emit(const CardDeletedSuccessfully());
+
+      final cards = await publicGatewayRepository.getPaymentMethodsForUser(accessToken);
+
+      final defaultCard = cards.where((element) => element.isDefault).first;
+      final otherCards = cards.where((element) => !element.isDefault);
+      final sortedCards = [defaultCard, ...otherCards];
+
+      emit(
+          SubscriptionInfoLoaded(
+              subscription: currentState.subscription,
+              cards: sortedCards
+          )
+      );
+    }
+  }
+
+  void _makePaymentMethodUsersDefault(MakePaymentMethodUsersDefault event, Emitter<ManagePremiumState> emit) async {
+    final currentState = state;
+    if (currentState is SubscriptionInfoLoaded) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      await publicGatewayRepository.makePaymentMethodDefaultForCustomer(event.paymentMethodId, accessToken!);
+
+      final cards = await publicGatewayRepository.getPaymentMethodsForUser(accessToken);
+
+      final defaultCard = cards.where((element) => element.isDefault).first;
+      final otherCards = cards.where((element) => !element.isDefault);
+      final sortedCards = [defaultCard, ...otherCards];
+
+      emit(
+          SubscriptionInfoLoaded(
+              subscription: currentState.subscription,
+              cards: sortedCards
+          )
+      );
+    }
+  }
+
+  void _addPaymentMethodToUser(AddPaymentMethodToUser event, Emitter<ManagePremiumState> emit) async {
+    final currentState = state;
+    if (currentState is SubscriptionInfoLoaded) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final newPaymentMethod = await publicGatewayRepository.addPaymentMethodToCustomer(event.paymentMethodId, accessToken!);
+
+      emit(const CardAddedSuccessfully());
+
+      final cards = await publicGatewayRepository.getPaymentMethodsForUser(accessToken);
+
+      final defaultCard = cards.where((element) => element.isDefault).first;
+      final otherCards = cards.where((element) => !element.isDefault);
+      final sortedCards = [defaultCard, ...otherCards];
+
+      emit(
+          SubscriptionInfoLoaded(
+              subscription: currentState.subscription,
+              cards: sortedCards
+          )
+      );
+    }
   }
 
   void _fetchUserPremiumSubscription(FetchUserPremiumSubscription event, Emitter<ManagePremiumState> emit) async {
@@ -33,11 +102,15 @@ class ManagePremiumBloc extends Bloc<ManagePremiumEvent, ManagePremiumState> {
     // Hacky fix because users only have 1 subscription for now ideally
     final subscription = (await publicGatewayRepository.getUserSubscriptions(accessToken!)).first;
     // Hacky fix because users only have 1 card for now
-    final card = (await publicGatewayRepository.getPaymentMethodsForUser(accessToken)).first;
+    final cards = await publicGatewayRepository.getPaymentMethodsForUser(accessToken);
+    final defaultCard = cards.where((element) => element.isDefault).first;
+    final otherCards = cards.where((element) => !element.isDefault);
+    final sortedCards = [defaultCard, ...otherCards];
+
     emit(
         SubscriptionInfoLoaded(
           subscription: subscription,
-          card: card
+          cards: sortedCards
         )
     );
   }

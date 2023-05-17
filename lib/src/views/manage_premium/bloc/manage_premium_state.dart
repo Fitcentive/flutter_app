@@ -21,15 +21,25 @@ class SubscriptionInfoLoading extends ManagePremiumState {
 
 class SubscriptionInfoLoaded extends ManagePremiumState {
   final PaymentSubscription subscription;
-  final ProtectedCreditCard card;
+  final List<ProtectedCreditCard> cards;
 
   const SubscriptionInfoLoaded({
     required this.subscription,
-    required this.card,
+    required this.cards,
   });
 
   @override
-  List<Object?> get props => [subscription, card];
+  List<Object?> get props => [subscription, cards];
+}
+
+class CardDeletedSuccessfully extends ManagePremiumState {
+
+  const CardDeletedSuccessfully();
+}
+
+class CardAddedSuccessfully extends ManagePremiumState {
+
+  const CardAddedSuccessfully();
 }
 
 class CancelLoading extends ManagePremiumState {

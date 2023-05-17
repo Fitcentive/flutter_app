@@ -454,7 +454,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
                 authenticatedUser: widget.authenticatedUser,
               )
           ).then((value) {
-            // DISABLE HERE
+            // DISABLE HERE IF NEEDED
             _accountDetailsBloc.add(DisablePremiumAccountStatusForUser(user: widget.authenticatedUser));
           });
         },
@@ -482,6 +482,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
             authenticatedUser: widget.authenticatedUser,
         )
     ).then((value) {
+      // todo -  ONLY DO THIS IF USER HAS INDEED UPGRADED
       _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: widget.authenticatedUser));
     });
   }

@@ -8,11 +8,15 @@ class ProtectedCreditCard extends Equatable {
   final String lastFour;
   final int expiryMonth;
   final int expiryYear;
+  final bool isDefault;
+  final String paymentMethodId;
 
   const ProtectedCreditCard({
     required this.lastFour,
     required this.expiryMonth,
-    required this.expiryYear
+    required this.expiryYear,
+    required this.isDefault,
+    required this.paymentMethodId,
   });
 
   factory ProtectedCreditCard.fromJson(Map<String, dynamic> json) => _$ProtectedCreditCardFromJson(json);
@@ -24,5 +28,7 @@ class ProtectedCreditCard extends Equatable {
     lastFour,
     expiryMonth,
     expiryYear,
+    isDefault,
+    paymentMethodId,
   ];
 }

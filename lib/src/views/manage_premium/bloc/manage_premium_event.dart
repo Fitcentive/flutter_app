@@ -30,3 +30,45 @@ class CancelPremium extends ManagePremiumEvent {
   List<Object?> get props => [user];
 
 }
+
+class AddPaymentMethodToUser extends ManagePremiumEvent {
+  final AuthenticatedUser user;
+  final String paymentMethodId;
+
+  const AddPaymentMethodToUser({
+    required this.user,
+    required this.paymentMethodId
+  });
+
+  @override
+  List<Object?> get props => [user, paymentMethodId];
+
+}
+
+class MakePaymentMethodUsersDefault extends ManagePremiumEvent {
+  final AuthenticatedUser user;
+  final String paymentMethodId;
+
+  const MakePaymentMethodUsersDefault({
+    required this.user,
+    required this.paymentMethodId
+  });
+
+  @override
+  List<Object?> get props => [user, paymentMethodId];
+
+}
+
+class RemovePaymentMethodForUser extends ManagePremiumEvent {
+  final AuthenticatedUser user;
+  final String paymentMethodId;
+
+  const RemovePaymentMethodForUser({
+    required this.user,
+    required this.paymentMethodId
+  });
+
+  @override
+  List<Object?> get props => [user, paymentMethodId];
+
+}
