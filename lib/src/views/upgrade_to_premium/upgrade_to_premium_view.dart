@@ -91,7 +91,6 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
           'Upgrade to Fitcentive+',
           style: TextStyle(
               color: Colors.teal,
-              fontWeight: FontWeight.bold
           ),
         ),
         iconTheme: const IconThemeData(
