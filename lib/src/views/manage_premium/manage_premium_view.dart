@@ -109,7 +109,6 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
           'Manage Fitcentive+',
           style: TextStyle(
               color: Colors.teal,
-              fontWeight: FontWeight.bold
           ),
         ),
         iconTheme: const IconThemeData(
@@ -135,6 +134,9 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
             }
             if (state is CardAddedSuccessfully) {
               SnackbarUtils.showSnackBarShort(context, "Card added successfully!");
+            }
+            if (state is SubscriptionInfoLoaded) {
+              _carouselController.jumpToPage(defaultCarouselPage);
             }
           },
           child: BlocBuilder<ManagePremiumBloc, ManagePremiumState>(
@@ -216,13 +218,15 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: WidgetUtils.skipNulls([
-        WidgetUtils.spacer(5),
-        const Text(
-          "You are currently subscribed to Fitcentive+",
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.teal
+        const Center(
+          child: Text(
+            "You are currently subscribed to Fitcentive+",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal
+            ),
           ),
         ),
         WidgetUtils.spacer(15),
@@ -336,13 +340,7 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
       child: InkWell(
         onTap: () {
           if (isDefaultPaymentChangeHappening) {
-            final selectedDefaultPaymentId = sortedCards[_currentCarouselPage].paymentMethodId;
-            _managePremiumBloc.add(
-                MakePaymentMethodUsersDefault(
-                    user: widget.authenticatedUser,
-                    paymentMethodId: selectedDefaultPaymentId
-                )
-            );
+            _makePaymentMethodUserDefault();
           }
           setState(() {
             isDefaultPaymentChangeHappening = !isDefaultPaymentChangeHappening;
@@ -356,6 +354,17 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
           ),
         ),
       ),
+    );
+  }
+
+
+  _makePaymentMethodUserDefault() {
+    final selectedDefaultPaymentId = sortedCards[_currentCarouselPage].paymentMethodId;
+    _managePremiumBloc.add(
+        MakePaymentMethodUsersDefault(
+            user: widget.authenticatedUser,
+            paymentMethodId: selectedDefaultPaymentId
+        )
     );
   }
 
@@ -461,6 +470,9 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
                       Navigator.pop(context);
                       _saveCardDetails();
                       SnackbarUtils.showSnackBarShort(context, "Hang on while we add your new payment method...");
+                    }
+                    else {
+                      SnackbarUtils.showSnackBarShort(context, "Please fill out all required card details!");
                     }
                   },
                   child: const Text(

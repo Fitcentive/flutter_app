@@ -297,7 +297,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
             color: Colors.teal,
           ),
         ),
-        content: const Text("You are about to subscribe to Fitcentive+ for \$2.99. This is a monthly recurring subscription that auto-renews every month."),
+        content: const Text("You are about to subscribe to Fitcentive+ for \$2.99. This is a monthly subscription that auto-renews every month."),
         actions: [
           cancelButton,
           susbcribeButton,
