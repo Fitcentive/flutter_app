@@ -112,6 +112,9 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
             if (state is UpgradeLoading) {
               SnackbarUtils.showSnackBar(context, "Hold on... we're upgrading you...");
             }
+            if (state is UpgradeToPremiumFailure) {
+              SnackbarUtils.showSnackBar(context, "Payment failed... please try again or use a different card!");
+            }
           },
           child: BlocBuilder<UpgradeToPremiumBloc, UpgradeToPremiumState>(
             builder: (context, state) {
@@ -166,7 +169,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
           elevation: 0,
           child: Scrollbar(
             child: SingleChildScrollView(
-              child: InkWell(
+              child: GestureDetector(
                 onTap: () {
                   KeyboardUtils.hideKeyboard(context);
                 },
@@ -216,7 +219,8 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
         WidgetUtils.spacer(15),
         _showCardDetails(),
         WidgetUtils.spacer(15),
-        _payNowButton()
+        _payNowButton(),
+        WidgetUtils.spacer(5),
       ],
     );
   }

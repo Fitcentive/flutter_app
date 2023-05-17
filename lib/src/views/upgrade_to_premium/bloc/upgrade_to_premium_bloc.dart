@@ -25,30 +25,35 @@ class UpgradeToPremiumBloc extends Bloc<UpgradeToPremiumEvent, UpgradeToPremiumS
   }
 
   void _initiateUpgradeToPremium(InitiateUpgradeToPremium event, Emitter<UpgradeToPremiumState> emit) async {
-    emit(const UpgradeLoading());
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final subscriptionId = await publicGatewayRepository.createStripeSubscription(event.paymentMethodId, accessToken!);
+    try {
+      emit(const UpgradeLoading());
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final subscriptionId = await publicGatewayRepository.createStripeSubscription(event.paymentMethodId, accessToken!);
 
-    final newPremiumUser = User(
-        event.user.user.id,
-        event.user.user.email,
-        event.user.user.username,
-        event.user.user.accountStatus,
-        event.user.user.authProvider,
-        event.user.user.enabled,
-        true,
-        event.user.user.createdAt,
-        event.user.user.updatedAt
-    );
-    final updatedAuthenticatedUser = AuthenticatedUser(
-        user: newPremiumUser,
-        userAgreements: event.user.userAgreements,
-        userProfile: event.user.userProfile,
-        authTokens: event.user.authTokens,
-        authProvider: event.user.authProvider
-    );
-    authUserStreamRepository.newUser(updatedAuthenticatedUser);
+      final newPremiumUser = User(
+          event.user.user.id,
+          event.user.user.email,
+          event.user.user.username,
+          event.user.user.accountStatus,
+          event.user.user.authProvider,
+          event.user.user.enabled,
+          true,
+          event.user.user.createdAt,
+          event.user.user.updatedAt
+      );
+      final updatedAuthenticatedUser = AuthenticatedUser(
+          user: newPremiumUser,
+          userAgreements: event.user.userAgreements,
+          userProfile: event.user.userProfile,
+          authTokens: event.user.authTokens,
+          authProvider: event.user.authProvider
+      );
+      authUserStreamRepository.newUser(updatedAuthenticatedUser);
 
-    emit(const UpgradeToPremiumComplete());
+      emit(const UpgradeToPremiumComplete());
+    } catch (ex) {
+      emit(UpgradeToPremiumFailure(reason: ex.toString()));
+    }
+
   }
 }

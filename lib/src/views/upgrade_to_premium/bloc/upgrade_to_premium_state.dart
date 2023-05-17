@@ -22,3 +22,13 @@ class UpgradeToPremiumComplete extends UpgradeToPremiumState {
   const UpgradeToPremiumComplete();
 }
 
+
+class UpgradeToPremiumFailure extends UpgradeToPremiumState {
+  final String reason;
+
+  const UpgradeToPremiumFailure({required this.reason});
+
+  @override
+  List<Object?> get props => [reason];
+}
+
