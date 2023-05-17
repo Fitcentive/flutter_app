@@ -136,7 +136,9 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
               SnackbarUtils.showSnackBarShort(context, "Card added successfully!");
             }
             if (state is SubscriptionInfoLoaded) {
-              _carouselController.jumpToPage(defaultCarouselPage);
+              if (_carouselController.ready) {
+                _carouselController.jumpToPage(defaultCarouselPage);
+              }
             }
           },
           child: BlocBuilder<ManagePremiumBloc, ManagePremiumState>(
