@@ -32,7 +32,7 @@ class ManagePremiumView extends StatefulWidget {
     required this.authenticatedUser,
   });
 
-  static Route route({
+  static Route<bool> route({
     required PublicUserProfile currentUserProfile,
     required AuthenticatedUser authenticatedUser,
   }) => MaterialPageRoute(
@@ -116,38 +116,44 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
           color: Colors.teal,
         ),
       ),
-      body: BlocListener<ManagePremiumBloc, ManagePremiumState>(
-        listener: (context, state) {
-          if (state is CancelPremiumComplete) {
-            SnackbarUtils.showSnackBar(context, "You have cancelled your subscription successfully");
-            Navigator.pop(context);
-          }
-          if (state is CancelLoading) {
-            SnackbarUtils.showSnackBar(context, "Hold on... let's cancel your subscription...");
-          }
-          if (state is CardDeletedSuccessfully) {
-            SnackbarUtils.showSnackBarShort(context, "Card removed successfully!");
-          }
-          if (state is CardAddedSuccessfully) {
-            SnackbarUtils.showSnackBarShort(context, "Card added successfully!");
-          }
+      body: WillPopScope(
+        onWillPop: () async {
+          Navigator.pop(context, false);
+          return false;
         },
-        child: BlocBuilder<ManagePremiumBloc, ManagePremiumState>(
-          builder: (context, state) {
-            if (state is SubscriptionInfoLoaded) {
-              sortedCards = state.cards;
-              return Center(
-                child: _dialogContentCard(state),
-              );
+        child: BlocListener<ManagePremiumBloc, ManagePremiumState>(
+          listener: (context, state) {
+            if (state is CancelPremiumComplete) {
+              SnackbarUtils.showSnackBar(context, "You have cancelled your subscription successfully");
+              Navigator.pop(context, true);
             }
-            else {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.teal,
-                ),
-              );
+            if (state is CancelLoading) {
+              SnackbarUtils.showSnackBar(context, "Hold on... let's cancel your subscription...");
+            }
+            if (state is CardDeletedSuccessfully) {
+              SnackbarUtils.showSnackBarShort(context, "Card removed successfully!");
+            }
+            if (state is CardAddedSuccessfully) {
+              SnackbarUtils.showSnackBarShort(context, "Card added successfully!");
             }
           },
+          child: BlocBuilder<ManagePremiumBloc, ManagePremiumState>(
+            builder: (context, state) {
+              if (state is SubscriptionInfoLoaded) {
+                sortedCards = state.cards;
+                return Center(
+                  child: _dialogContentCard(state),
+                );
+              }
+              else {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.teal,
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
@@ -212,7 +218,7 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
       children: WidgetUtils.skipNulls([
         WidgetUtils.spacer(5),
         const Text(
-          "You are currently subscribed to Fitcentive+!",
+          "You are currently subscribed to Fitcentive+",
           style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

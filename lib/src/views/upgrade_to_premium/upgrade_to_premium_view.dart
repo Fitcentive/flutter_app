@@ -29,7 +29,7 @@ class UpgradeToPremiumView extends StatefulWidget {
     required this.authenticatedUser,
   });
 
-  static Route route({
+  static Route<bool> route({
     required PublicUserProfile currentUserProfile,
     required AuthenticatedUser authenticatedUser,
   }) => MaterialPageRoute(
@@ -98,31 +98,37 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
           color: Colors.teal,
         ),
       ),
-      body: BlocListener<UpgradeToPremiumBloc, UpgradeToPremiumState>(
-        listener: (context, state) {
-          if (state is UpgradeToPremiumComplete) {
-            SnackbarUtils.showSnackBar(context, "Congrats! You have enabled Fitcentive+ successfully!");
-            Navigator.pop(context);
-          }
-          if (state is UpgradeLoading) {
-            SnackbarUtils.showSnackBar(context, "Hold on... we're upgrading you...");
-          }
+      body: WillPopScope(
+        onWillPop: () async {
+          Navigator.pop(context, false);
+          return false;
         },
-        child: BlocBuilder<UpgradeToPremiumBloc, UpgradeToPremiumState>(
-          builder: (context, state) {
-            if (state is UpgradeLoading) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.teal,
-                ),
-              );
+        child: BlocListener<UpgradeToPremiumBloc, UpgradeToPremiumState>(
+          listener: (context, state) {
+            if (state is UpgradeToPremiumComplete) {
+              SnackbarUtils.showSnackBar(context, "Congrats! You have enabled Fitcentive+ successfully!");
+              Navigator.pop(context, true);
             }
-            else {
-              return Center(
-                child: _dialogContentCard(),
-              );
+            if (state is UpgradeLoading) {
+              SnackbarUtils.showSnackBar(context, "Hold on... we're upgrading you...");
             }
           },
+          child: BlocBuilder<UpgradeToPremiumBloc, UpgradeToPremiumState>(
+            builder: (context, state) {
+              if (state is UpgradeLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.teal,
+                  ),
+                );
+              }
+              else {
+                return Center(
+                  child: _dialogContentCard(),
+                );
+              }
+            },
+          ),
         ),
       ),
     );

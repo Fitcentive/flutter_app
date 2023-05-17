@@ -409,40 +409,43 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         // on the bottom and should not scroll with the above ListView
         child: Column(
           children: <Widget>[
-            ListTile(
-              title: const Text("Logout"),
-              onTap: () {
-                showDialog(context: context, builder: (context) {
-                  Widget cancelButton = TextButton(
-                    style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-                    ),
-                    onPressed:  () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Cancel"),
-                  );
-                  Widget continueButton = TextButton(
-                    onPressed:  () {
-                      Navigator.pop(context);
-                      _signOutIfApplicable();
-                    },
-                    style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
-                    ),
-                    child: const Text("Logout"),
-                  );
+            Material(
+              elevation: 1,
+              child: ListTile(
+                title: const Text("Logout"),
+                onTap: () {
+                  showDialog(context: context, builder: (context) {
+                    Widget cancelButton = TextButton(
+                      style: ButtonStyle(
+                        foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                      ),
+                      onPressed:  () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Cancel"),
+                    );
+                    Widget continueButton = TextButton(
+                      onPressed:  () {
+                        Navigator.pop(context);
+                        _signOutIfApplicable();
+                      },
+                      style: ButtonStyle(
+                        foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+                      ),
+                      child: const Text("Logout"),
+                    );
 
-                  return AlertDialog(
-                    title: const Text("You are about to log out of your account!"),
-                    content: const Text("Are you sure?"),
-                    actions: [
-                      cancelButton,
-                      continueButton,
-                    ],
-                  );
-                });
-              },
+                    return AlertDialog(
+                      title: const Text("You are about to log out of your account!"),
+                      content: const Text("Are you sure?"),
+                      actions: [
+                        cancelButton,
+                        continueButton,
+                      ],
+                    );
+                  });
+                },
+              ),
             )
           ],
         )

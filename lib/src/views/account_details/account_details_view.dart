@@ -447,16 +447,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
           backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
         ),
         onPressed: () async {
-          Navigator.push(
-              context,
-              ManagePremiumView.route(
-                currentUserProfile: widget.currentUserProfile,
-                authenticatedUser: widget.authenticatedUser,
-              )
-          ).then((value) {
-            // DISABLE HERE IF NEEDED
-            _accountDetailsBloc.add(DisablePremiumAccountStatusForUser(user: widget.authenticatedUser));
-          });
+          _goToManagePremiumRoute();
         },
         child: const Text("Manage Fitcentive+", style: TextStyle(fontSize: 15, color: Colors.white)),
       );
@@ -474,16 +465,31 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
     }
   }
 
+  _goToManagePremiumRoute() {
+    Navigator.push<bool>(
+        context,
+        ManagePremiumView.route(
+          currentUserProfile: widget.currentUserProfile,
+          authenticatedUser: widget.authenticatedUser,
+        )
+    ).then((isPremiumDisabled) {
+      if (isPremiumDisabled ?? false) {
+        _accountDetailsBloc.add(DisablePremiumAccountStatusForUser(user: widget.authenticatedUser));
+      }
+    });
+  }
+
   _goToUpgradeToPremiumRoute() {
-    Navigator.push(
+    Navigator.push<bool>(
         context,
         UpgradeToPremiumView.route(
             currentUserProfile: widget.currentUserProfile,
             authenticatedUser: widget.authenticatedUser,
         )
-    ).then((value) {
-      // todo -  ONLY DO THIS IF USER HAS INDEED UPGRADED
-      _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: widget.authenticatedUser));
+    ).then((isUpgradeComplete) {
+      if (isUpgradeComplete ?? false) {
+        _accountDetailsBloc.add(EnablePremiumAccountStatusForUser(user: widget.authenticatedUser));
+      }
     });
   }
 
