@@ -191,29 +191,23 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
 
   _dialogContentCard(SubscriptionInfoLoaded state) {
     return IntrinsicHeight(
-      child: Card(
-          elevation: 0,
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    WidgetUtils.spacer(5),
-                    _userProfileImageView(),
-                    WidgetUtils.spacer(10),
-                    mainContent(state),
-                    WidgetUtils.spacer(25),
-                    _cancelPremiumButton(),
-                    WidgetUtils.spacer(10),
-                  ],
-                ),
-              ),
-          )
-      ),
-    ));
+      child: Scrollbar(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              WidgetUtils.spacer(5),
+              _userProfileImageView(),
+              WidgetUtils.spacer(10),
+              mainContent(state),
+              WidgetUtils.spacer(25),
+              _cancelPremiumButton(),
+              WidgetUtils.spacer(10),
+            ],
+          ),
+        ),
+      )
+    );
   }
 
   mainContent(SubscriptionInfoLoaded state) {
@@ -617,11 +611,11 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
       cardHolderName: "",
       cvvCode: "XXX",
       showBackView: false,
-      cardBgColor: Colors.black,
       obscureCardNumber: true,
       obscureInitialCardNumber: true,
       obscureCardCvv: true,
       isHolderNameVisible: false,
+      animationDuration: const Duration(milliseconds: 300),
       onCreditCardWidgetChange: (CreditCardBrand ) {
 
       }, //true when you want to show cvv(back) view
@@ -632,8 +626,8 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
     if (cards.isNotEmpty) {
       return cards.map((e) =>
           SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
-              width: MediaQuery.of(context).size.width * 0.65,
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
               child: _showCardDetails(e)
           )
       ).toList();
@@ -641,8 +635,8 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
     else {
       return [
         SizedBox(
-            height: MediaQuery.of(context).size.height * 0.8,
-            width: MediaQuery.of(context).size.width * 0.65,
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: InkWell(
@@ -695,7 +689,6 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
           return Container(
             width: 8.0,
             height: 8.0,
-            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: (Theme.of(context).brightness == Brightness.dark
@@ -720,18 +713,14 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
       ),
       elevation: 0,
       color: Theme.of(context).backgroundColor,
-      child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: WidgetUtils.skipNulls([
-            WidgetUtils.spacer(10),
-            _displayCarousel(sortedCards),
-            WidgetUtils.spacer(2.5),
-            _generateDotsIfNeeded(sortedCards),
-            WidgetUtils.spacer(2.5),
-          ]),
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: WidgetUtils.skipNulls([
+          _displayCarousel(sortedCards),
+          WidgetUtils.spacer(2.5),
+          _generateDotsIfNeeded(sortedCards),
+          WidgetUtils.spacer(2.5),
+        ]),
       ),
     );
   }

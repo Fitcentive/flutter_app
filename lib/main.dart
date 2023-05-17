@@ -185,7 +185,7 @@ class _AppViewState extends State<AppView> {
                     (route) => false,
               );
             } else if (state is AuthInitialState) {
-              _navigator.popAndPushNamed('/login');
+              _navigator.pushReplacement(LoginPage.route());
             }
           },
           child: child,

@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/upgrade_to_premium/bloc/upgrade_to_premium_bloc.dart';
@@ -163,20 +164,21 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
     return IntrinsicHeight(
       child: Card(
           elevation: 0,
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              child: SingleChildScrollView(
+          child: Scrollbar(
+            child: SingleChildScrollView(
+              child: InkWell(
+                onTap: () {
+                  KeyboardUtils.hideKeyboard(context);
+                },
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
-                children: [
-                  WidgetUtils.spacer(5),
-                  _userProfileImageView(),
-                  WidgetUtils.spacer(10),
-                  premiumWriteupContent(),
-                ],
-            ),
+                  children: [
+                    WidgetUtils.spacer(5),
+                    _userProfileImageView(),
+                    WidgetUtils.spacer(10),
+                    premiumWriteupContent(),
+                  ],
+          ),
               ),
             ),
           )
@@ -259,6 +261,9 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
           onPressed: () async {
             if (cardFieldInputDetails?.complete ?? false) {
               _showConfirmationDialog();
+            }
+            else {
+              SnackbarUtils.showSnackBarShort(context, "Please fill out all required card details!");
             }
           },
           child: const Text("Pay now", style: TextStyle(fontSize: 15, color: Colors.white)),
