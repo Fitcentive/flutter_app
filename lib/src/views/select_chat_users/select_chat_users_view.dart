@@ -80,7 +80,7 @@ class SelectChatUsersViewState extends State<SelectChatUsersView> {
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       appBar: AppBar(
         title: const Text("Select chat users", style: TextStyle(color: Colors.teal),),
         iconTheme: const IconThemeData(

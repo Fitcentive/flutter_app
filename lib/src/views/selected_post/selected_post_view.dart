@@ -140,7 +140,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
           }
         },
       ),
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
     );
   }
 

@@ -105,7 +105,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       floatingActionButton: Visibility(
           visible: isEditParticipantsButtonEnabled,
           child: _addParticipantsToChatButton()

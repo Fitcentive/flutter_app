@@ -263,7 +263,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       appBar: _renderAppBar(),
       floatingActionButton:  _dynamicFloatingActionButtons(),
       body: WillPopScope(

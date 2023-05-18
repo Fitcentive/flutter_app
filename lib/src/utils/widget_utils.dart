@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/ad_widget/ad_widget.dart';
 import 'package:flutter_app/src/infrastructure/home_page_ad_widget/home_page_ad_widget.dart';
@@ -9,6 +11,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gauges/gauges.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class WidgetUtils {
   static Widget spacer(double allPadding) => Padding(padding: EdgeInsets.all(allPadding));
@@ -194,6 +197,76 @@ class WidgetUtils {
       return authState.authenticatedUser.user.isPremiumEnabled;
     }
     return false;
+  }
+
+  static Widget? wrapAdWidgetWithUpgradeToMobileTextIfNeeded(Widget? adWidget, double maxHeight) {
+    if (kIsWeb) {
+      return IntrinsicHeight(
+        child: Column(
+          children: WidgetUtils.skipNulls([
+            WidgetUtils.showUpgradeToMobileAppMessageIfNeeded(),
+            adWidget,
+          ]),
+        ),
+      );
+    }
+    else {
+      return adWidget;
+    }
+  }
+
+  static Widget? showUpgradeToMobileAppMessageIfNeeded() {
+    if (kIsWeb) {
+      return Row(
+        children: [
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                    children: [
+                      const TextSpan(
+                        text: "For a better experience, we recommend using the app for ",
+                        style: TextStyle(
+                            color: Colors.red
+                        ),
+                      ),
+                      TextSpan(
+                          text: "iOS",
+                          style: const TextStyle(
+                              color: Colors.teal
+                          ),
+                          recognizer: TapGestureRecognizer()..onTap = () {
+                            // todo - link to app store
+                            launchUrl(Uri.parse(ConstantUtils.TERMS_AND_CONDITIONS_URL));
+                          }
+                      ),
+                      const TextSpan(
+                        text: " or ",
+                        style: TextStyle(
+                            color: Colors.red
+                        ),
+                      ),
+                      TextSpan(
+                          text: "Android",
+                          style: const TextStyle(
+                              color: Colors.teal
+                          ),
+                          recognizer: TapGestureRecognizer()..onTap = () {
+                            // todo - link to play store
+                            launchUrl(Uri.parse(ConstantUtils.TERMS_AND_CONDITIONS_URL));
+                          }
+                      ),
+                    ]
+                )
+            ),
+          ),
+          const Spacer(),
+        ],
+      );
+    }
+    return null;
   }
 
   static void showUpgradeToPremiumDialog(

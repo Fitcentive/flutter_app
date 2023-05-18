@@ -113,27 +113,35 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
     final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
     final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
     if (adWidget == null) {
-      return BottomAppBar(
-        color: Colors.transparent,
-        child: _showAddToDiaryButton(),
-        elevation: 0,
-      );
+      return _bottomBarInternal(maxHeight);
     }
     else {
       return SizedBox(
-        height: maxHeight,
+        height: maxHeight + 20,
         child: Column(
           children: [
-            BottomAppBar(
-              color: Colors.transparent,
-              child: _showAddToDiaryButton(),
-              elevation: 0,
-            ),
+            _bottomBarInternal(maxHeight),
             adWidget,
           ],
         ),
       );
     }
+  }
+
+  _bottomBarInternal(double maxHeight) {
+    return SizedBox(
+      height: maxHeight,
+      child: Column(
+        children: WidgetUtils.skipNulls([
+          WidgetUtils.showUpgradeToMobileAppMessageIfNeeded(),
+          BottomAppBar(
+            color: Colors.transparent,
+            child: _showAddToDiaryButton(),
+            elevation: 0,
+          ),
+        ]),
+      ),
+    );
   }
 
   @override

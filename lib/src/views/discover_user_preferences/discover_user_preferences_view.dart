@@ -115,7 +115,7 @@ class DiscoverUserPreferencesViewState extends State<DiscoverUserPreferencesView
       ),
       body: _pageViews(),
       floatingActionButton: dynamicActionButtons,
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
     );
   }
 

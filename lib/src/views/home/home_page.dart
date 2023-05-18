@@ -4,6 +4,7 @@ import 'package:badges/badges.dart' as badge;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/firebase/push_notification_settings.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
@@ -42,6 +44,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:logging/logging.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.defaultSelectedTab = HomePageState.newsFeed}) : super(key: key);
@@ -298,14 +301,13 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final double maxHeight = AdUtils.defaultBannerAdHeight(context) * 2;
     final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
     if (adWidget == null) {
-      return _bottomNavigationBarInternal(chatIcon, notificationIcon);
+      return _bottomNavigationBarInternal(chatIcon, notificationIcon, maxHeight/2);
     }
     else {
-      return SizedBox(
-        height: maxHeight,
+      return IntrinsicHeight(
         child: Column(
           children: [
-            _bottomNavigationBarInternal(chatIcon, notificationIcon),
+            _bottomNavigationBarInternal(chatIcon, notificationIcon, maxHeight),
             adWidget,
           ],
         ),
@@ -313,45 +315,52 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  _bottomNavigationBarInternal(Widget chatIcon, Widget notificationIcon) {
-    return BottomNavigationBar(
-      unselectedItemColor: Theme.of(context).primaryTextTheme.bodyText2?.color!,
-      selectedItemColor: Theme.of(context).primaryColor,
-      items: <BottomNavigationBarItem>[
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.newspaper),
-          label: 'News Feed',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.explore),
-          label: 'Discover',
-        ),
-        BottomNavigationBarItem(
-          icon: chatIcon,
-          label: 'Chat',
-        ),
-        BottomNavigationBarItem(
-          icon: notificationIcon,
-          label: 'Notifications',
-        ),
-      ],
-      currentIndex: selectedBottomBarIndex,
-      onTap: (selectedItemIndex) {
-        if (selectedItemIndex != selectedBottomBarIndex) {
-          final currentState = _authenticationBloc.state;
-          if (currentState is AuthSuccessUserUpdateState) {
-            _menuNavigationBloc.add(
-                MenuItemChosen(
-                    selectedMenuItem: bottomBarToAppDrawerItemMap[selectedItemIndex]!,
-                    currentUserId: currentState.authenticatedUser.user.id
-                )
-            );
-            setState(() {
-              selectedBottomBarIndex = selectedItemIndex;
-            });
-          }
-        }
-      },
+  _bottomNavigationBarInternal(Widget chatIcon, Widget notificationIcon, double maxHeight) {
+    return IntrinsicHeight(
+      child: Column(
+        children: WidgetUtils.skipNulls([
+          WidgetUtils.showUpgradeToMobileAppMessageIfNeeded(),
+          BottomNavigationBar(
+            unselectedItemColor: Theme.of(context).primaryTextTheme.bodyText2?.color!,
+            selectedItemColor: Theme.of(context).primaryColor,
+            items: <BottomNavigationBarItem>[
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.newspaper),
+                label: 'News Feed',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.explore),
+                label: 'Discover',
+              ),
+              BottomNavigationBarItem(
+                icon: chatIcon,
+                label: 'Chat',
+              ),
+              BottomNavigationBarItem(
+                icon: notificationIcon,
+                label: 'Notifications',
+              ),
+            ],
+            currentIndex: selectedBottomBarIndex,
+            onTap: (selectedItemIndex) {
+              if (selectedItemIndex != selectedBottomBarIndex) {
+                final currentState = _authenticationBloc.state;
+                if (currentState is AuthSuccessUserUpdateState) {
+                  _menuNavigationBloc.add(
+                      MenuItemChosen(
+                          selectedMenuItem: bottomBarToAppDrawerItemMap[selectedItemIndex]!,
+                          currentUserId: currentState.authenticatedUser.user.id
+                      )
+                  );
+                  setState(() {
+                    selectedBottomBarIndex = selectedItemIndex;
+                  });
+                }
+              }
+            },
+          ),
+        ]),
+      ),
     );
   }
 

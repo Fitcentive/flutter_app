@@ -117,28 +117,35 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
     final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
     final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
     if (adWidget == null) {
-      return BottomAppBar(
-        color: Colors.transparent,
-        child: _showAddToDiaryButton(),
-        elevation: 0,
-      );
+      return _bottomBarInternal();
     }
     else {
-      return SizedBox(
-        height: maxHeight,
+      return IntrinsicHeight(
         child: Column(
           children: [
-            BottomAppBar(
-              color: Colors.transparent,
-              child: _showAddToDiaryButton(),
-              elevation: 0,
-            ),
+            _bottomBarInternal(),
             adWidget,
           ],
         ),
       );
     }
   }
+
+  _bottomBarInternal() {
+    return IntrinsicHeight(
+      child: Column(
+        children: WidgetUtils.skipNulls([
+          WidgetUtils.showUpgradeToMobileAppMessageIfNeeded(),
+          BottomAppBar(
+            color: Colors.transparent,
+            child: _showAddToDiaryButton(),
+            elevation: 0,
+          ),
+        ]),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {

@@ -78,7 +78,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
           }
         },
         child: Scaffold(
-          bottomNavigationBar: adWidget,
+          bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
           appBar: AppBar(
             title: const Text(
                 "Create Post",

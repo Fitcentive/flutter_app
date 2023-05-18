@@ -296,7 +296,7 @@ class UserChatViewState extends State<UserChatView> {
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
-      bottomNavigationBar: adWidget,
+        bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       appBar: AppBar(
         iconTheme: const IconThemeData(
           color: Colors.teal,

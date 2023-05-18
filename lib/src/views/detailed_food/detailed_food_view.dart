@@ -16,7 +16,6 @@ import 'package:flutter_app/src/views/detailed_food/bloc/detailed_food_state.dar
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class DetailedFoodView extends StatefulWidget {
 
@@ -124,27 +123,33 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
     final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
     final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
     if (adWidget == null) {
-      return BottomAppBar(
-        color: Colors.transparent,
-        child: _showAddToFoodDiaryButton(state),
-        elevation: 0,
-      );
+      return _bottomBarInternal(state);
     }
     else {
-      return SizedBox(
-        height: maxHeight,
+      return IntrinsicHeight(
         child: Column(
           children: [
-            BottomAppBar(
-              color: Colors.transparent,
-              child: _showAddToFoodDiaryButton(state),
-              elevation: 0,
-            ),
+            _bottomBarInternal(state),
             adWidget,
           ],
         ),
       );
     }
+  }
+
+  _bottomBarInternal(DetailedFoodState state) {
+    return IntrinsicHeight(
+      child: Column(
+        children: WidgetUtils.skipNulls([
+          WidgetUtils.showUpgradeToMobileAppMessageIfNeeded(),
+          BottomAppBar(
+            color: Colors.transparent,
+            child: _showAddToFoodDiaryButton(state),
+            elevation: 0,
+          ),
+        ]),
+      ),
+    );
   }
 
   @override

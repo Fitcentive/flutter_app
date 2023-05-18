@@ -91,7 +91,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
       ),
       body: _pageViews(isPremiumEnabled),
       floatingActionButton: dynamicActionButtons,
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
     );
   }
 

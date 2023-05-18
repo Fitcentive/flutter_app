@@ -83,7 +83,7 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
           backgroundColor: Colors.teal,
           child: const Icon(Icons.save, color: Colors.white)
       ),
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
     );
   }
 

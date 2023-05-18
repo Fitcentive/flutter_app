@@ -210,9 +210,11 @@ class PushNotificationSettings {
     final initializationSettings = _getSettings(context);
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onDidReceiveBackgroundNotificationResponse: (NotificationResponse details) async {
-          _handlePayload(context, secureStorage, userRepository, details.payload);
-        },
+        // Commented out as this needs a static method or one defined at the top level
+        // Unsure if handling this is required
+        // onDidReceiveBackgroundNotificationResponse: (NotificationResponse details) async {
+          // _handlePayload(context, secureStorage, userRepository, details.payload);
+        // },
         onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
           _handlePayload(context, secureStorage, userRepository, notificationResponse.payload);
         });

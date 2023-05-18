@@ -207,6 +207,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     );
     final registrationToken = await FirebaseMessaging.instance.getToken();
     await notificationRepository.unregisterDeviceToken(userId, registrationToken!, accessToken);
+    await FirebaseMessaging.instance.deleteToken();
 
     await secureStorage.delete(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await secureStorage.delete(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY);

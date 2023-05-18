@@ -69,7 +69,7 @@ class DiscoveryRadiusViewState extends State<DiscoveryRadiusView> {
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       appBar: AppBar(
         title: const Text("Discovery Radius", style: TextStyle(color: Colors.teal)),
         iconTheme: const IconThemeData(

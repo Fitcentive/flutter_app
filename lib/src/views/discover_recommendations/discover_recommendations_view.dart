@@ -83,7 +83,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
       ),
       body: _generateBody(),
       floatingActionButton: _generateFloatingActionButtons(),
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
     );
   }
 

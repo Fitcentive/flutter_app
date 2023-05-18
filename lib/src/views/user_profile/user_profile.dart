@@ -126,7 +126,7 @@ class UserProfileViewState extends State<UserProfileView> {
           color: Colors.teal,
         ),
       ),
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       body: BlocListener<UserProfileBloc, UserProfileState>(
         listener: (context, state) {
           if (state is RequiredDataResolved) {

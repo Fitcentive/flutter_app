@@ -100,7 +100,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       body: BlocListener<ExerciseSearchBloc, ExerciseSearchState>(
         listener: (context, state) {
           if (state is ExerciseDataFetched) {

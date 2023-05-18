@@ -128,7 +128,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
-      bottomNavigationBar: adWidget,
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       body: BlocListener<FoodSearchBloc, FoodSearchState>(
         listener: (context, state) {
           if (state is FoodDataFetched) {
