@@ -135,6 +135,9 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
             if (state is CardAddedSuccessfully) {
               SnackbarUtils.showSnackBarShort(context, "Card added successfully!");
             }
+            if (state is CardAddFailure) {
+              SnackbarUtils.showSnackBar(context, "Card add failure... please try again or try a different card");
+            }
             if (state is SubscriptionInfoLoaded) {
               if (_carouselController.ready) {
                 _carouselController.jumpToPage(defaultCarouselPage);
@@ -686,15 +689,18 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: cards.asMap().entries.map((entry) {
-          return Container(
-            width: 8.0,
-            height: 8.0,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black)
-                    .withOpacity(_currentCarouselPage == entry.key ? 0.9 : 0.4)),
+          return Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Container(
+              width: 8.0,
+              height: 8.0,
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                      .withOpacity(_currentCarouselPage == entry.key ? 0.9 : 0.4)),
+            ),
           );
         }).toList(),
       );

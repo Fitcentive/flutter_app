@@ -75,23 +75,33 @@ class ManagePremiumBloc extends Bloc<ManagePremiumEvent, ManagePremiumState> {
   void _addPaymentMethodToUser(AddPaymentMethodToUser event, Emitter<ManagePremiumState> emit) async {
     final currentState = state;
     if (currentState is SubscriptionInfoLoaded) {
-      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-      final newPaymentMethod = await publicGatewayRepository.addPaymentMethodToCustomer(event.paymentMethodId, accessToken!);
+      try {
+        final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+        final newPaymentMethod = await publicGatewayRepository.addPaymentMethodToCustomer(event.paymentMethodId, accessToken!);
 
-      emit(const CardAddedSuccessfully());
+        emit(const CardAddedSuccessfully());
 
-      final cards = await publicGatewayRepository.getPaymentMethodsForUser(accessToken);
+        final cards = await publicGatewayRepository.getPaymentMethodsForUser(accessToken);
 
-      final defaultCard = cards.where((element) => element.isDefault).first;
-      final otherCards = cards.where((element) => !element.isDefault);
-      final sortedCards = [defaultCard, ...otherCards];
+        final defaultCard = cards.where((element) => element.isDefault).first;
+        final otherCards = cards.where((element) => !element.isDefault);
+        final sortedCards = [defaultCard, ...otherCards];
 
-      emit(
-          SubscriptionInfoLoaded(
-              subscription: currentState.subscription,
-              cards: sortedCards
-          )
-      );
+        emit(
+            SubscriptionInfoLoaded(
+                subscription: currentState.subscription,
+                cards: sortedCards
+            )
+        );
+      } catch (ex) {
+        emit(const CardAddFailure());
+        emit(
+            SubscriptionInfoLoaded(
+                subscription: currentState.subscription,
+                cards: currentState.cards
+            )
+        );
+      }
     }
   }
 

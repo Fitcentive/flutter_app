@@ -42,6 +42,12 @@ class CardAddedSuccessfully extends ManagePremiumState {
   const CardAddedSuccessfully();
 }
 
+class CardAddFailure extends ManagePremiumState {
+
+  const CardAddFailure();
+}
+
+
 class CancelLoading extends ManagePremiumState {
 
   const CancelLoading();
