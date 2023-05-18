@@ -65,7 +65,8 @@
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("/firebase-messaging-sw.js");
+        // We need to add app/ to path because we are hosting the webapp at that url root
+        navigator.serviceWorker.register("/app/firebase-messaging-sw.js");
       });
     }
   </script>
