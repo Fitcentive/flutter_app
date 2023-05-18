@@ -83,5 +83,5 @@ class DefaultFirebaseOptions {
   );
 
   // Create a web push certificate - keyPair is vapidKey
-  static const String vapidKey = "BOmo03Cmmi0JC6g8n1045_Hum3BdHPMZG7wJpm0QUKqDUxd2K-HeEOnUDAB2dz8cp4OmKP27o5Y1I4M66YzICFM";
+   static const String vapidKey = "BJB4E1u5oGCrFLLjbx5O8ZZs3rxIVJ0sZ26w6VfMWgH-cmCiBszwtdyiAYnrbMJ0Waz7y8wH42ozVV_Hfuxm7EE";
 }

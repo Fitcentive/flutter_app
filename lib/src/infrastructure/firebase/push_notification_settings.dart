@@ -159,7 +159,7 @@ class PushNotificationSettings {
 
   static _getSettings(BuildContext context) {
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
-    final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings(
+    final DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings(
         onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) {
           onDidReceiveLocalNotification(context, id, title ?? "", body ?? "", payload ?? "");
         }
@@ -172,6 +172,37 @@ class PushNotificationSettings {
     return initializationSettings;
   }
 
+  static _handlePayload(
+      BuildContext context,
+      FlutterSecureStorage secureStorage,
+      UserRepository userRepository,
+      String? payload
+  ) {
+    if (payload != null) {
+      final pushNotificationMetadata = PushNotificationMetadata.fromJson(jsonDecode(payload));
+      switch(pushNotificationMetadata.type) {
+        case "user_follow_request":
+          _openNotificationsView(context);
+          break;
+
+        case "chat_message":
+          _openUserChatView(context, secureStorage, userRepository, payload);
+          break;
+
+        case "participant_added_to_meetup":
+          _openNotificationsView(context);
+          break;
+
+        case "meetup_reminder":
+          _openMeetupView(context, secureStorage, userRepository, payload);
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
   static Future<void> _setUpFlutterLocalNotifications(BuildContext context) async {
     final userRepository = RepositoryProvider.of<UserRepository>(context);
     final secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
@@ -179,31 +210,11 @@ class PushNotificationSettings {
     final initializationSettings = _getSettings(context);
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: (String? payload) async {
-          if (payload != null) {
-            print("IN FLUTTER LOCAL NOTIFS SHOWING THINGY");
-            final pushNotificationMetadata = PushNotificationMetadata.fromJson(jsonDecode(payload));
-            switch(pushNotificationMetadata.type) {
-              case "user_follow_request":
-                _openNotificationsView(context);
-                break;
-
-              case "chat_message":
-                _openUserChatView(context, secureStorage, userRepository, payload);
-                break;
-
-              case "participant_added_to_meetup":
-                _openNotificationsView(context);
-                break;
-
-              case "meetup_reminder":
-                _openMeetupView(context, secureStorage, userRepository, payload);
-                break;
-
-              default:
-                break;
-            }
-          }
+        onDidReceiveBackgroundNotificationResponse: (NotificationResponse details) async {
+          _handlePayload(context, secureStorage, userRepository, details.payload);
+        },
+        onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
+          _handlePayload(context, secureStorage, userRepository, notificationResponse.payload);
         });
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -280,11 +291,11 @@ class PushNotificationSettings {
     //        for notifications that arent purely data notifications
     // If we enable localnotifications for iOS, then notifications are delivered 2x
     // Need to find a way around this
-    final iosNotificationDetails = IOSNotificationDetails(
+    final iosNotificationDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
-      attachments: [IOSNotificationAttachment(bigPicturePath)]
+      attachments: [DarwinNotificationAttachment(bigPicturePath)]
     );
     final NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
