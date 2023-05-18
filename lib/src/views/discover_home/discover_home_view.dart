@@ -4,7 +4,6 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
-import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_bloc.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_event.dart';
