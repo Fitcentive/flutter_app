@@ -239,7 +239,8 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
         ),
         WidgetUtils.spacer(5),
         Text(
-          "${DateFormat('yyyy-MM-dd').format(state.subscription.startedAt.toLocal())} - ${DateFormat('yyyy-MM-dd').format(state.subscription.validUntil.toLocal())}",
+          "${DateFormat('yyyy-MM-dd').format(state.subscription.startedAt.toLocal())} - "
+          "${DateFormat('yyyy-MM-dd').format(state.subscription.validUntil.toLocal().subtract(const Duration(days: 1)))}",
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.normal,
@@ -257,7 +258,7 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
         ),
         WidgetUtils.spacer(5),
         Text(
-          DateFormat('yyyy-MM-dd').format(state.subscription.validUntil.toLocal().add(const Duration(days: 1))),
+          DateFormat('yyyy-MM-dd').format(state.subscription.validUntil.toLocal()),
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.normal,
