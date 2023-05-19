@@ -217,7 +217,7 @@ class WidgetUtils {
 
   static Widget? showUpgradeToMobileAppMessageIfNeeded() {
     if (kIsWeb) {
-      return Row(
+      return Wrap(
         children: [
           const Spacer(),
           Padding(
