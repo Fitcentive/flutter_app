@@ -105,15 +105,21 @@ class HomePageWebHorizontalDisplayAdWidgetState extends State<HomePageWebHorizon
           ..width = '320'
           ..height = '100'
           ..src = 'adview.html'
-          ..style.border = 'none'
-          // ..style.border = 'solid'
+          ..style.width='100%'
+          ..style.height='100%'
+          // ..style.border = 'none'
+          ..style.border = 'solid'
+          ..style.borderColor = 'teal'
     );
 
     return SizedBox(
       height: 100,
       width: ScreenUtils.getScreenWidth(context),
-      child: const HtmlElementView(
-        viewType: 'adview',
+      child: const Padding(
+        padding: EdgeInsets.all(5.0),
+        child: HtmlElementView(
+          viewType: 'adview',
+        ),
       ),
     );
   }

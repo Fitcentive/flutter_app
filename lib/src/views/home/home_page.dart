@@ -4,7 +4,6 @@ import 'package:badges/badges.dart' as badge;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/firebase/push_notification_settings.dart';
@@ -14,10 +13,8 @@ import 'package:flutter_app/src/models/push/notification_device.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
-import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
-import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/calendar/calendar_view.dart';
 import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
@@ -37,14 +34,11 @@ import 'package:flutter_app/src/views/notifications/notifications_view.dart';
 import 'package:flutter_app/src/views/search/search_view.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_bloc.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_event.dart';
-import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_state.dart';
-import 'package:flutter_app/src/views/shared_components/ads/bottom_bar_ad_widget.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:logging/logging.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.defaultSelectedTab = HomePageState.newsFeed}) : super(key: key);
@@ -369,14 +363,16 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   _drawer() {
-    return Drawer(
-      child: Column(
-        children: [
-          _drawerHeader(),
-          Expanded(child: _menuDrawerListItems()),
-          const Divider(),
-          _bottomAlignedButtons(),
-        ],
+    return PointerInterceptor(
+      child: Drawer(
+        child: Column(
+          children: [
+            _drawerHeader(),
+            Expanded(child: _menuDrawerListItems()),
+            const Divider(),
+            _bottomAlignedButtons(),
+          ],
+        ),
       ),
     );
   }
