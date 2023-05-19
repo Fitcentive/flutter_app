@@ -137,22 +137,19 @@ class App extends StatelessWidget {
   }
 
   renderAppView() {
-    return AppView();
-    // Avoid constricted web implementation because some screens behave poorly with restricted width
-    // Revisit this topic later
-    // if (kIsWeb) {
-    //   return Center(
-    //     child: ClipRect(
-    //       child: SizedBox(
-    //         width: ConstantUtils.WEB_APP_MAX_WIDTH,
-    //         child: AppView(),
-    //       ),
-    //     ),
-    //   );
-    // }
-    // else {
-    //   return AppView();
-    // }
+    if (kIsWeb) {
+      return Center(
+        child: ClipRect(
+          child: SizedBox(
+            width: ConstantUtils.WEB_APP_MAX_WIDTH,
+            child: AppView()
+          ),
+        ),
+      );
+    }
+    else {
+      return AppView();
+    }
   }
 }
 

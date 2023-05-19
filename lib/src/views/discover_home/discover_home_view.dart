@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -11,9 +14,9 @@ import 'package:flutter_app/src/views/discover_home/bloc/discover_home_state.dar
 import 'package:flutter_app/src/views/discover_recommendations/discover_recommendations_view.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/discover_user_preferences_view.dart';
 import 'package:flutter_app/src/views/discovered_user/discovered_user_view.dart';
+import 'package:flutter_app/src/views/shared_components/custom_sliding_up_panel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class DiscoverHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -116,7 +119,9 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
   }
 
   _showDiscoveredUserListAndButtons(DiscoverUserDataFetched state) {
-    return SlidingUpPanel(
+    return CustomSlidingUpPanel(
+      height: ScreenUtils.getScreenHeight(context),
+      width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
       controller: _panelController,
       minHeight: 0,
       maxHeight: ScreenUtils.getScreenHeight(context) * 0.75,

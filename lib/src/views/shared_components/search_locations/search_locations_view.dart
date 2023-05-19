@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/views/shared_components/custom_sliding_up_panel.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
 
@@ -25,7 +27,6 @@ import 'package:flutter_app/src/views/shared_components/search_locations/bloc/se
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 typedef UpdateSelectedGymLocationBlocCallback = void Function(Location location);
 
@@ -551,8 +552,10 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
         children: WidgetUtils.skipNulls([
           _showMap(context),
           _showProgressIndicatorIfNeeded(state),
-            SlidingUpPanel(
-              slideDirection: SlideDirection.UP,
+            CustomSlidingUpPanel(
+              height: ScreenUtils.getScreenHeight(context),
+              width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
+              slideDirection: CustomSlideDirection.UP,
               color: Colors.transparent,
               controller: _slidingUpPanelController,
               minHeight: ScreenUtils.getScreenHeight(context) * 0.33,

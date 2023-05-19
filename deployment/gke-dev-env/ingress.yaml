@@ -16,7 +16,7 @@ spec:
     - host: app.fitcentive.xyz
       http:
         paths:
-          - path: /app
+          - path: /
             pathType: Prefix
             backend:
               service:
