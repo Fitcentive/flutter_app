@@ -119,6 +119,7 @@ class WebHorizontalDisplayAdWidgetState extends State<WebHorizontalDisplayAdWidg
           // ..style.border = 'none'
           ..style.border = 'solid'
           ..style.borderColor = 'teal'
+          // todo - Change border to none once ads are working
     );
 
     return SizedBox(

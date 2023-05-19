@@ -110,6 +110,7 @@ class HomePageWebHorizontalDisplayAdWidgetState extends State<HomePageWebHorizon
           // ..style.border = 'none'
           ..style.border = 'solid'
           ..style.borderColor = 'teal'
+          // todo - Change border to none once ads are working
     );
 
     return SizedBox(

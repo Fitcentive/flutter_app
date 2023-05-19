@@ -14,7 +14,6 @@ import 'package:flutter_app/src/views/shared_components/meetup_card/bloc/meetup_
 import 'package:flutter_app/src/views/shared_components/meetup_card/bloc/meetup_card_state.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter_app/src/views/shared_components/participants_list.dart';
-import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
