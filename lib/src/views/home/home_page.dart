@@ -77,6 +77,8 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  bool hasFirebaseTokenBeenSynced = false;
+
   static const String accountDetails = 'Account Details';
   static const String notifications = 'Notifications';
   static const String discover = 'Discover';
@@ -114,33 +116,35 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   late FlutterSecureStorage _secureStorage;
 
   void syncFirebaseDeviceRegistrationToken() async {
-    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
-    LocalDeviceInfo localDeviceInfo;
+    if (!hasFirebaseTokenBeenSynced) {
+      hasFirebaseTokenBeenSynced = true;
+      final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+      LocalDeviceInfo localDeviceInfo;
 
-    if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfoPlugin.androidInfo;
-        localDeviceInfo = LocalDeviceInfo(
-            manufacturer: androidInfo.manufacturer!,
-            model: androidInfo.model!,
-            isPhysicalDevice: androidInfo.isPhysicalDevice!);
-      } else {
-        final iosInfo = await deviceInfoPlugin.iosInfo;
-        localDeviceInfo =
-            LocalDeviceInfo(manufacturer: "Apple", model: iosInfo.model!, isPhysicalDevice: iosInfo.isPhysicalDevice);
+      if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
+        if (Platform.isAndroid) {
+          final androidInfo = await deviceInfoPlugin.androidInfo;
+          localDeviceInfo = LocalDeviceInfo(
+              manufacturer: androidInfo.manufacturer!,
+              model: androidInfo.model!,
+              isPhysicalDevice: androidInfo.isPhysicalDevice!);
+        } else {
+          final iosInfo = await deviceInfoPlugin.iosInfo;
+          localDeviceInfo =
+              LocalDeviceInfo(
+                  manufacturer: "Apple",
+                  model: iosInfo.model!,
+                  isPhysicalDevice: iosInfo.isPhysicalDevice
+              );
+        }
+
+        FirebaseMessaging.instance.onTokenRefresh.listen((String token) async {
+          _syncTokenWithServer(token, localDeviceInfo);
+        });
+        String? token = await FirebaseMessaging.instance.getToken(vapidKey: DefaultFirebaseOptions.vapidKey);
+        _syncTokenWithServer(token!, localDeviceInfo);
       }
     }
-    else {
-      // Web app
-      final webInfo = await deviceInfoPlugin.webBrowserInfo;
-      localDeviceInfo = LocalDeviceInfo(manufacturer: "Web", model: webInfo.browserName.name, isPhysicalDevice: false);
-    }
-
-    FirebaseMessaging.instance.onTokenRefresh.listen((String token) async {
-      _syncTokenWithServer(token, localDeviceInfo);
-    });
-    String? token = await FirebaseMessaging.instance.getToken(vapidKey: DefaultFirebaseOptions.vapidKey);
-    _syncTokenWithServer(token!, localDeviceInfo);
   }
 
   void _syncTokenWithServer(String token, LocalDeviceInfo localDeviceInfo) async {

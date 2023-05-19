@@ -2,7 +2,7 @@ importScripts('https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.4.1/firebase-messaging.js');
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBnVD5q4IRi2LTZuGMPg5LPAwqRHDjMBug",
+    apiKey: "AIzaSyARqvT6yJ-P2imc8-595kH5nsVDEpdt-kE",
     authDomain: "fitcentive-dev-02.firebaseapp.com",
     projectId: "fitcentive-dev-02",
     storageBucket: "fitcentive-dev-02.appspot.com",

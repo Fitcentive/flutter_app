@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
@@ -205,9 +207,13 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       refreshToken: refreshToken!,
       authRealm: authProvider,
     );
-    final registrationToken = await FirebaseMessaging.instance.getToken();
-    await notificationRepository.unregisterDeviceToken(userId, registrationToken!, accessToken);
-    await FirebaseMessaging.instance.deleteToken();
+
+    if (!kIsWeb) {
+      // Only unregister device if not web, as we have disabled support for web
+      final registrationToken = await FirebaseMessaging.instance.getToken(vapidKey: DefaultFirebaseOptions.vapidKey);
+      await notificationRepository.unregisterDeviceToken(userId, registrationToken!, accessToken);
+      await FirebaseMessaging.instance.deleteToken();
+    }
 
     await secureStorage.delete(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await secureStorage.delete(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY);

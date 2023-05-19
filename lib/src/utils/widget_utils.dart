@@ -226,8 +226,18 @@ class WidgetUtils {
                 textAlign: TextAlign.center,
                 text: TextSpan(
                     children: [
+                      TextSpan(
+                        text: "For a better experience, ",
+                        style: const TextStyle(
+                            color: Colors.teal
+                        ),
+                        recognizer: TapGestureRecognizer()..onTap = () {
+                          // todo - link to benefits of better experience
+                          launchUrl(Uri.parse(ConstantUtils.TERMS_AND_CONDITIONS_URL));
+                        }
+                      ),
                       const TextSpan(
-                        text: "For a better experience, we recommend using the app for ",
+                        text: "we recommend using the app for ",
                         style: TextStyle(
                             color: Colors.red
                         ),

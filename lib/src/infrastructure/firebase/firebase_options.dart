@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
   // Get API key from https://console.cloud.google.com/apis/credentials?authuser=1&orgonly=true&project=fitcentive-dev&supportedpurview=organizationId,folder,project
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyARqvT6yJ-P2imc8-595kH5nsVDEpdt-kE',
-    appId: '1:27981216008:android:9e823848112e98c5d954bd',
+    appId: '1:27981216008:web:442a225e58f2cd4dd954bd',
     messagingSenderId: '27981216008',
     projectId: 'fitcentive-dev-02',
     authDomain: 'fitcentive-dev-02.firebaseapp.com',
@@ -83,5 +83,5 @@ class DefaultFirebaseOptions {
   );
 
   // Create a web push certificate - keyPair is vapidKey
-   static const String vapidKey = "BJB4E1u5oGCrFLLjbx5O8ZZs3rxIVJ0sZ26w6VfMWgH-cmCiBszwtdyiAYnrbMJ0Waz7y8wH42ozVV_Hfuxm7EE";
+   static const String vapidKey = "BIGMzzUElTI_QiFZ4k8UID66bgXdhIw3rc1-VbzdBGelZd0cOMvHqifnfLAPWtJ-eyg77sBXUjJX7hxgqi2I7J8";
 }
