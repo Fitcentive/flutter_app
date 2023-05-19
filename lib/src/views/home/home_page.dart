@@ -365,6 +365,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   _drawer() {
     return PointerInterceptor(
       child: Drawer(
+        elevation: 1,
         child: Column(
           children: [
             _drawerHeader(),

@@ -219,7 +219,6 @@ class WidgetUtils {
     if (kIsWeb) {
       return Wrap(
         children: [
-          const Spacer(),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: RichText(
@@ -272,7 +271,6 @@ class WidgetUtils {
                 )
             ),
           ),
-          const Spacer(),
         ],
       );
     }
