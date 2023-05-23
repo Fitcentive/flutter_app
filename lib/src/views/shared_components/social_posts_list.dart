@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
@@ -220,14 +221,13 @@ class SocialPostsListState extends State<SocialPostsList> {
               padding: const EdgeInsets.all(2.5),
               child: ElevatedButton.icon(
                   icon: likedUserIds.userIds.contains(widget.currentUserProfile.userId) ?
-                  const Icon(Icons.thumb_down) : const Icon(Icons.thumb_up),
+                  const Icon(Icons.thumb_down, size: 12) : const Icon(Icons.thumb_up, size: 12),
                   onPressed: () {
                     widget.buttonInteractionCallback(post, likedUserIds);
                   },
-                  label: Text(likedUserIds.userIds.contains(widget.currentUserProfile.userId) ? "Unlike" : "Like",
-                    style: const TextStyle(
-                        fontSize: 12
-                    ),
+                  label: AutoSizeText(likedUserIds.userIds.contains(widget.currentUserProfile.userId) ? "Unlike" : "Like",
+                    maxLines: 1,
+                    maxFontSize: 12,
                   )
               ),
             )
@@ -235,15 +235,15 @@ class SocialPostsListState extends State<SocialPostsList> {
         Expanded(
             child: Container(
               padding: const EdgeInsets.all(2.5),
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
+                  icon: const Icon(Icons.comment, size: 12,),
                   onPressed: () {
                     _goToSelectedPostView(post);
                   },
-                  child: const Text(
+                  label: const AutoSizeText(
                     "Comment",
-                    style: TextStyle(
-                        fontSize: 12
-                    ),
+                    maxLines: 1,
+                    maxFontSize: 12,
                   )
               ),
             )
@@ -251,13 +251,13 @@ class SocialPostsListState extends State<SocialPostsList> {
         Expanded(
             child: Container(
               padding: const EdgeInsets.all(2.5),
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
+                  icon: const Icon(Icons.share, size: 12),
                   onPressed: () {},
-                  child: const Text(
+                  label: const AutoSizeText(
                     "Share",
-                    style: TextStyle(
-                        fontSize: 12
-                    ),
+                    maxLines: 1,
+                    maxFontSize: 12,
                   )
               ),
             )
