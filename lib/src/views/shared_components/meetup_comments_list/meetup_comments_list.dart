@@ -207,7 +207,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
           FittedBox(
             fit:BoxFit.fitHeight,
             child:  Container(
-                width: min(ScreenUtils.getScreenWidth(context) * 0.75, ConstantUtils.WEB_APP_MAX_WIDTH * 0.9),
+                width: min(ScreenUtils.getScreenWidth(context) * 0.75, ConstantUtils.WEB_APP_MAX_WIDTH * 0.85),
                 padding: const EdgeInsets.all(15),
                 child: Container(
                   margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 7.5),
