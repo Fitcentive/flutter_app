@@ -133,6 +133,26 @@ class MeetupRepository {
     }
   }
 
+  Future<Meetup> updateMeetupChatRoom(
+      String meetupId,
+      String chatRoomId,
+      String accessToken
+      ) async {
+    final response = await http.put(
+        Uri.parse("$BASE_URL/meetups/$meetupId/chat-room/$chatRoomId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      return Meetup.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "updateMeetupChatRoom: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<Meetup> createMeetup(
       MeetupCreate newMeetup,
       String accessToken

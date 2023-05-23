@@ -50,15 +50,7 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
       final chatRoom = await chatRepository.getChatRoomForGroupConversationWithName(event.participants, event.roomName, accessToken!);
-      final updatedMeetupParam = MeetupUpdate(
-        meetupType: event.meetup.meetupType,
-        name: event.meetup.name,
-        time: event.meetup.time,
-        locationId: event.meetup.locationId,
-        durationInMinutes: event.meetup.durationInMinutes,
-        chatRoomId: chatRoom.id,
-      );
-      final updatedMeetup = await meetupRepository.updateMeetup(event.meetup.id, updatedMeetupParam, accessToken);
+      final updatedMeetup = await meetupRepository.updateMeetupChatRoom(event.meetup.id, chatRoom.id, accessToken);
 
       emit(MeetupChatRoomCreated(chatRoomId: chatRoom.id, randomId: uuid.v4()));
       emit(DetailedMeetupDataFetched(
