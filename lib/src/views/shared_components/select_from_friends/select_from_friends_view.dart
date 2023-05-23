@@ -105,6 +105,7 @@ class SelectFromUsersViewState extends State<SelectFromUsersView> {
   void dispose() {
     super.dispose();
     _scrollController.dispose();
+    _searchTextController.dispose();
   }
 
   // Method called via globalKey to update

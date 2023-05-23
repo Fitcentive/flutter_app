@@ -39,21 +39,6 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
     }
   }
 
-  // This is done to capture user name from SSO logins
-  _populateUserNameFromUserProfileIfNeeded(String userFirstName, String userLastName, ProfileInfoModified currentState) {
-    if (userFirstName.isNotEmpty || userLastName.isNotEmpty) {
-      _firstNameController.text = userFirstName;
-      _lastNameController.text = userLastName;
-      _completeProfileBloc.add(ProfileInfoChanged(
-          user: currentState.user,
-          firstName: userFirstName,
-          lastName: userLastName,
-          dateOfBirth: DateTime.parse(currentState.dateOfBirth.value),
-          gender: currentState.user.userProfile?.gender ?? ConstantUtils.defaultGender
-      ));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -90,6 +75,28 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    super.dispose();
+  }
+
+  // This is done to capture user name from SSO logins
+  _populateUserNameFromUserProfileIfNeeded(String userFirstName, String userLastName, ProfileInfoModified currentState) {
+    if (userFirstName.isNotEmpty || userLastName.isNotEmpty) {
+      _firstNameController.text = userFirstName;
+      _lastNameController.text = userLastName;
+      _completeProfileBloc.add(ProfileInfoChanged(
+          user: currentState.user,
+          firstName: userFirstName,
+          lastName: userLastName,
+          dateOfBirth: DateTime.parse(currentState.dateOfBirth.value),
+          gender: currentState.user.userProfile?.gender ?? ConstantUtils.defaultGender
+      ));
+    }
   }
 
   _renderDateOfBirthHint() {

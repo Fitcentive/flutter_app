@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';

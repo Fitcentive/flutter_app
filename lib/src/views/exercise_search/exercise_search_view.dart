@@ -83,6 +83,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
   @override
   void dispose() {
     _searchTextController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 

@@ -82,6 +82,23 @@ class NewsFeedViewState extends State<NewsFeedView> {
     _scrollController.addListener(_onScroll);
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<NewsFeedBloc, NewsFeedState>(
+        builder: (context, state) {
+          return Scaffold(
+            body: _newsfeedListView(state),
+            floatingActionButton: _animatedButton(),
+          );
+        });
+  }
+
   Future<void> _pullRefresh() async {
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
@@ -108,7 +125,6 @@ class NewsFeedViewState extends State<NewsFeedView> {
     }
   }
 
-
   Future<void> _likeOrUnlikePost(SocialPost post,  PostsWithLikedUserIds likedUserIds) async {
     List<String> newLikedUserIdsForCurrentPost = likedUserIds.userIds;
     final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.currentUserProfile.userId);
@@ -134,23 +150,6 @@ class NewsFeedViewState extends State<NewsFeedView> {
         }
       }).toList();
     });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<NewsFeedBloc, NewsFeedState>(
-        builder: (context, state) {
-          return Scaffold(
-            body: _newsfeedListView(state),
-            floatingActionButton: _animatedButton(),
-          );
-        });
   }
 
   _animatedButton() {

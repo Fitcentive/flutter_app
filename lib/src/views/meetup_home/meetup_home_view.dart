@@ -59,8 +59,6 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
   final _scrollController = ScrollController();
   late final MeetupHomeBloc _meetupHomeBloc;
 
-  late CameraPosition _initialCameraPosition;
-  final Completer<GoogleMapController> _mapController = Completer();
   MarkerId markerId = const MarkerId("camera_centre_marker_id");
   CircleId circleId = const CircleId('radius_circle');
   final Set<Marker> markers = <Marker>{};

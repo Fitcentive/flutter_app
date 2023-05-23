@@ -113,6 +113,38 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
     selectedServingOption = servingOptions.first;
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      bottomNavigationBar: _bottomBarWithOptAd(),
+      appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+        toolbarHeight: 75,
+        title: Text(
+            widget.foodDefinition.isLeft ? widget.foodDefinition.left.food.food_name : widget.foodDefinition.right.food.food_name,
+            style: const TextStyle(color: Colors.teal)
+        ),
+      ),
+      body: BlocListener<AddFoodToDiaryBloc, AddFoodToDiaryState>(
+        listener: (context, state) {
+          if (state is FoodDiaryEntryAdded) {
+            var count = 0;
+            Navigator.popUntil(context, (route) => count++ == 3);
+          }
+        },
+        child: _displayMainBody(),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _servingsTextController.dispose();
+    super.dispose();
+  }
+
   _bottomBarWithOptAd() {
     final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
     final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
@@ -142,33 +174,6 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
             elevation: 0,
           ),
         ]),
-      ),
-    );
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: _bottomBarWithOptAd(),
-      appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.teal,
-        ),
-        toolbarHeight: 75,
-        title: Text(
-            widget.foodDefinition.isLeft ? widget.foodDefinition.left.food.food_name : widget.foodDefinition.right.food.food_name,
-            style: const TextStyle(color: Colors.teal)
-        ),
-      ),
-      body: BlocListener<AddFoodToDiaryBloc, AddFoodToDiaryState>(
-        listener: (context, state) {
-          if (state is FoodDiaryEntryAdded) {
-            var count = 0;
-            Navigator.popUntil(context, (route) => count++ == 3);
-          }
-        },
-        child: _displayMainBody(),
       ),
     );
   }

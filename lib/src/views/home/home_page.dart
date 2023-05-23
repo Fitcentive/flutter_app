@@ -189,6 +189,12 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   @override
+  void dispose() {
+    _menuNavigationBloc.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
 

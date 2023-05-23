@@ -112,6 +112,37 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
     selectedWorkoutDateTime = widget.selectedDayInQuestion;
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      bottomNavigationBar: _bottomBarWithOptAd(),
+      appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+        toolbarHeight: 75,
+        title: Text(widget.exerciseDefinition.name, style: const TextStyle(color: Colors.teal)),
+      ),
+      body: BlocListener<AddExerciseToDiaryBloc, AddExerciseToDiaryState>(
+        listener: (context, state) {
+          if (state is ExerciseDiaryEntryAdded) {
+            Navigator.pop(context);
+          }
+        },
+        child: _displayMainBody(),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _mintuesPerformedTextController.dispose();
+    _setsTextController.dispose();
+    _repsTextController.dispose();
+    _caloriesBurnedTextController.dispose();
+    super.dispose();
+  }
+
   _bottomBarWithOptAd() {
     final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
     final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
@@ -141,28 +172,6 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
             elevation: 0,
           ),
         ]),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: _bottomBarWithOptAd(),
-      appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.teal,
-        ),
-        toolbarHeight: 75,
-        title: Text(widget.exerciseDefinition.name, style: const TextStyle(color: Colors.teal)),
-      ),
-      body: BlocListener<AddExerciseToDiaryBloc, AddExerciseToDiaryState>(
-        listener: (context, state) {
-          if (state is ExerciseDiaryEntryAdded) {
-            Navigator.pop(context);
-          }
-        },
-        child: _displayMainBody(),
       ),
     );
   }

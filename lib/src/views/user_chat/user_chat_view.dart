@@ -96,6 +96,7 @@ class UserChatViewState extends State<UserChatView> {
   @override
   void dispose() {
     _userChatBloc.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 

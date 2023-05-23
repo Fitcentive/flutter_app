@@ -90,62 +90,6 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
-  _getUserCurrentPosition() async {
-    final livePosition = await LocationPermissions.determinePosition();
-    setState(() {
-      currentUserLivePosition = livePosition;
-    });
-  }
-
-  void _generateBoundaryCircle(LatLng position, int radius) {
-    circles.clear();
-    final Circle circle = Circle(
-      circleId: circleId,
-      strokeColor: Colors.tealAccent,
-      consumeTapEvents: true,
-      onTap: () {
-        final currentState = _authenticationBloc.state;
-        if (currentState is AuthSuccessUserUpdateState) {
-          if (!isDialogShown) {
-            _goToDiscoveryRadiusView(currentState);
-          }
-        }
-      },
-      fillColor: Colors.teal.withOpacity(0.5),
-      strokeWidth: 5,
-      center: position,
-      radius: radius.toDouble(),
-    );
-    setState(() {
-      circles[circleId] = circle;
-    });
-  }
-
-  _setupMap(AuthenticatedUser user) {
-    locationRadius = user.userProfile?.locationRadius ?? 1000;
-
-    // Use user profile location - otherwise use live location - otherwise use default location
-    currentUserProfileLocationCenter = user.userProfile?.locationCenter != null ?
-    LatLng(user.userProfile!.locationCenter!.latitude, user.userProfile!.locationCenter!.longitude) :
-    (currentUserLivePosition != null ? LatLng(currentUserLivePosition!.latitude, currentUserLivePosition!.longitude) :
-    LocationUtils.defaultLocation);
-
-    _initialCameraPosition = CameraPosition(
-        target: currentUserProfileLocationCenter,
-        tilt: 0,
-        zoom: LocationUtils.getZoomLevel(locationRadius.toDouble())
-    );
-
-    _generateBoundaryCircle(currentUserProfileLocationCenter, locationRadius);
-    markers.clear();
-    markers.add(
-      Marker(
-        markerId: markerId,
-        position: currentUserProfileLocationCenter,
-      ),
-    );
-  }
-
   @override
   void initState() {
     super.initState();
@@ -160,20 +104,6 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       _setupMap(authState.authenticatedUser);
       selectedUserGender = authState.authenticatedUser.userProfile?.gender ?? 'Other';
     }
-  }
-
-  void _fillInUserProfileDetails(AuthenticatedUser user) {
-    _firstNameController.text = user.userProfile?.firstName ?? "";
-    _lastNameController.text = user.userProfile?.lastName ?? "";
-    _emailController.text = user.user.email;
-    _usernameController.text = user.user.username ?? "";
-    _accountDetailsBloc.add(AccountDetailsChanged(
-        user: user,
-        firstName: _firstNameController.text,
-        lastName: _lastNameController.text,
-        photoUrl: user.userProfile?.photoUrl,
-        gender: user.userProfile?.gender ?? 'Other'
-    ));
   }
 
   @override
@@ -231,6 +161,87 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         }),
       ),
     );
+  }
+
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _usernameController.dispose();
+    super.dispose();
+  }
+
+  _getUserCurrentPosition() async {
+    final livePosition = await LocationPermissions.determinePosition();
+    setState(() {
+      currentUserLivePosition = livePosition;
+    });
+  }
+
+  void _generateBoundaryCircle(LatLng position, int radius) {
+    circles.clear();
+    final Circle circle = Circle(
+      circleId: circleId,
+      strokeColor: Colors.tealAccent,
+      consumeTapEvents: true,
+      onTap: () {
+        final currentState = _authenticationBloc.state;
+        if (currentState is AuthSuccessUserUpdateState) {
+          if (!isDialogShown) {
+            _goToDiscoveryRadiusView(currentState);
+          }
+        }
+      },
+      fillColor: Colors.teal.withOpacity(0.5),
+      strokeWidth: 5,
+      center: position,
+      radius: radius.toDouble(),
+    );
+    setState(() {
+      circles[circleId] = circle;
+    });
+  }
+
+  _setupMap(AuthenticatedUser user) {
+    locationRadius = user.userProfile?.locationRadius ?? 1000;
+
+    // Use user profile location - otherwise use live location - otherwise use default location
+    currentUserProfileLocationCenter = user.userProfile?.locationCenter != null ?
+    LatLng(user.userProfile!.locationCenter!.latitude, user.userProfile!.locationCenter!.longitude) :
+    (currentUserLivePosition != null ? LatLng(currentUserLivePosition!.latitude, currentUserLivePosition!.longitude) :
+    LocationUtils.defaultLocation);
+
+    _initialCameraPosition = CameraPosition(
+        target: currentUserProfileLocationCenter,
+        tilt: 0,
+        zoom: LocationUtils.getZoomLevel(locationRadius.toDouble())
+    );
+
+    _generateBoundaryCircle(currentUserProfileLocationCenter, locationRadius);
+    markers.clear();
+    markers.add(
+      Marker(
+        markerId: markerId,
+        position: currentUserProfileLocationCenter,
+      ),
+    );
+  }
+
+
+  void _fillInUserProfileDetails(AuthenticatedUser user) {
+    _firstNameController.text = user.userProfile?.firstName ?? "";
+    _lastNameController.text = user.userProfile?.lastName ?? "";
+    _emailController.text = user.user.email;
+    _usernameController.text = user.user.username ?? "";
+    _accountDetailsBloc.add(AccountDetailsChanged(
+        user: user,
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        photoUrl: user.userProfile?.photoUrl,
+        gender: user.userProfile?.gender ?? 'Other'
+    ));
   }
 
   // Hack to get around web elements under dialog getting tapped

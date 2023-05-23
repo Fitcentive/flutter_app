@@ -144,6 +144,13 @@ class SelectedPostViewState extends State<SelectedPostView> {
     );
   }
 
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   _generatePostView(SelectedPostLoaded state) {
     return SingleChildScrollView(
       controller: _scrollController,

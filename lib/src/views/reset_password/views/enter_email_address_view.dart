@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_bloc.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_event.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_state.dart';
-import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EnterEmailAddressView extends StatelessWidget {

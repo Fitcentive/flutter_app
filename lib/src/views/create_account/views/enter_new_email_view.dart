@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
-import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EnterNewEmailView extends StatelessWidget {

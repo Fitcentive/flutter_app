@@ -58,6 +58,8 @@ class ChatHomeViewState extends State<ChatHomeView> {
   @override
   void dispose() {
     _chatBloc.dispose();
+    _searchTextController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 

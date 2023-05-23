@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_bloc.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_event.dart';
 import 'package:flutter_app/src/views/complete_profile/bloc/complete_profile_state.dart';
-import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SelectUsernameView extends StatefulWidget {
