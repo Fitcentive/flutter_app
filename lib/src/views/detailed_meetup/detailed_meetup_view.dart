@@ -846,12 +846,13 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             textCapitalization: TextCapitalization.words,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
-            onFieldSubmitted: (value) {
-              _updateMeetingDetails();
-            },
             onChanged: (text) {
               setState(() {
                 selectedMeetupName = text;
+              });
+              if (debounce?.isActive ?? false) debounce?.cancel();
+              debounce = Timer(const Duration(milliseconds: 500), () {
+                _updateMeetingDetails();
               });
             },
             decoration: InputDecoration(
