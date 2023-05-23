@@ -153,6 +153,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   int currentSelectedTab = 0;
   late StreamSubscription<bool> keyboardSubscription;
 
+  Timer? debounce;
 
   _setUpTimeSegmentDateTimeMap(DateTime baseTime) {
     const numberOfIntervals = (AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) * 2;
@@ -230,6 +231,11 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
 
   _onAddParticipantsButtonPressed() {
+    if (isParticipantSelectHappening) {
+      // Participant select is already happening, and it has been pressed to toggle
+      // We now save participants updated
+      _updateMeetingDetails();
+    }
     setState(() {
       isParticipantSelectHappening = !isParticipantSelectHappening;
     });
@@ -295,66 +301,47 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       appBar: _renderAppBar(),
       floatingActionButton:  _dynamicFloatingActionButtons(),
-      body: WillPopScope(
-        onWillPop: () {
-          if (_isCurrentMeetupOwnedByCurrentUser() && _hasMeetingBeenUpdated()) {
-            _updateMeetingDetails();
-            return Future.value(false);
+      body: BlocListener<DetailedMeetupBloc, DetailedMeetupState>(
+        listener: (context, state) {
+          if (state is DetailedMeetupDataFetched) {
+            setState(() {
+              _setUpTimeSegmentDateTimeMap(state.meetup.createdAt.toLocal());
+              _setLocalStateFromBlocState(state);
+            });
           }
-          else {
-            return Future.value(true);
+          else if (state is MeetupChatRoomCreated) {
+            final otherUserProfiles = selectedMeetupParticipantUserProfiles
+                .where((element) => element.userId != widget.currentUserProfile.userId)
+                .toList();
+
+            Navigator.push(
+                context,
+                UserChatView.route(
+                    currentRoomId: state.chatRoomId,
+                    currentUserProfile: widget.currentUserProfile,
+                    otherUserProfiles: otherUserProfiles
+                )
+            );
+          }
+          else if (state is MeetupDeletedAndReadyToPop) {
+            SnackbarUtils.showSnackBar(context, "Meetup deleted successfully!");
+            Navigator.pop(context);
           }
         },
-        child: BlocListener<DetailedMeetupBloc, DetailedMeetupState>(
-          listener: (context, state) {
+        child: BlocBuilder<DetailedMeetupBloc, DetailedMeetupState>(
+          builder: (context, state) {
             if (state is DetailedMeetupDataFetched) {
-              setState(() {
-                _setUpTimeSegmentDateTimeMap(state.meetup.createdAt.toLocal());
-                _setLocalStateFromBlocState(state);
-              });
+              return _mainBody(state);
             }
-            else if (state is MeetupChatRoomCreated) {
-              final otherUserProfiles = selectedMeetupParticipantUserProfiles
-                  .where((element) => element.userId != widget.currentUserProfile.userId)
-                  .toList();
-
-              Navigator.push(
-                  context,
-                  UserChatView.route(
-                      currentRoomId: state.chatRoomId,
-                      currentUserProfile: widget.currentUserProfile,
-                      otherUserProfiles: otherUserProfiles
-                  )
+            else {
+              return const Center(
+                child: CircularProgressIndicator(),
               );
             }
-            else if (state is MeetupUpdatedAndReadyToPop) {
-              SnackbarUtils.showSnackBar(context, "Meetup updated successfully!");
-              Navigator.pop(context);
-            }
-            else if (state is MeetupDeletedAndReadyToPop) {
-              SnackbarUtils.showSnackBar(context, "Meetup deleted successfully!");
-              Navigator.pop(context);
-            }
           },
-          child: BlocBuilder<DetailedMeetupBloc, DetailedMeetupState>(
-            builder: (context, state) {
-              if (state is DetailedMeetupDataFetched) {
-                return _mainBody(state);
-              }
-              else {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-            },
-          ),
         ),
       ),
     );
-  }
-
-  _isCurrentMeetupOwnedByCurrentUser() {
-    return initialMeetupOwnerId == widget.currentUserProfile.userId;
   }
 
   _setLocalStateFromBlocState(DetailedMeetupDataFetched state) {
@@ -378,23 +365,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     initialMeetupDate = currentMeetup.time?.toLocal();
     initialMeetupName = currentMeetup.name;
     initialMeetupParticipantIds = selectedMeetupParticipants.map((e) => e.userId).toList();
-  }
-
-  _hasMeetingBeenUpdated() {
-    if (selectedMeetupName != initialMeetupName) {
-      return true;
-    }
-    else if (selectedMeetupLocationId != initialMeetupLocationId) {
-      return true;
-    }
-    else if (selectedMeetupDate != initialMeetupDate) {
-      return true;
-    }
-    else if ((selectedMeetupParticipants.map((e) => e.userId).toSet()
-                .difference(initialMeetupParticipantIds.toSet())).isNotEmpty) {
-      return true;
-    }
-    return false;
   }
 
   _performMeetupDeletion() {
@@ -562,11 +532,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
           }
           else {
             // Hide FAB as saving is now done implicitly on WillPopScope
+            // But we still need this because otherwise BlocBuilder will complain
             return Visibility(
               visible: false,
               child: FloatingActionButton(
                   heroTag: "saveButtonDetailedMeetupView",
-                  onPressed: _updateMeetingDetails,
+                  onPressed: () {},
                   backgroundColor: Colors.teal,
                   child: const Icon(Icons.save, color: Colors.white)
               ),
@@ -574,6 +545,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
           }
         }
         else {
+          // We don't use this but we still need this because otherwise BlocBuilder will complain
           return Visibility(
             visible: false,
             child: FloatingActionButton(
@@ -582,7 +554,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                 backgroundColor: Colors.teal,
                 child: const Icon(Icons.save, color: Colors.white)
             ),
-          );;
+          );
         }
       },
     );
@@ -596,12 +568,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         meetupName: selectedMeetupName,
         location: selectedMeetupLocation,
         meetupParticipantUserIds: selectedMeetupParticipantUserProfiles.map((e) => e.userId).toList(),
-    ));
-    ScaffoldMessenger
-        .of(context)
-        .showSnackBar(const SnackBar(
-          content: Text("Please wait... updating meetup..."),
-          duration: SnackbarUtils.shortDuration
     ));
   }
 
@@ -674,10 +640,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         saveAvailabilitiesButtonCallback: _saveAvailabilityButtonOnPressed,
         searchLocationViewUpdateBlocCallback: _searchLocationViewUpdateBlocCallback,
         currentSelectedTabCallback: _currentSelectedTabCallback,
+        searchLocationViewUpdateMeetupLocationViaBlocCallback: _searchLocationViewUpdateMeetupLocationViaBlocCallback
       ),
     );
   }
 
+  _searchLocationViewUpdateMeetupLocationViaBlocCallback() {
+    _updateMeetingDetails();
+  }
 
   _cancelEditAvailabilityButtonOnPressed() {
     setState(() {
@@ -876,6 +846,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             textCapitalization: TextCapitalization.words,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
+            onFieldSubmitted: (value) {
+              _updateMeetingDetails();
+            },
             onChanged: (text) {
               setState(() {
                 selectedMeetupName = text;
@@ -939,6 +912,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                 selectedTime.minute,
               );
             });
+
+            _updateMeetingDetails();
           }
         }
         else {
@@ -987,6 +962,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                 (selectedMeetupDate ?? earliestPossibleMeetupDateTime).minute,
               );
             });
+            _updateMeetingDetails();
           }
         }
         else {

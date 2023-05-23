@@ -42,6 +42,7 @@ class MeetupTabs extends StatefulWidget {
   final SelectedTabCallback currentSelectedTabCallback;
 
   final SearchLocationViewUpdateBlocCallback searchLocationViewUpdateBlocCallback;
+  final VoidCallback searchLocationViewUpdateMeetupLocationViaBlocCallback;
 
   const MeetupTabs({
     super.key,
@@ -65,6 +66,7 @@ class MeetupTabs extends StatefulWidget {
     required this.currentSelectedTabCallback,
 
     required this.searchLocationViewUpdateBlocCallback,
+    required this.searchLocationViewUpdateMeetupLocationViaBlocCallback,
   });
 
   @override
@@ -210,8 +212,10 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
             initialSelectedLocationId: widget.selectedMeetupLocationId,
             initialSelectedLocationFsqId: widget.selectedMeetupLocationFsqId,
             updateBlocCallback: widget.searchLocationViewUpdateBlocCallback
-            ),
-    );
+        ),
+    ).then((value) {
+      widget.searchLocationViewUpdateMeetupLocationViaBlocCallback();
+    });
   }
 
   // Need an API call to fetch the FSQ result, wait for bloc to complete

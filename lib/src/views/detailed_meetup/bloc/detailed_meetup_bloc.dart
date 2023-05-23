@@ -189,7 +189,6 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
           meetupRepository.removeParticipantFromMeetup(meetup.id, e, accessToken)));
     }
 
-    emit(const MeetupUpdatedAndReadyToPop());
   }
 
   void _saveAvailabilitiesForCurrentUser(SaveAvailabilitiesForCurrentUser event, Emitter<DetailedMeetupState> emit) async {

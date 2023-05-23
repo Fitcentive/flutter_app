@@ -307,7 +307,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
               children: [
                 const Text("Match score", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),),
                 WidgetUtils.spacer(5),
-                Text(score.toStringAsFixed(2), textAlign: TextAlign.center, style: const TextStyle(fontSize: 10),),
+                Text("${score.toStringAsFixed(2)} %", textAlign: TextAlign.center, style: const TextStyle(fontSize: 10),),
               ],
             ),
           ),

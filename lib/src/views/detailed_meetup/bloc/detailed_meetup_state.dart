@@ -61,14 +61,6 @@ class DetailedMeetupDataFetched extends DetailedMeetupState {
   ];
 }
 
-class MeetupUpdatedAndReadyToPop extends DetailedMeetupState {
-
-  const MeetupUpdatedAndReadyToPop();
-
-  @override
-  List<Object?> get props => [];
-}
-
 class MeetupDeletedAndReadyToPop extends DetailedMeetupState {
 
   const MeetupDeletedAndReadyToPop();

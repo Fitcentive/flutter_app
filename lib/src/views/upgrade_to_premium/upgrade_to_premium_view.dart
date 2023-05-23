@@ -66,6 +66,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
   fs.CardFieldInputDetails? cardFieldInputDetails;
 
   late UpgradeToPremiumBloc _upgradeToPremiumBloc;
+  final ScrollController _scrollController = ScrollController();
 
   void update() => setState(() {});
 
@@ -75,12 +76,14 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
 
     _upgradeToPremiumBloc = BlocProvider.of<UpgradeToPremiumBloc>(context);
     controller.addListener(update);
+
   }
 
   @override
   void dispose() {
     controller.removeListener(update);
     controller.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -126,9 +129,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                 );
               }
               else {
-                return Center(
-                  child: _dialogContentCard(),
-                );
+                return _dialogContentCard();
               }
             },
           ),
@@ -167,19 +168,51 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
     return IntrinsicHeight(
       child: Card(
           elevation: 0,
-          child: Scrollbar(
-            child: SingleChildScrollView(
-              child: GestureDetector(
-                onTap: () {
-                  KeyboardUtils.hideKeyboard(context);
-                },
+          child: GestureDetector(
+            onTap: () {
+              KeyboardUtils.hideKeyboard(context);
+            },
+            child: Scrollbar(
+              controller: _scrollController,
+              child: SingleChildScrollView(
+                controller: _scrollController,
                 child: Column(
-                  mainAxisSize: MainAxisSize.max,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     WidgetUtils.spacer(5),
                     _userProfileImageView(),
-                    WidgetUtils.spacer(10),
-                    premiumWriteupContent(),
+                    WidgetUtils.spacer(15),
+                    const Text(
+                      "For just \$2.99 a month, you get...",
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal
+                      ),
+                    ),
+                    WidgetUtils.spacer(5),
+                    const SizedBox(
+                      height: 200,
+                        child: Markdown(
+                          data: ConstantUtils.premiumFeatures,
+                          physics: NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                        )
+                    ),
+                    WidgetUtils.spacer(25),
+                    const Text(
+                      "Enter your credit card details to get started",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        // color: Colors.teal
+                      ),
+                    ),
+                    WidgetUtils.spacer(15),
+                    _showCardDetails(),
+                    WidgetUtils.spacer(15),
+                    _payNowButton(),
+                    WidgetUtils.spacer(5),
                   ],
           ),
               ),
@@ -189,41 +222,6 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
     );
   }
 
-  premiumWriteupContent() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        WidgetUtils.spacer(5),
-        const Text(
-          "For just \$2.99 a month, you get...",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.teal
-          ),
-        ),
-        WidgetUtils.spacer(5),
-        const SizedBox(
-            height: 200,
-            child: Markdown(data: ConstantUtils.premiumFeatures)
-        ),
-        WidgetUtils.spacer(25),
-        const Text(
-          "Enter your credit card details to get started",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.normal,
-            // color: Colors.teal
-          ),
-        ),
-        WidgetUtils.spacer(15),
-        _showCardDetails(),
-        WidgetUtils.spacer(15),
-        _payNowButton(),
-        WidgetUtils.spacer(5),
-      ],
-    );
-  }
 
   MaterialStateProperty<Color> _getBackgroundColor() {
     if (cardFieldInputDetails?.complete ?? false) {
