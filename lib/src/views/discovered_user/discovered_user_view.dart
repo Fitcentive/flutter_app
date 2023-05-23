@@ -126,7 +126,7 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
             children: [
               const Text("Match score", textAlign: TextAlign.center, style: TextStyle(fontSize: 12),),
               WidgetUtils.spacer(5),
-              Text(score.toStringAsFixed(2), textAlign: TextAlign.center, style: const TextStyle(fontSize: 10),),
+              Text("${score.toStringAsFixed(2)} %", textAlign: TextAlign.center, style: const TextStyle(fontSize: 10),),
             ],
           ),
         ),
@@ -173,7 +173,8 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
       UserPersonalPreferences? currentUserPersonalPreferences
   ) {
     if (otherUserPersonalPreferences != null) {
-      final color = currentUserPersonalPreferences?.hoursPerWeek.floor() == otherUserPersonalPreferences.hoursPerWeek.floor() ? Colors.teal : Colors.redAccent;
+      final color = currentUserPersonalPreferences?.hoursPerWeek.floor() == otherUserPersonalPreferences.hoursPerWeek.floor() ?
+                      Colors.teal : null;
       final style = TextStyle(fontSize: 14, color: color);
       return Text("${otherUserPersonalPreferences.hoursPerWeek.toString()} hours per week", textAlign: TextAlign.center, style: style);
     }
@@ -298,7 +299,7 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
 
   _generateLocationCard(PublicUserProfile userProfile) {
     return Expanded(
-      child: LocationCard(userProfile: userProfile),
+      child: LocationCard(otherUserProfile: userProfile, currentUserProfile: widget.currentUserProfile,),
     );
   }
 
@@ -318,7 +319,7 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
                     (index) {
                       final currentItem = otherUserItems[index];
                       final isCurrentItemPartOfCurrentUserItems = currentUserItems?.contains(currentItem) ?? false;
-                      final color = isCurrentItemPartOfCurrentUserItems ? Colors.teal : Colors.redAccent;
+                      final color = isCurrentItemPartOfCurrentUserItems ? Colors.teal : null;
                       return Padding(
                         padding: const EdgeInsets.all(2),
                         child: Text(currentItem, style: TextStyle(fontSize: 12, color: color)),

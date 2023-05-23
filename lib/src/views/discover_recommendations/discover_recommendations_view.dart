@@ -258,7 +258,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
 
   _generateLocationCard(PublicUserProfile userProfile) {
     return Expanded(
-        child: LocationCard(userProfile: userProfile),
+        child: LocationCard(otherUserProfile: userProfile, currentUserProfile: widget.currentUserProfile,),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -7,65 +8,93 @@ import 'package:flutter_app/src/views/shared_components/location_view.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LocationCard extends StatelessWidget {
-  final PublicUserProfile userProfile;
+  final PublicUserProfile currentUserProfile;
+  final PublicUserProfile otherUserProfile;
 
-  LocationCard({Key? key, required this.userProfile}) : super(key: key);
+  LocationCard({
+    Key? key,
+    required this.otherUserProfile,
+    required this.currentUserProfile,
+  }) : super(key: key);
 
-  late int locationRadius;
+  late int otherUserLocationRadius;
+  late LatLng otherUserProfileLocationCenter;
+  late int currentUserLocationRadius;
   late LatLng currentUserProfileLocationCenter;
+
   late CameraPosition _initialCameraPosition;
   final Completer<GoogleMapController> _mapController = Completer();
   MarkerId markerId = const MarkerId("camera_centre_marker_id");
-  CircleId circleId = const CircleId('radius_circle');
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
-  void _generateBoundaryCircle(LatLng position, int radius, BuildContext context) {
-    circles.clear();
+  void _generateBoundaryCircle(
+      String userId,
+      LatLng position,
+      int radius,
+      Color fillColor,
+      Color strokeColor,
+      BuildContext context
+  ) {
+    final cId = CircleId(userId);
     final Circle circle = Circle(
-      circleId: circleId,
-      strokeColor: Colors.tealAccent,
+      circleId: cId,
+      strokeColor: strokeColor,
       consumeTapEvents: true,
       onTap: () {
-        _goToLocationView(userProfile, context);
+        _goToLocationView(otherUserProfile, currentUserProfile, context);
       },
-      fillColor: Colors.teal.withOpacity(0.5),
+      fillColor: fillColor.withOpacity(0.5),
       strokeWidth: 5,
       center: position,
       radius: radius.toDouble(),
     );
-    circles[circleId] = circle;
+    circles[cId] = circle;
   }
 
-  _setupMap(PublicUserProfile user, BuildContext context) {
-    locationRadius = user.locationRadius ?? 1000;
-
+  _setupMap(PublicUserProfile otherUser, PublicUserProfile currentUser, BuildContext context) {
+    otherUserLocationRadius = otherUser.locationRadius ?? 1000;
     // Use user profile location - otherwise use default location
-    currentUserProfileLocationCenter = user.locationCenter != null ?
-    LatLng(user.locationCenter!.latitude, user.locationCenter!.longitude) : LocationUtils.defaultLocation;
+    otherUserProfileLocationCenter = otherUser.locationCenter != null ?
+      LatLng(otherUser.locationCenter!.latitude, otherUser.locationCenter!.longitude) : LocationUtils.defaultLocation;
+
+    currentUserLocationRadius = currentUser.locationRadius ?? 1000;
+    // Use user profile location - otherwise use default location
+    currentUserProfileLocationCenter = currentUser.locationCenter != null ?
+    LatLng(currentUser.locationCenter!.latitude, currentUser.locationCenter!.longitude) : LocationUtils.defaultLocation;
 
     _initialCameraPosition = CameraPosition(
-        target: currentUserProfileLocationCenter,
+        target: LocationUtils.computeCentroid(
+            [otherUserProfileLocationCenter, currentUserProfileLocationCenter]
+                .toList()
+                .map((e) => LatLng(e.latitude, e.longitude))),
         tilt: 0,
-        zoom: LocationUtils.getZoomLevelMini(locationRadius.toDouble())
+        zoom: LocationUtils.getZoomLevelMini(
+            [otherUserLocationRadius, currentUserLocationRadius]
+                .reduce(max)
+                .toDouble())
     );
 
-    _generateBoundaryCircle(currentUserProfileLocationCenter, locationRadius, context);
+    circles.clear();
+    _generateBoundaryCircle(otherUser.userId, otherUserProfileLocationCenter, otherUserLocationRadius, Colors.blue, Colors.blueAccent, context);
+    _generateBoundaryCircle(currentUser.userId, currentUserProfileLocationCenter, currentUserLocationRadius, Colors.teal, Colors.tealAccent, context);
+
     markers.clear();
     markers.add(
       Marker(
         markerId: markerId,
         position: currentUserProfileLocationCenter,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen)
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    _setupMap(userProfile, context);
+    _setupMap(otherUserProfile, currentUserProfile, context);
     return GoogleMap(
         onTap: (_) {
-          _goToLocationView(userProfile, context);
+          _goToLocationView(otherUserProfile, currentUserProfile, context);
         },
         mapType: MapType.hybrid,
         mapToolbarEnabled: false,
@@ -81,11 +110,10 @@ class LocationCard extends StatelessWidget {
     );
   }
 
-  _goToLocationView(PublicUserProfile userProfile, BuildContext context,) {
-    Navigator.pushAndRemoveUntil<void>(
+  _goToLocationView(PublicUserProfile userProfile, PublicUserProfile currentUserProfile, BuildContext context,) {
+    Navigator.push(
       context,
-      LocationView.route(userProfile),
-        (route) => true
+      LocationView.route(userProfile, currentUserProfile),
     );
   }
 

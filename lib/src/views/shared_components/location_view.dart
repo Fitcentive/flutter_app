@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -9,24 +10,25 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class LocationView extends StatelessWidget {
   static const String routeName = "discovery/recommendation/location";
 
-  final PublicUserProfile userProfile;
+  final PublicUserProfile otherUserProfile;
+  final PublicUserProfile currentUserProfile;
 
   LocationView({
     Key? key,
-    required this.userProfile,
+    required this.otherUserProfile,
+    required this.currentUserProfile,
   }): super(key: key);
 
-  static Route route(PublicUserProfile userProfile) {
+  static Route route(PublicUserProfile otherUserProfile, PublicUserProfile currentUserProfile) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
             name: routeName
         ),
-        builder: (_) => LocationView(userProfile: userProfile)
+        builder: (_) => LocationView(otherUserProfile: otherUserProfile, currentUserProfile: currentUserProfile)
     );
   }
 
   MarkerId markerId = const MarkerId("camera_centre_marker_id");
-  CircleId circleId = const CircleId('radius_circle');
 
   late CameraPosition initialCameraPosition;
 
@@ -34,35 +36,48 @@ class LocationView extends StatelessWidget {
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
-  late double currentSliderValue;
-  late LatLng currentCentrePosition;
+  late LatLng otherUserProfileLocationCenter;
+  late LatLng currentUserProfileLocationCenter;
 
-  void _generateBoundaryCircle() {
-    circles.clear();
+  void _generateBoundaryCircle(String userId, LatLng centrePosition, double radius, Color strokeColor, Color fillColor) {
+    final cId = CircleId(userId);
     final Circle circle = Circle(
-      circleId: circleId,
+      circleId: cId,
       consumeTapEvents: true,
-      strokeColor: Colors.tealAccent,
-      fillColor: Colors.teal.withOpacity(0.5),
+      strokeColor: strokeColor,
+      fillColor: fillColor.withOpacity(0.5),
       strokeWidth: 5,
-      center: currentCentrePosition,
-      radius: currentSliderValue * 1000,
+      center: centrePosition,
+      radius: radius,
     );
-    circles[circleId] = circle;
+    circles[cId] = circle;
   }
 
   _setupMap() {
-    currentSliderValue = userProfile.locationRadius! / 1000;
-    currentCentrePosition = LatLng(userProfile.locationCenter!.latitude, userProfile.locationCenter!.longitude);
-    initialCameraPosition =  CameraPosition(
-        target: currentCentrePosition,
-        zoom: LocationUtils.getZoomLevel(userProfile.locationRadius!.toDouble())
+    otherUserProfileLocationCenter = LatLng(otherUserProfile.locationCenter!.latitude, otherUserProfile.locationCenter!.longitude);
+    currentUserProfileLocationCenter = LatLng(currentUserProfile.locationCenter!.latitude, currentUserProfile.locationCenter!.longitude);
+
+    initialCameraPosition = CameraPosition(
+        target: LocationUtils.computeCentroid(
+            [otherUserProfileLocationCenter, currentUserProfileLocationCenter]
+                .toList()
+                .map((e) => LatLng(e.latitude, e.longitude))),
+        tilt: 0,
+        zoom: LocationUtils.getZoomLevelMini(
+            [otherUserProfile.locationRadius!, currentUserProfile.locationRadius!]
+                .reduce(max)
+                .toDouble())
     );
-    _generateBoundaryCircle();
+
+    circles.clear();
+    _generateBoundaryCircle(otherUserProfile.userId, otherUserProfileLocationCenter, otherUserProfile.locationRadius!.toDouble(), Colors.blueAccent, Colors.blue );
+    _generateBoundaryCircle(currentUserProfile.userId, currentUserProfileLocationCenter, currentUserProfile.locationRadius!.toDouble(), Colors.tealAccent, Colors.teal );
+
     markers.add(
       Marker(
         markerId: markerId,
-        position: currentCentrePosition,
+        position: currentUserProfileLocationCenter,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen)
       ),
     );
   }
