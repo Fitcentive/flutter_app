@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/login/new_password.dart';
 import 'package:flutter_app/src/models/login/new_password.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_bloc.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_event.dart';
 import 'package:flutter_app/src/views/create_account/bloc/create_account_state.dart';
@@ -18,14 +19,6 @@ class EnterNewPasswordView extends StatefulWidget {
 }
 
 class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
-  static const String passwordRules = """
-  ### Password rules
-  - At least one uppercase character
-  - At least one lowercase character
-  - At least one digit
-  - At least one special character
-  - At least 8 characters in length
-  """;
   
   bool _isObscurePasswordField = true;
   bool _isObscurePasswordConfirmationField = true;
@@ -60,7 +53,7 @@ class EnterNewPasswordViewState extends State<EnterNewPasswordView> {
               const Padding(padding: EdgeInsets.all(12)),
               const SizedBox(
                 height: 200,
-                child: Markdown(data: passwordRules)
+                child: Markdown(data: ConstantUtils.passwordRules)
               ),
           ],
           ),

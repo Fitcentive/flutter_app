@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_bloc.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_event.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_state.dart';
 import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class EnterResetPasswordView extends StatefulWidget {
 
@@ -33,20 +35,26 @@ class EnterResetPasswordViewState extends State<EnterResetPasswordView> {
       alignment: const Alignment(0, -1 / 3),
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Enter a new password",
-              style: Theme.of(context).textTheme.headline6,
-              textAlign: TextAlign.center,
-            ),
-            const Padding(padding: EdgeInsets.all(12)),
-            _passwordWidget(),
-            const Padding(padding: EdgeInsets.all(12)),
-            _passwordConfirmationWidget(),
-            const Padding(padding: EdgeInsets.all(12)),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Enter a new password",
+                style: Theme.of(context).textTheme.headline6,
+                textAlign: TextAlign.center,
+              ),
+              const Padding(padding: EdgeInsets.all(12)),
+              _passwordWidget(),
+              const Padding(padding: EdgeInsets.all(12)),
+              _passwordConfirmationWidget(),
+              const Padding(padding: EdgeInsets.all(12)),
+              const SizedBox(
+                  height: 200,
+                  child: Markdown(data: ConstantUtils.passwordRules)
+              )
+            ],
+          ),
         ),
       ),
     );

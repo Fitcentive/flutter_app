@@ -46,7 +46,6 @@ class MeetupCommentsListView extends StatefulWidget {
   }
 }
 
-// This is currently not being used
 class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
 
   late final MeetupCommentsListBloc _meetupCommentsListBloc;

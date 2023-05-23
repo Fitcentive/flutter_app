@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/login/email_and_password.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_bloc.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_event.dart';
 import 'package:flutter_app/src/views/reset_password/bloc/reset_password_state.dart';
@@ -14,8 +16,8 @@ class ResetPasswordPage extends StatefulWidget {
 
   const ResetPasswordPage({Key? key}) : super(key: key);
 
-  static Route route() {
-    return MaterialPageRoute<void>(
+  static Route<EmailAndPassword> route() {
+    return MaterialPageRoute<EmailAndPassword>(
         settings: const RouteSettings(
             name: routeName
         ),
@@ -89,11 +91,19 @@ class ResetPasswordPageState extends State<ResetPasswordPage> {
     final currentState = _resetPasswordBloc.state;
     if (currentState is EmailAddressModified && currentState.status.isValid) {
       _resetPasswordBloc.add(EmailAddressEnteredForVerification(currentState.email.value));
+      SnackbarUtils.showSnackBarShort(context, "Hang on while we verify your email...");
     } else if (currentState is VerificationTokenModified && currentState.status.isValid) {
       _resetPasswordBloc.add(EmailVerificationTokenSubmitted(currentState.email, currentState.token.value));
+      SnackbarUtils.showSnackBarShort(context, "Hang on while we verify your token...");
     } else if (currentState is PasswordModified && currentState.status.isValid) {
-      _resetPasswordBloc.add(PasswordSubmitted(
-          email: currentState.email, password: currentState.password.value, verificationToken: currentState.token));
+      SnackbarUtils.showSnackBarShort(context, "Almost there... hold on while we reset your password");
+      _resetPasswordBloc.add(
+          PasswordSubmitted(
+              email: currentState.email,
+              password: currentState.password.value,
+              verificationToken: currentState.token
+          )
+      );
     }
     return null;
   }
@@ -124,7 +134,7 @@ class ResetPasswordPageState extends State<ResetPasswordPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Password reset successful!')),
           );
-          Navigator.pop(context);
+          Navigator.pop(context, EmailAndPassword(email: state.email, password: state.password));
         }
         if (state is InvalidEmailVerificationToken) {
           ScaffoldMessenger.of(context).showSnackBar(

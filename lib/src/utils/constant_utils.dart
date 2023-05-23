@@ -21,6 +21,8 @@ class ConstantUtils {
 
   static const double WEB_APP_MAX_WIDTH = 600;
 
+  static const int MAX_LOGIN_FAILURES_BEFORE_PWD_RESET_PROMPT = 3;
+
   static const int DEFAULT_LIMIT = 20;
   static const int DEFAULT_MAX_LIMIT = 100000;
   static const int DEFAULT_NEWSFEED_LIMIT = 10;
@@ -92,6 +94,15 @@ class ConstantUtils {
   - #### Group chats
   - #### Support the developer
   - #### And so much more!
+  """;
+
+  static const String passwordRules = """
+  ### Password rules
+  - At least one uppercase character
+  - At least one lowercase character
+  - At least one digit
+  - At least one special character
+  - At least 8 characters in length
   """;
 
   static const String staticDeletedUserId = "aaaaaaaa-aaaa-8bbb-8bbb-aaaaaaaaaaaa";

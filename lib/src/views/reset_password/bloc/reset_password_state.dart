@@ -127,9 +127,14 @@ class PasswordModified extends ResetPasswordState {
 }
 
 class PasswordResetSuccessfully extends ResetPasswordState {
+  final String email;
+  final String password;
 
-  const PasswordResetSuccessfully();
+  const PasswordResetSuccessfully({
+    required this.email,
+    required this.password,
+  });
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [email, password];
 }

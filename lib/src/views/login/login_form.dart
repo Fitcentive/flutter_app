@@ -30,6 +30,8 @@ class LoginFormState extends State<LoginForm> {
 
   bool _isObscure = true;
 
+  int loginFailures = 0;
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +56,9 @@ class LoginFormState extends State<LoginForm> {
               .add(InitiateAuthenticationFlow(email: _emailController.text, password: ""));
           // _usernameController.clear();
           _passwordController.clear();
+          setState(() {
+            loginFailures += 1;
+          });
         }
         if (state is AuthConflictState) {
           ScaffoldMessenger.of(context)
@@ -223,6 +228,9 @@ class LoginFormState extends State<LoginForm> {
             context,
             CreateAccountPage.route()
         ).then((emailAndPassword) {
+          setState(() {
+            loginFailures = 0;
+          });
           if (emailAndPassword != null) {
             context
                 .read<AuthenticationBloc>()
@@ -240,11 +248,30 @@ class LoginFormState extends State<LoginForm> {
   _resetPasswordButton() {
     return GestureDetector(
       onTap: () {
-        Navigator.pushAndRemoveUntil<void>(context, ResetPasswordPage.route(), (route) => true);
+        Navigator.push<EmailAndPassword>(
+            context,
+            ResetPasswordPage.route()
+        ).then((emailAndPassword) {
+          setState(() {
+            loginFailures = 0;
+          });
+          if (emailAndPassword != null) {
+            context
+                .read<AuthenticationBloc>()
+                .add(SignInWithEmailEvent(email: emailAndPassword.email, password: emailAndPassword.password));
+          }
+        });
       },
-      child: const Text(
-        "Forgot password?",
-        style: TextStyle(color: ColorConstants.primary500Teal),
+      child: Text(
+        loginFailures >= ConstantUtils.MAX_LOGIN_FAILURES_BEFORE_PWD_RESET_PROMPT ?
+           "It looks like you are unsure of your password. Do you want to try resetting it?" :
+           "Forgot password?",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            color:  loginFailures >= ConstantUtils.MAX_LOGIN_FAILURES_BEFORE_PWD_RESET_PROMPT ?
+                    ColorConstants.primary500Red :
+                    ColorConstants.primary500Teal
+        ),
       ),
     );
   }
