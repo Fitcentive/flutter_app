@@ -25,6 +25,7 @@ COPY . /app/
 WORKDIR /app/
 
 RUN flutter clean && flutter pub get
+# Run as non-root user from here onwards maybe?
 RUN flutter build web
 
 # Stage 2 - Create the run-time image

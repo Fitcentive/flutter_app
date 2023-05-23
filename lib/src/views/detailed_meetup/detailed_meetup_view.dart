@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
@@ -10,7 +11,6 @@ import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/models/user_profile_with_location.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
@@ -22,18 +22,14 @@ import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabi
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_bloc.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_state.dart';
+import 'package:flutter_app/src/views/detailed_meetup/views/meetup_tabs.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
-import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_comments_list/meetup_comments_list.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter_app/src/views/shared_components/participants_list.dart';
-import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
@@ -153,6 +149,11 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   bool isAvailabilitySelectHappening = false;
   bool isParticipantSelectHappening = false;
 
+  bool isKeyboardVisibleCurrently = false;
+  int currentSelectedTab = 0;
+  late StreamSubscription<bool> keyboardSubscription;
+
+
   _setUpTimeSegmentDateTimeMap(DateTime baseTime) {
     const numberOfIntervals = (AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) * 2;
     final intervalsList = List.generate(numberOfIntervals, (i) => i);
@@ -185,6 +186,13 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     if (isPremiumEnabled) {
       maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_PREMIUM;
     }
+
+    var keyboardVisibilityController = KeyboardVisibilityController();
+    keyboardSubscription = keyboardVisibilityController.onChange.listen((bool visible) {
+      setState(() {
+        isKeyboardVisibleCurrently = visible;
+      });
+    });
   }
 
   _fetchAllRequiredDataFromScratch() {
@@ -236,7 +244,22 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             return AppBar(
               title: const Text("View Meetup", style: TextStyle(color: Colors.teal)),
               iconTheme: const IconThemeData(color: Colors.teal),
-              actions: widget.currentUserProfile.userId != currentMeetup?.ownerId ? [] : <Widget>[
+              actions: widget.currentUserProfile.userId != currentMeetup?.ownerId ? [
+                IconButton(
+                  icon: const Icon(
+                    Icons.chat,
+                    color: Colors.teal,
+                  ),
+                  onPressed: _goToChatRoom,
+                ),
+              ] : <Widget>[
+                IconButton(
+                  icon: const Icon(
+                    Icons.chat,
+                    color: Colors.teal,
+                  ),
+                  onPressed: _goToChatRoom,
+                ),
                 IconButton(
                   icon: Icon(
                     isParticipantSelectHappening ? Icons.check : Icons.add,
@@ -256,6 +279,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    keyboardSubscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -383,45 +412,53 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     );
   }
 
-  _deleteMeetupButton() {
-    return ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-      ),
-      onPressed: () async {
-        showDialog(context: context, builder: (context) {
-          Widget cancelButton = TextButton(
+  _showDeleteMeetupButtonIfNeeded() {
+    if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
+      return Column(
+        children: [
+          WidgetUtils.spacer(5),
+          ElevatedButton(
             style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
             ),
-            onPressed:  () {
-              Navigator.pop(context);
-            },
-            child: const Text("Cancel"),
-          );
-          Widget continueButton = TextButton(
-            onPressed:  () {
-              Navigator.pop(context);
-              _performMeetupDeletion();
-            },
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
-            ),
-            child: const Text("Confirm"),
-          );
+            onPressed: () async {
+              showDialog(context: context, builder: (context) {
+                Widget cancelButton = TextButton(
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed:  () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel"),
+                );
+                Widget continueButton = TextButton(
+                  onPressed:  () {
+                    Navigator.pop(context);
+                    _performMeetupDeletion();
+                  },
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+                  ),
+                  child: const Text("Confirm"),
+                );
 
-          return AlertDialog(
-            title: const Text("Delete Meetup Confirmation"),
-            content: const Text("Are you sure you want to delete this meetup? This action is irreversible!"),
-            actions: [
-              cancelButton,
-              continueButton,
-            ],
-          );
-        });
-      },
-      child: const Text("Delete Meetup", style: TextStyle(fontSize: 15, color: Colors.white)),
-    );
+                return AlertDialog(
+                  title: const Text("Delete Meetup Confirmation"),
+                  content: const Text("Are you sure you want to delete this meetup? This action is irreversible!"),
+                  actions: [
+                    cancelButton,
+                    continueButton,
+                  ],
+                );
+              });
+            },
+            child: const Text("Delete Meetup", style: TextStyle(fontSize: 15, color: Colors.white)),
+          ),
+        ],
+      );
+    }
+    return null;
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
@@ -478,12 +515,11 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         )
     );
     if (hasUserAcceptedMeetup) {
-      SnackbarUtils.showSnackBar(context, "You have successfully accepted the meetup invite!");
+      SnackbarUtils.showSnackBarShort(context, "You have accepted the meetup invite!");
     }
     else {
-      SnackbarUtils.showSnackBar(context, "You have successfully declined the meetup invite!");
+      SnackbarUtils.showSnackBarShort(context, "You have declined the meetup invite!");
     }
-    Navigator.pop(context);
   }
 
   _dynamicFloatingActionButtons() {
@@ -492,31 +528,36 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       builder: (context, state) {
         if (state is DetailedMeetupDataFetched) {
           if (widget.currentUserProfile.userId != currentMeetup.ownerId) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
-                  child: FloatingActionButton(
-                      heroTag: "declineButtonDetailedMeetupView",
-                      onPressed: () {
+            return Visibility(
+              visible: !isKeyboardVisibleCurrently,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+                      ),
+                      onPressed: () async {
                         _addUserDecision(false);
                       },
-                      backgroundColor: Colors.redAccent,
-                      tooltip: "Decline",
-                      child: const Icon(Icons.close, color: Colors.white)
+                      label: const Text("Decline", style: TextStyle(fontSize: 15, color: Colors.white)),
+                    )
                   ),
-                ),
-                FloatingActionButton(
-                    heroTag: "acceptButtonDetailedMeetupView",
-                    onPressed: () {
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.check, color: Colors.white),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                    ),
+                    onPressed: () async {
                       _addUserDecision(true);
                     },
-                    backgroundColor: Colors.teal,
-                    tooltip: "Accept",
-                    child: const Icon(Icons.check, color: Colors.white)
-                )
-              ],
+                    label: const Text("Accept", style: TextStyle(fontSize: 15, color: Colors.white)),
+                  )
+                ],
+              ),
             );
           }
           else {
@@ -577,36 +618,37 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     );
   }
 
+  _getPaddingForTabBarViews(int currentSelectedTab) {
+    if (widget.currentUserProfile.userId != currentMeetup.ownerId) {
+      switch (currentSelectedTab) {
+        case 0: return const EdgeInsets.fromLTRB(0, 0, 0, 20);
+        case 1: return const EdgeInsets.fromLTRB(0, 0, 0, 75); //FAB is 56 pixels by default
+        case 2: return const EdgeInsets.fromLTRB(0, 0, 0, 75);
+      }
+    }
+    return null;
+  }
+
   _detailedMeetupView() {
     return Expanded(
       child: SingleChildScrollView(
         child: Center(
           child: Container(
-            padding: const EdgeInsets.fromLTRB(0, 0, 0, 75), //FAB is 56 pixels by default
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: WidgetUtils.skipNulls([
-                WidgetUtils.spacer(2.5),
-                _renderMeetupNameView(),
-                WidgetUtils.spacer(2.5),
-                _renderMeetupChatButton(),
-                WidgetUtils.spacer(2.5),
-                _renderMeetupDateTime(),
-                WidgetUtils.spacer(2.5),
-                _renderEditAvailabilitiesButton(),
-                WidgetUtils.spacer(2.5),
-                _renderAvailabilitiesView(),
-                WidgetUtils.spacer(2.5),
-                _renderMeetupLocation(),
-                WidgetUtils.spacer(2.5),
-                _renderMeetupFsqLocationCardIfNeeded(),
-                WidgetUtils.spacer(5),
-                _renderMeetupCommentsHeader(),
-                WidgetUtils.spacer(5),
-                _renderMeetupComments(),
-                WidgetUtils.spacer(10),
-                _deleteMeetupButton(),
-              ]),
+            padding: _getPaddingForTabBarViews(currentSelectedTab),
+            child: SizedBox(
+              height: ScreenUtils.getScreenHeight(context),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: WidgetUtils.skipNulls([
+                  WidgetUtils.spacer(2.5),
+                  _renderMeetupNameView(),
+                  WidgetUtils.spacer(2.5),
+                  _renderMeetupDateTime(),
+                  WidgetUtils.spacer(2.5),
+                  _renderTabs(),
+                  _showDeleteMeetupButtonIfNeeded(),
+                ]),
+              ),
             ),
           ),
         ),
@@ -614,85 +656,59 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     );
   }
 
-  _renderMeetupCommentsHeader() {
-    return const Text(
-      "Activity",
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 20
+  _renderTabs() {
+    return Expanded(
+      child: MeetupTabs(
+        currentUserProfile: widget.currentUserProfile,
+        isAvailabilitySelectHappening: isAvailabilitySelectHappening,
+        userMeetupAvailabilities: userMeetupAvailabilities,
+        selectedUserProfilesToShowAvailabilitiesFor:  selectedUserProfilesToShowAvailabilitiesFor,
+        currentMeetup: currentMeetup,
+        selectedMeetupParticipantUserProfiles: selectedMeetupParticipantUserProfiles,
+        selectedMeetupLocation: selectedMeetupLocation,
+        selectedMeetupLocationId: selectedMeetupLocationId,
+        selectedMeetupLocationFsqId: selectedMeetupLocationFsqId,
+        availabilitiesChangedCallback: _availabilityChangedCallback,
+        editAvailabilitiesButtonCallback: _editAvailabilityButtonOnPressed,
+        cancelEditAvailabilitiesButtonCallback: _cancelEditAvailabilityButtonOnPressed,
+        saveAvailabilitiesButtonCallback: _saveAvailabilityButtonOnPressed,
+        searchLocationViewUpdateBlocCallback: _searchLocationViewUpdateBlocCallback,
+        currentSelectedTabCallback: _currentSelectedTabCallback,
       ),
     );
   }
 
-  _renderMeetupComments() {
-    return LimitedBox(
-        maxHeight: 400,
-        child: MeetupCommentsListView.withBloc(
-            currentUserId: widget.currentUserProfile.userId,
-            meetupId: currentMeetup.id
-        )
-    );
+
+  _cancelEditAvailabilityButtonOnPressed() {
+    setState(() {
+      isAvailabilitySelectHappening = false;
+
+      final currentState = _detailedMeetupBloc.state;
+      if (currentState is DetailedMeetupDataFetched) {
+        userMeetupAvailabilities[widget.currentUserProfile.userId] =
+            currentState.userAvailabilities[widget.currentUserProfile.userId]!.map((e) => e.toUpsert()).toList();
+      }
+    });
   }
 
-  _renderEditAvailabilitiesButton() {
-    if (isAvailabilitySelectHappening) {
-     return Padding(
-       padding: const EdgeInsets.symmetric(horizontal: 5),
-       child: Row(
-         mainAxisSize: MainAxisSize.max,
-         children: [
-           Expanded(
-             child: ElevatedButton(
-               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-               onPressed: () {
-                 setState(() {
-                   isAvailabilitySelectHappening = false;
+  _editAvailabilityButtonOnPressed() {
+    setState(() {
+      isAvailabilitySelectHappening = true;
+    });
+  }
 
-                   final currentState = _detailedMeetupBloc.state;
-                   if (currentState is DetailedMeetupDataFetched) {
-                     userMeetupAvailabilities[widget.currentUserProfile.userId] =
-                         currentState.userAvailabilities[widget.currentUserProfile.userId]!.map((e) => e.toUpsert()).toList();
-                   }
-                 });
-               },
-               child: const Text("Cancel edits"),
-             ),
-           ),
-           WidgetUtils.spacer(5),
-           Expanded(
-             child: ElevatedButton(
-               onPressed: () {
-                 setState(() {
-                   isAvailabilitySelectHappening = false;
-                 });
+  _saveAvailabilityButtonOnPressed() {
+    setState(() {
+      isAvailabilitySelectHappening = false;
+    });
 
-                 _detailedMeetupBloc.add(
-                     SaveAvailabilitiesForCurrentUser(
-                       meetupId: currentMeetup.id,
-                       currentUserId: widget.currentUserProfile.userId,
-                       availabilities: userMeetupAvailabilities[widget.currentUserProfile.userId]!,
-                     )
-                 );
-               },
-               child: const Text("Save edits"),
-             ),
-           ),
-         ],
-       ),
-     );
-    }
-    else {
-      return Center(
-        child: ElevatedButton(
-          onPressed: () {
-            setState(() {
-              isAvailabilitySelectHappening = true;
-            });
-          },
-          child: const Text("Edit your availability"),
-        ),
-      );
-    }
+    _detailedMeetupBloc.add(
+        SaveAvailabilitiesForCurrentUser(
+          meetupId: currentMeetup.id,
+          currentUserId: widget.currentUserProfile.userId,
+          availabilities: userMeetupAvailabilities[widget.currentUserProfile.userId]!,
+        )
+    );
   }
 
   _renderAvailabilityHeaders(DateTime initialDay) {
@@ -720,101 +736,18 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     });
   }
 
-  _renderAvailabilitiesView() {
-    return SizedBox(
-      height: ScreenUtils.getScreenHeight(context) * 0.5,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: DiscreteAvailabilitiesView(
-          currentUserAcceptingAvailabilityFor: isAvailabilitySelectHappening ? widget.currentUserProfile.userId : null,
-          availabilityChangedCallback: _availabilityChangedCallback,
-          startHour: AddOwnerAvailabilitiesViewState.availabilityStartHour,
-          endHour: AddOwnerAvailabilitiesViewState.availabilityEndHour,
-          style: TimePlannerStyle(
-            // cellHeight: 60,
-            // cellWidth: 60,
-            showScrollBar: true,
-          ),
-          headers: _renderAvailabilityHeaders(currentMeetup.createdAt.toLocal()),
-          tasks: const [],
-          availabilityInitialDay: currentMeetup.createdAt.toLocal(),
-          meetupAvailabilities: Map.fromEntries(userMeetupAvailabilities
-              .entries
-              .where((element) =>
-                  selectedUserProfilesToShowAvailabilitiesFor.map((e) => e.userId).contains(element.key))
-          ),
-        ),
-      ),
-    );
+  _currentSelectedTabCallback(int selectedTab) {
+    setState(() {
+      currentSelectedTab = selectedTab;
+    });
   }
 
-  // Need an API call to fetch the FSQ result, wait for bloc to complete
-  _renderMeetupFsqLocationCardIfNeeded() {
-    if (selectedMeetupLocation == null) {
-      return Center(
-        child: Text(
-          "Meetup location unset",
-          style: TextStyle(
-              color: Theme.of(context).errorColor,
-              fontWeight: FontWeight.bold
-          ),
-        ),
-      );
-    }
-    else {
-      return SizedBox(
-        height: 275,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            child: FoursquareLocationCardView(
-              locationId: selectedMeetupLocation!.locationId,
-              location: selectedMeetupLocation!.location,
-            ),
-          ),
-        ),
-      );
-    }
-  }
-
-  _renderMeetupLocation() {
-    return SizedBox(
-        height: ScreenUtils.getScreenHeight(context) * 0.25,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: MeetupLocationView(
-            currentUserProfile: widget.currentUserProfile,
-            meetupLocation: selectedMeetupLocation?.toMeetupLocation(),
-            userProfiles: selectedMeetupParticipantUserProfiles,
-            onTapCallback: () {
-              // Go to select location route
-              if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
-                _goToSelectLocationRoute();
-              }
-            },
-          ),
-        )
-    );
-  }
-
-  _goToSelectLocationRoute() {
-    Navigator.pushAndRemoveUntil(
-        context,
-        SearchLocationsView.route(
-            userProfilesWithLocations: selectedMeetupParticipantUserProfiles
-                .map((e) => UserProfileWithLocation(e, e.locationCenter!.latitude, e.locationCenter!.longitude, e.locationRadius!.toDouble()))
-                .toList(),
-            initialSelectedLocationId: selectedMeetupLocationId,
-            initialSelectedLocationFsqId: selectedMeetupLocationFsqId,
-            updateBlocCallback: (location) {
-              setState(() {
-                selectedMeetupLocation = location;
-                selectedMeetupLocationId = selectedMeetupLocation?.locationId;
-                selectedMeetupLocationFsqId = selectedMeetupLocation?.location.fsqId;
-              });
-            }),
-            (route) => true
-    );
+  _searchLocationViewUpdateBlocCallback(Location location) {
+    setState(() {
+      selectedMeetupLocation = location;
+      selectedMeetupLocationId = selectedMeetupLocation?.locationId;
+      selectedMeetupLocationFsqId = selectedMeetupLocation?.location.fsqId;
+    });
   }
 
   _onParticipantRemoved(PublicUserProfile userProfile) {
@@ -948,12 +881,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                 selectedMeetupName = text;
               });
             },
-            decoration: const InputDecoration(
-                border: OutlineInputBorder(),
+            decoration: InputDecoration(
+                border: const OutlineInputBorder(),
                 hintText: 'Enter meetup name',
-                hintStyle: TextStyle(
+                hintStyle: const TextStyle(
                     fontWeight: FontWeight.normal
-                )
+                ),
+              filled: widget.currentUserProfile.userId != currentMeetup.ownerId,
+              fillColor: widget.currentUserProfile.userId != currentMeetup.ownerId ? Colors.grey.shade300 : null
             ),
           ),
         )
@@ -977,7 +912,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   Widget _timePickerButton() {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        backgroundColor: widget.currentUserProfile.userId == currentMeetup.ownerId ?
+        MaterialStateProperty.all<Color>(Colors.teal) : MaterialStateProperty.all<Color>(Colors.grey),
       ),
       onPressed: () async {
         if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
@@ -1021,7 +957,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   Widget _datePickerButton() {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        backgroundColor: widget.currentUserProfile.userId == currentMeetup.ownerId ?
+            MaterialStateProperty.all<Color>(Colors.teal) : MaterialStateProperty.all<Color>(Colors.grey),
       ),
       onPressed: () async {
         if (widget.currentUserProfile.userId == currentMeetup.ownerId) {

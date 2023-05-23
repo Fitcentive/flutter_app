@@ -51,13 +51,16 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
   late final AuthenticationBloc _authenticationBloc;
 
   final TextEditingController _textEditingController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   List<MeetupComment> fetchedComments = List.empty();
+
 
   String? newUserComment;
 
   @override
   void dispose() {
     _textEditingController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -118,6 +121,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
     );
   }
 
+  // Unused, legacy code
   _addCommentDialog() {
     return GestureDetector(
       onTap: () {
@@ -140,7 +144,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
             body: Align(
               alignment: Alignment.bottomLeft,
               child: TextField(
-                textCapitalization: TextCapitalization.words,
+                textCapitalization: TextCapitalization.sentences,
                 onChanged: (text) {
                   setState(() {
                     if (text.trim().isNotEmpty) {
@@ -198,26 +202,40 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          InkWell(
-            onTap: () {
-              showDialog(context: context, builder: (context) {
-                return _addCommentDialog();
-              });
-            },
-            child: FittedBox(
-              fit:BoxFit.fitHeight,
-              child:  Container(
-                  width: ScreenUtils.getScreenWidth(context) * 0.75,
-                  padding: const EdgeInsets.all(15),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      newUserComment ?? "Write a comment...",
+          FittedBox(
+            fit:BoxFit.fitHeight,
+            child:  Container(
+                width: ScreenUtils.getScreenWidth(context) * 0.75,
+                padding: const EdgeInsets.all(15),
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 7.5),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 150),
+                    child: TextField(
+                      controller: _textEditingController,
+                      textCapitalization: TextCapitalization.sentences,
+                      onChanged: (text) {
+                        setState(() {
+                          if (text.trim().isNotEmpty) {
+                            newUserComment = text;
+                          }
+                          else {
+                            newUserComment = null;
+                          }
+                        });
+                      },
+                      maxLines: null,
+                      decoration: const InputDecoration.collapsed(
+                          hintText: 'Share your thoughts here...',
+                          hintStyle: TextStyle(fontSize: 15)
+                      ),
                     ),
-                  )
-              ),
+                  ),
+                ),
+
             ),
           ),
+
           Container(
               padding: const EdgeInsets.all(15),
               child: Align(
@@ -252,6 +270,11 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
       setState(() {
         newUserComment = null;
       });
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent + 75,
+        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 200),
+      );
     }
   }
 
@@ -268,32 +291,25 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
       );
     }
     else {
-      return RefreshIndicator(
-        onRefresh: () async {
-          _meetupCommentsListBloc.add(FetchMeetupCommentsRequested(
-              meetupId: widget.meetupId,
-              currentUserId: widget.currentUserId
-          ));
+      return GestureDetector(
+        onTap: () {
+          KeyboardUtils.hideKeyboard(context);
         },
-        child: GestureDetector(
-          onTap: () {
-            KeyboardUtils.hideKeyboard(context);
-          },
-          child: Scrollbar(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: fetchedComments.length,
-                itemBuilder: (BuildContext context, int index) {
-                  if (index >= fetchedComments.length) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else {
-                    final currentComment = fetchedComments[index];
-                    final userProfile = userProfiles[currentComment.userId];
-                    return _commentListItem(currentComment, userProfile);
-                  }
-                },
-              )
-          ),
+        child: Scrollbar(
+            child: ListView.builder(
+              controller: _scrollController,
+              shrinkWrap: true,
+              itemCount: fetchedComments.length,
+              itemBuilder: (BuildContext context, int index) {
+                if (index >= fetchedComments.length) {
+                  return const Center(child: CircularProgressIndicator());
+                } else {
+                  final currentComment = fetchedComments[index];
+                  final userProfile = userProfiles[currentComment.userId];
+                  return _commentListItem(currentComment, userProfile);
+                }
+              },
+            )
         ),
       );
     }
