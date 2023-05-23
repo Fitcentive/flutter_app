@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/models/meetups/meetup_comment.dart';
@@ -205,7 +207,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
           FittedBox(
             fit:BoxFit.fitHeight,
             child:  Container(
-                width: ScreenUtils.getScreenWidth(context) * 0.75,
+                width: min(ScreenUtils.getScreenWidth(context) * 0.75, ConstantUtils.WEB_APP_MAX_WIDTH * 0.9),
                 padding: const EdgeInsets.all(15),
                 child: Container(
                   margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 7.5),
