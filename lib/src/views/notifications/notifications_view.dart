@@ -309,6 +309,7 @@ class NotificationsViewState extends State<NotificationsView> {
   Widget _generateParticipantAddedAvailabilityToMeetupNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String meetupId = notification.data['meetupId'];
     final String participantId = notification.data['participantId'];
+    final String meetupName =  notification.data['meetupName'] ?? "";
 
     final PublicUserProfile? participantWhoAddedAvailabilityProfile = userProfileMap[participantId];
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
@@ -331,7 +332,10 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
       title: Text(
-        _getParticipantAddedAvailabilityToMeetupNotificationText(participantWhoAddedAvailabilityProfile ?? staticDeletedUserProfile!),
+        _getParticipantAddedAvailabilityToMeetupNotificationText(
+            participantWhoAddedAvailabilityProfile ?? staticDeletedUserProfile!,
+            meetupName
+        ),
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Padding(
@@ -348,6 +352,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final String meetupId = notification.data['meetupId'];
     final String meetupOwnerId = notification.data['meetupOwnerId'];
     final String participantId = notification.data['participantId'];
+    final String meetupName =  notification.data['meetupName'] ?? "";
 
     final PublicUserProfile? meetupOwnerProfile = userProfileMap[meetupOwnerId];
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
@@ -370,7 +375,7 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
       title: Text(
-        _getParticipantAddedToMeetupNotificationText(meetupOwnerProfile ?? staticDeletedUserProfile!),
+        _getParticipantAddedToMeetupNotificationText(meetupOwnerProfile ?? staticDeletedUserProfile!, meetupName),
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Padding(
@@ -387,6 +392,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final String meetupId = notification.data['meetupId'];
     final String participantId = notification.data['participantId'];
     final bool hasAccepted = notification.data['hasAccepted'];
+    final String meetupName = notification.data['meetupName'] ?? "";
 
     final PublicUserProfile? participantProfile = userProfileMap[participantId];
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
@@ -409,7 +415,7 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
       title: Text(
-        _getMeetupDecisionNotificationText(participantProfile ?? staticDeletedUserProfile!, hasAccepted),
+        _getMeetupDecisionNotificationText(participantProfile ?? staticDeletedUserProfile!, hasAccepted, meetupName),
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Padding(
@@ -422,20 +428,40 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  _getParticipantAddedToMeetupNotificationText(PublicUserProfile meetupOwnerProfile) {
-    return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} added you to a meetup!";
-  }
-
-  _getParticipantAddedAvailabilityToMeetupNotificationText(PublicUserProfile participantProfile) {
-    return "${StringUtils.getUserNameFromUserProfile(participantProfile)} added their availability to a meetup!";
-  }
-
-  _getMeetupDecisionNotificationText(PublicUserProfile meetupOwnerProfile, bool hasAccepted) {
-    if (hasAccepted) {
-      return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} has accepted your meetup invite!";
+  _getParticipantAddedToMeetupNotificationText(PublicUserProfile meetupOwnerProfile, String meetupName) {
+    if (meetupName.isNotEmpty) {
+      return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} added you to a meetup: $meetupName";
     }
     else {
-      return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} has declined your meetup invite.";
+      return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} added you to a meetup";
+    }
+  }
+
+  _getParticipantAddedAvailabilityToMeetupNotificationText(PublicUserProfile participantProfile, String meetupName) {
+    if (meetupName.isNotEmpty) {
+      return "${StringUtils.getUserNameFromUserProfile(participantProfile)} added their availability to a meetup: $meetupName";
+    }
+    else {
+      return "${StringUtils.getUserNameFromUserProfile(participantProfile)} added their availability to a meetup";
+    }
+  }
+
+  _getMeetupDecisionNotificationText(PublicUserProfile meetupOwnerProfile, bool hasAccepted, String meetupName) {
+    if (hasAccepted) {
+      if (meetupName.isNotEmpty) {
+        return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} has accepted your meetup invite: $meetupName";
+      }
+      else {
+        return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} has accepted your meetup invite";
+      }
+    }
+    else {
+      if (meetupName.isNotEmpty) {
+        return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} has declined your meetup invite: $meetupName";
+      }
+      else {
+        return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} has declined your meetup invite";
+      }
     }
   }
 

@@ -333,6 +333,11 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             if (state is DetailedMeetupDataFetched) {
               return _mainBody(state);
             }
+            else if (state is ErrorState) {
+              return const Center(
+                child: Text("Oops. Looks like this meetup no longer exists!")
+              );
+            }
             else {
               return const Center(
                 child: CircularProgressIndicator(),

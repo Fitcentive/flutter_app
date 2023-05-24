@@ -90,58 +90,63 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
   void _fetchAllMeetupData(FetchAllMeetupData event, Emitter<DetailedMeetupState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    final meetup = await meetupRepository.getMeetupById(
+    try {
+      final meetup = await meetupRepository.getMeetupById(
         event.meetupId,
         accessToken!,
-    );
+      );
 
-    MeetupLocation? meetupLocation;
-    if (meetup.locationId != null) {
-      meetupLocation = await meetupRepository.getLocationByLocationId(meetup.locationId!, accessToken);
-    }
-    final location = meetupLocation == null ? null : await meetupRepository.getLocationByFsqId(meetupLocation.fsqId, accessToken);
+      MeetupLocation? meetupLocation;
+      if (meetup.locationId != null) {
+        meetupLocation = await meetupRepository.getLocationByLocationId(meetup.locationId!, accessToken);
+      }
+      final location = meetupLocation == null ? null : await meetupRepository.getLocationByFsqId(meetupLocation.fsqId, accessToken);
 
-    final meetupParticipants = await meetupRepository.getMeetupParticipants(meetup.id, accessToken);
-    final meetupDecisions = await meetupRepository.getMeetupDecisions(meetup.id, accessToken);
+      final meetupParticipants = await meetupRepository.getMeetupParticipants(meetup.id, accessToken);
+      final meetupDecisions = await meetupRepository.getMeetupDecisions(meetup.id, accessToken);
 
-    final participantIds = meetupParticipants.map((e) => e.userId).toList();
-    Map<String, List<MeetupAvailability>> availabilityMap = {};
-    final availabilities = (await Future.wait(participantIds.map((e) =>
-        meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))
-    )).map((mList) =>
-        mList.map((m) {
-          return MeetupAvailability(
-              m.id,
-              m.meetupId,
-              m.userId,
-              m.availabilityStart.toLocal(),
-              m.availabilityEnd.toLocal(),
-              m.createdAt.toLocal(),
-              m.updatedAt.toLocal()
-          );
-        }
-        ).toList()
-    ).toList();
+      final participantIds = meetupParticipants.map((e) => e.userId).toList();
+      Map<String, List<MeetupAvailability>> availabilityMap = {};
+      final availabilities = (await Future.wait(participantIds.map((e) =>
+          meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))
+      )).map((mList) =>
+          mList.map((m) {
+            return MeetupAvailability(
+                m.id,
+                m.meetupId,
+                m.userId,
+                m.availabilityStart.toLocal(),
+                m.availabilityEnd.toLocal(),
+                m.createdAt.toLocal(),
+                m.updatedAt.toLocal()
+            );
+          }
+          ).toList()
+      ).toList();
 
-    var i = 0;
-    while(i < availabilities.length) {
-      availabilityMap[participantIds[i]] = availabilities[i];
-      i++;
-    }
+      var i = 0;
+      while(i < availabilities.length) {
+        availabilityMap[participantIds[i]] = availabilities[i];
+        i++;
+      }
 
 
-    final List<PublicUserProfile> userProfileDetails =
+      final List<PublicUserProfile> userProfileDetails =
       await userRepository.getPublicUserProfiles(meetupParticipants.map((e) => e.userId).toList(), accessToken);
 
-    emit(DetailedMeetupDataFetched(
-        meetupId: event.meetupId,
-        userAvailabilities: availabilityMap,
-        meetupLocation: location,
-        meetup: meetup,
-        participants: meetupParticipants,
-        decisions: meetupDecisions,
-        userProfiles: userProfileDetails
-    ));
+      emit(DetailedMeetupDataFetched(
+          meetupId: event.meetupId,
+          userAvailabilities: availabilityMap,
+          meetupLocation: location,
+          meetup: meetup,
+          participants: meetupParticipants,
+          decisions: meetupDecisions,
+          userProfiles: userProfileDetails
+      ));
+    } catch (ex) {
+      emit(const ErrorState());
+    }
+
   }
 
   void _addParticipantDecisionToMeetup(AddParticipantDecisionToMeetup event, Emitter<DetailedMeetupState> emit) async {
