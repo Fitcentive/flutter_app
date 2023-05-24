@@ -6,7 +6,7 @@ import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
-import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
@@ -18,7 +18,6 @@ import 'package:flutter_app/src/views/selected_post/bloc/selected_post_state.dar
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:intl/intl.dart';
 
 class SelectedPostView extends StatefulWidget {
   static const String routeName = "view-post";
@@ -175,11 +174,14 @@ class SelectedPostViewState extends State<SelectedPostView> {
                   _userHeader(publicUser),
                   WidgetUtils.spacer(10),
                   _userPostText(post),
-                  WidgetUtils.spacer(5),
+                  WidgetUtils.spacer(15),
                   WidgetUtils.generatePostImageIfExists(post.photoUrl),
-                  WidgetUtils.spacer(5),
+                  WidgetUtils.spacer(15),
                   _getLikesAndComments(post, likedUsersForPosts),
+                  WidgetUtils.spacer(10),
                   _getPostActionButtons(post, likedUsersForPosts),
+                  WidgetUtils.spacer(5),
+                  _renderPostCreationTime(post),
                   WidgetUtils.spacer(5),
                   _renderCommentsList(userIdProfileMap),
                   WidgetUtils.spacer(5),
@@ -307,31 +309,34 @@ class SelectedPostViewState extends State<SelectedPostView> {
   }
 
   _commentListItem(SocialPostComment comment, PublicUserProfile? userProfile) {
-    return ListTile(
-      onTap: () {
-        KeyboardUtils.hideKeyboard(context);
-      },
-      leading: InkWell(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+      child: ListTile(
         onTap: () {
-          _goToUserProfile(userProfile);
+          KeyboardUtils.hideKeyboard(context);
         },
-        child: CircleAvatar(
-          radius: 30,
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: ImageUtils.getUserProfileImage(userProfile, 100, 100),
+        leading: InkWell(
+          onTap: () {
+            _goToUserProfile(userProfile);
+          },
+          child: CircleAvatar(
+            radius: 30,
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: ImageUtils.getUserProfileImage(userProfile, 100, 100),
+              ),
             ),
           ),
         ),
+        title: Text(
+          StringUtils.getUserNameFromUserProfile(userProfile),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: _userCommentText(comment),
       ),
-      title: Text(
-        StringUtils.getUserNameFromUserProfile(userProfile),
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: _userCommentText(comment),
     );
   }
 
@@ -355,7 +360,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
               padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
               child: Text(
                 // Force conversion as Neo4J db stores only in UTC but agnostically
-                DateFormat(ConstantUtils.timestampFormat).format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
+                timeago.format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
                 style: const TextStyle(
                     fontSize: 10
                 ),
@@ -473,18 +478,21 @@ class SelectedPostViewState extends State<SelectedPostView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: InkWell(
-              onTap: () {
-                _showLikedUsers(likedUserIds.userIds);
-              },
-              child: Text(
-                  StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)
-              ),
-            )
+        Visibility(
+          visible: likedUserIds.userIds.isNotEmpty,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: InkWell(
+                onTap: () {
+                  _showLikedUsers(likedUserIds.userIds);
+                },
+                child: Text(
+                    StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)
+                ),
+              )
+            ),
           ),
         ),
         Container(
@@ -495,7 +503,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
               onTap: () {
                 _goToBottom();
               },
-              child: Text("${post.numberOfComments} comments"),
+              child:  Text("${post.numberOfComments} ${post.numberOfComments == 1 ? "comment" : "comments"}"),
             ),
           ),
         )
@@ -530,5 +538,20 @@ class SelectedPostViewState extends State<SelectedPostView> {
       ],
     );
   }
+
+  _renderPostCreationTime(SocialPost post) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.all(2.5),
+        child: Text(
+          // Force conversion as Neo4J db stores only in UTC but agnostically
+          timeago.format(post.updatedAt.add(DateTime.now().timeZoneOffset)),
+          style: const TextStyle(fontSize: 12),
+        ),
+      ),
+    );
+  }
+
 
 }

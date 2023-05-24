@@ -276,7 +276,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
         children: [
           Expanded(
               child: Container(
-                height: 30,
+                height: 15,
                 width: 30,
                 color: Colors.teal,
               )

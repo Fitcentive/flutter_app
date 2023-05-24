@@ -82,7 +82,8 @@ dependencies:
   flutter_dotenv: ^5.0.2
   flutter_credit_card: ^3.0.6
   pointer_interceptor: ^0.9.3+4
-  flutter_keyboard_visibility: ^5.4.3
+  timeago: ^3.3.0
+#  flutter_keyboard_visibility: ^5.4.3
 
 dev_dependencies:
   flutter_test:

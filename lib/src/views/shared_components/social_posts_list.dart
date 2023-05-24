@@ -1,12 +1,13 @@
 import 'dart:async';
+import 'dart:math';
 
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
-import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -14,7 +15,6 @@ import 'package:flutter_app/src/views/liked_users/liked_users_view.dart';
 import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
-import 'package:intl/intl.dart';
 
 typedef ButtonInteractionCallback = void Function(SocialPost post, PostsWithLikedUserIds likedUserIds);
 
@@ -90,7 +90,7 @@ class SocialPostsListState extends State<SocialPostsList> {
       Map<String, PublicUserProfile> userIdProfileMap,
       PostsWithLikedUserIds likedUserIds
       ) {
-    final publicUser = userIdProfileMap[post.userId];
+    final postCreatorPublicUser = userIdProfileMap[post.userId];
     return Container(
       padding: const EdgeInsets.all(10),
       child: Card(
@@ -100,16 +100,18 @@ class SocialPostsListState extends State<SocialPostsList> {
             mainAxisSize: MainAxisSize.min,
             children: WidgetUtils.skipNulls(
                 [
-                  _renderPostCreationTime(post),
-                  WidgetUtils.spacer(5),
-                  _userHeader(publicUser),
+                  _userHeader(postCreatorPublicUser),
                   WidgetUtils.spacer(10),
                   _userPostText(post),
-                  WidgetUtils.spacer(5),
+                  WidgetUtils.spacer(15),
                   WidgetUtils.generatePostImageIfExists(post.photoUrl),
-                  WidgetUtils.spacer(5),
+                  WidgetUtils.spacer(15),
                   _getLikesAndComments(post, likedUserIds),
+                  WidgetUtils.spacer(10),
                   _getPostActionButtons(post, likedUserIds),
+                  WidgetUtils.spacer(5),
+                  _renderPostCreationTime(post),
+                  _renderCommentsPreview(post),
                 ]
             ),
           ),
@@ -118,13 +120,63 @@ class SocialPostsListState extends State<SocialPostsList> {
     );
   }
 
+  _renderCommentsPreview(SocialPost post) {
+    final previewComments = widget.postIdCommentsMap[post.postId];
+    if (previewComments != null  && previewComments.isNotEmpty) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          WidgetUtils.spacer(2.5),
+          _renderCommentsPreviewList(
+            post,
+            previewComments.reversed.toList().sublist(0, min(3, previewComments.length)).reversed.toList(),
+          ),
+          WidgetUtils.spacer(5),
+        ],
+      );
+    }
+    return null;
+  }
+
+  _renderCommentsPreviewList(SocialPost post, List<SocialPostComment> previewComments) {
+    return GestureDetector(
+      onTap: () {
+        _goToSelectedPostView(post);
+      },
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: previewComments.length,
+        itemBuilder: (BuildContext context, int index) {
+          final currentComment = previewComments[index];
+          final commentUser = widget.userIdProfileMap[currentComment.userId];
+          return Padding(
+            padding: const EdgeInsets.all(2.5),
+            child: Row(
+              children: [
+                Text(
+                  StringUtils.getUserNameFromUserProfile(commentUser),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                WidgetUtils.spacer(5),
+                Text(currentComment.text)
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   _renderPostCreationTime(SocialPost post) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: Text(
-        // Force conversion as Neo4J db stores only in UTC but agnostically
-        DateFormat(ConstantUtils.timestampFormat).format(post.updatedAt.add(DateTime.now().timeZoneOffset)),
-        style: const TextStyle(fontSize: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(2.5),
+        child: Text(
+          // Force conversion as Neo4J db stores only in UTC but agnostically
+        timeago.format(post.updatedAt.add(DateTime.now().timeZoneOffset)),
+          style: const TextStyle(fontSize: 12),
+        ),
       ),
     );
   }
@@ -151,7 +203,7 @@ class SocialPostsListState extends State<SocialPostsList> {
         WidgetUtils.spacer(20),
         Text(
           StringUtils.getUserNameFromUserProfile(publicUser),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         )
       ],
     );
@@ -163,7 +215,7 @@ class SocialPostsListState extends State<SocialPostsList> {
         Expanded(
             child: Container(
               padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-              child: Text(post.text),
+              child: Text(post.text, style: const TextStyle(fontSize: 16),),
             )
         )
       ],
@@ -183,16 +235,19 @@ class SocialPostsListState extends State<SocialPostsList> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: InkWell(
-              onTap: () {
-                _showLikedUsers(likedUserIds.userIds);
-              },
-              child: Text(
-                  StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)
+        Visibility(
+          visible: likedUserIds.userIds.isNotEmpty,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(2.5, 0, 0, 0),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: InkWell(
+                onTap: () {
+                  _showLikedUsers(likedUserIds.userIds);
+                },
+                child: Text(
+                    StringUtils.getNumberOfLikesOnPostText(widget.currentUserProfile.userId, likedUserIds.userIds)
+                ),
               ),
             ),
           ),
@@ -205,7 +260,7 @@ class SocialPostsListState extends State<SocialPostsList> {
               onTap: () {
                 _goToSelectedPostView(post);
               },
-              child: Text("${post.numberOfComments} comments"),
+              child:  Text("${post.numberOfComments} ${post.numberOfComments == 1 ? "comment" : "comments"}"),
             ),
           ),
         )
