@@ -18,6 +18,7 @@ import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationsView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -166,6 +167,9 @@ class NotificationsViewState extends State<NotificationsView> {
       case "ParticipantAddedToMeetup":
         return _generateParticipantAddedToMeetupNotification(notification, userProfileMap);
 
+      case "ParticipantAddedAvailabilityToMeetup":
+        return _generateParticipantAddedAvailabilityToMeetupNotification(notification, userProfileMap);
+
       case "MeetupDecision":
         return _generateMeetupDecisionNotification(notification, userProfileMap);
 
@@ -230,7 +234,7 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -295,7 +299,45 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          style: const TextStyle(fontSize: 10),
+        ),
+      ),
+    );
+  }
+
+  Widget _generateParticipantAddedAvailabilityToMeetupNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
+    final String meetupId = notification.data['meetupId'];
+    final String participantId = notification.data['participantId'];
+
+    final PublicUserProfile? participantWhoAddedAvailabilityProfile = userProfileMap[participantId];
+    final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
+    return ListTile(
+      onTap: () async {
+        _goToDetailedMeetup(meetupId);
+      },
+      tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
+      leading: GestureDetector(
+        onTap: () async {
+          _goToUserProfile(participantWhoAddedAvailabilityProfile);
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(participantWhoAddedAvailabilityProfile, 100, 100),
+          ),
+        ),
+      ),
+      title: Text(
+        _getParticipantAddedAvailabilityToMeetupNotificationText(participantWhoAddedAvailabilityProfile ?? staticDeletedUserProfile!),
+        style: const TextStyle(fontSize: 14),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Text(
+          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -334,7 +376,7 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -343,7 +385,6 @@ class NotificationsViewState extends State<NotificationsView> {
 
   Widget _generateMeetupDecisionNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String meetupId = notification.data['meetupId'];
-    final String meetupOwnerId = notification.data['meetupOwnerId'];
     final String participantId = notification.data['participantId'];
     final bool hasAccepted = notification.data['hasAccepted'];
 
@@ -374,7 +415,7 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -383,6 +424,10 @@ class NotificationsViewState extends State<NotificationsView> {
 
   _getParticipantAddedToMeetupNotificationText(PublicUserProfile meetupOwnerProfile) {
     return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} added you to a meetup!";
+  }
+
+  _getParticipantAddedAvailabilityToMeetupNotificationText(PublicUserProfile participantProfile) {
+    return "${StringUtils.getUserNameFromUserProfile(participantProfile)} added their availability to a meetup!";
   }
 
   _getMeetupDecisionNotificationText(PublicUserProfile meetupOwnerProfile, bool hasAccepted) {
@@ -458,7 +503,7 @@ class NotificationsViewState extends State<NotificationsView> {
         subtitle: Padding(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
           child: Text(
-            DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.toLocal()),
+            timeago.format(notification.updatedAt.toLocal()),
             style: const TextStyle(fontSize: 10),
           ),
         ),
@@ -489,7 +534,7 @@ class NotificationsViewState extends State<NotificationsView> {
         subtitle: Padding(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
           child: Text(
-            DateFormat(ConstantUtils.timestampFormat).format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+            timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
             style: const TextStyle(fontSize: 10),
           ),
         ),

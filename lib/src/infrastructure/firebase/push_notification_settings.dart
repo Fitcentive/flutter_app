@@ -10,6 +10,7 @@ import 'package:flutter_app/src/models/notification/push_notification_metadata.d
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/chat_message_push_notification_metadata.dart';
 import 'package:flutter_app/src/models/push/meetup_reminder_push_notification_metadata.dart';
+import 'package:flutter_app/src/models/push/participant_added_availability_to_meetup_push_notification_metadata.dart';
 import 'package:flutter_app/src/models/push/participant_added_to_meetup_push_notification_metadata.dart';
 import 'package:flutter_app/src/models/push/user_friend_request_push_notification_metadata.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
@@ -81,7 +82,7 @@ class PushNotificationSettings {
     );
   }
 
-  static _openDetailedMeetupView(
+  static _openDetailedMeetupViewForParticipantAddedToMeetup(
       context,
       FlutterSecureStorage secureStorage,
       UserRepository userRepository,
@@ -100,6 +101,28 @@ class PushNotificationSettings {
             currentUserProfile: currentUserProfile.first,
         ),
         (route) => true
+    );
+  }
+
+  static _openDetailedMeetupViewForParticipantAddedAvailabilityToMeetup(
+      context,
+      FlutterSecureStorage secureStorage,
+      UserRepository userRepository,
+      MeetupRepository meetupRepository,
+      String payload
+      ) async {
+    final notificationMetadata = ParticipantAddedAvailabilityToMeetupPushNotificationMetadata.fromJson(jsonDecode(payload));
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+
+    final currentUserProfile = await userRepository.getPublicUserProfiles([notificationMetadata.targetUserId], accessToken!);
+
+    Navigator.pushAndRemoveUntil(
+        context,
+        DetailedMeetupView.route(
+          meetupId: notificationMetadata.meetupId,
+          currentUserProfile: currentUserProfile.first,
+        ),
+            (route) => true
     );
   }
 
@@ -190,6 +213,10 @@ class PushNotificationSettings {
           break;
 
         case "participant_added_to_meetup":
+          _openNotificationsView(context);
+          break;
+
+        case "participant_added_availability_to_meetup":
           _openNotificationsView(context);
           break;
 
@@ -364,6 +391,13 @@ class PushNotificationSettings {
           }
           break;
 
+        case "participant_added_availability_to_meetup":
+          final notificationMetadata = ParticipantAddedAvailabilityToMeetupPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
+          if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
+            _handleShowingNotification(notification, notificationMetadata.participantPhotoUrl, jsonPayload);
+          }
+          break;
+
         case "meetup_reminder":
           final notificationMetadata = MeetupReminderPushNotificationMetadata.fromJson(jsonDecode(jsonPayload));
           if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
@@ -419,7 +453,13 @@ class PushNotificationSettings {
           break;
 
         case "participant_added_to_meetup":
-          _openDetailedMeetupView(context, secureStorage, userRepository, meetupRepository, jsonEncode(message.data));
+          _openNotificationsView(context);
+          // _openDetailedMeetupViewForParticipantAddedToMeetup(context, secureStorage, userRepository, meetupRepository, jsonEncode(message.data));
+          break;
+
+        case "participant_added_availability_to_meetup":
+          _openNotificationsView(context);
+          // _openDetailedMeetupViewForParticipantAddedAvailabilityToMeetup(context, secureStorage, userRepository, meetupRepository, jsonEncode(message.data));
           break;
 
         case "meetup_reminder":

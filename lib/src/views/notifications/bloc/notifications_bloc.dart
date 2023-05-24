@@ -212,6 +212,17 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         .toSet()
         .toList();
 
+    final participantAddedAvailabilityToMeetupNotificationUsers = notifications
+        .where((element) => element.notificationType == "ParticipantAddedAvailabilityToMeetup")
+        .map((e) {
+      final participantId = e.data['participantId'] as String;
+      final meetupOwnerId = e.data['meetupOwnerId'] as String;
+      return [participantId, meetupOwnerId];
+    })
+        .expand((element) => element)
+        .toSet()
+        .toList();
+
     final meetupDecisionNotificationUsers = notifications
         .where((element) => element.notificationType == "MeetupDecision")
         .map((e) {
@@ -230,6 +241,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       ...postCreatorUsers,
       ...meetupDecisionNotificationUsers,
       ...participantAddedToMeetupNotificationUsers,
+      ...participantAddedAvailabilityToMeetupNotificationUsers,
       ConstantUtils.staticDeletedUserId,
     ];
     return userIdList.toSet().toList();
