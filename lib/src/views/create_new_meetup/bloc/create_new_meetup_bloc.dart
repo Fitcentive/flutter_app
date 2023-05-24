@@ -41,7 +41,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
 
   _setUpTimeSegmentDateTimeMap() {
     final now = DateTime.now();
-    const numberOfIntervals = (AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) * 2;
+    const numberOfIntervals = ((AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) + 1) * 2;
     final intervalsList = List.generate(numberOfIntervals, (i) => i);
     var i = 0;
     var k = 0;
@@ -59,7 +59,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
   void _saveNewMeetup(SaveNewMeetup event, Emitter<CreateNewMeetupState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    List <MeetupAvailabilityUpsert> availabilitiesToSave = MiscUtils.convertBooleanMatrixToAvailabilities(
+    List <MeetupAvailabilityUpsert> availabilitiesToSave = MiscUtils.convertBooleanCellStateMatrixToAvailabilities(
         event.currentUserAvailabilities,
         timeSegmentToDateTimeMap,
     ).map((e) => MeetupAvailabilityUpsert(

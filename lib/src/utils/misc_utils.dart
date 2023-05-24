@@ -2,7 +2,7 @@ import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 
 class MiscUtils {
 
-  static List<MeetupAvailabilityUpsert> convertBooleanMatrixToAvailabilities(
+  static List<MeetupAvailabilityUpsert> convertBooleanCellStateMatrixToAvailabilities(
       List<List<bool>> currentUserAvailabilities,
       Map<int, DateTime> timeSegmentToDateTimeMap
   ) {
@@ -26,6 +26,19 @@ class MiscUtils {
           ));
 
           hasContinuousWindowStarted = false;
+        }
+
+        else if (hasContinuousWindowStarted && j == dayTimeBlockAvailabilities.length - 1 && dayTimeBlockAvailabilities[j]) {
+          final intervalDatetimeStart = timeSegmentToDateTimeMap[intervalStart]!;
+          final intervalDateTimeEnd = timeSegmentToDateTimeMap[j]!.add(const Duration(minutes: 30)); // we force add 30 mins for the very last interval
+          resultsSoFar
+              .add(MeetupAvailabilityUpsert(
+            intervalDatetimeStart.add(Duration(days: dayIntIndex)).toUtc(),
+            intervalDateTimeEnd.add(Duration(days: dayIntIndex)).toUtc(),
+          ));
+
+          hasContinuousWindowStarted = false;
+          j++;
         }
 
         else if (dayTimeBlockAvailabilities[j] && !hasContinuousWindowStarted) {

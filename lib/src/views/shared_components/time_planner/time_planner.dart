@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
-import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_task.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_time.dart';
@@ -108,7 +107,7 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
     config.horizontalTaskPadding = style.horizontalTaskPadding;
     config.cellHeight = style.cellHeight;
     config.cellWidth = style.cellWidth;
-    config.totalHours = (widget.endHour - widget.startHour).toDouble();
+    config.totalHours = (widget.endHour - widget.startHour + 1).toDouble();
     config.totalDays = widget.headers.length;
     config.startHour = widget.startHour;
     config.borderRadius = style.borderRadius;
@@ -133,7 +132,7 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
     while(currentDayIndex < config.totalDays) {
       final availabilitiesForCurrentDay = all
           .where((element) =>
-              element.availabilityStart.isSameDate(availabilityInitialDay.add(Duration(days: currentDayIndex)))
+              element.availabilityStart.toLocal().isSameDate(availabilityInitialDay.add(Duration(days: currentDayIndex)))
           )
           .toList();
 
@@ -141,15 +140,15 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
 
       // Construct map
       Map<int, DateTime> timeSegmentToDateTimeMap = {};
-      const numberOfIntervals = (AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) * 2;
+      final numberOfIntervals = config.totalHours.toInt() * 2;
       final intervalsList = List.generate(numberOfIntervals, (i) => i);
       var i = 0;
       var k = 0;
       while (i < intervalsList.length) {
         timeSegmentToDateTimeMap[i] =
-            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 0, 0);
+            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + config.startHour, 0, 0);
         timeSegmentToDateTimeMap[i+1] =
-            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + AddOwnerAvailabilitiesViewState.availabilityStartHour, 30, 0);
+            DateTime(currentDayBase.year, currentDayBase.month, currentDayBase.day, k + config.startHour, 30, 0);
 
         i += 2;
         k += 1;
@@ -164,8 +163,8 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
         var count = 0;
 
         availabilitiesForCurrentDay.forEach((a) {
-          final aStart  = a.availabilityStart;
-          final aEnd  = a.availabilityEnd;
+          final aStart  = a.availabilityStart.toLocal();
+          final aEnd  = a.availabilityEnd.toLocal();
           if (aStart.compareTo(dateTimePertainingToCurrentTimeInterval) < 0 && aEnd.compareTo(dateTimePertainingToCurrentTimeInterval) > 0) {
             count += 1;
           }
@@ -214,6 +213,10 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
 
   @override
   void dispose() {
+    mainHorizontalController.dispose();
+    mainVerticalController.dispose();
+    dayHorizontalController.dispose();
+    timeVerticalController.dispose();
     super.dispose();
   }
 
@@ -274,29 +277,24 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  ScrollConfiguration(behavior:
-                    ScrollConfiguration
-                        .of(context)
-                        .copyWith(scrollbars: false),
-                    child: SingleChildScrollView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      controller: timeVerticalController,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: _getSideTimes(),
-                          ),
-                          Container(
-                            height: (config.totalHours * config.cellHeight!) + 80,
-                            width: 5,
-                            color: Colors.teal,
-                          ),
-                        ],
-                      ),
+                  SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    controller: timeVerticalController,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: _getSideTimes(),
+                        ),
+                        Container(
+                          height: (config.totalHours * config.cellHeight!) + (config.cellHeight! / 2),
+                          width: 5,
+                          color: Colors.teal,
+                        ),
+                      ],
                     ),
                   ),
                   Expanded(
@@ -304,6 +302,10 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
                   ),
                 ],
               ),
+            ),
+            Container(
+              height: 5,
+              color: Colors.teal,
             ),
           ],
         ),
@@ -314,8 +316,25 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
   List<Widget> _getSideTimes() {
     List<Widget> r = [];
     for (int i = widget.startHour; i <= widget.endHour; i++) {
-      r.add(Center(child: TimePlannerTime(time: '$i:00')));
-      r.add(Center(child: TimePlannerTime(time: '$i:30')));
+      if (i <= 11) {
+        r.add(Center(child: TimePlannerTime(time: '$i:00 AM')));
+        r.add(const Divider(height: 1, color: Colors.teal,));
+        r.add(Center(child: TimePlannerTime(time: '$i:30 AM')));
+        r.add(const Divider(height: 1, color: Colors.teal,));
+      }
+      else if (i == 12) {
+        r.add(Center(child: TimePlannerTime(time: '$i:00 PM')));
+        r.add(const Divider(height: 1, color: Colors.teal,));
+        r.add(Center(child: TimePlannerTime(time: '$i:30 PM')));
+        r.add(const Divider(height: 1, color: Colors.teal,));
+      }
+      else {
+        r.add(Center(child: TimePlannerTime(time: '${i % 12}:00 PM')));
+        r.add(const Divider(height: 1, color: Colors.teal,));
+        r.add(Center(child: TimePlannerTime(time: '${i % 12}:30 PM')));
+        r.add(const Divider(height: 1, color: Colors.teal,));
+      }
+
     }
     return r;
   }
@@ -332,49 +351,11 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             SizedBox(
-              height: (config.totalHours * config.cellHeight!) + 80,
+              height: (config.totalHours * config.cellHeight!) + (config.cellHeight! / 2),
               width: (config.cellWidth!).toDouble(),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  for (var i = 0; i < config.totalHours * 2; i++)
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        // Individual per square block,
-                        // maybe do it ALL together instead to enable select and drag
-                        GestureDetector(
-                          onTap: () {
-                            if (widget.currentUserAcceptingAvailabilityFor != null) {
-                              setState(() {
-                                if (cellStateMatrix[colIndex][i] == 1) {
-                                  cellStateMatrix[colIndex][i] = 0;
-                                }
-                                else {
-                                  cellStateMatrix[colIndex][i] = 1;
-                                }
-                              });
-
-                              widget.availabilityChangedCallback(
-                                  cellStateMatrix
-                                      .map((e) => e.map((e) => e == 0 ? false : true).toList())
-                                      .toList()
-                              );
-                            }
-                          },
-                          // Block of time
-                          child: SizedBox(
-                            height: (config.cellHeight! + 1).toDouble() / 2,
-                            child: _renderTimeUnitCell(colIndex, i),
-                          ),
-                        ),
-                        const Divider(
-                          height: 1,
-                          color: Colors.teal,
-                        ),
-                      ],
-                    )
-                ],
+                children: _getLengthWiseChildren(colIndex),
               ),
             ),
             Row(
@@ -382,7 +363,7 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
               children: <Widget>[
                 Container(
                   width: 1,
-                  height: (config.totalHours * config.cellHeight!) + config.cellHeight!,
+                  height: (config.totalHours * config.cellHeight!) + (config.cellHeight! / 2),
                   color: Colors.teal,
                 )
               ],
@@ -391,6 +372,51 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
         )
       ],
     );
+  }
+
+  _getLengthWiseChildren(int colIndex) {
+    List<Widget> children = [];
+    for (var i = 0; i < config.totalHours * 2; i++) {
+      children.add(
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              // Individual per square block,
+              // maybe do it ALL together instead to enable select and drag
+              GestureDetector(
+                onTap: () {
+                  if (widget.currentUserAcceptingAvailabilityFor != null) {
+                    setState(() {
+                      if (cellStateMatrix[colIndex][i] == 1) {
+                        cellStateMatrix[colIndex][i] = 0;
+                      }
+                      else {
+                        cellStateMatrix[colIndex][i] = 1;
+                      }
+                    });
+
+                    widget.availabilityChangedCallback(
+                        cellStateMatrix
+                            .map((e) => e.map((e) => e == 0 ? false : true).toList())
+                            .toList()
+                    );
+                  }
+                },
+                // Block of time
+                child: SizedBox(
+                  height: (config.cellHeight!).toDouble() / 2,
+                  child: _renderTimeUnitCell(colIndex, i),
+                ),
+              ),
+              const Divider(
+                height: 1,
+                color: Colors.teal,
+              ),
+            ],
+          )
+      );
+    }
+    return children;
   }
 
   _renderTimeUnitCell(int colIndex, int i) {
@@ -408,12 +434,10 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
     if (style.showScrollBar!) {
       return Scrollbar(
         controller: mainVerticalController,
-        thumbVisibility: true,
         child: SingleChildScrollView(
           controller: mainVerticalController,
           child: Scrollbar(
             controller: mainHorizontalController,
-            isAlwaysShown: true,
             child: SingleChildScrollView(
               controller: mainHorizontalController,
               scrollDirection: Axis.horizontal,

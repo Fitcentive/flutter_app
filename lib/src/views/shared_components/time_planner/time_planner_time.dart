@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/config/global_config.dart' as config;
 
@@ -19,7 +20,8 @@ class TimePlannerTime extends StatelessWidget {
       width: 60,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 0.0),
-        child: Center(child: Text(time!)),
+        // child: Center(child: Text(time!)),
+        child: Center(child: AutoSizeText(time!, maxFontSize: 12, minFontSize: 8,)),
       ),
     );
   }

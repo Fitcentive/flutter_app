@@ -156,7 +156,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   Timer? debounce;
 
   _setUpTimeSegmentDateTimeMap(DateTime baseTime) {
-    const numberOfIntervals = (AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) * 2;
+    const numberOfIntervals = ((AddOwnerAvailabilitiesViewState.availabilityEndHour - AddOwnerAvailabilitiesViewState.availabilityStartHour) + 1) * 2;
     final intervalsList = List.generate(numberOfIntervals, (i) => i);
     var i = 0;
     var k = 0;
@@ -698,7 +698,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   // This is only triggered if the supplied currentUserAcceptingAvailabilityFor is not null
   _availabilityChangedCallback(List<List<bool>> availabilitiesChanged) {
-    final updatedCurrentUserAvailabilities = MiscUtils.convertBooleanMatrixToAvailabilities(
+    final updatedCurrentUserAvailabilities = MiscUtils.convertBooleanCellStateMatrixToAvailabilities(
         availabilitiesChanged,
         timeSegmentToDateTimeMap
     ).map((e) => MeetupAvailabilityUpsert(

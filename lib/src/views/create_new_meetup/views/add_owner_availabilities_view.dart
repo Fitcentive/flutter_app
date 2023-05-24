@@ -68,7 +68,7 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
                     _renderUserTextPrompt(),
                     WidgetUtils.spacer(2.5),
                     _renderAvailabilitiesView(state),
-                    WidgetUtils.spacer(20),
+                    WidgetUtils.spacer(40),
                   ],
                 ),
               ),

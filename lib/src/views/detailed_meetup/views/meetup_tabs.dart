@@ -251,6 +251,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        WidgetUtils.spacer(2.5),
         _renderEditAvailabilitiesButton(),
         WidgetUtils.spacer(2.5),
         _renderAvailabilitiesView(),
