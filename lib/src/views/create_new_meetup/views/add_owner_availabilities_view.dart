@@ -61,8 +61,6 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
                   children: [
                     _renderParticipantsView(state),
                     WidgetUtils.spacer(5),
-                    const Center(child: Text("Tap on a participant to view their availability"),),
-                    WidgetUtils.spacer(2.5),
                     Divider(color: Theme.of(context).primaryColor),
                     WidgetUtils.spacer(2.5),
                     _renderUserTextPrompt(),

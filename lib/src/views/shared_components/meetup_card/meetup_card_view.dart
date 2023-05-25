@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
@@ -286,7 +285,7 @@ class MeetupCardViewState extends State<MeetupCardView> {
           flex: 3,
           child: Column(
             children: [
-              Text(meetup.name ?? "Unnamed meetup", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ),),
+              Text(meetup.name ?? "Unnamed meetup", textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ) ,),
               WidgetUtils.spacer(5),
               Text(meetupTime, style: const TextStyle(fontSize: 16),),
               WidgetUtils.spacer(5),
@@ -299,6 +298,7 @@ class MeetupCardViewState extends State<MeetupCardView> {
             child: Column(
               children: WidgetUtils.skipNulls([
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
                       width: 7.5,
@@ -314,6 +314,7 @@ class MeetupCardViewState extends State<MeetupCardView> {
                 ),
                 WidgetUtils.spacer(5),
                 Wrap(
+                  alignment: WrapAlignment.center,
                   children: WidgetUtils.skipNulls([
                     _showMeetupOwnerIfNeeded(meetup)
                   ]),

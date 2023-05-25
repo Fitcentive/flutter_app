@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile_with_location.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
@@ -154,6 +155,19 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
       );
   }
 
+  bool shouldMeetupBeReadOnly() {
+    return (widget.currentMeetup.meetupStatus == "Expired" || widget.currentMeetup.meetupStatus == "Complete");
+  }
+
+  _showSnackbarForReadOnlyMeetup() {
+    if (widget.currentMeetup.meetupStatus == "Expired") {
+      SnackbarUtils.showSnackBarShort(context, "Meetup has expired and cannot be edited");
+    }
+    else {
+      SnackbarUtils.showSnackBarShort(context, "Meetup is complete and cannot be edited");
+    }
+  }
+
   Widget renderMeetupActivityView() {
     return _renderMeetupComments();
   }
@@ -193,8 +207,16 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
             userProfiles: widget.selectedMeetupParticipantUserProfiles,
             onTapCallback: () {
               // Go to select location route
-              if (widget.currentUserProfile.userId == widget.currentMeetup.ownerId) {
+              if (widget.currentUserProfile.userId == widget.currentMeetup.ownerId && !shouldMeetupBeReadOnly()) {
                 _goToSelectLocationRoute();
+              }
+              else {
+                if (shouldMeetupBeReadOnly()) {
+                  _showSnackbarForReadOnlyMeetup();
+                }
+                else {
+                  SnackbarUtils.showSnackBarShort(context, "Cannot modify meetup location unless you are the owner!");
+                }
               }
             },
           ),

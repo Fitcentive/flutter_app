@@ -432,17 +432,35 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
 
   Widget buildMainBody() {
     if (style.showScrollBar!) {
-      return Scrollbar(
-        controller: mainVerticalController,
-        child: SingleChildScrollView(
+      return GestureDetector(
+        // onLongPressStart: (details) {
+        //   print("onLongPressStart triggered: ${details.localPosition}");
+        //   // need to translate coordinates to what is on screen, ugh
+        // },
+        // onLongPressMoveUpdate: (details) {
+        //   print("onLongPressMoveUpdate triggered: ${details.localPosition}");
+        // },
+        // onVerticalDragDown: (details) {
+        //   print("onVerticalDragDown triggererd: ${details.localPosition}");
+        // },
+        // onHorizontalDragDown: (details) {
+        //   print("onHorizontalDragDown triggererd: ${details.localPosition}");
+        // },
+        // onLongPressEnd: (details) {
+        //   print("onLongPressEnd triggered: ${details.localPosition}");
+        // },
+        child: Scrollbar(
           controller: mainVerticalController,
-          child: Scrollbar(
-            controller: mainHorizontalController,
-            child: SingleChildScrollView(
+          child: SingleChildScrollView(
+            controller: mainVerticalController,
+            child: Scrollbar(
               controller: mainHorizontalController,
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(config.totalDays, (index) => _generateLengthWise(index))
+              child: SingleChildScrollView(
+                controller: mainHorizontalController,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: List.generate(config.totalDays, (index) => _generateLengthWise(index))
+                ),
               ),
             ),
           ),

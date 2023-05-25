@@ -12,6 +12,7 @@ import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
+import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
 import 'package:flutter_app/src/utils/misc_utils.dart';
@@ -230,15 +231,30 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
 
+  bool shouldMeetupBeReadOnly() {
+    return (currentMeetup.meetupStatus == "Expired" || currentMeetup.meetupStatus == "Complete");
+  }
+
   _onAddParticipantsButtonPressed() {
-    if (isParticipantSelectHappening) {
-      // Participant select is already happening, and it has been pressed to toggle
-      // We now save participants updated
-      _updateMeetingDetails();
+    if (!shouldMeetupBeReadOnly()) {
+      if (isParticipantSelectHappening) {
+        // Participant select is already happening, and it has been pressed to toggle
+        // We now save participants updated
+        _updateMeetingDetails();
+      }
     }
-    setState(() {
-      isParticipantSelectHappening = !isParticipantSelectHappening;
-    });
+    else {
+     _showSnackbarForReadOnlyMeetup();
+    }
+  }
+
+  _showSnackbarForReadOnlyMeetup() {
+    if (currentMeetup.meetupStatus == "Expired") {
+      SnackbarUtils.showSnackBarShort(context, "Meetup has expired and cannot be edited");
+    }
+    else {
+      SnackbarUtils.showSnackBarShort(context, "Meetup is complete and cannot be edited");
+    }
   }
 
   _renderAppBar() {
@@ -269,7 +285,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                 IconButton(
                   icon: Icon(
                     isParticipantSelectHappening ? Icons.check : Icons.add,
-                    color: Colors.teal,
+                    color: shouldMeetupBeReadOnly() ? Colors.grey : Colors.teal,
                   ),
                   onPressed: _onAddParticipantsButtonPressed,
                 )
@@ -582,10 +598,33 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       children: [
         _renderParticipantsView(),
         WidgetUtils.spacer(2.5),
-        const Center(child: Text("Tap on a participant to view their availability"),),
+        const Center(child: Text("Tap on a participant to view their availability", style: TextStyle(fontSize: 12),),),
+        WidgetUtils.spacer(2.5),
+        _renderMeetupStatus(),
+        WidgetUtils.spacer(2.5),
         Divider(color: Theme.of(context).primaryColor),
         isParticipantSelectHappening ? _participantSelectView(state) : _detailedMeetupView(),
       ],
+    );
+  }
+
+  _renderMeetupStatus() {
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7.5,
+            height: 7.5,
+            decoration: BoxDecoration(
+              color: ColorUtils.meetupStatusToColorMap[currentMeetup.meetupStatus]!,
+              shape: BoxShape.circle,
+            ),
+          ),
+          WidgetUtils.spacer(5),
+          Text(currentMeetup.meetupStatus, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+        ],
+      ),
     );
   }
 
@@ -667,9 +706,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   _editAvailabilityButtonOnPressed() {
-    setState(() {
-      isAvailabilitySelectHappening = true;
-    });
+    if (!shouldMeetupBeReadOnly()) {
+      setState(() {
+        isAvailabilitySelectHappening = true;
+      });
+    }
+    else {
+      _showSnackbarForReadOnlyMeetup();
+    }
   }
 
   _saveAvailabilityButtonOnPressed() {
@@ -846,11 +890,16 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: TextFormField(
-            readOnly: widget.currentUserProfile.userId != currentMeetup.ownerId,
+            readOnly: widget.currentUserProfile.userId != currentMeetup.ownerId || shouldMeetupBeReadOnly(),
             initialValue: selectedMeetupName ?? "Unspecified name",
             textCapitalization: TextCapitalization.words,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
+            onTap: () {
+              if (shouldMeetupBeReadOnly()) {
+                _showSnackbarForReadOnlyMeetup();
+              }
+            },
             onChanged: (text) {
               setState(() {
                 selectedMeetupName = text;
@@ -866,8 +915,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                 hintStyle: const TextStyle(
                     fontWeight: FontWeight.normal
                 ),
-              filled: widget.currentUserProfile.userId != currentMeetup.ownerId,
-              fillColor: widget.currentUserProfile.userId != currentMeetup.ownerId ? Colors.grey.shade300 : null
+              filled: widget.currentUserProfile.userId != currentMeetup.ownerId || shouldMeetupBeReadOnly(),
+              fillColor: widget.currentUserProfile.userId != currentMeetup.ownerId || shouldMeetupBeReadOnly() ? Colors.grey.shade200 : null
             ),
           ),
         )
@@ -891,39 +940,44 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   Widget _timePickerButton() {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: widget.currentUserProfile.userId == currentMeetup.ownerId ?
+        backgroundColor: widget.currentUserProfile.userId == currentMeetup.ownerId && !shouldMeetupBeReadOnly() ?
         MaterialStateProperty.all<Color>(Colors.teal) : MaterialStateProperty.all<Color>(Colors.grey),
       ),
       onPressed: () async {
-        if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
-          final selectedTime = await showTimePicker(
-            initialTime: TimeOfDay.fromDateTime(selectedMeetupDate ?? earliestPossibleMeetupDateTime),
-            builder: (BuildContext context, Widget? child) {
-              return Theme(
-                  data: ThemeData(primarySwatch: Colors.teal),
-                  child: child!
-              );
-            },
-            context: context,
-          );
-
-          // Interact with bloc here
-          if(selectedTime != null) {
-            setState(() {
-              selectedMeetupDate = DateTime(
-                (selectedMeetupDate ?? earliestPossibleMeetupDateTime).year,
-                (selectedMeetupDate ?? earliestPossibleMeetupDateTime).month,
-                (selectedMeetupDate ?? earliestPossibleMeetupDateTime).day,
-                selectedTime.hour,
-                selectedTime.minute,
-              );
-            });
-
-            _updateMeetingDetails();
-          }
+        if (shouldMeetupBeReadOnly()) {
+          _showSnackbarForReadOnlyMeetup();
         }
         else {
-          SnackbarUtils.showSnackBar(context, "Cannot modify meetup time unless you are the owner!");
+          if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
+            final selectedTime = await showTimePicker(
+              initialTime: TimeOfDay.fromDateTime(selectedMeetupDate ?? earliestPossibleMeetupDateTime),
+              builder: (BuildContext context, Widget? child) {
+                return Theme(
+                    data: ThemeData(primarySwatch: Colors.teal),
+                    child: child!
+                );
+              },
+              context: context,
+            );
+
+            // Interact with bloc here
+            if(selectedTime != null) {
+              setState(() {
+                selectedMeetupDate = DateTime(
+                  (selectedMeetupDate ?? earliestPossibleMeetupDateTime).year,
+                  (selectedMeetupDate ?? earliestPossibleMeetupDateTime).month,
+                  (selectedMeetupDate ?? earliestPossibleMeetupDateTime).day,
+                  selectedTime.hour,
+                  selectedTime.minute,
+                );
+              });
+
+              _updateMeetingDetails();
+            }
+          }
+          else {
+            SnackbarUtils.showSnackBar(context, "Cannot modify meetup time unless you are the owner!");
+          }
         }
       },
       child: Text(
@@ -938,41 +992,46 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   Widget _datePickerButton() {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: widget.currentUserProfile.userId == currentMeetup.ownerId ?
+        backgroundColor: widget.currentUserProfile.userId == currentMeetup.ownerId && !shouldMeetupBeReadOnly() ?
             MaterialStateProperty.all<Color>(Colors.teal) : MaterialStateProperty.all<Color>(Colors.grey),
       ),
       onPressed: () async {
-        if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
-          final selectedDate = await showDatePicker(
-            builder: (BuildContext context, Widget? child) {
-              return Theme(
-                  data: ThemeData(primarySwatch: Colors.teal),
-                  child: child!
-              );
-            },
-            context: context,
-            initialEntryMode: DatePickerEntryMode.calendarOnly,
-            initialDate: selectedMeetupDate ?? earliestPossibleMeetupDateTime,
-            firstDate: DateTimeUtils.calcMinDate(WidgetUtils.skipNulls([selectedMeetupDate, earliestPossibleMeetupDateTime])),
-            lastDate: DateTime(ConstantUtils.LATEST_YEAR),
-          );
-
-          // Interact
-          if(selectedDate != null) {
-            setState(() {
-              selectedMeetupDate = DateTime(
-                selectedDate.year,
-                selectedDate.month,
-                selectedDate.day,
-                (selectedMeetupDate ?? earliestPossibleMeetupDateTime).hour,
-                (selectedMeetupDate ?? earliestPossibleMeetupDateTime).minute,
-              );
-            });
-            _updateMeetingDetails();
-          }
+        if (shouldMeetupBeReadOnly()) {
+          _showSnackbarForReadOnlyMeetup();
         }
         else {
-          SnackbarUtils.showSnackBar(context, "Cannot modify meetup date unless you are the owner!");
+          if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
+            final selectedDate = await showDatePicker(
+              builder: (BuildContext context, Widget? child) {
+                return Theme(
+                    data: ThemeData(primarySwatch: Colors.teal),
+                    child: child!
+                );
+              },
+              context: context,
+              initialEntryMode: DatePickerEntryMode.calendarOnly,
+              initialDate: selectedMeetupDate ?? earliestPossibleMeetupDateTime,
+              firstDate: DateTimeUtils.calcMinDate(WidgetUtils.skipNulls([selectedMeetupDate, earliestPossibleMeetupDateTime])),
+              lastDate: DateTime(ConstantUtils.LATEST_YEAR),
+            );
+
+            // Interact
+            if(selectedDate != null) {
+              setState(() {
+                selectedMeetupDate = DateTime(
+                  selectedDate.year,
+                  selectedDate.month,
+                  selectedDate.day,
+                  (selectedMeetupDate ?? earliestPossibleMeetupDateTime).hour,
+                  (selectedMeetupDate ?? earliestPossibleMeetupDateTime).minute,
+                );
+              });
+              _updateMeetingDetails();
+            }
+          }
+          else {
+            SnackbarUtils.showSnackBar(context, "Cannot modify meetup date unless you are the owner!");
+          }
         }
       },
       child: Text(
