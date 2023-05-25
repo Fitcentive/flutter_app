@@ -39,10 +39,10 @@ class LocationUtils {
   }
 
   static LatLngBounds generateBoundsFromMarkers(Set<Marker> markers) {
-    return _createBounds(markers.map((m) => m.position).toList());
+    return createBounds(markers.map((m) => m.position).toList());
   }
 
-  static LatLngBounds _createBounds(List<LatLng> positions) {
+  static LatLngBounds createBounds(List<LatLng> positions) {
     final southwestLat = positions.map((p) => p.latitude).reduce((value, element) => value < element ? value : element); // smallest
     final southwestLon = positions.map((p) => p.longitude).reduce((value, element) => value < element ? value : element);
     final northeastLat = positions.map((p) => p.latitude).reduce((value, element) => value > element ? value : element); // biggest

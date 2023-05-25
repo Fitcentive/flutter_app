@@ -3,9 +3,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
+import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/shared_components/location_view.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class LocationCard extends StatelessWidget {
   final PublicUserProfile currentUserProfile;
@@ -27,6 +30,8 @@ class LocationCard extends StatelessWidget {
   MarkerId markerId = const MarkerId("camera_centre_marker_id");
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
+
+  late BitmapDescriptor customUserLocationMarker;
 
   void _generateBoundaryCircle(
       String userId,
@@ -84,14 +89,74 @@ class LocationCard extends StatelessWidget {
       Marker(
         markerId: markerId,
         position: currentUserProfileLocationCenter,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen)
+        icon: customUserLocationMarker
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    _setupMap(otherUserProfile, currentUserProfile, context);
+    return FutureBuilder<int>(
+      future: _setupMapIconsForUsers(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          // _setupMap(widget.meetupLocation, widget.userProfiles);
+          _setupMap(otherUserProfile, currentUserProfile, context);
+          return _mapView(context);
+        }
+        else {
+          if (snapshot.hasError) {
+            /**
+             * main.dart.js:42078 Future failed with error:
+             * NoSuchMethodError: method not found: 'toString' on null
+             */
+            print("Future failed with error: ${snapshot.error}");
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    );
+  }
+
+  _snapCameraToCircles() async {
+    final GoogleMapController controller = await _mapController.future;
+    controller.animateCamera(
+        CameraUpdate.newLatLngBounds(
+            LocationUtils.createBounds(circles.entries.map((e) => e.value.center).toList()),
+            50
+        )
+    );
+  }
+
+  Widget _recenterButton() {
+    return Align(
+      alignment: Alignment.topRight,
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: SizedBox(
+          height: 40,
+          width: 40,
+          child: FloatingActionButton(
+              heroTag: "LocationCardViewSnapToMarkersButton-${StringUtils.generateRandomString(10)}",
+              onPressed: () {
+                _snapCameraToCircles();
+              },
+              backgroundColor: Colors.teal,
+              tooltip: "Re-center",
+              child: const Icon(
+                  Icons.location_searching_outlined,
+                  color: Colors.white,
+                  size: 16
+              )
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _mapView(BuildContext context) {
     return GoogleMap(
         onTap: (_) {
           _goToLocationView(otherUserProfile, currentUserProfile, context);
@@ -117,4 +182,14 @@ class LocationCard extends StatelessWidget {
     );
   }
 
+  Future<int> _setupMapIconsForUsers() async {
+    customUserLocationMarker = await _generateCustomMarkerForUser(currentUserProfile);
+    return 1;
+  }
+
+  _generateCustomMarkerForUser(PublicUserProfile userProfile) async {
+    final fullImageUrl = ImageUtils.getFullImageUrl(userProfile.photoUrl, 96, 96);
+    final request = await http.get(Uri.parse(fullImageUrl));
+    return await ImageUtils.getMarkerIcon(request.bodyBytes, const Size(96, 96), Colors.teal);
+  }
 }
