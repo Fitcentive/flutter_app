@@ -227,9 +227,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
                 );
         }
       },
-      background: Container(
-        color: Colors.teal,
-      ),
+      background: WidgetUtils.viewUnderDismissibleListTile(),
       child: ListTile(
         title: Text("${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""}",
             style: const TextStyle(fontWeight: FontWeight.w500)),

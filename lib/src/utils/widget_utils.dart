@@ -20,6 +20,43 @@ class WidgetUtils {
     return items.whereType<T>().toList();
   }
 
+  static Widget viewUnderDismissibleListTile() {
+    return Container(
+      color: Colors.redAccent,
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: const [
+          Expanded(
+            flex: 5,
+              child: Center(
+                  child: Text(
+                    "Remove",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold
+                    ),
+                  )
+              )
+          ),
+          Expanded(
+              flex: 1,
+              child: Icon(Icons.remove_circle, color: Colors.white,)
+          ),
+        ],
+      ),
+    );
+    return Container(
+      color: Colors.teal,
+      child: const Text(
+        "Swipe left to delete",
+        style: TextStyle(
+          color: Colors.white
+        ),
+      ),
+    );
+  }
+
   static Widget? generatePostImageIfExists(String? postImageUrl) {
     if (postImageUrl != null) {
       return Container(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 
 typedef FetchMoreResultsCallback = void Function();
@@ -123,9 +124,7 @@ class UserResultsListState extends State<UserResultsList> {
     if (widget.shouldListBeSwipable) {
       return Dismissible(
           key: Key(userProfile.userId),
-          background: Container(
-            color: Colors.teal,
-          ),
+          background: WidgetUtils.viewUnderDismissibleListTile(),
           confirmDismiss: (direction) {
             Widget cancelButton = TextButton(
               child: const Text("Cancel", style: TextStyle(color: Colors.teal),),

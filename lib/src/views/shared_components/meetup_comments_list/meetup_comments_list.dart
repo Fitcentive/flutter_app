@@ -271,11 +271,14 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
       setState(() {
         newUserComment = null;
       });
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 75,
-        curve: Curves.easeOut,
-        duration: const Duration(milliseconds: 200),
-      );
+
+      if(_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent + 75,
+          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 200),
+        );
+      }
     }
   }
 
@@ -286,31 +289,34 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
           KeyboardUtils.hideKeyboard(context);
         },
         child: const Padding(
-          padding: EdgeInsets.all(10.0),
+          padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
           child: Text("No activity yet... get started by adding a comment!"),
         ),
       );
     }
     else {
-      return GestureDetector(
-        onTap: () {
-          KeyboardUtils.hideKeyboard(context);
-        },
-        child: Scrollbar(
-            child: ListView.builder(
-              controller: _scrollController,
-              shrinkWrap: true,
-              itemCount: fetchedComments.length,
-              itemBuilder: (BuildContext context, int index) {
-                if (index >= fetchedComments.length) {
-                  return const Center(child: CircularProgressIndicator());
-                } else {
-                  final currentComment = fetchedComments[index];
-                  final userProfile = userProfiles[currentComment.userId];
-                  return _commentListItem(currentComment, userProfile);
-                }
-              },
-            )
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(10, 20, 10, 0),
+        child: GestureDetector(
+          onTap: () {
+            KeyboardUtils.hideKeyboard(context);
+          },
+          child: Scrollbar(
+              child: ListView.builder(
+                controller: _scrollController,
+                shrinkWrap: true,
+                itemCount: fetchedComments.length,
+                itemBuilder: (BuildContext context, int index) {
+                  if (index >= fetchedComments.length) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else {
+                    final currentComment = fetchedComments[index];
+                    final userProfile = userProfiles[currentComment.userId];
+                    return _commentListItem(currentComment, userProfile);
+                  }
+                },
+              )
+          ),
         ),
       );
     }

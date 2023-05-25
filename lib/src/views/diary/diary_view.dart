@@ -513,7 +513,7 @@ class DiaryViewState extends State<DiaryView> {
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 margin: const EdgeInsets.symmetric(vertical: 2.5),
-                padding: const EdgeInsets.all(2),
+                padding: const EdgeInsets.all(5),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     minHeight: 125,
@@ -615,9 +615,7 @@ class DiaryViewState extends State<DiaryView> {
               detailedFoodEntry.right.food.servings.serving.calories;
 
             return Dismissible(
-              background: Container(
-                color: Colors.teal,
-              ),
+              background: WidgetUtils.viewUnderDismissibleListTile(),
               direction: DismissDirection.endToStart,
               key: Key(foodEntryForHeadingRaw.id),
               onDismissed: (direction) {
@@ -748,9 +746,7 @@ class DiaryViewState extends State<DiaryView> {
         itemBuilder: (context, index) {
           final currentCardioEntry = cardioEntries[index];
           return Dismissible(
-            background: Container(
-              color: Colors.teal,
-            ),
+            background: WidgetUtils.viewUnderDismissibleListTile(),
             direction: DismissDirection.endToStart,
             key: Key(currentCardioEntry.id),
             onDismissed: (direction) {
@@ -836,9 +832,7 @@ class DiaryViewState extends State<DiaryView> {
         itemBuilder: (context, index) {
           final currentStrengthEntry = strengthEntries[index];
           return Dismissible(
-            background: Container(
-              color: Colors.teal,
-            ),
+            background: WidgetUtils.viewUnderDismissibleListTile(),
             key: Key(currentStrengthEntry.id),
             direction: DismissDirection.endToStart,
             onDismissed: (direction) {
