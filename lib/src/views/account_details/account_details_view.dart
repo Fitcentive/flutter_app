@@ -374,6 +374,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       ),
       onPressed: () async {
         if (state is AccountDetailsModified) {
+          SnackbarUtils.showSnackBarMedium(context, "Saving changes... please wait.");
           final authState = _authenticationBloc.state;
           if (authState is AuthSuccessUserUpdateState) {
             _accountDetailsBloc.add(AccountDetailsSaved(
