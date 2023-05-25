@@ -656,6 +656,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                   _renderMeetupDateTime(),
                   WidgetUtils.spacer(2.5),
                   _renderTabs(),
+                  WidgetUtils.spacer(2.5),
                   _showDeleteMeetupButtonIfNeeded(),
                 ]),
               ),

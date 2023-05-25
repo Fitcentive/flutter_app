@@ -6,6 +6,7 @@ import 'package:flutter_app/src/views/shared_components/time_planner/time_planne
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_time.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/config/global_config.dart' as config;
+import 'package:vibration/vibration.dart';
 
 typedef TimePlannerSelectedTileCallback = void Function(List<List<bool>> selectedTimeblocks);
 
@@ -70,6 +71,10 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
   TimePlannerStyle style = TimePlannerStyle();
   List<TimePlannerTask> tasks = [];
   bool? isAnimated = true;
+
+  bool multiBlockEnabled = false;
+  double xLongPressStartAt = 0;
+  double yLongPressStartAt = 0;
 
   List<List<int>> cellStateMatrix = [[]];
 
@@ -385,21 +390,23 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
               // maybe do it ALL together instead to enable select and drag
               GestureDetector(
                 onTap: () {
-                  if (widget.currentUserAcceptingAvailabilityFor != null) {
-                    setState(() {
-                      if (cellStateMatrix[colIndex][i] == 1) {
-                        cellStateMatrix[colIndex][i] = 0;
-                      }
-                      else {
-                        cellStateMatrix[colIndex][i] = 1;
-                      }
-                    });
+                  if (!multiBlockEnabled) {
+                    if (widget.currentUserAcceptingAvailabilityFor != null) {
+                      setState(() {
+                        if (cellStateMatrix[colIndex][i] == 1) {
+                          cellStateMatrix[colIndex][i] = 0;
+                        }
+                        else {
+                          cellStateMatrix[colIndex][i] = 1;
+                        }
+                      });
 
-                    widget.availabilityChangedCallback(
-                        cellStateMatrix
-                            .map((e) => e.map((e) => e == 0 ? false : true).toList())
-                            .toList()
-                    );
+                      widget.availabilityChangedCallback(
+                          cellStateMatrix
+                              .map((e) => e.map((e) => e == 0 ? false : true).toList())
+                              .toList()
+                      );
+                    }
                   }
                 },
                 // Block of time
@@ -430,25 +437,131 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
     );
   }
 
+
+  _convertLongPressDetailsIntoSelectedAvailabilityBlocks(LongPressMoveUpdateDetails details) {
+    final horizontalOffset = mainHorizontalController.offset;
+    final verticalOffset = mainVerticalController.offset;
+
+    // The cell corresponding to longPressStart at - user can start anywhere on the cell
+    final xLongPressStartAtCell = xLongPressStartAt - (config.cellWidth!);
+    final yLongPressStartAtCell = yLongPressStartAt - ((config.cellHeight!).toDouble() / 2);
+
+    final xCurrentPos = details.localPosition.dx;
+    final yCurrentPos = details.localPosition.dy;
+
+    final filledFinalColumnIndex = (yCurrentPos / ((config.cellHeight!).toDouble() / 2)).floor();
+    final filledFinalRowIndex = (xCurrentPos / ((config.cellWidth!).toDouble())).floor();
+    var previousCellStateMatrix = List.from(cellStateMatrix);
+
+    // cellStateMatrix = DiscreteAvailabilitiesView.defaultAvailabilityMatrix(config.totalDays, config.totalHours.toInt());
+
+
+    // todo - this works for top to bottom right. Need to also support
+    // 1. Top to bottom right
+    // 2. Top to bottom left
+    // 3. Bottom to top right
+    // 4. Bottom to top left
+    var rows = 0;
+    var cols = 0;
+    while(rows < config.totalDays) {
+      cols = 0;
+      while(cols < config.totalHours.toInt() * 2) {
+        double xStartCurrentCell = (rows * ((config.cellWidth!).toDouble()));
+        double yStartCurrentCell = (cols * ((config.cellHeight!).toDouble() / 2));
+
+        // Need to ensure it is starting past local offset too
+        // Pivot needs to be dependent on initial starting position
+
+        // Handle top to bottom right
+        if (xStartCurrentCell - horizontalOffset  >= xLongPressStartAtCell &&
+            yStartCurrentCell - verticalOffset  >= yLongPressStartAtCell) {
+
+          if (xStartCurrentCell - horizontalOffset <= xCurrentPos &&
+               yStartCurrentCell - verticalOffset <= yCurrentPos
+           ) {
+            setState(() {
+              cellStateMatrix[rows][cols] = 1;
+            });
+          }
+          else {
+            setState(() {
+              cellStateMatrix[rows][cols] = 0;
+            });
+          }
+        }
+
+        // Handle top to bottom left
+        // else if (xStartCurrentCell - horizontalOffset  <= xLongPressStartAtCell - (config.cellWidth!) &&
+        //     yStartCurrentCell - verticalOffset  >= yLongPressStartAtCell - ((config.cellHeight!).toDouble() / 2)) {
+        //
+        //   if (xStartCurrentCell - horizontalOffset  >= xCurrentPos - (config.cellWidth!)  &&
+        //       yStartCurrentCell - verticalOffset   <= yCurrentPos - ((config.cellHeight!).toDouble() / 2)
+        //   ) {
+        //     setState(() {
+        //       cellStateMatrix[rows][cols] = 1;
+        //     });
+        //   }
+        //   else {
+        //     setState(() {
+        //       cellStateMatrix[rows][cols] = 0;
+        //     });
+        //   }
+        // }
+
+        cols++;
+      }
+      rows++;
+    }
+
+    // Coalesce previous list with new list to capture any old values
+    // problem, it makes current changes unchangeable as well
+    int i = 0, j = 0;
+    // while(i < config.totalDays) {
+    //   j = 0;
+    //   while (j < config.totalHours.toInt() * 2) {
+    //     if (previousCellStateMatrix[i][j] == 1) {
+    //       cellStateMatrix[i][j] = 1;
+    //     }
+    //     j++;
+    //   }
+    //   i++;
+    // }
+    //
+    // setState(() {
+    //
+    // });
+
+  }
+
   Widget buildMainBody() {
     if (style.showScrollBar!) {
       return GestureDetector(
-        // onLongPressStart: (details) {
-        //   print("onLongPressStart triggered: ${details.localPosition}");
-        //   // need to translate coordinates to what is on screen, ugh
-        // },
-        // onLongPressMoveUpdate: (details) {
-        //   print("onLongPressMoveUpdate triggered: ${details.localPosition}");
-        // },
-        // onVerticalDragDown: (details) {
-        //   print("onVerticalDragDown triggererd: ${details.localPosition}");
-        // },
-        // onHorizontalDragDown: (details) {
-        //   print("onHorizontalDragDown triggererd: ${details.localPosition}");
-        // },
-        // onLongPressEnd: (details) {
-        //   print("onLongPressEnd triggered: ${details.localPosition}");
-        // },
+        onLongPressStart: (details) async {
+          if (widget.currentUserAcceptingAvailabilityFor != null) {
+            final r = await Vibration.hasVibrator();
+            if (r ?? false) {
+              Vibration.vibrate(duration: 100);
+            }
+            multiBlockEnabled = true;
+            xLongPressStartAt = details.localPosition.dx;
+            yLongPressStartAt = details.localPosition.dy;
+          }
+        },
+        onLongPressMoveUpdate: (details) {
+          if (widget.currentUserAcceptingAvailabilityFor != null) {
+            _convertLongPressDetailsIntoSelectedAvailabilityBlocks(details);
+          }
+        },
+        onLongPressEnd: (details) {
+          if (widget.currentUserAcceptingAvailabilityFor != null) {
+            multiBlockEnabled = false;
+            widget.availabilityChangedCallback(
+                cellStateMatrix
+                    .map((e) => e.map((e) => e == 0 ? false : true).toList())
+                    .toList()
+            );
+          }
+        },
         child: Scrollbar(
           controller: mainVerticalController,
           child: SingleChildScrollView(
