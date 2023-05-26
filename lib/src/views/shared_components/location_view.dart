@@ -127,13 +127,6 @@ class LocationView extends StatelessWidget {
             );
           }
           else {
-            if (snapshot.hasError) {
-              /**
-               * main.dart.js:42078 Future failed with error:
-               * NoSuchMethodError: method not found: 'toString' on null
-               */
-              print("Future failed with error: ${snapshot.error}");
-            }
             return const Center(
               child: CircularProgressIndicator(),
             );
