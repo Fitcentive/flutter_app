@@ -9,15 +9,13 @@ abstract class CalendarEvent extends Equatable {
 
 class FetchCalendarMeetupData extends CalendarEvent {
   final String userId;
-  final int year;
-  final int month;
+  final DateTime currentSelectedDateTime;
 
   const FetchCalendarMeetupData({
     required this.userId,
-    required this.year,
-    required this.month,
+    required this.currentSelectedDateTime,
   });
 
   @override
-  List<Object?> get props => [userId, year, month];
+  List<Object?> get props => [userId, currentSelectedDateTime];
 }

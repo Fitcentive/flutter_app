@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,8 @@ import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_bloc.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_event.dart';
@@ -51,6 +55,7 @@ class CalendarViewState extends State<CalendarView> {
 
   String selectedCalendarView = "month"; // Options are month, week, day
   DateTime currentSelectedDateTime = DateTime.now();
+  DateTime previouslyFetchedDataFor = DateTime.now();
   List<CalendarEventData<Meetup>> calendarEvents = [];
 
   EventController<Meetup> monthCalendarEventController = EventController<Meetup>();
@@ -78,8 +83,7 @@ class CalendarViewState extends State<CalendarView> {
     _calendarBloc.add(
         FetchCalendarMeetupData(
             userId: widget.currentUserProfile.userId,
-            year: currentSelectedDateTime.year,
-            month: currentSelectedDateTime.month,
+            currentSelectedDateTime: currentSelectedDateTime,
         )
     );
   }
@@ -102,14 +106,15 @@ class CalendarViewState extends State<CalendarView> {
               calendarEvents = state.meetups
                   .where((m) => m.time != null)
                   .map((m) {
+                // Note - we have translate into localtime
                 return CalendarEventData(
-                  date: m.time!,
+                  date: m.time!.toLocal(),
                   event: m,
                   color: Colors.teal,
                   title: m.name ?? "Unnamed meetup",
                   description: m.name ?? "No description",
-                  startTime: m.time,
-                  endTime: m.time?.add(const Duration(hours: 1)) // todo - solution for this
+                  startTime: m.time?.toLocal(),
+                  endTime: m.time?.toLocal().add(const Duration(hours: 1))
                 );
               })
                   .toList();
@@ -121,21 +126,14 @@ class CalendarViewState extends State<CalendarView> {
         },
         child: BlocBuilder<CalendarBloc, CalendarState>(
           builder: (context, state) {
-            if (state is CalendarMeetupUserDataFetched) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _renderViewSelectButtons(),
-                  WidgetUtils.spacer(2.5),
-                  Expanded(child: _renderCalendarView(state)),
-                ],
-              );
-            }
-            else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _renderViewSelectButtons(),
+                WidgetUtils.spacer(2.5),
+                Expanded(child: _renderCalendarView(state)),
+              ],
+            );
           },
         ),
       ),
@@ -212,132 +210,177 @@ class CalendarViewState extends State<CalendarView> {
     );
   }
 
-  _renderCalendarView(CalendarMeetupUserDataFetched state) {
-    if (selectedCalendarView == "month") {
-      return CalendarControllerProvider<Meetup>(
-        controller: monthCalendarEventController,
-        child: MonthView(
-          cellBuilder: (DateTime date, List<CalendarEventData<Meetup>> events, bool isToday, bool isInMonth) {
-            return FilledCell(
-              date: date,
-              shouldHighlight: isToday,
-              events: events,
-              highlightColor: Colors.teal,
-              backgroundColor: isInMonth ? ColorConstants.white : ColorConstants.offWhite,
-              onTileTap: (event, date) {
-                _showMeetupCardDialog(state, [event]);
-              },
-              dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
-            );
-          },
+  _renderCalendarView(CalendarState state) {
+    if (state is CalendarMeetupUserDataFetched) {
+      if (selectedCalendarView == "month") {
+        return CalendarControllerProvider<Meetup>(
           controller: monthCalendarEventController,
-          minMonth: minimumDate,
-          maxMonth: maximumDate,
-          initialMonth: currentSelectedDateTime,
-          cellAspectRatio: .5,
-          onPageChange: (date, pageIndex) {
-            setState(() {
-              currentSelectedDateTime = date;
-            });
-          },
-          onCellTap: (events, date) {
-            setState(() {
-              currentSelectedDateTime = date;
-            });
-          },
-          startDay: WeekDays.monday, // To change the first day of the week.
-          // This callback will only work if cellBuilder is null.
-          onEventTap: (event, date) {
-              _showMeetupCardDialog(state, [event]);
-          },
-          onDateLongPress: (date) {
-            // show popup menu with options
-          },
-          dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
-          headerStringBuilder: ((date, {secondaryDate}) => DateFormat("MMM yyyy").format(date).toString()),
-          headerStyle: calendarHeaderStyle,
-        ),
-      );
-    }
-    else if (selectedCalendarView == "week") {
-      return CalendarControllerProvider<Meetup>(
-          controller: weekCalendarEventController,
-          child: WeekView(
-            controller: weekCalendarEventController,
-            showLiveTimeLineInAllDays: true, // To display live time line in all pages in week view.
-            minDay: minimumDate,
-            maxDay: maximumDate,
-            initialDay: currentSelectedDateTime,
-            heightPerMinute: 1, // height occupied by 1 minute time span.
-            eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
-            onEventTap: (events, date) {
-              if (events.isNotEmpty) {
-                _showMeetupCardDialog(state, events);
-              }
+          child: MonthView(
+            width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
+            cellBuilder: (DateTime date, List<CalendarEventData<Meetup>> events, bool isToday, bool isInMonth) {
+              return FilledCell(
+                date: date,
+                shouldHighlight: isToday,
+                events: events,
+                highlightColor: Colors.teal,
+                backgroundColor: isInMonth ? ColorConstants.white : ColorConstants.offWhite,
+                onTileTap: (event, date) {
+                  _showMeetupCardDialog(state, [event]);
+                },
+                dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
+              );
             },
-            onDateLongPress: (date) {
-              // Show context popup menu
+            controller: monthCalendarEventController,
+            minMonth: minimumDate,
+            maxMonth: maximumDate,
+            initialMonth: currentSelectedDateTime,
+            cellAspectRatio: .5,
+            onPageChange: (date, pageIndex) {
+              setState(() {
+                currentSelectedDateTime = date;
+              });
             },
-            onDateTap: (date) {
+            onCellTap: (events, date) {
               setState(() {
                 currentSelectedDateTime = date;
               });
             },
             startDay: WeekDays.monday, // To change the first day of the week.
-            headerStringBuilder: ((date, {secondaryDate}) => DateFormat("MMM yyyy").format(date).toString()),
-            headerStyle: calendarHeaderStyle,
-            weekDayStringBuilder: (dayIndex) {
-              switch (dayIndex) {
-                case 0:
-                  return "Mon";
-                case 1:
-                  return "Tue";
-                case 2:
-                  return "Wed";
-                case 3:
-                  return "Thu";
-                case 4:
-                  return "Fri";
-                case 5:
-                  return "Sat";
-                case 6:
-                  return "Sun";
-                default:
-                  return "poop";
-              }
+            // This callback will only work if cellBuilder is null.
+            onEventTap: (event, date) {
+              _showMeetupCardDialog(state, [event]);
             },
-          )
-      );
+            onDateLongPress: (date) {
+              // show popup menu with options
+            },
+            dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
+            headerStringBuilder: ((date, {secondaryDate}) {
+              // Note - this is a hack.
+              // We actually want a callback whenever the selected date is changed
+              // The library doesn't expose that, but this behaves the same way
+              // The `date` parameter here is either current time (initially), or start of the month (after selection)
+              _fetchMeetupDataForSelectedDateMonth(date);
+              return DateFormat("MMM yyyy").format(date).toString();
+            }),
+            headerStyle: calendarHeaderStyle,
+          ),
+        );
+      }
+      else if (selectedCalendarView == "week") {
+        return CalendarControllerProvider<Meetup>(
+            controller: weekCalendarEventController,
+            child: WeekView(
+              width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
+              controller: weekCalendarEventController,
+              showLiveTimeLineInAllDays: true, // To display live time line in all pages in week view.
+              minDay: minimumDate,
+              maxDay: maximumDate,
+              initialDay: currentSelectedDateTime,
+              heightPerMinute: 1, // height occupied by 1 minute time span.
+              eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
+              onEventTap: (events, date) {
+                if (events.isNotEmpty) {
+                  _showMeetupCardDialog(state, events);
+                }
+              },
+              onDateLongPress: (date) {
+                // Show context popup menu
+              },
+              onDateTap: (date) {
+                setState(() {
+                  currentSelectedDateTime = date;
+                });
+              },
+              startDay: WeekDays.monday, // To change the first day of the week.
+              headerStringBuilder: ((date, {secondaryDate}) {
+                // Note - this is a hack.
+                // We actually want a callback whenever the selected date is changed
+                // The library doesn't expose that, but this behaves the same way
+                // The `date` parameter here is either current time (initially), or start of the month (after selection)
+                _fetchMeetupDataForSelectedDateMonth(date);
+                return DateFormat("MMM yyyy").format(date).toString();
+              }),
+              headerStyle: calendarHeaderStyle,
+              weekDayStringBuilder: (dayIndex) {
+                switch (dayIndex) {
+                  case 0:
+                    return "Mon";
+                  case 1:
+                    return "Tue";
+                  case 2:
+                    return "Wed";
+                  case 3:
+                    return "Thu";
+                  case 4:
+                    return "Fri";
+                  case 5:
+                    return "Sat";
+                  case 6:
+                    return "Sun";
+                  default:
+                    return "poop";
+                }
+              },
+            )
+        );
+      }
+      else {
+        return CalendarControllerProvider<Meetup>(
+            controller: dayCalendarEventController,
+            child: DayView(
+              width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
+              controller: dayCalendarEventController,
+              showVerticalLine: true, // To display live time line in day view.
+              showLiveTimeLineInAllDays: true, // To display live time line in all pages in day view.
+              minDay: minimumDate,
+              maxDay: maximumDate,
+              initialDay: currentSelectedDateTime,
+              heightPerMinute: 1, // height occupied by 1 minute time span.
+              eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
+              onEventTap: (events, date) {
+                if (events.isNotEmpty) {
+                  _showMeetupCardDialog(state, events);
+                }
+              },
+              onDateLongPress: (date) => print(date),
+              dateStringBuilder: ((date, {secondaryDate}) {
+                // Note - this is a hack.
+                // We actually want a callback whenever the selected date is changed
+                // The library doesn't expose that, but this behaves the same way
+                // The `date` parameter here is either current time (initially), or start of the month (after selection)
+                currentSelectedDateTime = date;
+                _fetchMeetupDataForSelectedDateMonth(date);
+                return DateFormat("MMM dd yyyy").format(date).toString();
+              }),
+              headerStyle: calendarHeaderStyle,
+              onPageChange: (date, index) {
+                setState(() {
+                  currentSelectedDateTime = date;
+                });
+              },
+            )
+        );
+      }
     }
     else {
-      return CalendarControllerProvider<Meetup>(
-          controller: dayCalendarEventController,
-          child: DayView(
-            controller: dayCalendarEventController,
-            showVerticalLine: true, // To display live time line in day view.
-            showLiveTimeLineInAllDays: true, // To display live time line in all pages in day view.
-            minDay: minimumDate,
-            maxDay: maximumDate,
-            initialDay: currentSelectedDateTime,
-            heightPerMinute: 1, // height occupied by 1 minute time span.
-            eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
-            onEventTap: (events, date) {
-              if (events.isNotEmpty) {
-                _showMeetupCardDialog(state, events);
-              }
-            },
-            onDateLongPress: (date) => print(date),
-            dateStringBuilder: ((date, {secondaryDate}) => DateFormat("MMM dd yyyy").format(date).toString()),
-            headerStyle: calendarHeaderStyle,
-            onPageChange: (date, index) {
-              setState(() {
-                currentSelectedDateTime = date;
-              });
-            },
-          )
+      return const Center(
+        child: CircularProgressIndicator(),
       );
     }
 
+  }
+
+  _fetchMeetupDataForSelectedDateMonth(DateTime selected) {
+    if (selected.month != previouslyFetchedDataFor.month || selected.year != previouslyFetchedDataFor.year) {
+      _calendarBloc.add(
+          FetchCalendarMeetupData(
+            userId: widget.currentUserProfile.userId,
+            currentSelectedDateTime: selected,
+          )
+      );
+      previouslyFetchedDataFor = selected;
+    }
+    currentSelectedDateTime = selected;
   }
 
   _showMeetupCardDialog(CalendarMeetupUserDataFetched state, List<CalendarEventData<Object?>> events) {
@@ -460,8 +503,7 @@ class CalendarViewState extends State<CalendarView> {
       _calendarBloc.add(
           FetchCalendarMeetupData(
             userId: widget.currentUserProfile.userId,
-            year: currentSelectedDateTime.year,
-            month: currentSelectedDateTime.month,
+            currentSelectedDateTime: currentSelectedDateTime,
           )
       );
     });

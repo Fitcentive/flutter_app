@@ -198,6 +198,29 @@ class MeetupRepository {
     }
   }
 
+  Future<List<Meetup>> getMeetupsForUserByMonth(
+      String accessToken,
+      String dateString,
+      int timezoneOffsetInMinutes,
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups/month/$dateString?offsetInMinutes=$timezoneOffsetInMinutes"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      final List<Meetup> results = jsonResponse.map((e) {
+        return Meetup.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getMeetupsForUserByMonth: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<List<Meetup>> getMeetupsForUser(
       String userId,
       String accessToken,
