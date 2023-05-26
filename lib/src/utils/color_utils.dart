@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class ColorUtils {
 
@@ -19,6 +20,27 @@ class ColorUtils {
     Colors.redAccent,
     Colors.greenAccent,
     Colors.deepPurple,
+  ];
+
+  static const List<Color> circleColoursWithoutTeal = [
+    Colors.orange,
+    Colors.blue,
+    Colors.yellow,
+    Colors.pinkAccent,
+    Colors.redAccent,
+    Colors.greenAccent,
+    Colors.deepPurple,
+  ];
+
+  static final List<BitmapDescriptor> markerList = [
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose),
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta),
+    BitmapDescriptor.defaultMarker,
   ];
 
   static const MaterialColor BUTTON_AVAILABLE = Colors.teal;

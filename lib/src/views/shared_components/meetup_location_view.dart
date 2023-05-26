@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:http/http.dart' as http;
 
@@ -143,42 +144,47 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
   Future<int> _setupMapIconsForUsers(List<PublicUserProfile> users) async {
     _setupColorsForUsers(users);
 
-    for (var e in users) {
-      if (userIdToMapMarkerIcon[e.userId] == null) {
-        userIdToMapMarkerIcon[e.userId] = await _generateCustomMarkerForUser(e);
+    if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+      for (var e in users) {
+        if (userIdToMapMarkerIcon[e.userId] == null) {
+          userIdToMapMarkerIcon[e.userId] = BitmapDescriptor.defaultMarker;
+        }
       }
+      customGymLocationIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
     }
-
-    final Uint8List? gymMarkerIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon.png', 100);
-    customGymLocationIcon = BitmapDescriptor.fromBytes(gymMarkerIcon!);
+    else {
+      for (var e in users) {
+        if (userIdToMapMarkerIcon[e.userId] == null) {
+          userIdToMapMarkerIcon[e.userId] = await _generateCustomMarkerForUser(e);
+        }
+      }
+      // Note - https://docs.flutter.dev/ui/assets-and-images#declaring-resolution-aware-image-assets
+      //       BitmapDescriptor.fromAssetImage(configuration, assetName) is an option to try as well
+      final Uint8List? gymMarkerIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon.png', 100);
+      customGymLocationIcon = BitmapDescriptor.fromBytes(gymMarkerIcon!);
+    }
 
     return 1;
   }
 
-  // todo - infinite loop if too many users!!!
+  // Max 7 other colors! or errors
   _setupColorsForUsers(List<PublicUserProfile> users) {
-    users.forEach((u) {
-      var nextColor = userIdToMapMarkerColor[u.userId];
+    userIdToMapMarkerColor[widget.currentUserProfile.userId] = Colors.teal;
+    usedColoursThusFar.add(Colors.teal);
 
-      if (nextColor == null) {
-        // We always give same colour to current user for consistency
-        if (u.userId == widget.currentUserProfile.userId) {
-          userIdToMapMarkerColor[u.userId] = Colors.teal;
-          usedColoursThusFar.add(Colors.teal);
-        }
-
-        else {
-          final _random = Random();
-          var nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
-          while (usedColoursThusFar.contains(nextColour)) {
-            nextColour = ColorUtils.circleColours[_random.nextInt(ColorUtils.circleColours.length)];
+    users
+        .where((e) => e.userId != widget.currentUserProfile.userId)
+        .toList()
+        .asMap()
+        .forEach((index, u) {
+          var nextColor = userIdToMapMarkerColor[u.userId];
+          if (nextColor == null) {
+              nextColor = ColorUtils.circleColoursWithoutTeal[index];
+              userIdToMapMarkerColor[u.userId] = nextColor;
+              usedColoursThusFar.add(nextColor);
+            }
           }
-
-          userIdToMapMarkerColor[u.userId] = nextColour;
-          usedColoursThusFar.add(nextColour);
-        }
-      }
-    });
+    );
   }
 
   _generateCustomMarkerForUser(PublicUserProfile userProfile) async {

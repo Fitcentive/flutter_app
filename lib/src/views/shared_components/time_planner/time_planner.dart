@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
@@ -538,9 +539,11 @@ class DiscreteAvailabilitiesViewState extends State<DiscreteAvailabilitiesView> 
       return GestureDetector(
         onLongPressStart: (details) async {
           if (widget.currentUserAcceptingAvailabilityFor != null) {
-            final r = await Vibration.hasVibrator();
-            if (r ?? false) {
-              Vibration.vibrate(duration: 100);
+            if (!kIsWeb) {
+              final r = await Vibration.hasVibrator();
+              if (r ?? false) {
+                Vibration.vibrate(duration: 100);
+              }
             }
             multiBlockEnabled = true;
             xLongPressStartAt = details.localPosition.dx;

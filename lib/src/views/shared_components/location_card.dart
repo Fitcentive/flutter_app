@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
@@ -102,7 +103,12 @@ class LocationCard extends StatelessWidget {
         if (snapshot.hasData) {
           // _setupMap(widget.meetupLocation, widget.userProfiles);
           _setupMap(otherUserProfile, currentUserProfile, context);
-          return _mapView(context);
+          return Stack(
+            children: [
+              _mapView(context),
+              _recenterButton(),
+            ],
+          );
         }
         else {
           if (snapshot.hasError) {
@@ -183,7 +189,12 @@ class LocationCard extends StatelessWidget {
   }
 
   Future<int> _setupMapIconsForUsers() async {
-    customUserLocationMarker = await _generateCustomMarkerForUser(currentUserProfile);
+    if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+      customUserLocationMarker = BitmapDescriptor.defaultMarker;
+    }
+    else {
+      customUserLocationMarker = await _generateCustomMarkerForUser(currentUserProfile);
+    }
     return 1;
   }
 

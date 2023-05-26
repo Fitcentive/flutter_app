@@ -78,7 +78,8 @@ class ImageUtils {
           bottomLeft: radius,
           bottomRight: radius,
         ),
-        shadowPaint);
+        shadowPaint
+    );
 
     // Add border circle
     canvas.drawRRect(
@@ -90,7 +91,8 @@ class ImageUtils {
           bottomLeft: radius,
           bottomRight: radius,
         ),
-        borderPaint);
+        borderPaint
+    );
 
     // Oval for the image
     Rect oval = Rect.fromLTWH(imageOffset, imageOffset,

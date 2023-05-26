@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
@@ -179,7 +180,12 @@ class LocationView extends StatelessWidget {
   }
 
   Future<int> _setupMapIconsForUsers() async {
-    customUserLocationMarker = await _generateCustomMarkerForUser(currentUserProfile);
+    if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+      customUserLocationMarker = BitmapDescriptor.defaultMarker;
+    }
+    else {
+      customUserLocationMarker = await _generateCustomMarkerForUser(currentUserProfile);
+    }
     return 1;
   }
 

@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
+import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/shared_components/custom_sliding_up_panel.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
@@ -233,10 +235,18 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   _setupMap(List<PublicUserProfile> users) async {
     markers.clear();
     circles.clear();
-    users.forEach((user) async {
-      final BitmapDescriptor theCustomMarkerToUse = userIdToMapMarkerIcon[user.userId] ?? await  _generateCustomMarkerForUser(user);
-      _generateCircleAndMarkerForUserProfile(user, theCustomMarkerToUse);
-    });
+    if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+      users.asMap().forEach((index, user) async {
+        final BitmapDescriptor theCustomMarkerToUse = userIdToMapMarkerIcon[user.userId] ?? ColorUtils.markerList[index];
+        _generateCircleAndMarkerForUserProfile(user, theCustomMarkerToUse);
+      });
+    }
+    else {
+      users.forEach((user) async {
+        final BitmapDescriptor theCustomMarkerToUse = userIdToMapMarkerIcon[user.userId] ?? await  _generateCustomMarkerForUser(user);
+        _generateCircleAndMarkerForUserProfile(user, theCustomMarkerToUse);
+      });
+    }
 
     currentCentrePosition =
         LocationUtils.computeCentroid(widget.userProfilesWithLocations.map((e) => LatLng(e.latitude, e.longitude)));
@@ -247,11 +257,16 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
         zoom: LocationUtils.getZoomLevel(users.map((e) => e.locationRadius!).reduce(min).toDouble())
     );
 
-    final Uint8List? gymMarkerIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon.png', 100);
-    final Uint8List? gymMarkerSelectedIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon_selected.png', 100);
-
-    customGymLocationIcon = BitmapDescriptor.fromBytes(gymMarkerIcon!);
-    customGymLocationSelectedIcon = BitmapDescriptor.fromBytes(gymMarkerSelectedIcon!);
+    if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+      customGymLocationIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan);
+      customGymLocationSelectedIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet);
+    }
+    else {
+      final Uint8List? gymMarkerIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon.png', 100);
+      final Uint8List? gymMarkerSelectedIcon = await ImageUtils.getBytesFromAsset('assets/icons/gym_location_icon_selected.png', 100);
+      customGymLocationIcon = BitmapDescriptor.fromBytes(gymMarkerIcon!);
+      customGymLocationSelectedIcon = BitmapDescriptor.fromBytes(gymMarkerSelectedIcon!);
+    }
   }
 
   @override
@@ -278,9 +293,15 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                       WidgetUtils.spacer(2.5),
                       _renderHelpText(),
                       WidgetUtils.spacer(2.5),
-                      Expanded(
-                          child: _renderMap(state)
-                      ),
+                      Stack(
+                          children: [
+                            _renderMap(state),
+                            _recenterButton(),
+                          ]
+                      )
+                      // Expanded(
+                      //     child: _renderMap(state)
+                      // ),
                     ]),
                   ),
                   Padding(
@@ -327,6 +348,32 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
               ),
             );
           }
+      ),
+    );
+  }
+
+  Widget _recenterButton() {
+    return Align(
+      alignment: Alignment.topRight,
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: SizedBox(
+          height: 40,
+          width: 40,
+          child: FloatingActionButton(
+              heroTag: "MeetupLocationViewSnapToMarkersButton-${StringUtils.generateRandomString(10)}",
+              onPressed: () {
+                _snapCameraToMarkers();
+              },
+              backgroundColor: Colors.teal,
+              tooltip: "Re-center",
+              child: const Icon(
+                  Icons.location_searching_outlined,
+                  color: Colors.white,
+                  size: 16
+              )
+          ),
+        ),
       ),
     );
   }
