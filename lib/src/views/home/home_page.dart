@@ -91,7 +91,9 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     0: newsFeed,
     1: discover,
     2: chat,
-    3: notifications
+    3: meetup,
+    4: diary,
+    5: notifications,
   };
 
   final logger = Logger("HomePageState");
@@ -341,6 +343,14 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
               BottomNavigationBarItem(
                 icon: chatIcon,
                 label: 'Chat',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.meeting_room),
+                label: 'Meetup',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book),
+                label: 'Diary',
               ),
               BottomNavigationBarItem(
                 icon: notificationIcon,
