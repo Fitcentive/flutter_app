@@ -22,19 +22,20 @@ class DiscoveredUserBloc extends Bloc<DiscoveredUserEvent, DiscoveredUserState> 
   void _fetchDiscoveredUserPreferences(FetchDiscoveredUserPreferences event, Emitter<DiscoveredUserState> emit) async {
     emit(const DiscoveredUserDataLoading());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.otherUserId, accessToken!);
-    final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.otherUserId, accessToken);
-    final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.otherUserId, accessToken);
-    final userGymPreferences = await discoverRepository.getUserGymPreferences(event.otherUserId, accessToken);
+    final allUserPrefs = await discoverRepository.getAllUserPreferences(event.otherUserId, accessToken!);
+    // final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.otherUserId, accessToken!);
+    // final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.otherUserId, accessToken);
+    // final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.otherUserId, accessToken);
+    // final userGymPreferences = await discoverRepository.getUserGymPreferences(event.otherUserId, accessToken);
     final otherUserProfile = (await userRepository.getPublicUserProfiles([event.otherUserId], accessToken)).first;
     final discoverScore = await discoverRepository.getUserDiscoverScore(event.currentUserId, event.otherUserId, accessToken);
     emit(DiscoveredUserPreferencesFetched(
-        discoveryPreferences: userDiscoverPreferences,
-        personalPreferences: userPersonalPreferences,
-        fitnessPreferences: userFitnessPreferences,
+        discoveryPreferences: allUserPrefs.userDiscoveryPreferences,
+        personalPreferences: allUserPrefs.userPersonalPreferences,
+        fitnessPreferences: allUserPrefs.userFitnessPreferences,
         otherUserProfile: otherUserProfile,
         discoverScore: discoverScore,
-        gymPreferences: userGymPreferences
+        gymPreferences: allUserPrefs.userGymPreferences
     ));
   }
 }

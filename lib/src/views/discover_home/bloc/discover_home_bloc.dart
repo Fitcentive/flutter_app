@@ -55,10 +55,12 @@ class DiscoverHomeBloc extends Bloc<DiscoverHomeEvent, DiscoverHomeState> {
 
   void _fetchUserDiscoverPreferences(FetchUserDiscoverData event, Emitter<DiscoverHomeState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.userId, accessToken!);
-    final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.userId, accessToken);
-    final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.userId, accessToken);
-    final userGymPreferences = await discoverRepository.getUserGymPreferences(event.userId, accessToken);
+
+    final allUserPrefs = await discoverRepository.getAllUserPreferences(event.userId, accessToken!);
+    // final userDiscoverPreferences = await discoverRepository.getUserDiscoveryPreferences(event.userId, accessToken!);
+    // final userPersonalPreferences = await discoverRepository.getUserPersonalPreferences(event.userId, accessToken);
+    // final userFitnessPreferences = await discoverRepository.getUserFitnessPreferences(event.userId, accessToken);
+    // final userGymPreferences = await discoverRepository.getUserGymPreferences(event.userId, accessToken);
     final userProfiles = await discoverRepository.getDiscoveredUserProfiles(
         event.userId,
         accessToken,
@@ -68,10 +70,10 @@ class DiscoverHomeBloc extends Bloc<DiscoverHomeEvent, DiscoverHomeState> {
     final doesNextPageExist = userProfiles.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
 
     emit(DiscoverUserDataFetched(
-      discoveryPreferences: userDiscoverPreferences,
-      personalPreferences: userPersonalPreferences,
-      fitnessPreferences: userFitnessPreferences,
-      gymPreferences: userGymPreferences,
+      discoveryPreferences: allUserPrefs.userDiscoveryPreferences,
+      personalPreferences: allUserPrefs.userPersonalPreferences,
+      fitnessPreferences: allUserPrefs.userFitnessPreferences,
+      gymPreferences: allUserPrefs.userGymPreferences,
       discoveredUserProfiles: userProfiles,
       doesNextPageExist: doesNextPageExist,
     ));

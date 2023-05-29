@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_app/src/models/discover/discover_recommendation.dart';
+import 'package:flutter_app/src/models/discover/user_all_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
@@ -90,6 +91,22 @@ class DiscoverRepository {
     } else {
       throw Exception(
           "getUserDiscoverRecommendations: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<UserAllPreferences> getAllUserPreferences(String userId, String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/preferences"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final userAllPrefs = UserAllPreferences.fromJson(jsonResponse);
+      return userAllPrefs;
+    } else {
+      throw Exception(
+          "getAllUserPreferences: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
