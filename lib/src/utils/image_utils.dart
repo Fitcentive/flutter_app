@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/src/models/exercise/exercise_image.dart';
@@ -15,10 +16,18 @@ class ImageUtils {
 
   static DecorationImage? getExerciseImage(List<ExerciseImage> exerciseImages) {
     if (exerciseImages.isNotEmpty) {
-      return DecorationImage(
-          image: CachedNetworkImageProvider(exerciseImages.first.image),
-          fit: BoxFit.fitHeight
-      );
+      if (kIsWeb) {
+        return DecorationImage(
+            image: NetworkImage(exerciseImages.first.image),
+            fit: BoxFit.fitHeight
+        );
+      }
+      else {
+        return DecorationImage(
+            image: CachedNetworkImageProvider(exerciseImages.first.image),
+            fit: BoxFit.fitHeight
+        );
+      }
     } else {
       return const DecorationImage(
           image: AssetImage("assets/images/deleted_user_avatar.png")
@@ -29,12 +38,20 @@ class ImageUtils {
   static DecorationImage? getUserProfileImage(PublicUserProfile? profile, int width, int height) {
     final photoUrlOpt = profile?.photoUrl;
     if (photoUrlOpt != null) {
-      return DecorationImage(
+      if (kIsWeb) {
+        return DecorationImage(
+            image: NetworkImage("$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}"),
+            fit: BoxFit.fitHeight
+        );
+      }
+      else {
+        return DecorationImage(
           image: CachedNetworkImageProvider(
-              "$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}",
+            "$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}",
           ),
           fit: BoxFit.fitHeight,
-      );
+        );
+      }
     } else {
       return const DecorationImage(
           image: AssetImage("assets/images/deleted_user_avatar.png")
@@ -47,12 +64,20 @@ class ImageUtils {
 
   static DecorationImage? getImage(String? photoUrlOpt, int width, int height) {
     if (photoUrlOpt != null) {
-      return DecorationImage(
+      if (kIsWeb) {
+        return DecorationImage(
+            image: NetworkImage("$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}"),
+            fit: BoxFit.fitHeight
+        );
+      }
+      else {
+        return DecorationImage(
           image: CachedNetworkImageProvider(
             "$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}",
           ),
-        fit: BoxFit.fitHeight,
-      );
+          fit: BoxFit.fitHeight,
+        );
+      }
     } else {
       return null;
     }
