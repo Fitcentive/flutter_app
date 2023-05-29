@@ -234,9 +234,8 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
-    final userRoomsLastSeen = await Future.wait(roomIds.map((e) => chatRepository.getUserChatRoomLastSeen(e, accessToken)));
-    final Map<String, DateTime> roomIdMostRecentMessageTimeMap =
-      { for (var e in WidgetUtils.skipNulls(userRoomsLastSeen))  (e).roomId : e.lastSeen };
+    final userRoomsLastSeen = await chatRepository.getUserChatRoomLastSeen(roomIds, accessToken);
+    final Map<String, DateTime> roomIdMostRecentMessageTimeMap = { for (var e in userRoomsLastSeen)  (e).roomId : e.lastSeen };
 
     emit(
         UserRoomsLoaded(

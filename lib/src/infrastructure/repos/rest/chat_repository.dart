@@ -270,21 +270,25 @@ class ChatRepository {
     }
   }
 
-  Future<UserLastSeen?> getUserChatRoomLastSeen(String roomId, String accessToken) async {
-    final response = await http.get(
-        Uri.parse("$BASE_URL/room/$roomId/last-seen"),
+  Future<List<UserLastSeen>> getUserChatRoomLastSeen(List<String> roomIds, String accessToken) async {
+    final response = await http.post(
+        Uri.parse("$BASE_URL/room/get-last-seen"),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken'
-        }
+        },
+      body: jsonEncode({
+        "room_ids": roomIds
+      })
     );
 
     if (response.statusCode == HttpStatus.ok) {
-      final jsonResponse = jsonDecode(response.body);
-      final lastSeen = UserLastSeen.fromJson(jsonResponse);
-      return lastSeen;
-    } else if (response.statusCode == HttpStatus.notFound) {
-      return null;
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final lastSeenData = jsonResponse
+          .where((e) => e.toString().toLowerCase() != 'null')
+          .map((e) => UserLastSeen.fromJson(e))
+          .toList();
+      return lastSeenData;
     } else {
       throw Exception(
           "getUserChatRoomLastSeen: Received bad response with status: ${response.statusCode} and body ${response.body}");

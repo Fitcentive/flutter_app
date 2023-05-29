@@ -188,7 +188,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         .where((element) => chatRoomsWithUser.userIds.contains(element.userId))
         .toList();
 
-    final userLastSeen = await chatRepository.getUserChatRoomLastSeen(event.roomId, accessToken);
+    final userLastSeen = (await chatRepository.getUserChatRoomLastSeen([event.roomId], accessToken)).first;
 
     emit(HistoricalChatsFetched(
         roomId: event.roomId,
