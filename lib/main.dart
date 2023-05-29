@@ -14,7 +14,8 @@ import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
-import 'package:flutter_app/src/infrastructure/repos/stream/AuthenticatedUserStreamRepository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/authenticated_user_stream_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
@@ -107,6 +108,7 @@ class App extends StatelessWidget {
         RepositoryProvider<NotificationRepository>(create: (context) => NotificationRepository()),
         RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage()),
         RepositoryProvider<AuthenticatedUserStreamRepository>(create: (context) => AuthenticatedUserStreamRepository()),
+        RepositoryProvider<ChatRoomUpdatedStreamRepository>(create: (context) => ChatRoomUpdatedStreamRepository()),
         RepositoryProvider<MeetupRepository>(create: (context) => MeetupRepository()),
         RepositoryProvider<DiaryRepository>(create: (context) => DiaryRepository()),
       ],

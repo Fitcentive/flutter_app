@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/websocket/user_room_updated_payload.dart';
 import 'package:flutter_app/src/models/websocket/web_socket_event.dart';
@@ -25,9 +26,12 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
 
   WebSocketChannel? _userChatRoomUpdatesChannel;
 
+  final ChatRoomUpdatedStreamRepository chatRoomUpdatedStreamRepository;
+
   MenuNavigationBloc({
     required this.notificationRepository,
     required this.secureStorage,
+    required this.chatRoomUpdatedStreamRepository,
   }): super(MenuNavigationInitial()) {
     on<MenuItemChosen>(_menuItemChosen);
     on<NewIncomingChatMessageForRoom>(_newIncomingChatMessageForRoom);
@@ -85,9 +89,8 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
         case "user_room_updated":
           final Map<String, dynamic> decodedUserRoomUpdatedJson = jsonDecode(jsonEncode(websocketEvent.payload));
           final roomPayload = UserRoomUpdatedPayload.fromJson(decodedUserRoomUpdatedJson);
-          if (roomPayload.userId != currentUserId) {
             add(NewIncomingChatMessageForRoom(roomId: roomPayload.roomId));
-          }
+            chatRoomUpdatedStreamRepository.newPayload(roomPayload);
           break;
 
         default:

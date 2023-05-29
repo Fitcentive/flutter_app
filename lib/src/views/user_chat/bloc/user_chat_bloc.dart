@@ -134,7 +134,12 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     final currentState = state;
     if (currentState is HistoricalChatsFetched && currentState.doesNextPageExist) {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-      final chatMessages = (await chatRepository.getMessagesForRoom(event.roomId, accessToken!, event.sentBefore, ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT))
+      final chatMessages = (await chatRepository.getMessagesForRoom(
+          event.roomId,
+          accessToken!,
+          event.sentBefore,
+          ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT
+      ))
           .map((chatMessage) => chatMessage.copyWithLocalTime())
           .toList();
       final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
@@ -166,9 +171,13 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
       hasSocketBeenInitialized = true;
     }
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    const limit = 50;
     final sentBefore = DateTime.now().millisecondsSinceEpoch;
-    final chatMessages = (await chatRepository.getMessagesForRoom(event.roomId, accessToken!, sentBefore, limit))
+    final chatMessages = (await chatRepository.getMessagesForRoom(
+        event.roomId,
+        accessToken!,
+        sentBefore,
+        ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT
+    ))
         .map((chatMessage) => chatMessage.copyWithLocalTime())
         .toList();
     final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
@@ -188,7 +197,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         .where((element) => chatRoomsWithUser.userIds.contains(element.userId))
         .toList();
 
-    final userLastSeen = (await chatRepository.getUserChatRoomLastSeen([event.roomId], accessToken)).first;
+    final userLastSeenList = await chatRepository.getUserChatRoomLastSeen([event.roomId], accessToken);
+    final userLastSeen = userLastSeenList.length == 1 ? userLastSeenList.first : null;
 
     emit(HistoricalChatsFetched(
         roomId: event.roomId,

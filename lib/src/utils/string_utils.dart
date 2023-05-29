@@ -20,7 +20,7 @@ class StringUtils {
       return s;
     }
     else {
-      return "${s.substring(0, 50)}...";
+      return "${s.substring(0, min(50, s.length))}...";
     }
   }
 

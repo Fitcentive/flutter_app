@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -31,6 +32,7 @@ class ChatHomeView extends StatefulWidget {
             imageRepository: RepositoryProvider.of<PublicGatewayRepository>(context),
             userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+            chatRoomUpdatedStreamRepository: RepositoryProvider.of<ChatRoomUpdatedStreamRepository>(context),
           )),
     ],
     child: ChatHomeView(currentUserProfile: currentUserProfile),

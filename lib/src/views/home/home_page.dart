@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/firebase/push_notification_settings.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/models/device/local_device_info.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/push/notification_device.dart';
@@ -56,7 +57,8 @@ class HomePage extends StatefulWidget {
             providers: [
               BlocProvider<MenuNavigationBloc>(create: (context) => MenuNavigationBloc(
                 notificationRepository: RepositoryProvider.of<NotificationRepository>(context),
-                secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context)
+                secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
+                chatRoomUpdatedStreamRepository: RepositoryProvider.of<ChatRoomUpdatedStreamRepository>(context),
               )),
             ],
             child: HomePage(defaultSelectedTab: defaultSelectedTab),

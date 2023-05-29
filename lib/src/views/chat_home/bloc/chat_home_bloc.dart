@@ -1,24 +1,21 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/models/websocket/room_updated_payload.dart';
-import 'package:flutter_app/src/models/websocket/web_socket_event.dart';
+import 'package:flutter_app/src/models/websocket/user_room_updated_payload.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
-import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_event.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
   final ChatRepository chatRepository;
@@ -26,80 +23,25 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
   final PublicGatewayRepository imageRepository;
   final FlutterSecureStorage secureStorage;
 
-  Map<String, WebSocketChannel>? _roomObserverChannels;
   Timer? _heartbeatTimer;
   final roomObserverJoinRef = const Uuid().v4();
 
-  bool hasSocketBeenInitialized = false;
+  final ChatRoomUpdatedStreamRepository chatRoomUpdatedStreamRepository;
+  late final StreamSubscription<UserRoomUpdatedPayload> _userRoomUpdatedPayloadSubscription;
 
   ChatHomeBloc({
     required this.chatRepository,
     required this.userRepository,
     required this.imageRepository,
     required this.secureStorage,
+    required this.chatRoomUpdatedStreamRepository,
   }) : super(const ChatStateInitial()) {
     on<FetchUserRooms>(_fetchUserRooms);
     on<FilterSearchQueryChanged>(_filterSearchQueryChanged);
     on<ChatRoomHasNewMessage>(_chatRoomHasNewMessage);
-  }
 
-  _setUpRoomObserverChannelsHeartbeats(String currentUserId) {
-    _heartbeatTimer = Timer(const Duration(seconds: 30), () {
-      _roomObserverChannels?.entries.forEach((entry) {
-        entry.value.sink.add(jsonEncode({
-          "topic": "room_observer:${entry.key}",
-          "event": "ping",
-          "payload": {
-            "user_id": currentUserId
-          },
-          "join_ref": roomObserverJoinRef,
-          "ref": const Uuid().v4()
-        }));
-      });
-
-      _setUpRoomObserverChannelsHeartbeats(currentUserId);
-    });
-  }
-
-  _initializeWebsocketConnections(List<String> roomIds, String currentUserId) async {
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-
-    _roomObserverChannels = Map.fromEntries(roomIds.map((e) {
-      return MapEntry(e, WebSocketChannel.connect(
-        Uri.parse('wss://${ConstantUtils.API_HOSTNAME}/api/chat/socket/websocket?token=${accessToken}'),
-      ));
-    }));
-
-    _roomObserverChannels?.entries.forEach((entry) {
-      entry.value.sink.add(jsonEncode({
-        "topic": "room_observer:${entry.key}",
-        "event": "phx_join",
-        "payload": {
-          "user_id": currentUserId
-        },
-        "join_ref": roomObserverJoinRef,
-        "ref": const Uuid().v4()
-      }));
-    });
-
-    _setUpRoomObserverChannelsHeartbeats(currentUserId);
-
-    _roomObserverChannels?.entries.forEach((entry) {
-      entry.value.stream.listen((event) {
-        final decodedJson = jsonDecode(event);
-        final websocketEvent = WebsocketEvent.fromJson(decodedJson);
-
-        switch (websocketEvent.event) {
-          case "room_updated":
-            final Map<String, dynamic> decodedRoomUpdatedJson = jsonDecode(jsonEncode(websocketEvent.payload));
-            final roomUpdatedPayload = RoomUpdatedPayload.fromJson(decodedRoomUpdatedJson);
-            add(ChatRoomHasNewMessage(roomId: roomUpdatedPayload.roomId));
-            break;
-
-          default:
-            break;
-        }
-      });
+    _userRoomUpdatedPayloadSubscription = chatRoomUpdatedStreamRepository.nextPayload.listen((payload) {
+      add(ChatRoomHasNewMessage(roomId: payload.roomId));
     });
   }
 
@@ -246,10 +188,6 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
         )
     );
 
-    if (!hasSocketBeenInitialized) {
-      _initializeWebsocketConnections(chatRoomsWithMostRecentMessage.map((e) => e.roomId).toList(), event.userId);
-      hasSocketBeenInitialized = true;
-    }
   }
 
   List<String> _getDistinctUserIdsFromChatRooms(List<ChatRoomWithUsers> rooms) {
@@ -263,9 +201,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
 
   void dispose() {
     _heartbeatTimer?.cancel();
-    _roomObserverChannels?.entries.forEach((element) {
-      element.value.sink.close();
-    });
+    _userRoomUpdatedPayloadSubscription.cancel();
   }
 
 }
