@@ -53,32 +53,38 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
   void _fetchDiaryInfo(FetchDiaryInfo event, Emitter<DiaryState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    final cardioWorkouts = await diaryRepository.getCardioWorkoutsForUserByDay(
+    final entries = await diaryRepository.getAllDiaryEntriesForUserByDay(
         event.userId,
         DateFormat("yyyy-MM-dd").format(event.diaryDate),
         DateTime.now().timeZoneOffset.inMinutes,
         accessToken!
     );
-    final strengthWorkouts = await diaryRepository.getStrengthWorkoutsForUserByDay(
-        event.userId,
-        DateFormat("yyyy-MM-dd").format(event.diaryDate),
-        DateTime.now().timeZoneOffset.inMinutes,
-        accessToken
-    );
-
-    final foodEntriesRaw = await diaryRepository.getFoodEntriesForUserByDay(
-        event.userId,
-        DateFormat("yyyy-MM-dd").format(event.diaryDate),
-        DateTime.now().timeZoneOffset.inMinutes,
-        accessToken
-    );
-    final foodEntries = await Future.wait(foodEntriesRaw.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken)));
+    // final cardioWorkouts = await diaryRepository.getCardioWorkoutsForUserByDay(
+    //     event.userId,
+    //     DateFormat("yyyy-MM-dd").format(event.diaryDate),
+    //     DateTime.now().timeZoneOffset.inMinutes,
+    //     accessToken!
+    // );
+    // final strengthWorkouts = await diaryRepository.getStrengthWorkoutsForUserByDay(
+    //     event.userId,
+    //     DateFormat("yyyy-MM-dd").format(event.diaryDate),
+    //     DateTime.now().timeZoneOffset.inMinutes,
+    //     accessToken
+    // );
+    //
+    // final foodEntriesRaw = await diaryRepository.getFoodEntriesForUserByDay(
+    //     event.userId,
+    //     DateFormat("yyyy-MM-dd").format(event.diaryDate),
+    //     DateTime.now().timeZoneOffset.inMinutes,
+    //     accessToken
+    // );
+    final foodEntries = await Future.wait(entries.foodEntries.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken)));
     final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.userId, accessToken);
 
     emit(DiaryDataFetched(
-      strengthDiaryEntries: strengthWorkouts,
-      cardioDiaryEntries: cardioWorkouts,
-      foodDiaryEntriesRaw: foodEntriesRaw,
+      strengthDiaryEntries: entries.strengthWorkouts,
+      cardioDiaryEntries: entries.cardioWorkouts,
+      foodDiaryEntriesRaw: entries.foodEntries,
       foodDiaryEntries: foodEntries,
       fitnessUserProfile: fitnessUserProfile
     ));
