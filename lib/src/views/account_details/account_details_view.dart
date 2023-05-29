@@ -661,8 +661,7 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       );
     }
     else  if (photoUrlOpt != null) {
-      return DecorationImage(
-          image: NetworkImage("${ImageUtils.imageBaseUrl}/$photoUrlOpt?transform=500x500"), fit: BoxFit.fitHeight);
+      return ImageUtils.getImage(widget.currentUserProfile.photoUrl, 500, 500);
     }
   }
 }

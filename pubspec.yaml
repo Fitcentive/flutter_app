@@ -84,7 +84,8 @@ dependencies:
   pointer_interceptor: ^0.9.3+4
   timeago: ^3.3.0
   vibration: ^1.7.7
-#  flutter_keyboard_visibility: ^5.4.3
+#  image_network: ^2.5.2
+  cached_network_image: ^3.2.3
 
 dev_dependencies:
   flutter_test:

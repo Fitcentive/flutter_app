@@ -6,7 +6,7 @@ metadata:
   labels:
     app: flutter-web-app
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: flutter-web-app
@@ -22,10 +22,10 @@ spec:
           resources:
             requests:
               memory: 300Mi
-              cpu: "0.3"
+              cpu: "0.2"
             limits:
               memory: 500Mi
-              cpu: "0.5"
+              cpu: "0.4"
           ports:
             - name: http-port
               containerPort: 80

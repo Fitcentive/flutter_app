@@ -578,11 +578,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   _getDecorationImage(AuthenticationState state) {
     if (state is AuthSuccessUserUpdateState) {
-      final photoUrlOpt = state.authenticatedUser.userProfile?.photoUrl;
-      if (photoUrlOpt != null) {
-        return DecorationImage(
-            image: NetworkImage("${ImageUtils.imageBaseUrl}/$photoUrlOpt?transform=100x100"), fit: BoxFit.fitHeight);
-      }
+      return ImageUtils.getImage(state.authenticatedUser.userProfile?.photoUrl, 100, 100);
     } else {
       return null;
     }

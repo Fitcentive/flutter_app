@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/src/models/exercise/exercise_image.dart';
@@ -15,7 +16,9 @@ class ImageUtils {
   static DecorationImage? getExerciseImage(List<ExerciseImage> exerciseImages) {
     if (exerciseImages.isNotEmpty) {
       return DecorationImage(
-          image: NetworkImage(exerciseImages.first.image), fit: BoxFit.fitHeight);
+          image: CachedNetworkImageProvider(exerciseImages.first.image),
+          fit: BoxFit.fitHeight
+      );
     } else {
       return const DecorationImage(
           image: AssetImage("assets/images/deleted_user_avatar.png")
@@ -27,7 +30,11 @@ class ImageUtils {
     final photoUrlOpt = profile?.photoUrl;
     if (photoUrlOpt != null) {
       return DecorationImage(
-          image: NetworkImage("$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}"), fit: BoxFit.fitHeight);
+          image: CachedNetworkImageProvider(
+              "$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}",
+          ),
+          fit: BoxFit.fitHeight,
+      );
     } else {
       return const DecorationImage(
           image: AssetImage("assets/images/deleted_user_avatar.png")
@@ -41,7 +48,11 @@ class ImageUtils {
   static DecorationImage? getImage(String? photoUrlOpt, int width, int height) {
     if (photoUrlOpt != null) {
       return DecorationImage(
-          image: NetworkImage("$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}"), fit: BoxFit.fitHeight);
+          image: CachedNetworkImageProvider(
+            "$imageBaseUrl/$photoUrlOpt?transform=${width}x${height}",
+          ),
+        fit: BoxFit.fitHeight,
+      );
     } else {
       return null;
     }

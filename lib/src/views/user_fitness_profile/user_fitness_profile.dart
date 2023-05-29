@@ -283,8 +283,7 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
 
   _getDecorationImage() {
     if (widget.currentUserProfile.photoUrl != null) {
-      return DecorationImage(
-          image: NetworkImage("${ImageUtils.imageBaseUrl}/${widget.currentUserProfile.photoUrl}?transform=500x500"), fit: BoxFit.fitHeight);
+      return ImageUtils.getImage(widget.currentUserProfile.photoUrl, 500, 500);
     }
   }
 }

@@ -24,6 +24,7 @@ class ConstantUtils {
   static const int MAX_LOGIN_FAILURES_BEFORE_PWD_RESET_PROMPT = 3;
 
   static const int DEFAULT_LIMIT = 20;
+  static const int DEFAULT_MEETUP_LIMIT = 5;
   static const int DEFAULT_MAX_LIMIT = 100000;
   static const int DEFAULT_NEWSFEED_LIMIT = 10;
   static const int DEFAULT_CHAT_MESSAGES_LIMIT = 50;

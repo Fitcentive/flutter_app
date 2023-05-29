@@ -51,7 +51,7 @@ class MeetupHomeView extends StatefulWidget {
 }
 
 class MeetupHomeViewState extends State<MeetupHomeView> {
-  static const double _scrollThreshold = 200.0;
+  static const double _scrollThreshold = 350.0;
 
   bool isDataBeingRequested = false;
   bool _isFloatingButtonVisible = true;
@@ -143,6 +143,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
         child: BlocBuilder<MeetupHomeBloc, MeetupHomeState>(
           builder: (context, state) {
             return SingleChildScrollView(
+              controller: _scrollController,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -352,11 +353,9 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
         _pullToRefresh();
       },
       child: Scrollbar(
-        controller: _scrollController,
         child: ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          controller: _scrollController,
           itemCount: state.doesNextPageExist ? state.meetups.length + 1 : state.meetups.length,
           itemBuilder: (BuildContext context, int index) {
             if (index >= state.meetups.length) {

@@ -37,8 +37,8 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
       final meetups = await meetupRepository.getMeetupsForUser(
           event.userId,
           accessToken!,
-          ConstantUtils.DEFAULT_LIMIT,
-          ConstantUtils.DEFAULT_OFFSET,
+          ConstantUtils.DEFAULT_MEETUP_LIMIT,
+          currentState.meetups.length,
           event.selectedFilterByOption,
           event.selectedStatusOption,
       );
@@ -52,22 +52,20 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
 
       final meetupParticipants = { for (var m in meetups) m.id: await meetupRepository.getMeetupParticipants(m.id, accessToken)};
       final meetupDecisions = { for (var m in meetups) m.id: await meetupRepository.getMeetupDecisions(m.id, accessToken)};
-      final doesNextPageExist = meetups.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
+      final doesNextPageExist = meetups.length == ConstantUtils.DEFAULT_MEETUP_LIMIT ? true : false;
 
       final distinctUserIdsFromParticipants = _getRelevantUserIdsFromParticipants(meetupParticipants);
       final List<PublicUserProfile> userProfileDetails =
       await userRepository.getPublicUserProfiles(distinctUserIdsFromParticipants, accessToken);
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
-      final updatedUserIdProfileMap = {...currentState.userIdProfileMap, ...userIdProfileMap};
-
       emit(MeetupUserDataFetched(
         meetups: [...currentState.meetups, ...meetups],
         meetupLocations: [...currentState.meetupLocations, ...meetupLocations],
-        meetupDecisions: meetupDecisions,
-        meetupParticipants: meetupParticipants,
+        meetupDecisions: {...meetupDecisions, ...currentState.meetupDecisions},
+        meetupParticipants: {...meetupParticipants, ...currentState.meetupParticipants},
         doesNextPageExist: doesNextPageExist,
-        userIdProfileMap: updatedUserIdProfileMap,
+        userIdProfileMap: {...currentState.userIdProfileMap, ...userIdProfileMap},
       ));
     }
   }
@@ -79,7 +77,7 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
     final meetups = await meetupRepository.getMeetupsForUser(
         event.userId,
         accessToken!,
-        ConstantUtils.DEFAULT_LIMIT,
+        ConstantUtils.DEFAULT_MEETUP_LIMIT,
         ConstantUtils.DEFAULT_OFFSET,
         event.selectedFilterByOption,
         event.selectedStatusOption,
@@ -94,7 +92,7 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
 
     final meetupParticipants = { for (var m in meetups) m.id: await meetupRepository.getMeetupParticipants(m.id, accessToken)};
     final meetupDecisions = { for (var m in meetups) m.id: await meetupRepository.getMeetupDecisions(m.id, accessToken)};
-    final doesNextPageExist = meetups.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
+    final doesNextPageExist = meetups.length == ConstantUtils.DEFAULT_MEETUP_LIMIT ? true : false;
 
     final distinctUserIdsFromParticipants = _getRelevantUserIdsFromParticipants(meetupParticipants);
     final List<PublicUserProfile> userProfileDetails =
