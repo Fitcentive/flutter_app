@@ -295,7 +295,7 @@ class UserProfileViewState extends State<UserProfileView> {
             widget.userProfile.userId: widget.userProfile,
             ...state.userIdProfileMap!,
           },
-          postIdCommentsMap: state.postIdCommentsMap!,
+          postIdCommentsPreviewMap: state.postIdCommentsMap!,
           likedUserIds: likedUsersForPosts!,
           doesNextPageExist: state.doesNextPageExist,
           fetchMoreResultsCallback: _fetchMoreResults,

@@ -46,6 +46,7 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
   }
 
   // We reload comments async to be up to date
+  // Not only that, parent provided post could only contain preview of comments, we need to fetch all comments here
   void _postAlreadyProvidedByParent(PostAlreadyProvidedByParent event, Emitter<SelectedPostState> emit) async {
     emit(SelectedPostLoaded(
         post: event.currentPost,

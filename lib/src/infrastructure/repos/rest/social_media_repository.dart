@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/social/detailed_social_post.dart';
 import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
@@ -113,6 +114,28 @@ class SocialMediaRepository {
     } else {
       throw Exception(
           "fetchUserFollowing: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<DetailedSocialPost>> getDetailedNewsfeedForUser(
+      String userId,
+      String accessToken,
+      int createdBefore,
+      int limit,
+      int mostRecentCommentsLimit
+  ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/detailed-newsfeed?createdBefore=$createdBefore&limit=$limit&mostRecentCommentsLimit=$mostRecentCommentsLimit"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      final posts = jsonResponse.map((e) => DetailedSocialPost.fromJson(e)).toList();
+      return posts;
+    } else {
+      throw Exception(
+          "getDetailedNewsfeedForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -235,6 +258,28 @@ class SocialMediaRepository {
     } else {
       throw Exception(
           "unlikePostForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<DetailedSocialPost>> getDetailedPostsForUser(
+      String userId,
+      String accessToken,
+      int createdBefore,
+      int limit,
+      int mostRecentCommentsLimit
+  ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/detailed-post?createdBefore=$createdBefore&limit=$limit&mostRecentCommentsLimit=$mostRecentCommentsLimit"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      final posts = jsonResponse.map((e) => DetailedSocialPost.fromJson(e)).toList();
+      return posts;
+    } else {
+      throw Exception(
+          "getDetailedPostsForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

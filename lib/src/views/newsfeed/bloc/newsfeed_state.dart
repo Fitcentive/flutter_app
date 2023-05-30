@@ -30,7 +30,6 @@ class NewsFeedDataReady extends NewsFeedState {
   final List<PostsWithLikedUserIds> postsWithLikedUserIds;
   final Map<String, PublicUserProfile> userIdProfileMap;
   final Map<String, List<SocialPostComment>> postIdCommentsMap;
-  final String? selectedPostId;
   final bool doesNextPageExist;
 
   const NewsFeedDataReady({
@@ -38,25 +37,10 @@ class NewsFeedDataReady extends NewsFeedState {
     required this.posts,
     required this.postsWithLikedUserIds,
     required this.userIdProfileMap,
-    required this.selectedPostId,
     required this.doesNextPageExist,
     required this.postIdCommentsMap,
   });
 
-  NewsFeedDataReady copyWith({
-    required String newPostId,
-    required bool doesNextPageExist,
-  }) {
-    return NewsFeedDataReady(
-        user: user,
-        posts: posts,
-        postsWithLikedUserIds: postsWithLikedUserIds,
-        userIdProfileMap: userIdProfileMap,
-        postIdCommentsMap: postIdCommentsMap,
-        selectedPostId: newPostId,
-        doesNextPageExist: doesNextPageExist,
-    );
-  }
 
   @override
   List<Object?> get props => [
@@ -64,7 +48,6 @@ class NewsFeedDataReady extends NewsFeedState {
     posts,
     postsWithLikedUserIds,
     userIdProfileMap,
-    selectedPostId,
     doesNextPageExist,
     postIdCommentsMap
   ];

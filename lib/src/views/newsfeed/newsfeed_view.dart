@@ -178,7 +178,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
         userIdProfileMap: state.userIdProfileMap,
         likedUserIds: likedUsersForPosts,
         doesNextPageExist: state.doesNextPageExist,
-        postIdCommentsMap: state.postIdCommentsMap,
+        postIdCommentsPreviewMap: state.postIdCommentsMap,
         fetchMoreResultsCallback: _fetchMoreResults,
         refreshCallback: _pullRefresh,
         buttonInteractionCallback: _likeOrUnlikePost

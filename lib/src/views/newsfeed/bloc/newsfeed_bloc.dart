@@ -1,10 +1,10 @@
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
-import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_event.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +12,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:collection/collection.dart';
 
 class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
+  static const mostRecentCommentsLimit = 3;
+
   final SocialMediaRepository socialMediaRepository;
   final UserRepository userRepository;
   final FlutterSecureStorage secureStorage;
@@ -41,27 +43,43 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
     emit(const NewsFeedDataLoading());
 
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final posts = await socialMediaRepository.getNewsfeedForUser(event.user.user.id, accessToken!, event.createdBefore, event.limit);
-    final postIds = posts.map((e) => e.postId).toList();
-    final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds(postIds, accessToken);
+    final detailedPosts = await socialMediaRepository.getDetailedNewsfeedForUser(
+        event.user.user.id,
+        accessToken!,
+        event.createdBefore,
+        event.limit,
+        mostRecentCommentsLimit,
+    );
+    // final postIds = posts.map((e) => e.postId).toList();
+    // final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds(postIds, accessToken);
 
-    final List<List<SocialPostComment>> postsComments =
-    await Future.wait(postIds.map((p) => socialMediaRepository.getCommentsForPost(p, accessToken)));
-    final Map<String, List<SocialPostComment>> postIdCommentMap = { for (var e in IterableZip([postIds, postsComments])) e[0] as String : e[1] as List<SocialPostComment> };
+    // final List<List<SocialPostComment>> postsComments =
+    // await Future.wait(postIds.map((p) => socialMediaRepository.getCommentsForPost(p, accessToken)));
+    // final Map<String, List<SocialPostComment>> postIdCommentMap = { for (var e in IterableZip([postIds, postsComments])) e[0] as String : e[1] as List<SocialPostComment> };
 
-    final distinctUserIdsFromPostsAndComments = _getRelevantUserIdsFromPostsAndComments(posts, postsComments);
+    final Map<String, List<SocialPostComment>> postIdCommentMap =
+    { for (var e in IterableZip([
+            detailedPosts.map((e) => e.post.postId).toList(),
+            detailedPosts.map((e) => e.mostRecentComments).toList()
+          ]
+        )
+      ) e[0] as String : e[1] as List<SocialPostComment>
+    };
+    final distinctUserIdsFromPostsAndComments = _getRelevantUserIdsFromPostsAndComments(
+      detailedPosts.map((e) => e.post).toList(),
+      detailedPosts.map((e) => e.mostRecentComments).toList(),
+    );
     final List<PublicUserProfile> userProfileDetails =
     await userRepository.getPublicUserProfiles(distinctUserIdsFromPostsAndComments, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
-    final doesNextPageExist = posts.length == ConstantUtils.DEFAULT_NEWSFEED_LIMIT ? true : false;
+    final doesNextPageExist = detailedPosts.length == event.limit ? true : false;
 
     emit(NewsFeedDataReady(
         user: event.user,
-        posts: posts,
-        postsWithLikedUserIds: likedUsersForPostIds,
+        posts: detailedPosts.map((e) => e.post).toList(),
+        postsWithLikedUserIds: detailedPosts.map((e) => PostsWithLikedUserIds(e.post.postId, e.likedUserIds)).toList(),
         userIdProfileMap: userIdProfileMap,
-        selectedPostId: null,
         doesNextPageExist: doesNextPageExist,
         postIdCommentsMap: postIdCommentMap,
     ));
@@ -74,50 +92,85 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
       emit(const NewsFeedDataLoading());
 
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-      final posts = await socialMediaRepository.getNewsfeedForUser(event.user.user.id, accessToken!, event.createdBefore, event.limit);
-      final postIds = posts.map((e) => e.postId).toList();
-      final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds(postIds, accessToken);
+      final detailedPosts = await socialMediaRepository.getDetailedNewsfeedForUser(
+          event.user.user.id,
+          accessToken!,
+          event.createdBefore,
+          event.limit,
+          mostRecentCommentsLimit,
+      );
+      // final postIds = posts.map((e) => e.postId).toList();
+      // final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds(postIds, accessToken);
 
-      final List<List<SocialPostComment>> postsComments =
-        await Future.wait(postIds.map((p) => socialMediaRepository.getCommentsForPost(p, accessToken)));
-      final Map<String, List<SocialPostComment>> postIdCommentMap = { for (var e in IterableZip([postIds, postsComments])) e[0] as String : e[1] as List<SocialPostComment> };
-      final distinctUserIdsFromPostsAndComments = _getRelevantUserIdsFromPostsAndComments(posts, postsComments);
+      // final List<List<SocialPostComment>> postsComments =
+      //   await Future.wait(postIds.map((p) => socialMediaRepository.getCommentsForPost(p, accessToken)));
+      // final Map<String, List<SocialPostComment>> postIdCommentMap =
+      //   { for (var e in IterableZip([postIds, postsComments])) e[0] as String : e[1] as List<SocialPostComment> };
+
+      final Map<String, List<SocialPostComment>> postIdCommentMap =
+        { for (var e in IterableZip([
+                detailedPosts.map((e) => e.post.postId).toList(),
+                detailedPosts.map((e) => e.mostRecentComments).toList()
+              ]
+            )
+          ) e[0] as String : e[1] as List<SocialPostComment>
+        };
+      final distinctUserIdsFromPostsAndComments = _getRelevantUserIdsFromPostsAndComments(
+          detailedPosts.map((e) => e.post).toList(),
+          detailedPosts.map((e) => e.mostRecentComments).toList(),
+      );
       final List<PublicUserProfile> userProfileDetails =
-      await userRepository.getPublicUserProfiles(distinctUserIdsFromPostsAndComments, accessToken);
+        await userRepository.getPublicUserProfiles(distinctUserIdsFromPostsAndComments, accessToken);
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
-      final doesNextPageExist = posts.length == ConstantUtils.DEFAULT_NEWSFEED_LIMIT ? true : false;
+      final doesNextPageExist = detailedPosts.length == event.limit ? true : false;
 
       emit(NewsFeedDataReady(
           user: event.user,
-          posts: posts,
-          postsWithLikedUserIds: likedUsersForPostIds,
+          posts: detailedPosts.map((e) => e.post).toList(),
+          postsWithLikedUserIds: detailedPosts.map((e) => PostsWithLikedUserIds(e.post.postId, e.likedUserIds)).toList(),
           userIdProfileMap: userIdProfileMap,
-          selectedPostId: null,
           doesNextPageExist: doesNextPageExist,
           postIdCommentsMap: postIdCommentMap
       ));
     }
     else if (currentState is NewsFeedDataReady && currentState.doesNextPageExist) {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-      final posts = await socialMediaRepository.getNewsfeedForUser(event.user.user.id, accessToken!, event.createdBefore, event.limit);
-      final postIds = posts.map((e) => e.postId).toList();
-      final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds(postIds, accessToken);
+      final detailedPosts = await socialMediaRepository.getDetailedNewsfeedForUser(
+          event.user.user.id,
+          accessToken!,
+          event.createdBefore,
+          event.limit,
+          mostRecentCommentsLimit,
+      );
+      // final postIds = posts.map((e) => e.postId).toList();
+      // final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds(postIds, accessToken);
 
-      final List<List<SocialPostComment>> postsComments =
-      await Future.wait(postIds.map((p) => socialMediaRepository.getCommentsForPost(p, accessToken)));
-      final Map<String, List<SocialPostComment>> postIdCommentMap = { for (var e in IterableZip([postIds, postsComments])) e[0] as String : e[1] as List<SocialPostComment> };
+      // final List<List<SocialPostComment>> postsComments =
+      // await Future.wait(postIds.map((p) => socialMediaRepository.getCommentsForPost(p, accessToken)));
+      // final Map<String, List<SocialPostComment>> postIdCommentMap = { for (var e in IterableZip([postIds, postsComments])) e[0] as String : e[1] as List<SocialPostComment> };
 
-      final distinctUserIdsFromPostsAndComments = _getRelevantUserIdsFromPostsAndComments(posts, postsComments);
+      final Map<String, List<SocialPostComment>> postIdCommentMap =
+      { for (var e in IterableZip([
+              detailedPosts.map((e) => e.post.postId).toList(),
+              detailedPosts.map((e) => e.mostRecentComments).toList()
+            ]
+          )
+        ) e[0] as String : e[1] as List<SocialPostComment>
+      };
+      final distinctUserIdsFromPostsAndComments = _getRelevantUserIdsFromPostsAndComments(
+        detailedPosts.map((e) => e.post).toList(),
+        detailedPosts.map((e) => e.mostRecentComments).toList(),
+      );
       final List<PublicUserProfile> userProfileDetails =
       await userRepository.getPublicUserProfiles(distinctUserIdsFromPostsAndComments, accessToken);
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
-      final doesNextPageExist = posts.length == ConstantUtils.DEFAULT_NEWSFEED_LIMIT ? true : false;
+      final doesNextPageExist = detailedPosts.length == event.limit ? true : false;
 
-      final completePostsList = [...currentState.posts, ...posts];
+      final completePostsList = [...currentState.posts, ...detailedPosts.map((e) => e.post)];
       final updatedUserIdProfileMap = {...currentState.userIdProfileMap, ...userIdProfileMap};
-      final updatedLikedUsersForPostIds = [...currentState.postsWithLikedUserIds, ...likedUsersForPostIds];
+      final updatedLikedUsersForPostIds = [...currentState.postsWithLikedUserIds, ...detailedPosts.map((e) => PostsWithLikedUserIds(e.post.postId, e.likedUserIds))];
       final updatedCommentMap = {...currentState.postIdCommentsMap, ...postIdCommentMap};
 
       emit(NewsFeedDataReady(
@@ -125,7 +178,6 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
           posts: completePostsList,
           postsWithLikedUserIds: updatedLikedUsersForPostIds,
           userIdProfileMap: updatedUserIdProfileMap,
-          selectedPostId: null,
           doesNextPageExist: doesNextPageExist,
           postIdCommentsMap: updatedCommentMap,
       ));

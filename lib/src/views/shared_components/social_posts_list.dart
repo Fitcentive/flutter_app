@@ -22,7 +22,7 @@ class SocialPostsList extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final List<SocialPost> posts;
   final Map<String, PublicUserProfile> userIdProfileMap;
-  final Map<String, List<SocialPostComment>> postIdCommentsMap;
+  final Map<String, List<SocialPostComment>> postIdCommentsPreviewMap;
   final List<PostsWithLikedUserIds> likedUserIds;
   final bool doesNextPageExist;
 
@@ -40,7 +40,7 @@ class SocialPostsList extends StatefulWidget {
     required this.fetchMoreResultsCallback,
     required this.refreshCallback,
     required this.buttonInteractionCallback,
-    required this.postIdCommentsMap,
+    required this.postIdCommentsPreviewMap,
   }): super(key: key);
 
   @override
@@ -121,7 +121,7 @@ class SocialPostsListState extends State<SocialPostsList> {
   }
 
   _renderCommentsPreview(SocialPost post) {
-    final previewComments = widget.postIdCommentsMap[post.postId];
+    final previewComments = widget.postIdCommentsPreviewMap[post.postId];
     if (previewComments != null  && previewComments.isNotEmpty) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -328,7 +328,7 @@ class SocialPostsListState extends State<SocialPostsList> {
             currentUserProfile: widget.currentUserProfile,
             currentPostId: post.postId,
             currentPost: post,
-            currentPostComments: widget.postIdCommentsMap[post.postId],
+            currentPostComments: widget.postIdCommentsPreviewMap[post.postId],
             likedUsersForCurrentPost: widget.likedUserIds.firstWhere((element) => element.postId == post.postId),
             userIdProfileMap: widget.userIdProfileMap
         ), (route) => true
