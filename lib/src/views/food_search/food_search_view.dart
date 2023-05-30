@@ -335,7 +335,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
               if (shouldShow) {
                 const limit = 5;
                 final accessToken = await _flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-                return (await _diaryRepository.autocompleteFoods(pattern.trim(), accessToken!)).suggestions.suggestion;
+                return (await _diaryRepository.autocompleteFoods(pattern.trim(), accessToken!)).suggestions?.suggestion ?? const [];
               } else {
                 return List.empty();
               }

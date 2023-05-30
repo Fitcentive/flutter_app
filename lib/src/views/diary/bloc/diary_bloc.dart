@@ -51,6 +51,7 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
 
 
   void _fetchDiaryInfo(FetchDiaryInfo event, Emitter<DiaryState> emit) async {
+    final currentState = state;
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
     final entries = await diaryRepository.getAllDiaryEntriesForUserByDay(
@@ -79,15 +80,27 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
     //     accessToken
     // );
     final foodEntries = await Future.wait(entries.foodEntries.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken)));
-    final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.userId, accessToken);
 
-    emit(DiaryDataFetched(
-      strengthDiaryEntries: entries.strengthWorkouts,
-      cardioDiaryEntries: entries.cardioWorkouts,
-      foodDiaryEntriesRaw: entries.foodEntries,
-      foodDiaryEntries: foodEntries,
-      fitnessUserProfile: fitnessUserProfile
-    ));
+    if (currentState is DiaryDataFetched) {
+      emit(DiaryDataFetched(
+          strengthDiaryEntries: entries.strengthWorkouts,
+          cardioDiaryEntries: entries.cardioWorkouts,
+          foodDiaryEntriesRaw: entries.foodEntries,
+          foodDiaryEntries: foodEntries,
+          fitnessUserProfile: currentState.fitnessUserProfile
+      ));
+    }
+    else {
+      final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.userId, accessToken);
+      emit(DiaryDataFetched(
+          strengthDiaryEntries: entries.strengthWorkouts,
+          cardioDiaryEntries: entries.cardioWorkouts,
+          foodDiaryEntriesRaw: entries.foodEntries,
+          foodDiaryEntries: foodEntries,
+          fitnessUserProfile: fitnessUserProfile
+      ));
+    }
+
   }
 
 }

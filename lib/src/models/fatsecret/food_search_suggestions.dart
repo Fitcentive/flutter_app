@@ -6,7 +6,7 @@ part 'food_search_suggestions.g.dart';
 
 @JsonSerializable()
 class FoodSearchSuggestions extends Equatable {
-  final FoodSearchSuggestion suggestions;
+  final FoodSearchSuggestion? suggestions;
 
   const FoodSearchSuggestions(
       this.suggestions,

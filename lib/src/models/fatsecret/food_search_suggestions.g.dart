@@ -9,8 +9,10 @@ part of 'food_search_suggestions.dart';
 FoodSearchSuggestions _$FoodSearchSuggestionsFromJson(
         Map<String, dynamic> json) =>
     FoodSearchSuggestions(
-      FoodSearchSuggestion.fromJson(
-          json['suggestions'] as Map<String, dynamic>),
+      json['suggestions'] == null
+          ? null
+          : FoodSearchSuggestion.fromJson(
+              json['suggestions'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$FoodSearchSuggestionsToJson(
