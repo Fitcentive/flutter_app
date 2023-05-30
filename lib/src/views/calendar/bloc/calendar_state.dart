@@ -28,7 +28,6 @@ class CalendarMeetupUserDataFetched extends CalendarState {
   final Map<String, List<MeetupParticipant>> meetupParticipants;
   final Map<String, List<MeetupDecision>> meetupDecisions;
   final Map<String, PublicUserProfile> userIdProfileMap;
-  final bool doesNextPageExist;
 
   const CalendarMeetupUserDataFetched({
     required this.meetups,
@@ -36,13 +35,11 @@ class CalendarMeetupUserDataFetched extends CalendarState {
     required this.meetupLocations,
     required this.meetupDecisions,
     required this.userIdProfileMap,
-    required this.doesNextPageExist,
   });
 
   @override
   List<Object?> get props => [
     meetups,
-    doesNextPageExist,
     meetupParticipants,
     meetupLocations,
     meetupDecisions,

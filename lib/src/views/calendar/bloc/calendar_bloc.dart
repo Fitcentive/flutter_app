@@ -30,24 +30,25 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       // emit(const CalendarMeetupDataLoading());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-      final meetups = await meetupRepository.getMeetupsForUserByMonth(
+      final meetups = await meetupRepository.getDetailedMeetupsForUserByMonth(
         accessToken!,
         DateFormat("yyyy-MM-dd")
             .format(DateTime(event.currentSelectedDateTime.year, event.currentSelectedDateTime.month, 0)
             .add(const Duration(days: 1))),
         DateTime.now().timeZoneOffset.inMinutes,
       );
-      final meetupLocations = await Future.wait(meetups.map((e) {
-        if (e.locationId != null) {
-          return meetupRepository.getLocationByLocationId(e.locationId!, accessToken);
-        } else {
-          return Future.value(null);
-        }
-      }));
-
-      final meetupParticipants = { for (var m in meetups) m.id: await meetupRepository.getMeetupParticipants(m.id, accessToken)};
-      final meetupDecisions = { for (var m in meetups) m.id: await meetupRepository.getMeetupDecisions(m.id, accessToken)};
-      final doesNextPageExist = meetups.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
+      // final meetupLocations = await Future.wait(meetups.map((e) {
+      //   if (e.locationId != null) {
+      //     return meetupRepository.getLocationByLocationId(e.locationId!, accessToken);
+      //   } else {
+      //     return Future.value(null);
+      //   }
+      // }));
+      //
+      // final meetupParticipants = { for (var m in meetups) m.id: await meetupRepository.getMeetupParticipants(m.id, accessToken)};
+      // final meetupDecisions = { for (var m in meetups) m.id: await meetupRepository.getMeetupDecisions(m.id, accessToken)};
+      final meetupDecisions = { for (var m in meetups) m.meetup.id: m.decisions};
+      final meetupParticipants = { for (var m in meetups) m.meetup.id: m.participants};
 
       // Check previous state for info if it already exists
       final distinctUserIdsFromParticipants = _getRelevantUserIdsFromParticipants(meetupParticipants);
@@ -59,11 +60,10 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in [...newUserProfileDetails, ...currentState.userIdProfileMap.values]) (e).userId : e };
 
       emit(CalendarMeetupUserDataFetched(
-          meetups: meetups,
-          meetupLocations: meetupLocations,
+          meetups: meetups.map((e) => e.meetup).toList(),
+          meetupLocations: meetups.map((e) => e.location).toList(),
           meetupDecisions: meetupDecisions,
           meetupParticipants: meetupParticipants,
-          doesNextPageExist: doesNextPageExist,
           userIdProfileMap: userIdProfileMap
       ));
     }
@@ -71,24 +71,26 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     else {
       emit(const CalendarMeetupDataLoading());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-      final meetups = await meetupRepository.getMeetupsForUserByMonth(
+      final meetups = await meetupRepository.getDetailedMeetupsForUserByMonth(
         accessToken!,
         DateFormat("yyyy-MM-dd")
             .format(DateTime(event.currentSelectedDateTime.year, event.currentSelectedDateTime.month, 0)
             .add(const Duration(days: 1))),
         DateTime.now().timeZoneOffset.inMinutes,
       );
-      final meetupLocations = await Future.wait(meetups.map((e) {
-        if (e.locationId != null) {
-          return meetupRepository.getLocationByLocationId(e.locationId!, accessToken);
-        } else {
-          return Future.value(null);
-        }
-      }));
 
-      final meetupParticipants = { for (var m in meetups) m.id: await meetupRepository.getMeetupParticipants(m.id, accessToken)};
-      final meetupDecisions = { for (var m in meetups) m.id: await meetupRepository.getMeetupDecisions(m.id, accessToken)};
-      final doesNextPageExist = meetups.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
+      // final meetupLocations = await Future.wait(meetups.map((e) {
+      //   if (e.locationId != null) {
+      //     return meetupRepository.getLocationByLocationId(e.locationId!, accessToken);
+      //   } else {
+      //     return Future.value(null);
+      //   }
+      // }));
+      //
+      // final meetupParticipants = { for (var m in meetups) m.id: await meetupRepository.getMeetupParticipants(m.id, accessToken)};
+      // final meetupDecisions = { for (var m in meetups) m.id: await meetupRepository.getMeetupDecisions(m.id, accessToken)};
+      final meetupDecisions = { for (var m in meetups) m.meetup.id: m.decisions};
+      final meetupParticipants = { for (var m in meetups) m.meetup.id: m.participants};
 
       final distinctUserIdsFromParticipants = _getRelevantUserIdsFromParticipants(meetupParticipants);
       final List<PublicUserProfile> userProfileDetails =
@@ -96,11 +98,10 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
       emit(CalendarMeetupUserDataFetched(
-          meetups: meetups,
-          meetupLocations: meetupLocations,
+          meetups: meetups.map((e) => e.meetup).toList(),
+          meetupLocations: meetups.map((e) => e.location).toList(),
           meetupDecisions: meetupDecisions,
           meetupParticipants: meetupParticipants,
-          doesNextPageExist: doesNextPageExist,
           userIdProfileMap: userIdProfileMap
       ));
     }

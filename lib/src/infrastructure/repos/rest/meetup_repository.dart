@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_app/src/models/location/location.dart';
+import 'package:flutter_app/src/models/meetups/detailed_meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/meetups/meetup_comment.dart';
@@ -218,6 +219,57 @@ class MeetupRepository {
     else {
       throw Exception(
           "getMeetupsForUserByMonth: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<DetailedMeetup>> getDetailedMeetupsForUserByMonth(
+      String accessToken,
+      String dateString,
+      int timezoneOffsetInMinutes,
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/detailed-meetups/month/$dateString?offsetInMinutes=$timezoneOffsetInMinutes"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      final List<DetailedMeetup> results = jsonResponse.map((e) {
+        return DetailedMeetup.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getDetailedMeetupsForUserByMonth: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<DetailedMeetup>> getDetailedMeetupsForUser(
+      String userId,
+      String accessToken,
+      int limit,
+      int offset,
+      String? filterBy,
+      String? status
+      ) async {
+    final filterByOption = filterBy == null ? "" : "&filterBy=$filterBy";
+    final statusOption = status == null ? "" : "&status=$status";
+    final response = await http.get(
+      Uri.parse("$BASE_URL/detailed-meetups?limit=$limit&offset=$offset$filterByOption$statusOption"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      final List<DetailedMeetup> results = jsonResponse.map((e) {
+        return DetailedMeetup.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getDetailedMeetupsForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

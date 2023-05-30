@@ -93,7 +93,8 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     2: chat,
     3: meetup,
     4: diary,
-    5: notifications,
+    5: calendar,
+    6: notifications,
   };
 
   final logger = Logger("HomePageState");
@@ -345,12 +346,16 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 label: 'Chat',
               ),
               const BottomNavigationBarItem(
-                icon: Icon(Icons.meeting_room),
+                icon: Icon(Icons.location_on),
                 label: 'Meetup',
               ),
               const BottomNavigationBarItem(
                 icon: Icon(Icons.menu_book),
                 label: 'Diary',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_month),
+                label: 'Calendar',
               ),
               BottomNavigationBarItem(
                 icon: notificationIcon,
