@@ -282,7 +282,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
 
   _isMessageUnread(UserRoomsLoaded state, ChatRoomWithMostRecentMessage currentChatRoom) {
     final res = (state.roomUserLastSeenMap[currentChatRoom.roomId]?.compareTo(
-        currentChatRoom.mostRecentMessageTime.toUtc().add(DateTime.now().timeZoneOffset)) ?? -1);
+        currentChatRoom.mostRecentMessageTime.toUtc()) ?? -1);
     return res <= 0;
   }
 

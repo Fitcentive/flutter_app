@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
+import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
 import 'package:flutter_app/src/models/chats/user_last_seen.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -210,6 +211,24 @@ class ChatRepository {
     } else {
       throw Exception(
           "getUserChatRooms: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<DetailedChatRoom>> getDetailedChatRoomsForUser(String userId, String accessToken) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/user/detailed-rooms"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        });
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final chatRooms = jsonResponse.map((e) => DetailedChatRoom.fromJson(e)).toList();
+      return chatRooms;
+    } else {
+      throw Exception(
+          "getDetailedChatRoomsForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

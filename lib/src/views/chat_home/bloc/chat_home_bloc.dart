@@ -5,9 +5,8 @@ import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_reposit
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
-import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
-import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
+import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/websocket/user_room_updated_payload.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -137,7 +136,6 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
         updatedFilteredRooms = currentState.filteredRooms;
       }
 
-
       emit(
           UserRoomsLoaded(
             rooms: updatedRooms,
@@ -149,34 +147,35 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     }
   }
 
-
-  
   void _fetchUserRooms(FetchUserRooms event, Emitter<ChatHomeState> emit) async {
     emit(const UserRoomsLoading());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final chatRooms = await chatRepository.getUserChatRooms(event.userId, accessToken!);
-    final chatRoomDefinitions = await chatRepository.getChatRoomDefinitions(chatRooms.map((e) => e.roomId).toList(), accessToken);
+    final detailedChatRooms = await chatRepository.getDetailedChatRoomsForUser(event.userId, accessToken!);
 
-    final roomIds = chatRooms.map((e) => e.roomId).toList();
-    final roomMostRecentMessages = await chatRepository.getRoomMostRecentMessage(roomIds, accessToken);
-    final Map<String, RoomMostRecentMessage> roomIdMostRecentMessageMap = { for (var e in roomMostRecentMessages) (e).roomId : e };
-    final chatRoomsWithMostRecentMessage = chatRooms.map((e) =>
+    // final chatRoomDefinitions = await chatRepository.getChatRoomDefinitions(chatRooms.map((e) => e.roomId).toList(), accessToken);
+    // final roomIds = chatRooms.map((e) => e.roomId).toList();
+    // final roomMostRecentMessages = await chatRepository.getRoomMostRecentMessage(roomIds, accessToken);
+    // final Map<String, RoomMostRecentMessage> roomIdMostRecentMessageMap = { for (var e in roomMostRecentMessages) (e).roomId : e };
+    final chatRoomsWithMostRecentMessage = detailedChatRooms.map((e) =>
         ChatRoomWithMostRecentMessage(
             roomId: e.roomId,
             userIds: e.userIds,
-            mostRecentMessage: roomIdMostRecentMessageMap[e.roomId]?.mostRecentMessage ?? "",
-            mostRecentMessageTime: roomIdMostRecentMessageMap[e.roomId]?.mostRecentMessageTime ?? DateTime.now(),
-            roomName: chatRoomDefinitions.firstWhere((element) => element.id == e.roomId).name,
-            isGroupChat: chatRoomDefinitions.firstWhere((element) => element.id == e.roomId).type == "group"
+            mostRecentMessage: e.mostRecentMessage ?? "",
+            mostRecentMessageTime: e.mostRecentMessageTimestamp ?? DateTime.now().subtract(const Duration(hours: 1)),
+            roomName: e.roomName,
+            isGroupChat: e.roomType == "group"
         )
     ).toList();
 
-    final distinctUserIdsFromPosts = _getDistinctUserIdsFromChatRooms(chatRooms);
+    final distinctUserIdsFromPosts = _getDistinctUserIdsFromChatRooms(detailedChatRooms);
     final List<PublicUserProfile> userProfileDetails =
-    await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
+      await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
-    final userRoomsLastSeen = await chatRepository.getUserChatRoomLastSeen(roomIds, accessToken);
+    final userRoomsLastSeen = await chatRepository.getUserChatRoomLastSeen(
+        detailedChatRooms.map((e) => e.roomId).toList(),
+        accessToken
+    );
     final Map<String, DateTime> roomIdMostRecentMessageTimeMap = { for (var e in userRoomsLastSeen)  (e).roomId : e.lastSeen };
 
     emit(
@@ -190,7 +189,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
 
   }
 
-  List<String> _getDistinctUserIdsFromChatRooms(List<ChatRoomWithUsers> rooms) {
+  List<String> _getDistinctUserIdsFromChatRooms(List<DetailedChatRoom> rooms) {
     final userIdSet = rooms
         .map((e) => e.userIds)
         .expand((element) => element)
