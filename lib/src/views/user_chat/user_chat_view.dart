@@ -229,7 +229,7 @@ class UserChatViewState extends State<UserChatView> {
   _generateChatTitle(HistoricalChatsFetched state) {
     setState(() {
       if (state.chatRoomUserProfiles.length > 2) {
-        chatTitle = state.currentChatRoom.name;
+        chatTitle = state.currentChatRoom.roomName;
       }
       else {
         chatTitle = StringUtils.getUserNameFromUserProfile(widget.otherUserProfiles.first);

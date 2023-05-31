@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
-import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -15,12 +15,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SelectChatUsersView extends StatefulWidget {
   static const String routeName = "/chat/select-users";
-  final ChatRoom currentChatRoom;
+  final DetailedChatRoom currentChatRoom;
   final PublicUserProfile currentUserProfile;
   final List<PublicUserProfile> otherUserProfiles;
 
   static Route<List<PublicUserProfile>> route({
-    required ChatRoom currentChatRoom,
+    required DetailedChatRoom currentChatRoom,
     required PublicUserProfile currentUserProfile,
     required List<PublicUserProfile> otherUserProfiles,
   }) {

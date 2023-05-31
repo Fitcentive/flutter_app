@@ -186,15 +186,19 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     final meetupOpt = await meetupRepository.getMeetupByChatRoomId(event.roomId, accessToken);
 
     // We also need to fetch users in chat room again because we cant be too sure
-    final currentChatRoom = (await chatRepository.getChatRoomDefinitions([event.roomId], accessToken)).first;
-    final chatRoomsWithUser = await chatRepository.getUsersForRoom(event.roomId, accessToken);
+    final detailedChatRoom = await chatRepository.getDetailedChatRoomForUserById(event.currentUserId, event.roomId, accessToken);
+    // final currentChatRoom = (await chatRepository.getChatRoomDefinitions([event.roomId], accessToken)).first;
+    // final chatRoomsWithUser = await chatRepository.getUsersForRoom(event.roomId, accessToken);
 
     // We use this instead of chatRoom userIds as previously existing users in chatRoom may have also sent messages
-    final distinctChatMessageSenderIds = (chatMessages.map((e) => e.senderId).toSet()..addAll(chatRoomsWithUser.userIds)).toList();
+    final distinctChatMessageSenderIds = (
+        chatMessages.map((e) => e.senderId).toSet()
+          ..addAll(detailedChatRoom.userIds))
+        .toList();
 
     final publicUserProfiles = await userRepository.getPublicUserProfiles(distinctChatMessageSenderIds, accessToken);
     final chatRoomUserProfiles = publicUserProfiles
-        .where((element) => chatRoomsWithUser.userIds.contains(element.userId))
+        .where((element) => detailedChatRoom.userIds.contains(element.userId))
         .toList();
 
     final userLastSeenList = await chatRepository.getUserChatRoomLastSeen([event.roomId], accessToken);
@@ -204,7 +208,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         roomId: event.roomId,
         messages: chatMessages,
         doesNextPageExist: doesNextPageExist,
-        currentChatRoom: currentChatRoom,
+        currentChatRoom: detailedChatRoom,
         allMessagingUserProfiles: publicUserProfiles,
         chatRoomUserProfiles: chatRoomUserProfiles,
         associatedMeetup: meetupOpt,

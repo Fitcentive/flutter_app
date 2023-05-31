@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
-import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/chats/user_last_seen.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -32,7 +32,7 @@ class HistoricalChatsFetched extends UserChatState {
   final String roomId;
   final List<ChatMessage> messages;
   final bool doesNextPageExist;
-  final ChatRoom currentChatRoom;
+  final DetailedChatRoom currentChatRoom;
 
   // includes only userProfiles of those in the chat room
   final List<PublicUserProfile> chatRoomUserProfiles;

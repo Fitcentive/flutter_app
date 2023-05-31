@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
-import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
@@ -19,13 +19,13 @@ class DetailedChatView extends StatefulWidget {
   static const String routeName = "chat/user/info";
 
   final Meetup? associatedMeetup;
-  final ChatRoom currentChatRoom;
+  final DetailedChatRoom currentChatRoom;
   final PublicUserProfile currentUserProfile;
   final List<PublicUserProfile> otherUserProfiles;
 
   static Route route({
     required Meetup? associatedMeetup,
-    required ChatRoom currentChatRoom,
+    required DetailedChatRoom currentChatRoom,
     required PublicUserProfile currentUserProfile,
     required List<PublicUserProfile> otherUserProfiles,
   }) {
@@ -87,9 +87,9 @@ class DetailedChatViewState extends State<DetailedChatView> {
     super.initState();
 
     chatParticipantUserProfiles = [widget.currentUserProfile, ...widget.otherUserProfiles];
-    currentChatTitleEdited = widget.currentChatRoom.name;
+    currentChatTitleEdited = widget.currentChatRoom.roomName;
     currentChatTitleWidget = Text(
-      widget.currentChatRoom.name,
+      widget.currentChatRoom.roomName,
       style: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
@@ -152,12 +152,12 @@ class DetailedChatViewState extends State<DetailedChatView> {
     _detailedChatBloc.add(
         UsersAddedToChatRoom(
             userIds: addedParticipants.map((e) => e.userId).toList(),
-            roomId: widget.currentChatRoom.id)
+            roomId: widget.currentChatRoom.roomId)
     );
     _detailedChatBloc.add(
         UsersRemovedFromChatRoom(
             userIds: removedParticipants.map((e) => e.userId).toList(),
-            roomId: widget.currentChatRoom.id)
+            roomId: widget.currentChatRoom.roomId)
     );
   }
 
@@ -176,7 +176,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
         _detailedChatBloc.add(
             UsersRemovedFromChatRoom(
                 userIds: [widget.currentUserProfile.userId],
-                roomId: widget.currentChatRoom.id
+                roomId: widget.currentChatRoom.roomId
             )
         );
         Navigator.pushReplacement(context, HomePage.route(defaultSelectedTab: HomePageState.chat));
@@ -204,7 +204,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
   }
 
   _renderLeaveChatButtonIfNeeded() {
-    if (widget.currentChatRoom.type == "group") {
+    if (widget.currentChatRoom.roomType == "group") {
       return Align(
         alignment: Alignment.bottomCenter,
         child: Padding(
@@ -303,7 +303,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
   }
 
   _renderHintIfNeeded() {
-    if (widget.currentChatRoom.type == "group" && isEditParticipantsButtonEnabled) {
+    if (widget.currentChatRoom.roomType == "group" && isEditParticipantsButtonEnabled) {
       return const Text(
         "Swipe left to remove participants from the chat",
         style: TextStyle(
@@ -315,7 +315,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
   }
 
   _renderEditParticipantsButtonIfNeeded() {
-    if (widget.currentChatRoom.type == "group" && widget.associatedMeetup == null) {
+    if (widget.currentChatRoom.roomType == "group" && widget.associatedMeetup == null) {
       return InkWell(
         onTap: () {
           _handleEditParticipantsButtonPressed();
@@ -435,7 +435,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
         ),
       );
       // Update chat room title via bloc-API call
-      _detailedChatBloc.add(ChatRoomNameChanged(newName: currentChatTitleEdited, roomIds: widget.currentChatRoom.id));
+      _detailedChatBloc.add(ChatRoomNameChanged(newName: currentChatTitleEdited, roomIds: widget.currentChatRoom.roomId));
     }
   }
 
