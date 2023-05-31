@@ -27,7 +27,8 @@ class FoodSearchBloc extends Bloc<FoodSearchEvent, FoodSearchState> {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
     final recentFoodIds = await diaryRepository.getUserMostRecentlyViewedFoodIds(event.currentUserId, accessToken!);
-    final List<Either<FoodGetResult, FoodGetResultSingleServing>> recentFoods = await Future.wait(recentFoodIds.map((id) => diaryRepository.getFoodById(id, accessToken)));
+    final List<Either<FoodGetResult, FoodGetResultSingleServing>> recentFoods =
+      await diaryRepository.getFoodsByIds(recentFoodIds, accessToken);
     emit(
         OnlyRecentFoodDataFetched(
           recentFoods: recentFoods

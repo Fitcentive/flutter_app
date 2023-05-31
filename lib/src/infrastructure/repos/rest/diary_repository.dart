@@ -347,6 +347,40 @@ class DiaryRepository {
     }
   }
 
+
+  Future<List<Either<FoodGetResult, FoodGetResultSingleServing>>> getFoodsByIds(
+      List<String> foodIds,
+      String accessToken
+  ) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/food/get-by-food-ids"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: jsonEncode({
+        "foodIds": foodIds
+      })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final List<Either<FoodGetResult, FoodGetResultSingleServing>> results =
+          jsonResponse.map<Either<FoodGetResult, FoodGetResultSingleServing>>((e) {
+            final innerJson = jsonDecode(jsonEncode(e));
+            Either<FoodGetResult, FoodGetResultSingleServing> eitherResult;
+            try {
+              eitherResult = Left<FoodGetResult, FoodGetResultSingleServing>(FoodGetResult.fromJson(innerJson));
+            } catch (e) {
+              eitherResult = Right<FoodGetResult, FoodGetResultSingleServing>(FoodGetResultSingleServing.fromJson(innerJson));
+            }
+            return eitherResult;
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getFoodsByIds: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<List<FoodDiaryEntry>> getFoodEntriesForUserByDay(
       String userId,
       String dateString,
