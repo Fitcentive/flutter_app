@@ -110,16 +110,21 @@ class ManagePremiumBloc extends Bloc<ManagePremiumEvent, ManagePremiumState> {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
     // Hacky fix because users only have 1 subscription for now ideally
-    final subscription = (await publicGatewayRepository.getUserSubscriptions(accessToken!)).first;
+    final subscriptionFut = publicGatewayRepository.getUserSubscriptions(accessToken!);
+    final cardsFut = publicGatewayRepository.getPaymentMethodsForUser(accessToken);
     // Hacky fix because users only have 1 card for now
-    final cards = await publicGatewayRepository.getPaymentMethodsForUser(accessToken);
+    // final cards = await publicGatewayRepository.getPaymentMethodsForUser(accessToken);
+
+    final subscription = await subscriptionFut;
+    final cards = await cardsFut;
+
     final defaultCard = cards.where((element) => element.isDefault).first;
     final otherCards = cards.where((element) => !element.isDefault);
     final sortedCards = [defaultCard, ...otherCards];
 
     emit(
         SubscriptionInfoLoaded(
-          subscription: subscription,
+          subscription: subscription.first,
           cards: sortedCards
         )
     );
