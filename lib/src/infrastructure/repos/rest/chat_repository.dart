@@ -214,9 +214,14 @@ class ChatRepository {
     }
   }
 
-  Future<List<DetailedChatRoom>> getDetailedChatRoomsForUser(String userId, String accessToken) async {
+  Future<List<DetailedChatRoom>> getDetailedChatRoomsForUser(
+      String userId,
+      int limit,
+      int offset,
+      String accessToken,
+  ) async {
     final response = await http.get(
-        Uri.parse("$BASE_URL/user/detailed-rooms"),
+        Uri.parse("$BASE_URL/user/detailed-rooms?limit=$limit&offset=$offset"),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken'
@@ -325,7 +330,7 @@ class ChatRepository {
     if (response.statusCode == HttpStatus.ok) {
       final List<dynamic> jsonResponse = jsonDecode(response.body);
       final lastSeenData = jsonResponse
-          .where((e) => e.toString().toLowerCase() != 'null')
+          .where((e) => e.toString().toLowerCase() != 'null') // Maybe this isnt required anymore
           .map((e) => UserLastSeen.fromJson(e))
           .toList();
       return lastSeenData;

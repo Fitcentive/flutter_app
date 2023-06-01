@@ -36,6 +36,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     required this.chatRoomUpdatedStreamRepository,
   }) : super(const ChatStateInitial()) {
     on<FetchUserRooms>(_fetchUserRooms);
+    on<FetchMoreUserRooms>(_fetchMoreUserRooms);
     on<FilterSearchQueryChanged>(_filterSearchQueryChanged);
     on<ChatRoomHasNewMessage>(_chatRoomHasNewMessage);
 
@@ -60,8 +61,9 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
       if (event.query.isNotEmpty) {
         final filteredRooms = currentState.rooms
             .where((element) =>
-        element.roomName.contains(event.query) || _doesQueryMatchUserIds(event.query, element.userIds, currentState.userIdProfileMap)
-        )
+                  element.roomName.toLowerCase().contains(event.query.toLowerCase()) ||
+                      _doesQueryMatchUserIds(event.query, element.userIds, currentState.userIdProfileMap)
+            )
             .toList();
         emit(
             UserRoomsLoaded(
@@ -69,6 +71,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
               filteredRooms: filteredRooms,
               userIdProfileMap: currentState.userIdProfileMap,
               roomUserLastSeenMap: currentState.roomUserLastSeenMap,
+              doesNextPageExist: currentState.doesNextPageExist,
             )
         );
       }
@@ -79,6 +82,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
               filteredRooms: currentState.rooms,
               userIdProfileMap: currentState.userIdProfileMap,
               roomUserLastSeenMap: currentState.roomUserLastSeenMap,
+              doesNextPageExist: currentState.doesNextPageExist,
             )
         );
       }
@@ -142,6 +146,61 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
             filteredRooms: updatedFilteredRooms,
             userIdProfileMap: currentState.userIdProfileMap,
             roomUserLastSeenMap: currentState.roomUserLastSeenMap,
+            doesNextPageExist: currentState.doesNextPageExist,
+          )
+      );
+    }
+  }
+
+  void _fetchMoreUserRooms(FetchMoreUserRooms event, Emitter<ChatHomeState> emit) async {
+    final currentState = state;
+
+    if (currentState is UserRoomsLoaded && currentState.doesNextPageExist) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final detailedChatRooms = await chatRepository.getDetailedChatRoomsForUser(
+          event.userId,
+          event.limit,
+          currentState.rooms.length,
+          accessToken!
+      );
+
+      final currentStateRoomIds = currentState.rooms.map((e) => e.roomId).toList();
+      final chatRoomsWithMostRecentMessage = detailedChatRooms
+          .where((element) => !currentStateRoomIds.contains(element.roomId))
+          .map((e) =>
+            ChatRoomWithMostRecentMessage(
+                roomId: e.roomId,
+                userIds: e.userIds,
+                mostRecentMessage: e.mostRecentMessage ?? "",
+                mostRecentMessageTime: e.mostRecentMessageTimestamp ?? DateTime.now().subtract(const Duration(hours: 1)),
+                roomName: e.roomName,
+                isGroupChat: e.roomType == "group"
+            )
+          ).toList();
+
+      final distinctUserIdsFromPosts = _getDistinctUserIdsFromChatRooms(detailedChatRooms);
+      final additionalIdsToFetchDataFor = distinctUserIdsFromPosts
+          .where((element) => !currentState.userIdProfileMap.keys.contains(element))
+          .toList();
+      final List<PublicUserProfile> userProfileDetails =
+        await userRepository.getPublicUserProfiles(additionalIdsToFetchDataFor, accessToken);
+      final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+
+      final userRoomsLastSeen = await chatRepository.getUserChatRoomLastSeen(
+          detailedChatRooms.map((e) => e.roomId).toList(),
+          accessToken
+      );
+      final Map<String, DateTime> roomIdMostRecentMessageTimeMap = { for (var e in userRoomsLastSeen)  (e).roomId : e.lastSeen };
+
+      final doesNextPageExist = detailedChatRooms.length == event.limit ? true : false;
+
+      emit(
+          UserRoomsLoaded(
+            rooms: [...currentState.rooms, ...chatRoomsWithMostRecentMessage],
+            filteredRooms: [...currentState.filteredRooms, ...chatRoomsWithMostRecentMessage],
+            userIdProfileMap: {...currentState.userIdProfileMap, ...userIdProfileMap},
+            roomUserLastSeenMap: {...currentState.roomUserLastSeenMap, ...roomIdMostRecentMessageTimeMap},
+            doesNextPageExist: doesNextPageExist,
           )
       );
     }
@@ -150,7 +209,12 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
   void _fetchUserRooms(FetchUserRooms event, Emitter<ChatHomeState> emit) async {
     emit(const UserRoomsLoading());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final detailedChatRooms = await chatRepository.getDetailedChatRoomsForUser(event.userId, accessToken!);
+    final detailedChatRooms = await chatRepository.getDetailedChatRoomsForUser(
+        event.userId,
+        event.limit,
+        event.offset,
+        accessToken!
+    );
 
     // final chatRoomDefinitions = await chatRepository.getChatRoomDefinitions(chatRooms.map((e) => e.roomId).toList(), accessToken);
     // final roomIds = chatRooms.map((e) => e.roomId).toList();
@@ -169,7 +233,7 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
 
     final distinctUserIdsFromPosts = _getDistinctUserIdsFromChatRooms(detailedChatRooms);
     final List<PublicUserProfile> userProfileDetails =
-      await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
+    await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
     final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
     final userRoomsLastSeen = await chatRepository.getUserChatRoomLastSeen(
@@ -178,12 +242,15 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     );
     final Map<String, DateTime> roomIdMostRecentMessageTimeMap = { for (var e in userRoomsLastSeen)  (e).roomId : e.lastSeen };
 
+    final doesNextPageExist = detailedChatRooms.length == event.limit ? true : false;
+
     emit(
         UserRoomsLoaded(
-            rooms: chatRoomsWithMostRecentMessage,
-            filteredRooms: chatRoomsWithMostRecentMessage,
-            userIdProfileMap: userIdProfileMap,
-            roomUserLastSeenMap: roomIdMostRecentMessageTimeMap,
+          rooms: chatRoomsWithMostRecentMessage,
+          filteredRooms: chatRoomsWithMostRecentMessage,
+          userIdProfileMap: userIdProfileMap,
+          roomUserLastSeenMap: roomIdMostRecentMessageTimeMap,
+          doesNextPageExist: doesNextPageExist,
         )
     );
 

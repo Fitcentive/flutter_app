@@ -27,14 +27,16 @@ class UserRoomsLoaded extends ChatHomeState {
   final List<ChatRoomWithMostRecentMessage> rooms;
   final Map<String, PublicUserProfile> userIdProfileMap;
   final Map<String, DateTime> roomUserLastSeenMap;
+  final bool doesNextPageExist;
 
   const UserRoomsLoaded({
     required this.rooms,
     required this.filteredRooms,
     required this.userIdProfileMap,
     required this.roomUserLastSeenMap,
+    required this.doesNextPageExist,
   });
 
   @override
-  List<Object?> get props => [rooms, userIdProfileMap, filteredRooms, roomUserLastSeenMap];
+  List<Object?> get props => [rooms, userIdProfileMap, filteredRooms, roomUserLastSeenMap, doesNextPageExist];
 }

@@ -8,6 +8,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_bloc.dart';
@@ -46,8 +47,11 @@ class ChatHomeView extends StatefulWidget {
 }
 
 class ChatHomeViewState extends State<ChatHomeView> {
+  static const double _scrollThreshold = 350.0;
 
   late final ChatHomeBloc _chatBloc;
+
+  bool isDataBeingRequested = false;
 
   bool _isFloatingButtonVisible = true;
   final _scrollController = ScrollController();
@@ -70,7 +74,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
     super.initState();
 
     _chatBloc = BlocProvider.of<ChatHomeBloc>(context);
-    _chatBloc.add(FetchUserRooms(userId: widget.currentUserProfile.userId));
+    _fetchDefaultChatRooms();
 
     _scrollController.addListener(_onScroll);
   }
@@ -80,8 +84,27 @@ class ChatHomeViewState extends State<ChatHomeView> {
         context,
         ChatSearchView.route(widget.currentUserProfile),
     ).then((value) {
-      _chatBloc.add(FetchUserRooms(userId: widget.currentUserProfile.userId));
+      _fetchDefaultChatRooms();
     });
+  }
+
+  _fetchMoreChatRooms() {
+    _chatBloc.add(
+        FetchMoreUserRooms(
+          userId: widget.currentUserProfile.userId,
+          limit: ConstantUtils.DEFAULT_CHAT_ROOMS_LIMIT,
+        )
+    );
+  }
+
+  _fetchDefaultChatRooms() {
+    _chatBloc.add(
+        FetchUserRooms(
+          userId: widget.currentUserProfile.userId,
+          limit: ConstantUtils.DEFAULT_CHAT_ROOMS_LIMIT,
+          offset: ConstantUtils.DEFAULT_OFFSET,
+        )
+    );
   }
 
   void _onScroll() {
@@ -103,6 +126,13 @@ class ChatHomeViewState extends State<ChatHomeView> {
         }
       }
 
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
+
+      if (maxScroll - currentScroll <= _scrollThreshold && !isDataBeingRequested) {
+        isDataBeingRequested = true;
+        _fetchMoreChatRooms();
+      }
 
     }
   }
@@ -133,6 +163,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
       body: BlocBuilder<ChatHomeBloc, ChatHomeState>(
         builder: (context, state) {
           if (state is UserRoomsLoaded) {
+            isDataBeingRequested = false;
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -214,7 +245,6 @@ class ChatHomeViewState extends State<ChatHomeView> {
     );
   }
 
-  // todo - think about pagination - what happens if a LOT of chats??
   _chatList(UserRoomsLoaded state) {
     if (state.filteredRooms.isNotEmpty) {
       return RefreshIndicator(
@@ -224,48 +254,53 @@ class ChatHomeViewState extends State<ChatHomeView> {
           child: ListView.builder(
               controller: _scrollController,
               shrinkWrap: true,
-              itemCount: state.filteredRooms.length,
+              itemCount: state.doesNextPageExist ? state.filteredRooms.length + 1 : state.filteredRooms.length,
               itemBuilder: (context, index) {
-                final currentChatRoom = state.filteredRooms[index];
-                final otherUserIdsInChatRoom = currentChatRoom
-                    .userIds
-                    .where((element) => element != widget.currentUserProfile.userId)
-                    .toList();
+                if (index >= state.filteredRooms.length) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                else {
+                  final currentChatRoom = state.filteredRooms[index];
+                  final otherUserIdsInChatRoom = currentChatRoom
+                      .userIds
+                      .where((element) => element != widget.currentUserProfile.userId)
+                      .toList();
 
-                final List<PublicUserProfile> otherUserProfiles = state
-                    .userIdProfileMap
-                    .entries
-                    .where((element) => otherUserIdsInChatRoom.contains(element.value.userId))
-                    .map((e) => e.value).toList();
+                  final List<PublicUserProfile> otherUserProfiles = state
+                      .userIdProfileMap
+                      .entries
+                      .where((element) => otherUserIdsInChatRoom.contains(element.value.userId))
+                      .map((e) => e.value).toList();
 
-                return ListTile(
-                    tileColor: _isMessageUnread(state, currentChatRoom) ? Colors.grey.shade200 : Colors.transparent,
-                    title: Text(
-                      currentChatRoom.isGroupChat ? currentChatRoom.roomName : StringUtils.getUserNameFromUserProfile(otherUserProfiles.first),
-                      style: TextStyle(
+                  return ListTile(
+                      tileColor: _isMessageUnread(state, currentChatRoom) ? Colors.grey.shade200 : Colors.transparent,
+                      title: Text(
+                        currentChatRoom.isGroupChat ? currentChatRoom.roomName : StringUtils.getUserNameFromUserProfile(otherUserProfiles.first),
+                        style: TextStyle(
                           fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.w500,
                           fontSize: 17,
-                      ),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                      child: Text(
-                        StringUtils.truncateLongString(currentChatRoom.mostRecentMessage),
-                        style: TextStyle(
-                          fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.normal
                         ),
                       ),
-                    ),
-                    leading: GestureDetector(
-                      onTap: () async {
+                      subtitle: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                        child: Text(
+                          StringUtils.truncateLongString(currentChatRoom.mostRecentMessage),
+                          style: TextStyle(
+                              fontWeight: _isMessageUnread(state, currentChatRoom) ? FontWeight.bold : FontWeight.normal
+                          ),
+                        ),
+                      ),
+                      leading: GestureDetector(
+                        onTap: () async {
+                          _openUserChatView(currentChatRoom, otherUserProfiles);
+                        },
+                        child: _generateChatPicture(currentChatRoom, widget.currentUserProfile.userId, otherUserIdsInChatRoom, state.userIdProfileMap),
+                      ),
+                      onTap: () {
                         _openUserChatView(currentChatRoom, otherUserProfiles);
-                      },
-                      child: _generateChatPicture(currentChatRoom, widget.currentUserProfile.userId, otherUserIdsInChatRoom, state.userIdProfileMap),
-                    ),
-                    onTap: () {
-                      _openUserChatView(currentChatRoom, otherUserProfiles);
-                    }
-                );
+                      }
+                  );
+                }
               }
           ),
         ),
@@ -348,11 +383,11 @@ class ChatHomeViewState extends State<ChatHomeView> {
             currentUserProfile: widget.currentUserProfile,
             otherUserProfiles: otherUserProfiles
         ),
-    ).then((value) => _chatBloc.add(FetchUserRooms(userId: widget.currentUserProfile.userId)));
+    ).then((value) => _fetchDefaultChatRooms());
   }
 
   Future<void> _pullRefresh() async {
-    _chatBloc.add(FetchUserRooms(userId: widget.currentUserProfile.userId));
+    _fetchDefaultChatRooms();
   }
 
 }

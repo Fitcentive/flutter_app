@@ -9,12 +9,32 @@ abstract class ChatHomeEvent extends Equatable {
 
 class FetchUserRooms extends ChatHomeEvent {
   final String userId;
+  final int limit;
+  final int offset;
 
-  const FetchUserRooms({required this.userId});
+  const FetchUserRooms({
+    required this.userId,
+    required this.limit,
+    required this.offset,
+  });
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [userId, limit, offset];
 }
+
+class FetchMoreUserRooms extends ChatHomeEvent {
+  final String userId;
+  final int limit;
+
+  const FetchMoreUserRooms({
+    required this.userId,
+    required this.limit,
+  });
+
+  @override
+  List<Object?> get props => [userId, limit];
+}
+
 
 class FilterSearchQueryChanged extends ChatHomeEvent {
   final String query;
