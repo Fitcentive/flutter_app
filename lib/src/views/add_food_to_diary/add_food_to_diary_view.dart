@@ -27,6 +27,7 @@ class AddFoodToDiaryView extends StatefulWidget {
   final Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition;
   final String mealEntry;
   final DateTime selectedDayInQuestion;
+  final Serving? selectedServingOption;
 
   const AddFoodToDiaryView({
     Key? key,
@@ -34,6 +35,7 @@ class AddFoodToDiaryView extends StatefulWidget {
     required this.foodDefinition,
     required this.mealEntry,
     required this.selectedDayInQuestion,
+    required this.selectedServingOption,
   }): super(key: key);
 
   static Route route(
@@ -41,6 +43,7 @@ class AddFoodToDiaryView extends StatefulWidget {
       Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition,
       String mealEntry,
       DateTime selectedDayInQuestion,
+      Serving? selectedServingOption,
       ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -50,7 +53,8 @@ class AddFoodToDiaryView extends StatefulWidget {
             currentUserProfile,
             foodDefinition,
             mealEntry,
-            selectedDayInQuestion
+            selectedDayInQuestion,
+            selectedServingOption,
         )
     );
   }
@@ -60,6 +64,7 @@ class AddFoodToDiaryView extends StatefulWidget {
       Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition,
       String mealEntry,
       DateTime selectedDayInQuestion,
+      Serving? selectedServingOption,
       ) => MultiBlocProvider(
     providers: [
       BlocProvider<AddFoodToDiaryBloc>(
@@ -73,7 +78,8 @@ class AddFoodToDiaryView extends StatefulWidget {
       currentUserProfile: currentUserProfile,
       foodDefinition: foodDefinition,
       mealEntry: mealEntry,
-      selectedDayInQuestion: selectedDayInQuestion
+      selectedDayInQuestion: selectedDayInQuestion,
+      selectedServingOption: selectedServingOption,
     ),
   );
 
@@ -110,7 +116,7 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
                       widget.foodDefinition.left.food.servings.serving :
                       [widget.foodDefinition.right.food.servings.serving];
 
-    selectedServingOption = servingOptions.first;
+    selectedServingOption = widget.selectedServingOption ?? servingOptions.first;
   }
 
   @override

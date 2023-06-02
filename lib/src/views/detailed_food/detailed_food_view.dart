@@ -202,7 +202,8 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
                   widget.currentUserProfile,
                   state.result,
                   widget.mealEntry,
-                  widget.selectedDayInQuestion
+                  widget.selectedDayInQuestion,
+                  selectedServingOption,
               ),
             );
           }

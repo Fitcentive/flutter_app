@@ -305,22 +305,35 @@ class DiaryViewState extends State<DiaryView> {
         .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
   }
 
-  // todo - KNOWN DEFICIENCY - if same foodId is present in muliple rawFoodEntries, then inconsistent behaviour
   _caloriesHeader(DiaryDataFetched state) {
-    final foodCalories = allFoodEntriesRaw.isEmpty ? 0 : allDetailedFoodEntries.map((e) {
-      if (e.isLeft) {
-        if (allFoodEntriesRaw.map((e) => e.foodId.toString()).contains(e.left.food.food_id)) {
-          final rawEntry = allFoodEntriesRaw.firstWhere((element) => element.foodId.toString() == e.left.food.food_id);
-          return double.parse((e.left.food.servings.serving.firstWhere((element) => element.serving_id == rawEntry.servingId.toString()).calories ?? "0")) * rawEntry.numberOfServings;
+    final allFoodIds = allFoodEntriesRaw.map((e) => e.foodId.toString());
+    final foodCalories = allFoodEntriesRaw.isEmpty ? 0 : allFoodEntriesRaw.map((e) {
+      final current = allDetailedFoodEntries.where((element) {
+        if (element.isLeft) {
+          return element.left.food.food_id == e.foodId.toString();
+        }
+        else {
+          return element.right.food.food_id == e.foodId.toString();
+        }
+      }).first;
+
+      if (current.isLeft) {
+        if (allFoodIds.contains(current.left.food.food_id)) {
+          final rawEntry = allFoodEntriesRaw.firstWhere((element) => element.foodId.toString() == current.left.food.food_id);
+          return double.parse(
+              (current.left.food.servings.serving
+                  .firstWhere((element) => element.serving_id == rawEntry.servingId.toString()).calories ?? "0")
+              )
+              * rawEntry.numberOfServings;
         }
         else {
           return 0;
         }
       }
       else {
-        if (allFoodEntriesRaw.map((e) => e.foodId.toString()).contains(e.right.food.food_id)) {
-          final rawEntry = allFoodEntriesRaw.firstWhere((element) => element.foodId.toString() == e.right.food.food_id);
-          return double.parse(e.right.food.servings.serving.calories ?? "0") * rawEntry.numberOfServings;
+        if (allFoodIds.contains(current.right.food.food_id)) {
+          final rawEntry = allFoodEntriesRaw.firstWhere((element) => element.foodId.toString() == current.right.food.food_id);
+          return double.parse(current.right.food.servings.serving.calories ?? "0") * rawEntry.numberOfServings;
         }
         else {
           return 0;
@@ -362,7 +375,7 @@ class DiaryViewState extends State<DiaryView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "$foodCalories",
+                  foodCalories.toStringAsFixed(0),
                   style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -384,7 +397,7 @@ class DiaryViewState extends State<DiaryView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "${cardioCalories + strengthCalories}",
+                  (cardioCalories + strengthCalories).toStringAsFixed(0),
                   style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -717,7 +730,7 @@ class DiaryViewState extends State<DiaryView> {
                         Expanded(
                             flex: 4,
                             child: Text(
-                              "${double.parse(caloriesRaw ?? "0") * foodEntryForHeadingRaw.numberOfServings} calories",
+                              "${(double.parse(caloriesRaw ?? "0") * foodEntryForHeadingRaw.numberOfServings).toStringAsFixed(0)} calories",
                               style: const TextStyle(
                                   color: Colors.teal
                               ),
