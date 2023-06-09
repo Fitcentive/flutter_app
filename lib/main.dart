@@ -168,6 +168,7 @@ class _AppViewState extends State<AppView> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: "Fitcentive",
       theme: appTheme,
       // darkTheme: darkTheme,
       routes: {
