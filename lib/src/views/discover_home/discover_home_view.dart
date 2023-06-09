@@ -118,6 +118,12 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
     );
   }
 
+  bool areAllPrefsPresent(DiscoverUserDataFetched state) {
+    return state.personalPreferences != null &&
+        state.fitnessPreferences != null &&
+        state.discoveryPreferences != null;
+  }
+
   _showDiscoveredUserListAndButtons(DiscoverUserDataFetched state) {
     return CustomSlidingUpPanel(
       height: ScreenUtils.getScreenHeight(context),
@@ -274,7 +280,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: WidgetUtils.skipNulls([
           Container(
             padding: const EdgeInsets.all(20),
             child: const Text(
@@ -296,10 +302,10 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
             _navigateToDiscoverUserPreferences(state);
           }),
           WidgetUtils.spacer(5),
-          _actionButton("Discover Buddies", () {
+          areAllPrefsPresent(state) ? _actionButton("Discover Buddies", () {
             _navigateToDiscoverRecommendations();
-          }),
-        ],
+          }) : null,
+        ]),
       ),
     );
   }
