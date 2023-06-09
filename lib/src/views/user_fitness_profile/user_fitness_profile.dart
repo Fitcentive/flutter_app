@@ -24,7 +24,10 @@ class UserFitnessProfileView extends StatefulWidget {
     required this.currentFitnessUserProfile,
   }) : super(key: key);
 
-  static Route<FitnessUserProfile> route(PublicUserProfile currentUserProfile, FitnessUserProfile? currentFitnessUserProfile) {
+  static Route<FitnessUserProfile> route(
+      PublicUserProfile currentUserProfile,
+      FitnessUserProfile? currentFitnessUserProfile
+) {
     return MaterialPageRoute<FitnessUserProfile>(
         settings: const RouteSettings(
             name: routeName
@@ -71,6 +74,7 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: widget.currentFitnessUserProfile != null,
         title: const Text('Update Fitness Profile', style: TextStyle(color: Colors.teal),),
         iconTheme: const IconThemeData(
           color: Colors.teal,
