@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class ConstantUtils {
   static final String stripePublishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? "";
 
+  static const String APP_BASE_URL = "https://app.fitcentive.xyz";
   static const String API_HOST_URL = "https://api.fitcentive.xyz";
   static const String AUTH_HOST_URL = "https://auth.fitcentive.xyz";
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
@@ -8,7 +9,9 @@ class OidcProviderInfo {
   static const String GOOGLE_AUTH_PROVIDER = "GoogleAuth";
   static const String NATIVE_AUTH_PROVIDER = "NativeAuth";
   static String GOOGLE_OIDC_REDIRECT_URI =
-    DeviceUtils.isMobileDevice() ? '$REDIRECT_SCHEME://oidc-callback' : 'http://localhost:5555/auth.html';
+    DeviceUtils.isMobileDevice() ? '$REDIRECT_SCHEME://oidc-callback' :
+      (kDebugMode ? 'http://localhost:5555/auth.html' : 'http://${ConstantUtils.APP_BASE_URL}/auth.html');
+
   static const String GOOGLE_KEYCLOAK_IDP_HINT = 'google';
   static const String GOOGLE_OIDC_DISCOVER_URI =
       '${ConstantUtils.API_HOST_URL}/auth/realms/GoogleAuth/.well-known/openid-configuration';
@@ -17,7 +20,8 @@ class OidcProviderInfo {
 
   static const String APPLE_AUTH_PROVIDER = "AppleAuth";
   static String APPLE_OIDC_REDIRECT_URI =
-  DeviceUtils.isMobileDevice() ? '$REDIRECT_SCHEME://oidc-callback' : 'http://localhost:5555/auth.html';
+  DeviceUtils.isMobileDevice() ? '$REDIRECT_SCHEME://oidc-callback' :
+    (kDebugMode ? 'http://localhost:5555/auth.html' : 'http://${ConstantUtils.APP_BASE_URL}/auth.html');
   static const String APPLE_KEYCLOAK_IDP_HINT = 'apple';
   static const String APPLE_OIDC_DISCOVER_URI =
       '${ConstantUtils.API_HOST_URL}/auth/realms/AppleAuth/.well-known/openid-configuration';
@@ -25,7 +29,8 @@ class OidcProviderInfo {
 
   static const String FACEBOOK_AUTH_PROVIDER = "FacebookAuth";
   static String FACEBOOK_OIDC_REDIRECT_URI =
-  DeviceUtils.isMobileDevice() ? '$REDIRECT_SCHEME://oidc-callback' : 'http://localhost:5555/auth.html';
+  DeviceUtils.isMobileDevice() ? '$REDIRECT_SCHEME://oidc-callback' :
+    (kDebugMode ? 'http://localhost:5555/auth.html' : 'http://${ConstantUtils.APP_BASE_URL}/auth.html');
   static const String FACEBOOK_KEYCLOAK_IDP_HINT = 'facebook';
   static const String FACEBOOK_OIDC_DISCOVER_URI =
       '${ConstantUtils.API_HOST_URL}/auth/realms/FacebookAuth/.well-known/openid-configuration';

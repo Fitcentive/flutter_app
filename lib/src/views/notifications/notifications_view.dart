@@ -17,7 +17,6 @@ import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationsView extends StatefulWidget {
@@ -234,7 +233,7 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.toLocal()),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -299,7 +298,7 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.toLocal()),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -341,7 +340,7 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.toLocal()),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -381,7 +380,7 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.toLocal()),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -421,7 +420,7 @@ class NotificationsViewState extends State<NotificationsView> {
       subtitle: Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Text(
-          timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+          timeago.format(notification.updatedAt.toLocal()),
           style: const TextStyle(fontSize: 10),
         ),
       ),
@@ -560,7 +559,7 @@ class NotificationsViewState extends State<NotificationsView> {
         subtitle: Padding(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
           child: Text(
-            timeago.format(notification.updatedAt.add(DateTime.now().timeZoneOffset)),
+            timeago.format(notification.updatedAt.toLocal()),
             style: const TextStyle(fontSize: 10),
           ),
         ),
