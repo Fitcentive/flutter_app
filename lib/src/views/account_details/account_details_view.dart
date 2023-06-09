@@ -29,6 +29,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:tuple/tuple.dart';
 
 class AccountDetailsView extends StatefulWidget {
@@ -368,28 +369,30 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
   }
 
   _saveAccountDetailsButton(AccountDetailsState state) {
-    return ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-      ),
-      onPressed: () async {
-        if (state is AccountDetailsModified) {
-          SnackbarUtils.showSnackBarMedium(context, "Saving changes... please wait.");
-          final authState = _authenticationBloc.state;
-          if (authState is AuthSuccessUserUpdateState) {
-            _accountDetailsBloc.add(AccountDetailsSaved(
-              user: authState.authenticatedUser,
-              firstName: state.firstName.value,
-              lastName: state.lastName.value,
-              photoUrl: state.photoUrl,
-              selectedImage: state.selectedImage,
-              selectedImageName: state.selectedImageName,
-              gender: state.gender,
-            ));
+    return PointerInterceptor(
+      child: ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () async {
+          if (state is AccountDetailsModified) {
+            SnackbarUtils.showSnackBarMedium(context, "Saving changes... please wait.");
+            final authState = _authenticationBloc.state;
+            if (authState is AuthSuccessUserUpdateState) {
+              _accountDetailsBloc.add(AccountDetailsSaved(
+                user: authState.authenticatedUser,
+                firstName: state.firstName.value,
+                lastName: state.lastName.value,
+                photoUrl: state.photoUrl,
+                selectedImage: state.selectedImage,
+                selectedImageName: state.selectedImageName,
+                gender: state.gender,
+              ));
+            }
           }
-        }
-      },
-      child: const Text("Save", style: TextStyle(fontSize: 15, color: Colors.white)),
+        },
+        child: const Text("Save", style: TextStyle(fontSize: 15, color: Colors.white)),
+      ),
     );
   }
 

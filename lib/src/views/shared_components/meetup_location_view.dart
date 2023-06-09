@@ -14,6 +14,7 @@ import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/location_utils.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 class MeetupLocationView extends StatefulWidget {
   final VoidCallback onTapCallback;
@@ -113,21 +114,23 @@ class MeetupLocationViewState extends State<MeetupLocationView> {
       alignment: Alignment.topRight,
       child: Padding(
         padding: const EdgeInsets.all(2),
-        child: SizedBox(
-          height: 40,
-          width: 40,
-          child: FloatingActionButton(
-              heroTag: "MeetupLocationViewSnapToMarkersButton-${StringUtils.generateRandomString(10)}",
-              onPressed: () {
-                _snapCameraToMarkers();
-              },
-              backgroundColor: Colors.teal,
-              tooltip: "Re-center",
-              child: const Icon(
-                  Icons.location_searching_outlined,
-                  color: Colors.white,
-                  size: 16
-              )
+        child: PointerInterceptor(
+          child: SizedBox(
+            height: 40,
+            width: 40,
+            child: FloatingActionButton(
+                heroTag: "MeetupLocationViewSnapToMarkersButton-${StringUtils.generateRandomString(10)}",
+                onPressed: () {
+                  _snapCameraToMarkers();
+                },
+                backgroundColor: Colors.teal,
+                tooltip: "Re-center",
+                child: const Icon(
+                    Icons.location_searching_outlined,
+                    color: Colors.white,
+                    size: 16
+                )
+            ),
           ),
         ),
       ),

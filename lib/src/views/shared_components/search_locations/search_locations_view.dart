@@ -29,6 +29,7 @@ import 'package:flutter_app/src/views/shared_components/search_locations/bloc/se
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 typedef UpdateSelectedGymLocationBlocCallback = void Function(Location location);
 
@@ -508,34 +509,36 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
       if (_slidingUpPanelController.isAttached) {
         _slidingUpPanelController.show();
       }
-      return CarouselSlider(
-          items: state.locationResults.map((e) =>
-              FoursquareLocationCardView(
-                  locationId: e.locationId,
-                  location: e.location,
-              )
-          ).toList(),
-          carouselController: gymsCarouselController,
-          options: CarouselOptions(
-            height: 300,
-            // aspectRatio: 16/9,
-            viewportFraction: 0.825,
-            initialPage: 0,
-            enableInfiniteScroll: true,
-            reverse: false,
-            enlargeCenterPage: true,
-            onPageChanged: (page, reason) async {
-              currentSelectedGymIndex = page;
-              widget.updateBlocState(state.locationResults[currentSelectedGymIndex]);
+      return PointerInterceptor(
+        child: CarouselSlider(
+            items: state.locationResults.map((e) =>
+                FoursquareLocationCardView(
+                    locationId: e.locationId,
+                    location: e.location,
+                )
+            ).toList(),
+            carouselController: gymsCarouselController,
+            options: CarouselOptions(
+              height: 300,
+              // aspectRatio: 16/9,
+              viewportFraction: 0.825,
+              initialPage: 0,
+              enableInfiniteScroll: true,
+              reverse: false,
+              enlargeCenterPage: true,
+              onPageChanged: (page, reason) async {
+                currentSelectedGymIndex = page;
+                widget.updateBlocState(state.locationResults[currentSelectedGymIndex]);
 
-              final relevantLocationItem = state.locationResults[currentSelectedGymIndex];
-              final GoogleMapController controller = await _mapController.future;
-              controller
-                  .animateCamera(CameraUpdate.newLatLng(relevantLocationItem.location.geocodes.toGoogleMapsLatLng()));
-              isCameraUpdateHappening = true;
-            },
-            scrollDirection: Axis.horizontal,
-          )
+                final relevantLocationItem = state.locationResults[currentSelectedGymIndex];
+                final GoogleMapController controller = await _mapController.future;
+                controller
+                    .animateCamera(CameraUpdate.newLatLng(relevantLocationItem.location.geocodes.toGoogleMapsLatLng()));
+                isCameraUpdateHappening = true;
+              },
+              scrollDirection: Axis.horizontal,
+            )
+        ),
       );
     }
     else {

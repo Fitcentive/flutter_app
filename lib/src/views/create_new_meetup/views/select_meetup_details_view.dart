@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter/foundation.dart';
@@ -17,6 +18,7 @@ import 'package:flutter_app/src/views/shared_components/search_locations/search_
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 class SelectMeetupDetailsView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -250,7 +252,9 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
           builder: (BuildContext context, Widget? child) {
             return Theme(
                 data: ThemeData(primarySwatch: Colors.teal),
-                child: child!
+                child: PointerInterceptor(
+                  child: child!,
+                )
             );
           },
           context: context,
@@ -299,7 +303,9 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
           builder: (BuildContext context, Widget? child) {
             return Theme(
                 data: ThemeData(primarySwatch: Colors.teal),
-                child: child!
+                child: PointerInterceptor(
+                  child: child!,
+                )
             );
           },
           context: context,
