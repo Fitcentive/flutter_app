@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -65,6 +66,8 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
                     WidgetUtils.spacer(2.5),
                     _renderUserTextPrompt(),
                     WidgetUtils.spacer(2.5),
+                    _renderHintTextIfNeeded(),
+                    WidgetUtils.spacer(2.5),
                     _renderAvailabilitiesView(state),
                     WidgetUtils.spacer(40),
                   ],
@@ -78,6 +81,44 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
             );
           }
         }
+    );
+  }
+
+  _renderHintTextIfNeeded() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        WidgetUtils.spacer(2.5),
+        const AutoSizeText(
+          "Tap on a block to select or unselect it",
+          style: TextStyle(
+              color: Colors.teal,
+              fontSize: 12
+          ),
+          maxFontSize: 12,
+          textAlign: TextAlign.center,
+        ),
+        WidgetUtils.spacer(2.5),
+        const AutoSizeText(
+          "Long press on a block to enable multi select",
+          style: TextStyle(
+              color: Colors.teal,
+              fontSize: 12
+          ),
+          maxFontSize: 12,
+          textAlign: TextAlign.center,
+        ),
+        WidgetUtils.spacer(2.5),
+        const AutoSizeText(
+          "Drag to the bottom right to select multiple blocks",
+          style: TextStyle(
+              color: Colors.teal,
+              fontSize: 12
+          ),
+          maxFontSize: 12,
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
