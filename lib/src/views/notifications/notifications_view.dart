@@ -393,9 +393,10 @@ class NotificationsViewState extends State<NotificationsView> {
   Widget _generateMeetupLocationChangedNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String meetupId = notification.data['meetupId'];
     final String participantId = notification.data['targetUserId'];
+    final String meetupOwnerId = notification.data['meetupOwnerId'];
     final String meetupName = notification.data['meetupName'] ?? "";
 
-    final PublicUserProfile? participantProfile = userProfileMap[participantId];
+    final PublicUserProfile? meetupOwnerProfile = userProfileMap[meetupOwnerId];
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
     return ListTile(
       onTap: () async {
@@ -404,19 +405,19 @@ class NotificationsViewState extends State<NotificationsView> {
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
         onTap: () async {
-          _goToUserProfile(participantProfile);
+          _goToUserProfile(meetupOwnerProfile);
         },
         child: Container(
           width: 50,
           height: 50,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            image: ImageUtils.getUserProfileImage(participantProfile, 100, 100),
+            image: ImageUtils.getUserProfileImage(meetupOwnerProfile, 100, 100),
           ),
         ),
       ),
       title: Text(
-        _getMeetupLocationChangedNotificationText(participantProfile!, meetupName),
+        _getMeetupLocationChangedNotificationText(meetupOwnerProfile ?? staticDeletedUserProfile!, meetupName),
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Padding(
@@ -487,12 +488,12 @@ class NotificationsViewState extends State<NotificationsView> {
     }
   }
 
-  _getMeetupLocationChangedNotificationText(PublicUserProfile participantProfile, String meetupName) {
+  _getMeetupLocationChangedNotificationText(PublicUserProfile meetupOwnerProfile, String meetupName) {
     if (meetupName.isNotEmpty) {
-      return "The location for meetup $meetupName has changed! Click here to see more";
+      return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} changed the location of the meetup: $meetupName";
     }
     else {
-      return "${StringUtils.getUserNameFromUserProfile(participantProfile)} added their availability to a meetup";
+      return "${StringUtils.getUserNameFromUserProfile(meetupOwnerProfile)} changed the location of a meetup";
     }
   }
 
