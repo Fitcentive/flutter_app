@@ -6,6 +6,7 @@ import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/shared_components/custom_sliding_up_panel.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
@@ -419,82 +420,95 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
 
   }
 
+  _goToAccountDetailsView() {
+    Navigator.pushReplacement(
+      context,
+      HomePage.route(defaultSelectedTab: HomePageState.accountDetails),
+    );
+  }
+
   _renderSearchTextBar() {
-    if (isPremiumEnabled) {
-      return Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: TypeAheadField<PublicUserProfile>(
-            suggestionsBoxController: _suggestionsController,
-            debounceDuration: const Duration(milliseconds: 300),
-            textFieldConfiguration: TextFieldConfiguration(
-                onSubmitted: (value) {},
-                autocorrect: false,
-                onTap: () => _suggestionsController.toggle(),
-                onChanged: (text) {},
-                autofocus: true,
-                controller: _searchTextController,
-                style: const TextStyle(fontSize: 15),
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  hintText: "Search by location name",
-                  prefixIcon: IconButton(
-                    onPressed: () {
-                      _suggestionsController.close();
-                      setState(() {
-                        _searchTextController.text = "";
-                      });
-                    },
-                    icon: const Icon(Icons.close),
-                  ),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      _suggestionsController.close();
-                      // Make the search happen now
-                      final currentState = _searchLocationsBloc.state;
-                      if (currentState is FetchLocationsAroundCoordinatesLoaded) {
-                        shouldCameraSnapToMarkers = true;
-                        shouldCurrentPositionBeUpdatedWithCameraPosition = false;
-                        _searchLocationsBloc.add(FetchLocationsAroundCoordinatesRequested(
-                          query: _searchTextController.value.text,
-                          coordinates: Coordinates(currentCameraCentrePosition.latitude, currentCameraCentrePosition.longitude),
-                          radiusInMetres: defaultLocationSearchQuerySearchRadiusInMetres,
-                          previousLocationResults: currentState.locationResults,
-                        )
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.search),
-                  ),
-                )),
-            suggestionsCallback: (text)  {
-              if (text.trim().isNotEmpty) {
-                // Do nothing?
-              }
-              return List.empty();
-            },
-            itemBuilder: (context, suggestion) {
-              final s = suggestion;
-              return ListTile(
-                leading: CircleAvatar(
-                  radius: 30,
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: ImageUtils.getUserProfileImage(suggestion, 100, 100),
+    return GestureDetector(
+      onTap: () {
+        if (!isPremiumEnabled) {
+          WidgetUtils.showUpgradeToPremiumDialog(context, _goToAccountDetailsView);
+        }
+      },
+      child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TypeAheadField<PublicUserProfile>(
+              suggestionsBoxController: _suggestionsController,
+              debounceDuration: const Duration(milliseconds: 300),
+              textFieldConfiguration: TextFieldConfiguration(
+                  onSubmitted: (value) {},
+                  autocorrect: false,
+                  onTap: () => _suggestionsController.toggle(),
+                  onChanged: (text) {},
+                  enabled: isPremiumEnabled,
+                  autofocus: true,
+                  controller: _searchTextController,
+                  style: const TextStyle(fontSize: 15),
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    hintText: "Search by location name",
+                    prefixIcon: IconButton(
+                      onPressed: () {
+                        _suggestionsController.close();
+                        setState(() {
+                          _searchTextController.text = "";
+                        });
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _suggestionsController.close();
+                        // Make the search happen now
+                        final currentState = _searchLocationsBloc.state;
+                        if (currentState is FetchLocationsAroundCoordinatesLoaded) {
+                          shouldCameraSnapToMarkers = true;
+                          shouldCurrentPositionBeUpdatedWithCameraPosition = false;
+                          _searchLocationsBloc.add(FetchLocationsAroundCoordinatesRequested(
+                            query: _searchTextController.value.text,
+                            coordinates: Coordinates(currentCameraCentrePosition.latitude, currentCameraCentrePosition.longitude),
+                            radiusInMetres: defaultLocationSearchQuerySearchRadiusInMetres,
+                            previousLocationResults: currentState.locationResults,
+                          )
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.search),
+                    ),
+                  )),
+              suggestionsCallback: (text)  {
+                if (text.trim().isNotEmpty) {
+                  // Do nothing?
+                }
+                return List.empty();
+              },
+              itemBuilder: (context, suggestion) {
+                final s = suggestion;
+                return ListTile(
+                  leading: CircleAvatar(
+                    radius: 30,
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: ImageUtils.getUserProfileImage(suggestion, 100, 100),
+                      ),
                     ),
                   ),
-                ),
-                title: Text("${s.firstName ?? ""} ${s.lastName ?? ""}"),
-                subtitle: Text(suggestion.username ?? ""),
-              );
-            },
-            onSuggestionSelected: (suggestion) {},
-            hideOnEmpty: true,
-          )
-      );
-    }
+                  title: Text("${s.firstName ?? ""} ${s.lastName ?? ""}"),
+                  subtitle: Text(suggestion.username ?? ""),
+                );
+              },
+              onSuggestionSelected: (suggestion) {},
+              hideOnEmpty: true,
+            )
+        ),
+    );
   }
 
   _renderHelpText() {
