@@ -89,6 +89,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
 
     // Add owner decision as yes - since they control the details, they should be ok with it!
     await meetupRepository.upsertMeetupDecision(meetup.id, event.currentUserProfile.userId, true, accessToken);
+    emit(const MeetupCreatedAndReadyToPop());
   }
 
   void _newMeetupChanged(NewMeetupChanged event, Emitter<CreateNewMeetupState> emit) async {

@@ -89,7 +89,16 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
           color: Colors.teal,
         ),
       ),
-      body: _pageViews(isPremiumEnabled),
+      body: BlocListener<CreateNewMeetupBloc, CreateNewMeetupState>(
+        listener: (context, state) {
+          if (state is MeetupCreatedAndReadyToPop) {
+            // Go back to previous screen
+            SnackbarUtils.showSnackBar(context, "Meetup created successfully!");
+            Navigator.pop(context);
+          }
+        },
+        child: _pageViews(isPremiumEnabled),
+      ),
       floatingActionButton: dynamicActionButtons,
       bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
     );
@@ -146,7 +155,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
       if (currentPage != null) {
         if (_isPageDataValid(currentPage.toInt(), currentState)) {
           _savePageData(currentPage.toInt(), currentState);
-          _moveToNextPageOrPop(currentPage.toInt(), currentState);
+          _moveToNextPageElseDoNothing(currentPage.toInt(), currentState);
         }
         else {
           if (currentPage == 0 || currentPage == 2) {
@@ -171,18 +180,13 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
     }
   }
 
-  void _moveToNextPageOrPop(int currentPage, MeetupModified state) {
+  void _moveToNextPageElseDoNothing(int currentPage, MeetupModified state) {
     if (currentPage < 2) {
       // Move to next page if not at last page
       _pageController.animateToPage(currentPage + 1,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeIn
       );
-    }
-    else {
-      // Go back to previous screen
-      SnackbarUtils.showSnackBar(context, "Meetup created successfully!");
-      Navigator.pop(context);
     }
   }
 

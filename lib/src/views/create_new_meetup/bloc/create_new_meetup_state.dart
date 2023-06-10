@@ -63,3 +63,9 @@ class MeetupModified extends CreateNewMeetupState {
   ];
 }
 
+class MeetupCreatedAndReadyToPop extends CreateNewMeetupState {
+  const MeetupCreatedAndReadyToPop();
+
+  @override
+  List<Object?> get props => [];
+}
