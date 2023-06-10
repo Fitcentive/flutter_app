@@ -172,6 +172,9 @@ class NotificationsViewState extends State<NotificationsView> {
       case "MeetupDecision":
         return _generateMeetupDecisionNotification(notification, userProfileMap);
 
+      case "MeetupLocationChanged":
+        return _generateMeetupLocationChangedNotification(notification, userProfileMap);
+
       default:
         return const Text("Unknown notification type");
     }
@@ -387,6 +390,45 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
+  Widget _generateMeetupLocationChangedNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
+    final String meetupId = notification.data['meetupId'];
+    final String participantId = notification.data['targetUserId'];
+    final String meetupName = notification.data['meetupName'] ?? "";
+
+    final PublicUserProfile? participantProfile = userProfileMap[participantId];
+    final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
+    return ListTile(
+      onTap: () async {
+        _goToDetailedMeetup(meetupId);
+      },
+      tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
+      leading: GestureDetector(
+        onTap: () async {
+          _goToUserProfile(participantProfile);
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(participantProfile, 100, 100),
+          ),
+        ),
+      ),
+      title: Text(
+        _getMeetupLocationChangedNotificationText(participantProfile!, meetupName),
+        style: const TextStyle(fontSize: 14),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Text(
+          timeago.format(notification.updatedAt.toLocal()),
+          style: const TextStyle(fontSize: 10),
+        ),
+      ),
+    );
+  }
+
   Widget _generateMeetupDecisionNotification(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     final String meetupId = notification.data['meetupId'];
     final String participantId = notification.data['participantId'];
@@ -439,6 +481,15 @@ class NotificationsViewState extends State<NotificationsView> {
   _getParticipantAddedAvailabilityToMeetupNotificationText(PublicUserProfile participantProfile, String meetupName) {
     if (meetupName.isNotEmpty) {
       return "${StringUtils.getUserNameFromUserProfile(participantProfile)} added their availability to a meetup: $meetupName";
+    }
+    else {
+      return "${StringUtils.getUserNameFromUserProfile(participantProfile)} added their availability to a meetup";
+    }
+  }
+
+  _getMeetupLocationChangedNotificationText(PublicUserProfile participantProfile, String meetupName) {
+    if (meetupName.isNotEmpty) {
+      return "The location for meetup $meetupName has changed! Click here to see more";
     }
     else {
       return "${StringUtils.getUserNameFromUserProfile(participantProfile)} added their availability to a meetup";
