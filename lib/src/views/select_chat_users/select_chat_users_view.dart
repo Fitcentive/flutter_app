@@ -175,6 +175,7 @@ class SelectChatUsersViewState extends State<SelectChatUsersView> {
         onParticipantTapped: null,
         participantDecisions: const [],
         shouldShowAvailabilityIcon: false,
+        shouldTapChangeCircleColour: false,
       );
     }
     else {

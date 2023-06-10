@@ -10,7 +10,9 @@ typedef ParticipantTappedCallback = void Function(PublicUserProfile userProfile,
 class ParticipantsList extends StatefulWidget {
   final List<PublicUserProfile> participantUserProfiles;
   final List<MeetupDecision> participantDecisions;
+
   final bool shouldShowAvailabilityIcon;
+  final bool shouldTapChangeCircleColour;
 
   final ParticipantRemovedCallback? onParticipantRemoved;
   final ParticipantTappedCallback? onParticipantTapped;
@@ -24,6 +26,7 @@ class ParticipantsList extends StatefulWidget {
     required this.onParticipantRemoved,
     required this.onParticipantTapped,
     required this.shouldShowAvailabilityIcon,
+    required this.shouldTapChangeCircleColour,
     this.circleRadius = 60,
   });
 
@@ -67,20 +70,22 @@ class ParticipantsListState extends State<ParticipantsList> {
             children: WidgetUtils.skipNulls([
               GestureDetector(
                 onTap: () {
-                  if (widget.onParticipantTapped != null) {
-                    if (isParticipantSelectedMap[userProfile.userId] ?? false) {
-                      setState(() {
-                        isParticipantSelectedMap[userProfile.userId] = false;
-                      });
-                      widget.onParticipantTapped!(userProfile, false);
-                    }
-                    else {
-                      setState(() {
-                        isParticipantSelectedMap[userProfile.userId] = true;
-                      });
-                      widget.onParticipantTapped!(userProfile, true);
-                    }
+                  if (widget.shouldTapChangeCircleColour) {
+                    if (widget.onParticipantTapped != null) {
+                      if (isParticipantSelectedMap[userProfile.userId] ?? false) {
+                        setState(() {
+                          isParticipantSelectedMap[userProfile.userId] = false;
+                        });
+                        widget.onParticipantTapped!(userProfile, false);
+                      }
+                      else {
+                        setState(() {
+                          isParticipantSelectedMap[userProfile.userId] = true;
+                        });
+                        widget.onParticipantTapped!(userProfile, true);
+                      }
 
+                    }
                   }
                 },
                 child: Center(

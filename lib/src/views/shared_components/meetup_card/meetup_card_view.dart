@@ -255,6 +255,7 @@ class MeetupCardViewState extends State<MeetupCardView> {
           circleRadius: 45,
           participantDecisions: decisions,
           shouldShowAvailabilityIcon: true,
+          shouldTapChangeCircleColour: false,
         ),
       ),
     );

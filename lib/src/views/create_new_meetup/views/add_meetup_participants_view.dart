@@ -153,6 +153,7 @@ class AddMeetupParticipantsViewState extends State<AddMeetupParticipantsView> wi
           onParticipantTapped: null,
           participantDecisions: const [],
           shouldShowAvailabilityIcon: true,
+          shouldTapChangeCircleColour: false,
       );
     }
     else {

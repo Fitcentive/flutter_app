@@ -357,6 +357,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
           onParticipantTapped: null,
           participantDecisions: [],
           shouldShowAvailabilityIcon: true,
+          shouldTapChangeCircleColour: false,
       );
     }
     else {

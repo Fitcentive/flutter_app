@@ -204,6 +204,7 @@ class AddOwnerAvailabilitiesViewState extends State<AddOwnerAvailabilitiesView> 
           onParticipantTapped: _onParticipantTapped,
           participantDecisions: [],
           shouldShowAvailabilityIcon: true,
+          shouldTapChangeCircleColour: false,
       );
     }
     else {

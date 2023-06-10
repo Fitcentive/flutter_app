@@ -243,6 +243,7 @@ class ChatSearchViewState extends State<ChatSearchView> {
         onParticipantTapped: null,
         participantDecisions: const [],
         shouldShowAvailabilityIcon: false,
+        shouldTapChangeCircleColour: false,
       );
     }
     else {

@@ -29,6 +29,7 @@ import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
+import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -117,6 +118,10 @@ class DetailedMeetupView extends StatefulWidget {
 }
 
 class DetailedMeetupViewState extends State<DetailedMeetupView> {
+  static const int LOCATION_MEETUP_VIEW_TAB = 0;
+  static const int AVAILABILITY_MEETUP_VIEW_TAB = 1;
+  static const int ACTIVITY_MEETUP_VIEW_TAB = 2;
+
   bool isPremiumEnabled = false;
   int maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_FREE;
 
@@ -595,17 +600,26 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _mainBody(DetailedMeetupDataFetched state) {
     return Column(
-      children: [
+      children: WidgetUtils.skipNulls([
         _renderParticipantsView(),
         WidgetUtils.spacer(2.5),
-        const Center(child: Text("Tap on a participant to view their availability", style: TextStyle(fontSize: 12),),),
+        _showSelectParticipantToViewAvailabilityHintTextIfNeeded(),
         WidgetUtils.spacer(2.5),
         _renderMeetupStatus(),
         WidgetUtils.spacer(2.5),
         Divider(color: Theme.of(context).primaryColor),
         isParticipantSelectHappening ? _participantSelectView(state) : _detailedMeetupView(),
-      ],
+      ]),
     );
+  }
+
+  _showSelectParticipantToViewAvailabilityHintTextIfNeeded() {
+    if (currentSelectedTab == AVAILABILITY_MEETUP_VIEW_TAB) {
+      return const Center(
+        child: Text("Tap on a participant to view their availability", style: TextStyle(fontSize: 12),
+        ),
+      );
+    }
   }
 
   _renderMeetupStatus() {
@@ -788,8 +802,19 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     }
   }
 
+  _goToUserProfilePage(PublicUserProfile userProfile) {
+    Navigator.pushAndRemoveUntil(
+        context,
+        UserProfileView.route(userProfile, widget.currentUserProfile),
+            (route) => true
+    );
+  }
+
   _onParticipantTapped(PublicUserProfile userProfile, bool isSelected) {
     // Select only availabilities to show here
+    if (currentSelectedTab != AVAILABILITY_MEETUP_VIEW_TAB) {
+      _goToUserProfilePage(userProfile);
+    }
     setState(() {
       if (isSelected) {
         if (!selectedUserProfilesToShowAvailabilitiesFor.contains(userProfile)) {
@@ -810,6 +835,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         onParticipantTapped: _onParticipantTapped,
         participantDecisions: selectedMeetupParticipantDecisions,
         shouldShowAvailabilityIcon: true,
+        shouldTapChangeCircleColour: currentSelectedTab == AVAILABILITY_MEETUP_VIEW_TAB,
       );
     }
     else {
