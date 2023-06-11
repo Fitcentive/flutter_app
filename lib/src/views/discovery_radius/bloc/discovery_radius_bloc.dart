@@ -41,7 +41,8 @@ class DiscoveryRadiusBloc extends Bloc<DiscoveryRadiusEvent, DiscoveryRadiusStat
         userAgreements: event.user.userAgreements,
         userProfile: userProfile,
         authTokens: event.user.authTokens,
-        authProvider: event.user.authProvider
+        authProvider: event.user.authProvider,
+        userTutorialStatus: event.user.userTutorialStatus,
     );
     authUserStreamRepository.newUser(updatedAuthenticatedUser);
     emit(const LocationInfoUpdated());

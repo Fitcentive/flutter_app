@@ -17,6 +17,17 @@ class MenuItemChosen extends MenuNavigationEvent {
   List<Object> get props => [selectedMenuItem, currentUserId];
 }
 
+class MarkUserAppTutorialAsComplete extends MenuNavigationEvent {
+  final String currentUserId;
+
+  const MarkUserAppTutorialAsComplete({
+    required this.currentUserId,
+  });
+
+  @override
+  List<Object> get props => [currentUserId];
+}
+
 
 class NewIncomingChatMessageForRoom extends MenuNavigationEvent {
   final String roomId;

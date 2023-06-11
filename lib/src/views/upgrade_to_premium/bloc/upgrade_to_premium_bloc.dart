@@ -46,7 +46,8 @@ class UpgradeToPremiumBloc extends Bloc<UpgradeToPremiumEvent, UpgradeToPremiumS
           userAgreements: event.user.userAgreements,
           userProfile: event.user.userProfile,
           authTokens: event.user.authTokens,
-          authProvider: event.user.authProvider
+          authProvider: event.user.authProvider,
+          userTutorialStatus: event.user.userTutorialStatus,
       );
       authUserStreamRepository.newUser(updatedAuthenticatedUser);
 

@@ -46,7 +46,8 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
         userAgreements: event.user.userAgreements,
         userProfile: event.user.userProfile,
         authTokens: event.user.authTokens,
-        authProvider: event.user.authProvider
+        authProvider: event.user.authProvider,
+        userTutorialStatus: event.user.userTutorialStatus,
     );
     authUserStreamRepository.newUser(updatedAuthenticatedUser);
 
@@ -80,7 +81,8 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
         userAgreements: event.user.userAgreements,
         userProfile: event.user.userProfile,
         authTokens: event.user.authTokens,
-        authProvider: event.user.authProvider
+        authProvider: event.user.authProvider,
+        userTutorialStatus: event.user.userTutorialStatus,
     );
     authUserStreamRepository.newUser(updatedAuthenticatedUser);
 
@@ -158,7 +160,8 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
         userAgreements: event.user.userAgreements,
         userProfile: updatedUserProfile,
         authTokens: event.user.authTokens,
-        authProvider: event.user.authProvider
+        authProvider: event.user.authProvider,
+        userTutorialStatus: event.user.userTutorialStatus,
     );
     authUserStreamRepository.newUser(updatedAuthenticatedUser);
 

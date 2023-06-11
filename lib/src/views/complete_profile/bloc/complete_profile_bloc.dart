@@ -53,7 +53,8 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
         userAgreements: event.user.userAgreements,
         userProfile: userProfile,
         authTokens: event.user.authTokens,
-        authProvider: event.user.authProvider
+        authProvider: event.user.authProvider,
+        userTutorialStatus: event.user.userTutorialStatus,
     );
     authUserStreamRepository.newUser(updatedAuthenticatedUser);
     emit(ProfileInfoComplete(updatedAuthenticatedUser));
@@ -83,7 +84,8 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
           userAgreements: event.user.userAgreements,
           userProfile: event.user.userProfile,
           authTokens: event.user.authTokens,
-          authProvider: event.user.authProvider
+          authProvider: event.user.authProvider,
+          userTutorialStatus: event.user.userTutorialStatus,
       );
       authUserStreamRepository.newUser(updatedAuthenticatedUser);
       emit(LocationInfoModified(
@@ -132,7 +134,8 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
         userAgreements: event.user.userAgreements,
         userProfile: userProfile,
         authTokens: event.user.authTokens,
-        authProvider: event.user.authProvider
+        authProvider: event.user.authProvider,
+        userTutorialStatus: event.user.userTutorialStatus,
     );
     authUserStreamRepository.newUser(updatedAuthenticatedUser);
     emit(UsernameModified(user: updatedAuthenticatedUser));
@@ -172,7 +175,8 @@ class CompleteProfileBloc extends Bloc<CompleteProfileEvent, CompleteProfileStat
         userAgreements: userAgreements,
         userProfile: event.user.userProfile,
         authTokens: event.user.authTokens,
-        authProvider: event.user.authProvider
+        authProvider: event.user.authProvider,
+        userTutorialStatus: event.user.userTutorialStatus,
     );
     authUserStreamRepository.newUser(updatedAuthenticatedUser);
     emit(ProfileInfoModified(user: updatedAuthenticatedUser));

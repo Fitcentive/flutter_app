@@ -95,7 +95,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
             userProfile: event.user.userProfile,
             userAgreements: event.user.userAgreements,
             authTokens: SecureAuthTokens.fromAuthTokens(newAuthTokens),
-            authProvider: event.user.user.authProvider
+            authProvider: event.user.user.authProvider,
+            userTutorialStatus: event.user.userTutorialStatus
         );
         _setUpRefreshAccessTokenTrigger(newAuthTokens, newAuthenticatedUser);
         emit(AuthSuccessUserUpdateState(authenticatedUser: newAuthenticatedUser));
@@ -171,24 +172,28 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final user = await userRepository.getUser(freshUserId!, freshTokens.accessToken);
       final userProfile = await userRepository.getUserProfile(freshUserId, freshTokens.accessToken);
       final userAgreements = await userRepository.getUserAgreements(freshUserId, freshTokens.accessToken);
+      final userTutorialStatus = await userRepository.markUserTutorialStatusAsComplete(freshUserId, freshTokens.accessToken);
       return AuthenticatedUser(
           user: user!,
           userProfile: userProfile,
           userAgreements: userAgreements,
           authTokens: SecureAuthTokens.fromAuthTokens(freshTokens),
-          authProvider: authRealm
+          authProvider: authRealm,
+          userTutorialStatus: userTutorialStatus,
       );
     }
     else {
       final user = await userRepository.getUser(userId, authTokens.accessToken);
       final userProfile = await userRepository.getUserProfile(userId, authTokens.accessToken);
       final userAgreements = await userRepository.getUserAgreements(userId, authTokens.accessToken);
+      final userTutorialStatus = await userRepository.markUserTutorialStatusAsComplete(userId, authTokens.accessToken);
       return AuthenticatedUser(
           user: user!,
           userProfile: userProfile,
           userAgreements: userAgreements,
           authTokens: SecureAuthTokens.fromAuthTokens(authTokens),
-          authProvider: authRealm
+          authProvider: authRealm,
+          userTutorialStatus: userTutorialStatus,
       );
     }
   }

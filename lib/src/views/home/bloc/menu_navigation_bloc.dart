@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/websocket/user_room_updated_payload.dart';
@@ -19,6 +20,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> {
   final NotificationRepository notificationRepository;
   final FlutterSecureStorage secureStorage;
+  final UserRepository userRepository;
 
   Timer? _heartbeatTimer;
   bool hasSocketBeenInitialized = false;
@@ -29,6 +31,7 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
   final ChatRoomUpdatedStreamRepository chatRoomUpdatedStreamRepository;
 
   MenuNavigationBloc({
+    required this.userRepository,
     required this.notificationRepository,
     required this.secureStorage,
     required this.chatRoomUpdatedStreamRepository,
@@ -36,9 +39,15 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
     on<MenuItemChosen>(_menuItemChosen);
     on<NewIncomingChatMessageForRoom>(_newIncomingChatMessageForRoom);
     on<ReInitWebSockets>(_reInitWebSockets);
+    on<MarkUserAppTutorialAsComplete>(_markUserAppTutorialAsComplete);
   }
 
   final logger = Logger("MenuNavigationBloc");
+
+  void _markUserAppTutorialAsComplete(MarkUserAppTutorialAsComplete event, Emitter<MenuNavigationState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await userRepository.markUserTutorialStatusAsComplete(event.currentUserId, accessToken!);
+  }
 
   void _reInitWebSockets(ReInitWebSockets event, Emitter<MenuNavigationState> emit) async {
     dispose();

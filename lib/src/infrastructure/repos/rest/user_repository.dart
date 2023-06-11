@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/models/user_tutorial_status.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 
 import 'package:http/http.dart' as http;
@@ -110,6 +111,56 @@ class UserRepository {
     } else {
       throw Exception(
           "getUserAgreements: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<UserTutorialStatus?> getUserTutorialStatus(String userId, String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/$userId/tutorial-status"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final userAgreements = UserTutorialStatus.fromJson(jsonResponse);
+      return userAgreements;
+    } else if (response.statusCode == HttpStatus.notFound) {
+      return null;
+    } else {
+      throw Exception(
+          "getUserTutorialStatus: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<UserTutorialStatus?> markUserTutorialStatusAsComplete(String userId, String accessToken) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/$userId/tutorial-status/complete"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final userAgreements = UserTutorialStatus.fromJson(jsonResponse);
+      return userAgreements;
+    } else {
+      throw Exception(
+          "markUserTutorialStatusAsComplete: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<UserTutorialStatus?> markUserTutorialStatusAsIncomplete(String userId, String accessToken) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/$userId/tutorial-status/incomplete"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      final userAgreements = UserTutorialStatus.fromJson(jsonResponse);
+      return userAgreements;
+    } else {
+      throw Exception(
+          "markUserTutorialStatusAsIncomplete: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

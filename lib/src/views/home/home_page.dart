@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/firebase/push_notification_settings.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
 import 'package:flutter_app/src/models/device/local_device_info.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -56,6 +57,7 @@ class HomePage extends StatefulWidget {
       builder: (_) => MultiBlocProvider(
             providers: [
               BlocProvider<MenuNavigationBloc>(create: (context) => MenuNavigationBloc(
+                userRepository: RepositoryProvider.of<UserRepository>(context) ,
                 notificationRepository: RepositoryProvider.of<NotificationRepository>(context),
                 secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                 chatRoomUpdatedStreamRepository: RepositoryProvider.of<ChatRoomUpdatedStreamRepository>(context),
@@ -213,11 +215,33 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     selectedMenuItem = widget.defaultSelectedTab;
     unreadNotificationCount = 0;
     unreadChatRoomCount = 0;
+
     _updateBloc(selectedMenuItem);
 
     PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
-
     _initializeAdsIfNeeded();
+
+    _showTutorialIfNeeded();
+  }
+
+  _showTutorialIfNeeded() {
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        // Show tutorial here
+        _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+      }
+    }
+    else if (currentState is AuthSuccessState) {
+      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        // Show tutorial here
+        _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+      }
+    }
+  }
+
+  _markUserAppTutorialAsComplete(String currentUserId) {
+    _menuNavigationBloc.add(MarkUserAppTutorialAsComplete(currentUserId: currentUserId));
   }
 
   _initializeAdsIfNeeded() {
