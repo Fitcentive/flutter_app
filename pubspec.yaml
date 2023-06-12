@@ -86,6 +86,7 @@ dependencies:
   vibration: ^1.7.7
 #  image_network: ^2.5.2
   cached_network_image: ^3.2.3
+  tutorial_coach_mark: ^1.2.8
 
 dev_dependencies:
   flutter_test:

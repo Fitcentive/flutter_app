@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:badges/badges.dart' as badge;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -41,6 +42,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+
+GlobalKey bottomBarKey = GlobalKey();
+GlobalKey newsFeedButtonKey = GlobalKey();
+GlobalKey meetupButtonKey = GlobalKey();
+GlobalKey diaryButtonKey = GlobalKey();
+GlobalKey chatButtonKey = GlobalKey();
+GlobalKey notificationsButtonKey = GlobalKey();
+GlobalKey discoverButtonKey = GlobalKey();
+GlobalKey appDrawerKey = GlobalKey();
+GlobalKey accountDetailsKey = GlobalKey();
+GlobalKey searchKey = GlobalKey();
+GlobalKey friendsKey = GlobalKey();
+GlobalKey calendarKey = GlobalKey();
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.defaultSelectedTab = HomePageState.newsFeed}) : super(key: key);
@@ -92,11 +107,11 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   static const bottomBarToAppDrawerItemMap = {
     0: newsFeed,
     1: discover,
-    2: chat,
-    3: meetup,
-    4: diary,
-    5: calendar,
-    6: notifications,
+    2: meetup,
+    3: diary,
+    // 5: calendar,
+    4: chat,
+    5: notifications,
   };
 
   final logger = Logger("HomePageState");
@@ -115,6 +130,830 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   late NotificationRepository _notificationRepository;
   late FlutterSecureStorage _secureStorage;
+
+  List<TargetFocus> basicTargets = [];
+  TutorialCoachMark? basicTutorialCoachMark;
+
+  List<TargetFocus> appDrawerTargets = [];
+  TutorialCoachMark? appDrawerTutorialCoachMark;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch(state) {
+      case AppLifecycleState.resumed:
+        _reInitWebSockets();
+        break;
+      case AppLifecycleState.inactive:
+      // Handle this case
+        break;
+      case AppLifecycleState.paused:
+      // Handle this case
+        break;
+      default:
+        break;
+    }
+
+
+  }
+
+  @override
+  void dispose() {
+    _menuNavigationBloc.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
+    _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
+    _adBloc = BlocProvider.of<AdBloc>(context);
+
+    _notificationRepository = RepositoryProvider.of<NotificationRepository>(context);
+    _secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
+
+    selectedMenuItem = widget.defaultSelectedTab;
+    unreadNotificationCount = 0;
+    unreadChatRoomCount = 0;
+
+    _updateBloc(selectedMenuItem);
+
+    PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
+    _initializeAdsIfNeeded();
+
+    _showBasicTutorialIfNeeded();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthenticationBloc, AuthenticationState>(
+      listener: (context, state) {
+        if (state is AuthSuccessUserUpdateState) {
+          userProfile = state.authenticatedUser.userProfile;
+          syncFirebaseDeviceRegistrationToken();
+        }
+      },
+      child: BlocBuilder<AuthenticationBloc, AuthenticationState>(
+        builder: (context, state) {
+          return BlocBuilder<MenuNavigationBloc, MenuNavigationState>(
+              builder: (BuildContext context, MenuNavigationState state) {
+                if (state is MenuItemSelected) {
+                  selectedMenuItem = state.selectedMenuItem;
+                  unreadNotificationCount = state.unreadNotificationCount;
+                  unreadChatRoomCount = state.unreadChatRoomIds.length;
+                  _updateAppBadgeIfPossible();
+                }
+                return Scaffold(
+                  appBar: _appBar(state),
+                  drawer: _drawer(),
+                  body: _generateBody(selectedMenuItem),
+                  bottomNavigationBar: _bottomNavigationBar(),
+                );
+              });
+        },
+      ),
+    );
+  }
+
+  void createTutorial() {
+    createBasicTutorialTargets();
+
+    basicTutorialCoachMark = TutorialCoachMark(
+      targets: basicTargets,
+      colorShadow: Colors.teal,
+      textSkip: "SKIP",
+      showSkipInLastTarget: false,
+      focusAnimationDuration: const Duration(milliseconds: 200),
+      unFocusAnimationDuration: const Duration(milliseconds: 200),
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+      onFinish: () {},
+      onClickTarget: (target) {},
+      onClickTargetWithTapPosition: (target, tapDetails) {},
+      onClickOverlay: (target) {},
+      onSkip: () {},
+    );
+  }
+
+  void createAppDrawerTutorialIfNeeded() {
+    if (appDrawerTargets.isEmpty) {
+      // Account details
+      appDrawerTargets.add(
+        TargetFocus(
+          identify: "accountDetailsKey",
+          keyTarget: accountDetailsKey,
+          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+          color: Colors.teal,
+          shape: ShapeLightFocus.RRect,
+          enableOverlayTab: true,
+          enableTargetTab: true,
+          paddingFocus: 10,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: Text(
+                        "This is your profile",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(10),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: AutoSizeText(
+                        "You can update your account details here!",
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      );
+
+      // Search
+      appDrawerTargets.add(
+        TargetFocus(
+          identify: "searchKey",
+          keyTarget: searchKey,
+          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+          color: Colors.teal,
+          shape: ShapeLightFocus.RRect,
+          enableOverlayTab: true,
+          enableTargetTab: true,
+          paddingFocus: 10,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: Text(
+                        "Search for users and activities",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(10),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: AutoSizeText(
+                        "Make new friends and discover activities to log!",
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      );
+
+      // Friends
+      appDrawerTargets.add(
+        TargetFocus(
+          identify: "friendsKey",
+          keyTarget: friendsKey,
+          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+          color: Colors.teal,
+          shape: ShapeLightFocus.RRect,
+          enableOverlayTab: true,
+          enableTargetTab: true,
+          paddingFocus: 10,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: Text(
+                        "These are your friends",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(10),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: AutoSizeText(
+                        "View and manage your friends here!",
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      );
+
+      // Calendar
+      appDrawerTargets.add(
+        TargetFocus(
+          identify: "calendarKey",
+          keyTarget: calendarKey,
+          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+          color: Colors.teal,
+          shape: ShapeLightFocus.RRect,
+          enableOverlayTab: true,
+          enableTargetTab: true,
+          paddingFocus: 10,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: Text(
+                        "This is your calendar",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(10),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: AutoSizeText(
+                        "View scheduled meetups and never miss an event!",
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    appDrawerTutorialCoachMark ??= TutorialCoachMark(
+        targets: appDrawerTargets,
+        colorShadow: Colors.teal,
+        textSkip: "SKIP",
+        showSkipInLastTarget: false,
+        focusAnimationDuration: const Duration(milliseconds: 200),
+        unFocusAnimationDuration: const Duration(milliseconds: 200),
+        paddingFocus: 10,
+        opacityShadow: 0.8,
+        onFinish: () {},
+        onClickTarget: (target) {},
+        onClickTargetWithTapPosition: (target, tapDetails) {},
+        onClickOverlay: (target) {},
+        onSkip: () {},
+      );
+
+  }
+
+  void createBasicTutorialTargets() {
+    // Bottom drawer target
+    basicTargets.add(
+      TargetFocus(
+        identify: "bottomBarKey",
+        keyTarget: bottomBarKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.RRect,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "This is your quick access menu",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Find your most frequently accessed pages here!",
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Newsfeed target
+    basicTargets.add(
+      TargetFocus(
+        identify: "newsFeedButtonKey",
+        keyTarget: newsFeedButtonKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.Circle,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "This is your social feed",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Explore what's happening in your community over here!",
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Discover target
+    basicTargets.add(
+      TargetFocus(
+        identify: "discoverButtonKey",
+        keyTarget: discoverButtonKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.Circle,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "This is your discover page",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Discover users with similar goals and interests!",
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Meetup target
+    basicTargets.add(
+      TargetFocus(
+        identify: "meetupButtonKey",
+        keyTarget: meetupButtonKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.Circle,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "This is your meetup page",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Make plans with discovered users!",
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Diary target
+    basicTargets.add(
+      TargetFocus(
+        identify: "diaryButtonKey",
+        keyTarget: diaryButtonKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.Circle,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "This is your diary",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Log your nutrition and track your daily activities!",
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Chat target
+    basicTargets.add(
+      TargetFocus(
+        identify: "chatButtonKey",
+        keyTarget: chatButtonKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.Circle,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "These are your conversations",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Chat with discovered users!",
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Notification target
+    basicTargets.add(
+      TargetFocus(
+        identify: "notificationsButtonKey",
+        keyTarget: notificationsButtonKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.Circle,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "These are your notifications",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Be notified of your interactions with others!",
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    // App drawer target
+    basicTargets.add(
+      TargetFocus(
+        identify: "appDrawerKey",
+        keyTarget: appDrawerKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.Circle,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "Explore more pages over here",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Manage your account, view your calendar, and so much more!",
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+
+  }
+
+  // todo - add the ! to the predicate here, without it it doesnt work as well sadly
+  _showBasicTutorialIfNeeded() {
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        createTutorial();
+        basicTutorialCoachMark?.show(context: context);
+        // Show tutorial here
+        _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+      }
+    }
+    else if (currentState is AuthSuccessState) {
+      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        // Show tutorial here
+        createTutorial();
+        basicTutorialCoachMark?.show(context: context);
+        _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+      }
+    }
+  }
+
+  _showAppDrawerTutorialIfNeeded() {
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        appDrawerTutorialCoachMark?.show(context: context);
+      }
+    }
+    else if (currentState is AuthSuccessState) {
+      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        appDrawerTutorialCoachMark?.show(context: context);
+      }
+    }
+  }
+
+  _markUserAppTutorialAsComplete(String currentUserId) {
+    _menuNavigationBloc.add(MarkUserAppTutorialAsComplete(currentUserId: currentUserId));
+  }
+
+  _initializeAdsIfNeeded() {
+    final authState = _authenticationBloc.state;
+    if (authState is AuthSuccessUserUpdateState) {
+      if (authState.authenticatedUser.user.isPremiumEnabled) {
+        _adBloc.add(const NoAdsRequiredAsUserIsPremium());
+      }
+      else {
+        _adBloc.add(const FetchAdUnitIds());
+      }
+    }
+    else if (authState is AuthSuccessState) {
+      if (authState.authenticatedUser.user.isPremiumEnabled) {
+        _adBloc.add(const NoAdsRequiredAsUserIsPremium());
+      }
+      else {
+        _adBloc.add(const FetchAdUnitIds());
+      }
+    }
+  }
+
+  _updateAppBadgeIfPossible() async {
+    if (DeviceUtils.isMobileDevice()) {
+      final isSupported = await FlutterAppBadger.isAppBadgeSupported();
+      if (isSupported) {
+        FlutterAppBadger.updateBadgeCount(unreadNotificationCount);
+      }
+    }
+  }
 
   void syncFirebaseDeviceRegistrationToken() async {
     if (!hasFirebaseTokenBeenSynced) {
@@ -174,136 +1013,6 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
-    switch(state) {
-      case AppLifecycleState.resumed:
-        _reInitWebSockets();
-        break;
-      case AppLifecycleState.inactive:
-      // Handle this case
-        break;
-      case AppLifecycleState.paused:
-      // Handle this case
-        break;
-      default:
-        break;
-    }
-
-
-  }
-
-  @override
-  void dispose() {
-    _menuNavigationBloc.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
-    _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
-    _adBloc = BlocProvider.of<AdBloc>(context);
-
-    _notificationRepository = RepositoryProvider.of<NotificationRepository>(context);
-    _secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
-
-    selectedMenuItem = widget.defaultSelectedTab;
-    unreadNotificationCount = 0;
-    unreadChatRoomCount = 0;
-
-    _updateBloc(selectedMenuItem);
-
-    PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
-    _initializeAdsIfNeeded();
-
-    _showTutorialIfNeeded();
-  }
-
-  _showTutorialIfNeeded() {
-    final currentState = _authenticationBloc.state;
-    if (currentState is AuthSuccessUserUpdateState) {
-      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
-        // Show tutorial here
-        _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
-      }
-    }
-    else if (currentState is AuthSuccessState) {
-      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
-        // Show tutorial here
-        _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
-      }
-    }
-  }
-
-  _markUserAppTutorialAsComplete(String currentUserId) {
-    _menuNavigationBloc.add(MarkUserAppTutorialAsComplete(currentUserId: currentUserId));
-  }
-
-  _initializeAdsIfNeeded() {
-    final authState = _authenticationBloc.state;
-    if (authState is AuthSuccessUserUpdateState) {
-      if (authState.authenticatedUser.user.isPremiumEnabled) {
-        _adBloc.add(const NoAdsRequiredAsUserIsPremium());
-      }
-      else {
-        _adBloc.add(const FetchAdUnitIds());
-      }
-    }
-    else if (authState is AuthSuccessState) {
-      if (authState.authenticatedUser.user.isPremiumEnabled) {
-        _adBloc.add(const NoAdsRequiredAsUserIsPremium());
-      }
-      else {
-        _adBloc.add(const FetchAdUnitIds());
-      }
-    }
-  }
-
-  _updateAppBadgeIfPossible() async {
-    if (DeviceUtils.isMobileDevice()) {
-      final isSupported = await FlutterAppBadger.isAppBadgeSupported();
-      if (isSupported) {
-        FlutterAppBadger.updateBadgeCount(unreadNotificationCount);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<AuthenticationBloc, AuthenticationState>(
-      listener: (context, state) {
-        if (state is AuthSuccessUserUpdateState) {
-          userProfile = state.authenticatedUser.userProfile;
-          syncFirebaseDeviceRegistrationToken();
-        }
-      },
-      child: BlocBuilder<AuthenticationBloc, AuthenticationState>(
-        builder: (context, state) {
-          return BlocBuilder<MenuNavigationBloc, MenuNavigationState>(
-              builder: (BuildContext context, MenuNavigationState state) {
-                if (state is MenuItemSelected) {
-                  selectedMenuItem = state.selectedMenuItem;
-                  unreadNotificationCount = state.unreadNotificationCount;
-                  unreadChatRoomCount = state.unreadChatRoomIds.length;
-                  _updateAppBadgeIfPossible();
-                }
-                return Scaffold(
-                  appBar: _appBar(state),
-                  drawer: _drawer(),
-                  body: _generateBody(selectedMenuItem),
-                  bottomNavigationBar: _bottomNavigationBar(),
-                );
-              });
-        },
-      ),
-    );
-  }
-
   _bottomNavigationBar() {
     final Widget notificationIcon;
     final Widget chatIcon;
@@ -312,11 +1021,17 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         alignment: Alignment.topRight,
         badgeContent: Text(unreadNotificationCount.toString(), style: const TextStyle(color: Colors.white)),
         padding: const EdgeInsets.all(4),
-        child: const Icon(Icons.notifications),
+        child: Icon(
+          Icons.notifications,
+          key: notificationsButtonKey,
+        ),
       );
     }
     else {
-      notificationIcon = const Icon(Icons.notifications);
+      notificationIcon = Icon(
+        Icons.notifications,
+        key: notificationsButtonKey,
+      );
     }
 
     if (unreadChatRoomCount != 0) {
@@ -324,11 +1039,17 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         alignment: Alignment.topRight,
         badgeContent: Text(unreadChatRoomCount.toString(), style: const TextStyle(color: Colors.white)),
         padding: const EdgeInsets.all(4),
-        child: const Icon(Icons.chat),
+        child: Icon(
+          Icons.chat,
+          key: chatButtonKey,
+        ),
       );
     }
     else {
-      chatIcon = const Icon(Icons.chat);
+      chatIcon = Icon(
+        Icons.chat,
+        key: chatButtonKey,
+      );
     }
 
     final double maxHeight = AdUtils.defaultBannerAdHeight(context) * 2;
@@ -354,32 +1075,45 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         children: WidgetUtils.skipNulls([
           WidgetUtils.showUpgradeToMobileAppMessageIfNeeded(),
           BottomNavigationBar(
+            key: bottomBarKey,
             unselectedItemColor: Theme.of(context).primaryTextTheme.bodyText2?.color!,
             selectedItemColor: Theme.of(context).primaryColor,
             items: <BottomNavigationBarItem>[
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.newspaper),
-                label: 'News Feed',
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.newspaper,
+                  key: newsFeedButtonKey,
+                ),
+                label: 'Feed',
               ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.explore),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.explore,
+                  key: discoverButtonKey,
+                ),
                 label: 'Discover',
               ),
               BottomNavigationBarItem(
-                icon: chatIcon,
-                label: 'Chat',
-              ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.location_on),
+                icon: Icon(
+                  Icons.location_on,
+                  key: meetupButtonKey,
+                ),
                 label: 'Meetup',
               ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.menu_book),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.menu_book,
+                  key: diaryButtonKey,
+                ),
                 label: 'Diary',
               ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_month),
-                label: 'Calendar',
+              // const BottomNavigationBarItem(
+              //   icon: Icon(Icons.calendar_month),
+              //   label: 'Calendar',
+              // ),
+              BottomNavigationBarItem(
+                icon: chatIcon,
+                label: 'Chat',
               ),
               BottomNavigationBarItem(
                 icon: notificationIcon,
@@ -428,6 +1162,22 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   _appBar(MenuNavigationState state) {
     if (state is MenuItemSelected) {
       return AppBar(
+        leading: Builder(
+          key: appDrawerKey,
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu, color: Colors.teal,),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+                Future.delayed(const Duration(milliseconds: 100), () {
+                createAppDrawerTutorialIfNeeded();
+                _showAppDrawerTutorialIfNeeded();
+                });
+              },
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+            );
+          },
+        ),
         title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
         iconTheme: const IconThemeData(color: Colors.teal),
         actions: state.selectedMenuItem == diary ? [
@@ -512,6 +1262,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Widget _drawerHeader() {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(builder: (context, state) {
       return SizedBox(
+        key: accountDetailsKey,
         height: 200,
         child: DrawerHeader(
           decoration: const BoxDecoration(
@@ -625,7 +1376,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  Widget _generateListTile(String text) {
+  Widget _generateListTile(String text, Key key) {
     final Widget element;
     if (text == notifications && unreadNotificationCount != 0) {
       element =  badge.Badge(
@@ -647,6 +1398,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       element = Text(text);
     }
     return ListTile(
+      key: key,
       title: element,
       onTap: () {
         Navigator.pop(context);
@@ -657,20 +1409,21 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  // We only show those menu list items that do not appear in the bottom bar
   Widget _menuDrawerListItems() {
     return ListView(
       shrinkWrap: true,
       padding: EdgeInsets.zero,
       children: <Widget>[
-        _generateListTile(notifications),
-        _generateListTile(search),
-        _generateListTile(discover),
-        _generateListTile(meetup),
-        _generateListTile(diary),
-        _generateListTile(friends),
-        _generateListTile(chat),
-        _generateListTile(calendar),
-        _generateListTile(newsFeed),
+        // _generateListTile(notifications),
+        _generateListTile(search, searchKey),
+        // _generateListTile(discover),
+        // _generateListTile(meetup),
+        // _generateListTile(diary),
+        _generateListTile(friends, friendsKey),
+        // _generateListTile(chat),
+        _generateListTile(calendar, calendarKey),
+        // _generateListTile(newsFeed),
       ],
     );
   }
