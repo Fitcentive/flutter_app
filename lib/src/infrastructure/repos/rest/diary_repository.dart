@@ -121,6 +121,26 @@ class DiaryRepository {
     }
   }
 
+  Future<ExerciseDefinition> getExerciseInfoByWorkoutId(
+      String workoutId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/exercise/$workoutId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final dynamic jsonResponse = jsonDecode(response.body);
+      final ExerciseDefinition result = ExerciseDefinition.fromJson(jsonResponse);
+      return result;
+    }
+    else {
+      throw Exception(
+          "getExerciseInfoByWorkoutId: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<CardioDiaryEntry> addCardioEntryToUserDiary(
       String userId,
       CardioDiaryEntryCreate entry,

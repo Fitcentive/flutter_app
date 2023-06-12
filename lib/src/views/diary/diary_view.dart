@@ -10,9 +10,11 @@ import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/detailed_exercise/detailed_exercise_view.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_bloc.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_state.dart';
+import 'package:flutter_app/src/views/exercise_diary/exercise_diary_view.dart';
 import 'package:flutter_app/src/views/exercise_search/exercise_search_view.dart';
 import 'package:flutter_app/src/views/food_search/food_search_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
@@ -590,7 +592,7 @@ class DiaryViewState extends State<DiaryView> {
 
   _renderDiaryEntries(String heading, DiaryDataFetched state) {
     if (heading == listItemIndexToTitleMap[4]!) {
-      return _renderExerciseDiaryEntries();
+      return _renderExerciseDiaryEntries(state);
     }
     else {
       if (heading == listItemIndexToTitleMap[0]!) {
@@ -696,7 +698,7 @@ class DiaryViewState extends State<DiaryView> {
               },
               child: InkWell(
                 onTap: () {
-                  // Food tapped
+                  // todo - go to detailed food view here?
                 },
                 child: Card(
                   child: Padding(
@@ -752,7 +754,7 @@ class DiaryViewState extends State<DiaryView> {
     }
   }
 
-  _renderCardioDiaryEntries() {
+  _renderCardioDiaryEntries(DiaryDataFetched state) {
     return cardioEntries.isNotEmpty ? ListView.builder(
         shrinkWrap: true,
         itemCount: cardioEntries.length,
@@ -797,7 +799,7 @@ class DiaryViewState extends State<DiaryView> {
             },
             child: InkWell(
               onTap: () {
-                // Exercise tapped
+                _goToDetailedExerciseView(state, currentCardioEntry.workoutId, true);
               },
               child: Card(
                 child: Padding(
@@ -838,7 +840,7 @@ class DiaryViewState extends State<DiaryView> {
     );
   }
 
-  _renderStrengthDiaryEntries() {
+  _renderStrengthDiaryEntries(DiaryDataFetched state) {
     return strengthEntries.isNotEmpty ? ListView.builder(
         shrinkWrap: true,
         itemCount: strengthEntries.length,
@@ -883,7 +885,7 @@ class DiaryViewState extends State<DiaryView> {
             },
             child: InkWell(
               onTap: () {
-                // Exercise tapped
+                _goToDetailedExerciseView(state, currentStrengthEntry.workoutId, false);
               },
               child: Card(
                 child: Padding(
@@ -926,7 +928,7 @@ class DiaryViewState extends State<DiaryView> {
     );
   }
 
-  _renderExerciseDiaryEntries() {
+  _renderExerciseDiaryEntries(DiaryDataFetched state) {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
@@ -946,7 +948,7 @@ class DiaryViewState extends State<DiaryView> {
             ),
           ),
           WidgetUtils.spacer(1),
-          _renderCardioDiaryEntries(),
+          _renderCardioDiaryEntries(state),
           WidgetUtils.spacer(5),
           Container(
             alignment: Alignment.centerLeft,
@@ -960,10 +962,29 @@ class DiaryViewState extends State<DiaryView> {
             ),
           ),
           WidgetUtils.spacer(1),
-          _renderStrengthDiaryEntries(),
+          _renderStrengthDiaryEntries(state),
         ],
       ),
     );
   }
 
+  _goToDetailedExerciseView(DiaryDataFetched state, String workoutId, bool isCardio) {
+    Navigator.push(
+        context,
+        ExerciseDiaryView.route(
+            widget.currentUserProfile,
+            state.fitnessUserProfile!,
+            workoutId,
+            isCardio,
+            currentSelectedDate
+        )
+      ).then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
+  }
+
+  // _goToDetailedFoodView(DiaryDataFetched state, String foodId) {
+  //   Navigator.push(
+  //       context,
+  //       todo - go to the right route
+    // ).then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
+  // }
 }
