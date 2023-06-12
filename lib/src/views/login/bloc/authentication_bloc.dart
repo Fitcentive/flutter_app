@@ -172,7 +172,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final user = await userRepository.getUser(freshUserId!, freshTokens.accessToken);
       final userProfile = await userRepository.getUserProfile(freshUserId, freshTokens.accessToken);
       final userAgreements = await userRepository.getUserAgreements(freshUserId, freshTokens.accessToken);
-      final userTutorialStatus = await userRepository.markUserTutorialStatusAsComplete(freshUserId, freshTokens.accessToken);
+      final userTutorialStatus = await userRepository.getUserTutorialStatus(freshUserId, freshTokens.accessToken);
       return AuthenticatedUser(
           user: user!,
           userProfile: userProfile,
@@ -186,7 +186,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final user = await userRepository.getUser(userId, authTokens.accessToken);
       final userProfile = await userRepository.getUserProfile(userId, authTokens.accessToken);
       final userAgreements = await userRepository.getUserAgreements(userId, authTokens.accessToken);
-      final userTutorialStatus = await userRepository.markUserTutorialStatusAsComplete(userId, authTokens.accessToken);
+      final userTutorialStatus = await userRepository.getUserTutorialStatus(userId, authTokens.accessToken);
       return AuthenticatedUser(
           user: user!,
           userProfile: userProfile,

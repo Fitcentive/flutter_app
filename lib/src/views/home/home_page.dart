@@ -136,6 +136,8 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   List<TargetFocus> appDrawerTargets = [];
   TutorialCoachMark? appDrawerTutorialCoachMark;
+  bool hasAppDrawerTutorialBeenShown = false;
+  bool hasBasicTutorialBeenShown = false;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -468,6 +470,58 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void createBasicTutorialTargets() {
+    // Welcome target
+    basicTargets.add(
+      TargetFocus(
+        identify: "welcomeTargetKey",
+        keyTarget: bottomBarKey,
+        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        color: Colors.teal,
+        shape: ShapeLightFocus.RRect,
+        enableOverlayTab: true,
+        enableTargetTab: true,
+        paddingFocus: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: Text(
+                      "Let's get you started",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "In a few short steps, we will take a look at what's on offer",
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
     // Bottom drawer target
     basicTargets.add(
       TargetFocus(
@@ -887,23 +941,27 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   }
 
-  // todo - add the ! to the predicate here, without it it doesnt work as well sadly
   _showBasicTutorialIfNeeded() {
     final currentState = _authenticationBloc.state;
     if (currentState is AuthSuccessUserUpdateState) {
-      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
         createTutorial();
-        basicTutorialCoachMark?.show(context: context);
-        // Show tutorial here
-        _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+        if (!hasBasicTutorialBeenShown) {
+          basicTutorialCoachMark?.show(context: context);
+          // Show tutorial here
+          _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+        }
       }
     }
     else if (currentState is AuthSuccessState) {
-      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
         // Show tutorial here
         createTutorial();
-        basicTutorialCoachMark?.show(context: context);
-        _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+        if (!hasBasicTutorialBeenShown) {
+          basicTutorialCoachMark?.show(context: context);
+          // Show tutorial here
+          _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+        }
       }
     }
   }
@@ -911,13 +969,19 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   _showAppDrawerTutorialIfNeeded() {
     final currentState = _authenticationBloc.state;
     if (currentState is AuthSuccessUserUpdateState) {
-      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
-        appDrawerTutorialCoachMark?.show(context: context);
+      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        if (!hasAppDrawerTutorialBeenShown) {
+          hasAppDrawerTutorialBeenShown = true;
+          appDrawerTutorialCoachMark?.show(context: context);
+        }
       }
     }
     else if (currentState is AuthSuccessState) {
-      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
-        appDrawerTutorialCoachMark?.show(context: context);
+      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        if (!hasAppDrawerTutorialBeenShown) {
+          hasAppDrawerTutorialBeenShown = true;
+          appDrawerTutorialCoachMark?.show(context: context);
+        }
       }
     }
   }

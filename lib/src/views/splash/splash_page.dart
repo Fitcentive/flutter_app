@@ -80,7 +80,7 @@ class SplashPageState extends State<SplashPage> {
       final user = await _userRepository.getUser(userId!, freshTokens.accessToken);
       final userProfile = await _userRepository.getUserProfile(userId, freshTokens.accessToken);
       final userAgreements = await _userRepository.getUserAgreements(userId, freshTokens.accessToken);
-      final userTutorialStatus = await _userRepository.markUserTutorialStatusAsComplete(userId, freshTokens.accessToken);
+      final userTutorialStatus = await _userRepository.getUserTutorialStatus(userId, freshTokens.accessToken);
       final secureAuthTokens = SecureAuthTokens.fromAuthTokens(freshTokens);
 
       final authenticatedUser = AuthenticatedUser(
