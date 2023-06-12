@@ -31,8 +31,11 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
       emit(const SelectedPostLoading());
       emit(currentState.copyWithNewCommentAdded(newComment: event.comment, userId: event.userId));
     }
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await socialMediaRepository.addCommentToPost(event.postId, event.userId, event.comment, accessToken!);
+
+    if (!event.isMockDataMode) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      await socialMediaRepository.addCommentToPost(event.postId, event.userId, event.comment, accessToken!);
+    }
   }
 
   void _unlikePostForUser(UnlikePostForUser event, Emitter<SelectedPostState> emit) async {
@@ -55,39 +58,45 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
         userProfileMap: event.userIdProfileMap
     ));
 
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final postComments = await socialMediaRepository.getCommentsForPost(event.currentPost.postId, accessToken!);
-    final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.currentPost.postId], accessToken);
-    final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId, event.currentPost.userId);
-    final List<PublicUserProfile> userProfileDetails =
-    await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
-    final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
-    emit(SelectedPostLoaded(
-        post: event.currentPost,
-        comments: postComments,
-        postWithLikedUserIds: likedUsersForPostIds.first,
-        userProfileMap: userIdProfileMap
-    ));
+    if (!event.isMockDataMode) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final postComments = await socialMediaRepository.getCommentsForPost(event.currentPost.postId, accessToken!);
+      final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.currentPost.postId], accessToken);
+      final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId, event.currentPost.userId);
+      final List<PublicUserProfile> userProfileDetails =
+      await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
+      final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+      emit(SelectedPostLoaded(
+          post: event.currentPost,
+          comments: postComments,
+          postWithLikedUserIds: likedUsersForPostIds.first,
+          userProfileMap: userIdProfileMap
+      ));
+    }
   }
 
   void _fetchSelectedPost(FetchSelectedPost event, Emitter<SelectedPostState> emit) async {
     emit(const SelectedPostLoading());
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final fetchedPost = await socialMediaRepository.getPostById(event.postId, accessToken!);
-    final postComments = await socialMediaRepository.getCommentsForPost(event.postId, accessToken);
-    final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.postId], accessToken);
 
-    final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId, fetchedPost.userId);
-    final List<PublicUserProfile> userProfileDetails =
-    await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
-    final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+    if (!event.isMockDataMode) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final fetchedPost = await socialMediaRepository.getPostById(event.postId, accessToken!);
+      final postComments = await socialMediaRepository.getCommentsForPost(event.postId, accessToken);
+      final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.postId], accessToken);
 
-    emit(SelectedPostLoaded(
-      post: fetchedPost,
-      comments: postComments,
-      postWithLikedUserIds: likedUsersForPostIds.first, // should only be of size 1
-      userProfileMap: userIdProfileMap
-    ));
+      final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId, fetchedPost.userId);
+      final List<PublicUserProfile> userProfileDetails =
+      await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
+      final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+
+      emit(SelectedPostLoaded(
+          post: fetchedPost,
+          comments: postComments,
+          postWithLikedUserIds: likedUsersForPostIds.first, // should only be of size 1
+          userProfileMap: userIdProfileMap
+      ));
+    }
+
   }
 
   List<String> _getRelevantUserIdsFromComments(

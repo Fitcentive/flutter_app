@@ -57,17 +57,31 @@ class WidgetUtils {
     );
   }
 
-  static Widget? generatePostImageIfExists(String? postImageUrl) {
-    if (postImageUrl != null) {
-      return Container(
-        height: 300,
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          image: ImageUtils.getImage(postImageUrl, 500, 500),
-        ),
-      );
+  static Widget? generatePostImageIfExists(String? postImageUrl, bool isMockDataMode) {
+    if (isMockDataMode) {
+      if (postImageUrl != null) {
+        return Container(
+          height: 300,
+          decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            image: ImageUtils.getImageWithoutPublicGatewayBase(postImageUrl),
+          ),
+        );
+      }
+      return null;
     }
-    return null;
+    else {
+      if (postImageUrl != null) {
+        return Container(
+          height: 300,
+          decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            image: ImageUtils.getImage(postImageUrl, 500, 500),
+          ),
+        );
+      }
+      return null;
+    }
   }
 
   static render180DegreeGauge(double score) {

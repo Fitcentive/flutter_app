@@ -20,6 +20,7 @@ import 'package:flutter_app/src/views/shared_components/social_posts_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
 
 class NewsFeedView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -248,7 +249,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
             children: [
                 Center(child: _addNewPostView()),
                 _separation(),
-                _showNoResults(),
+                _showNoResultsPlaceholder(),
             ],
           ),
         );
@@ -260,12 +261,58 @@ class NewsFeedViewState extends State<NewsFeedView> {
     }
   }
 
-  _showNoResults() {
-    return Center(
-        child: Container(
-          padding: const EdgeInsets.all(30),
-          child: const Text("Awfully quiet here...."),
+  _showNoResultsPlaceholder() {
+    const uuid = Uuid();
+    final List<SocialPost> samplePosts = [];
+    // Hacky fix because Neo4J stores timestamps in UTC but agnostically
+    // We thus add offset in SocialPostsList
+    // Thus we subtract offset here first
+    final DateTime now = DateTime.now().subtract(DateTime.now().timeZoneOffset);
+    final postId1 = uuid.v4();
+    final postId2 = uuid.v4();
+    samplePosts.add(
+      SocialPost(
+          postId1,
+          widget.currentUserProfile.userId,
+          "Welcome to your feed! Get started by sharing an update with your community!",
+          null,
+          0,
+          0,
+          now,
+          now
+      )
+    );
+    samplePosts.add(
+        SocialPost(
+            postId2,
+            widget.currentUserProfile.userId,
+            "Optionally, you can add a picture to your post!",
+            ConstantUtils.NEWSFEED_INTRO_POST_PHOTO_URL,
+            0,
+            0,
+            now,
+            now
         )
+    );
+    final List<PostsWithLikedUserIds> sampleLikedUserIds = [
+      PostsWithLikedUserIds(postId1, const []),
+      PostsWithLikedUserIds(postId2, const []),
+    ];
+
+    return SocialPostsList(
+        currentUserProfile: widget.currentUserProfile,
+        posts: samplePosts,
+        userIdProfileMap: {widget.currentUserProfile.userId: widget.currentUserProfile},
+        likedUserIds: sampleLikedUserIds,
+        doesNextPageExist: false,
+        postIdCommentsPreviewMap: {
+          postId1: const [],
+          postId2: const [],
+        },
+        fetchMoreResultsCallback: () {},
+        refreshCallback: _pullRefresh,
+        buttonInteractionCallback: (post, ids) {},
+        isMockDataMode: true,
     );
   }
 

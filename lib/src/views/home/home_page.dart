@@ -956,12 +956,12 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     final currentState = _authenticationBloc.state;
     if (currentState is AuthSuccessUserUpdateState) {
-      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
         _createTutorialAndMarkAsComplete(currentState.authenticatedUser.user.id);
       }
     }
     else if (currentState is AuthSuccessState) {
-      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
         _createTutorialAndMarkAsComplete(currentState.authenticatedUser.user.id);
       }
     }

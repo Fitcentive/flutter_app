@@ -83,6 +83,27 @@ class ImageUtils {
     }
   }
 
+  static DecorationImage? getImageWithoutPublicGatewayBase(String? photoUrlOpt) {
+    if (photoUrlOpt != null) {
+      if (kIsWeb) {
+        return DecorationImage(
+            image: NetworkImage(photoUrlOpt),
+            fit: BoxFit.fitHeight
+        );
+      }
+      else {
+        return DecorationImage(
+          image: CachedNetworkImageProvider(
+            photoUrlOpt,
+          ),
+          fit: BoxFit.fitHeight,
+        );
+      }
+    } else {
+      return null;
+    }
+  }
+
   static Future<Uint8List?> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);

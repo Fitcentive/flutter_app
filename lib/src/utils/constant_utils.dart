@@ -12,6 +12,8 @@ class ConstantUtils {
 
   static const String WGER_API_HOST = "https://wger.de";
 
+  static const String NEWSFEED_INTRO_POST_PHOTO_URL = "https://images.pexels.com/photos/40751/running-runner-long-distance-fitness-40751.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+
   static const String TERMS_AND_CONDITIONS_URL = "https://www.freeprivacypolicy.com/live/c9701c0e-9f64-4080-b73d-5594defd36f5";
   static const String PRIVACY_POLICY_URL = "https://www.freeprivacypolicy.com/live/0b5bf195-1fc5-4f99-b42c-8d22b17d6738";
 

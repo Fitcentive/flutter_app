@@ -30,6 +30,9 @@ class SocialPostsList extends StatefulWidget {
   final FetchMoreResultsCallback refreshCallback;
   final ButtonInteractionCallback buttonInteractionCallback;
 
+  // If isMocKDataMode is true, photoURLs are served raw instead of adding public gateway base host to URL
+  final bool isMockDataMode;
+
   const SocialPostsList({
     Key? key,
     required this.currentUserProfile,
@@ -41,6 +44,7 @@ class SocialPostsList extends StatefulWidget {
     required this.refreshCallback,
     required this.buttonInteractionCallback,
     required this.postIdCommentsPreviewMap,
+    this.isMockDataMode = false,
   }): super(key: key);
 
   @override
@@ -93,26 +97,31 @@ class SocialPostsListState extends State<SocialPostsList> {
     final postCreatorPublicUser = userIdProfileMap[post.userId];
     return Container(
       padding: const EdgeInsets.all(10),
-      child: Card(
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: WidgetUtils.skipNulls(
-                [
-                  _userHeader(postCreatorPublicUser),
-                  WidgetUtils.spacer(10),
-                  _userPostText(post),
-                  WidgetUtils.spacer(15),
-                  WidgetUtils.generatePostImageIfExists(post.photoUrl),
-                  WidgetUtils.spacer(15),
-                  _getLikesAndComments(post, likedUserIds),
-                  WidgetUtils.spacer(10),
-                  _getPostActionButtons(post, likedUserIds),
-                  WidgetUtils.spacer(5),
-                  _renderPostCreationTime(post),
-                  _renderCommentsPreview(post),
-                ]
+      child: GestureDetector(
+        onTap: () {
+          _goToSelectedPostView(post);
+        },
+        child: Card(
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: WidgetUtils.skipNulls(
+                  [
+                    _userHeader(postCreatorPublicUser),
+                    WidgetUtils.spacer(10),
+                    _userPostText(post),
+                    WidgetUtils.spacer(15),
+                    WidgetUtils.generatePostImageIfExists(post.photoUrl, widget.isMockDataMode),
+                    WidgetUtils.spacer(15),
+                    _getLikesAndComments(post, likedUserIds),
+                    WidgetUtils.spacer(10),
+                    _getPostActionButtons(post, likedUserIds),
+                    WidgetUtils.spacer(5),
+                    _renderPostCreationTime(post),
+                    _renderCommentsPreview(post),
+                  ]
+              ),
             ),
           ),
         ),
@@ -252,15 +261,18 @@ class SocialPostsListState extends State<SocialPostsList> {
             ),
           ),
         ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: InkWell(
-              onTap: () {
-                _goToSelectedPostView(post);
-              },
-              child:  Text("${post.numberOfComments} ${post.numberOfComments == 1 ? "comment" : "comments"}"),
+        Visibility(
+          visible: post.numberOfComments != 0,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: InkWell(
+                onTap: () {
+                  _goToSelectedPostView(post);
+                },
+                child:  Text("${post.numberOfComments} ${post.numberOfComments == 1 ? "comment" : "comments"}"),
+              ),
             ),
           ),
         )
@@ -330,7 +342,8 @@ class SocialPostsListState extends State<SocialPostsList> {
             currentPost: post,
             currentPostComments: widget.postIdCommentsPreviewMap[post.postId],
             likedUsersForCurrentPost: widget.likedUserIds.firstWhere((element) => element.postId == post.postId),
-            userIdProfileMap: widget.userIdProfileMap
+            userIdProfileMap: widget.userIdProfileMap,
+            isMockDataMode: widget.isMockDataMode
         ), (route) => true
     );
   }

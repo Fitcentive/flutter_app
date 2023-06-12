@@ -29,6 +29,9 @@ class SelectedPostView extends StatefulWidget {
   final PostsWithLikedUserIds? likedUsersForCurrentPost;
   final Map<String, PublicUserProfile>? userIdProfileMap;
 
+  // If isMocKDataMode is true, photoURLs are served raw instead of adding public gateway base host to URL
+  final bool isMockDataMode;
+
   const SelectedPostView({
     Key? key,
     required this.currentUserProfile,
@@ -36,7 +39,8 @@ class SelectedPostView extends StatefulWidget {
     this.currentPost,
     this.currentPostComments,
     this.likedUsersForCurrentPost,
-    this.userIdProfileMap
+    this.userIdProfileMap,
+    this.isMockDataMode = false,
   }): super(key: key);
 
   static Route route({
@@ -46,6 +50,7 @@ class SelectedPostView extends StatefulWidget {
     List<SocialPostComment>? currentPostComments,
     PostsWithLikedUserIds? likedUsersForCurrentPost,
     Map<String, PublicUserProfile>? userIdProfileMap,
+    bool isMockDataMode = false,
   }) => MaterialPageRoute(
     settings: const RouteSettings(
         name: routeName
@@ -66,6 +71,7 @@ class SelectedPostView extends StatefulWidget {
                 currentPostComments: currentPostComments,
                 likedUsersForCurrentPost: likedUsersForCurrentPost,
                 userIdProfileMap: userIdProfileMap,
+                isMockDataMode: isMockDataMode,
             ),
     ),
   );
@@ -100,7 +106,8 @@ class SelectedPostViewState extends State<SelectedPostView> {
             currentPost: widget.currentPost!,
             currentPostComments: widget.currentPostComments!,
             likedUsersForCurrentPost: widget.likedUsersForCurrentPost!,
-            userIdProfileMap: widget.userIdProfileMap!
+            userIdProfileMap: widget.userIdProfileMap!,
+            isMockDataMode: widget.isMockDataMode,
           )
       );
     }
@@ -108,7 +115,8 @@ class SelectedPostViewState extends State<SelectedPostView> {
       _selectedPostBloc.add(
           FetchSelectedPost(
               postId: widget.currentPostId,
-              currentUserId: widget.currentUserProfile.userId
+              currentUserId: widget.currentUserProfile.userId,
+              isMockDataMode: widget.isMockDataMode,
           )
       );
     }
@@ -175,7 +183,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
                   WidgetUtils.spacer(10),
                   _userPostText(post),
                   WidgetUtils.spacer(15),
-                  WidgetUtils.generatePostImageIfExists(post.photoUrl),
+                  WidgetUtils.generatePostImageIfExists(post.photoUrl, widget.isMockDataMode),
                   WidgetUtils.spacer(15),
                   _getLikesAndComments(post, likedUsersForPosts),
                   WidgetUtils.spacer(10),
@@ -203,7 +211,8 @@ class SelectedPostViewState extends State<SelectedPostView> {
           AddNewComment(
               postId: widget.currentPostId,
               userId: widget.currentUserProfile.userId,
-              comment: newUserComment!
+              comment: newUserComment!,
+              isMockDataMode: widget.isMockDataMode
           )
       );
       _textEditingController.text = "";
@@ -396,24 +405,26 @@ class SelectedPostViewState extends State<SelectedPostView> {
                   icon: likedUserIds.userIds.contains(widget.currentUserProfile.userId) ?
                   const Icon(Icons.thumb_down) : const Icon(Icons.thumb_up),
                   onPressed: () {
-                    List<String> newLikedUserIdsForCurrentPost = likedUserIds.userIds;
-                    final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.currentUserProfile.userId);
+                    if (!widget.isMockDataMode) {
+                      List<String> newLikedUserIdsForCurrentPost = likedUserIds.userIds;
+                      final hasUserAlreadyLikedPost = newLikedUserIdsForCurrentPost.contains(widget.currentUserProfile.userId);
 
-                    if (hasUserAlreadyLikedPost) {
-                      _selectedPostBloc.add(UnlikePostForUser(currentUserId: widget.currentUserProfile.userId, postId: post.postId));
-                    } else {
-                      _selectedPostBloc.add(LikePostForUser(currentUserId: widget.currentUserProfile.userId, postId: post.postId));
-                    }
-
-                    setState(() {
                       if (hasUserAlreadyLikedPost) {
-                        newLikedUserIdsForCurrentPost.remove(widget.currentUserProfile.userId);
+                        _selectedPostBloc.add(UnlikePostForUser(currentUserId: widget.currentUserProfile.userId, postId: post.postId));
+                      } else {
+                        _selectedPostBloc.add(LikePostForUser(currentUserId: widget.currentUserProfile.userId, postId: post.postId));
                       }
-                      else {
-                        newLikedUserIdsForCurrentPost.add(widget.currentUserProfile.userId);
-                      }
-                      likedUsersForPosts = PostsWithLikedUserIds(post.postId, newLikedUserIdsForCurrentPost);
-                    });
+
+                      setState(() {
+                        if (hasUserAlreadyLikedPost) {
+                          newLikedUserIdsForCurrentPost.remove(widget.currentUserProfile.userId);
+                        }
+                        else {
+                          newLikedUserIdsForCurrentPost.add(widget.currentUserProfile.userId);
+                        }
+                        likedUsersForPosts = PostsWithLikedUserIds(post.postId, newLikedUserIdsForCurrentPost);
+                      });
+                    }
                   },
                   label: Text(likedUserIds.userIds.contains(widget.currentUserProfile.userId) ? "Unlike" : "Like",
                     style: const TextStyle(
@@ -495,15 +506,18 @@ class SelectedPostViewState extends State<SelectedPostView> {
             ),
           ),
         ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: InkWell(
-              onTap: () {
-                _goToBottom();
-              },
-              child:  Text("${post.numberOfComments} ${post.numberOfComments == 1 ? "comment" : "comments"}"),
+        Visibility(
+          visible: post.numberOfComments != 0,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(0, 0, 2.5, 0),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: InkWell(
+                onTap: () {
+                  _goToBottom();
+                },
+                child:  Text("${post.numberOfComments} ${post.numberOfComments == 1 ? "comment" : "comments"}"),
+              ),
             ),
           ),
         )

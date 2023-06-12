@@ -49,13 +49,12 @@ class SelectedPostLoaded extends SelectedPostState {
     required String userId,
     required String newComment
   }) {
-    final now = DateTime.now().toUtc();
-    comments.add(SocialPostComment(post.postId, uuid.v4(), userId, newComment, now, now));
+    final now = DateTime.now().subtract(DateTime.now().timeZoneOffset);
     return SelectedPostLoaded(
         post: post,
         userProfileMap: userProfileMap,
         postWithLikedUserIds: postWithLikedUserIds,
-        comments: comments
+        comments: [...comments, SocialPostComment(post.postId, uuid.v4(), userId, newComment, now, now)]
     );
   }
 

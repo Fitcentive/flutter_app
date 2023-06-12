@@ -193,7 +193,11 @@ class NotificationsViewState extends State<NotificationsView> {
   _goToSelectedPost(String postId) {
     Navigator.pushAndRemoveUntil(
         context,
-        SelectedPostView.route(currentUserProfile: widget.currentUserProfile, currentPostId: postId),
+        SelectedPostView.route(
+            currentUserProfile: widget.currentUserProfile,
+            currentPostId: postId,
+            isMockDataMode: false
+        ),
             (route) => true
     );
   }

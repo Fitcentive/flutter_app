@@ -16,14 +16,16 @@ abstract class SelectedPostEvent extends Equatable {
 class FetchSelectedPost extends SelectedPostEvent {
   final String currentUserId;
   final String postId;
+  final bool isMockDataMode;
 
   const FetchSelectedPost({
     required this.currentUserId,
     required this.postId,
+    required this.isMockDataMode,
   });
 
   @override
-  List<Object> get props => [currentUserId, postId];
+  List<Object> get props => [currentUserId, postId, isMockDataMode];
 }
 
 class PostAlreadyProvidedByParent extends SelectedPostEvent {
@@ -32,13 +34,15 @@ class PostAlreadyProvidedByParent extends SelectedPostEvent {
   final List<SocialPostComment> currentPostComments;
   final PostsWithLikedUserIds likedUsersForCurrentPost;
   final Map<String, PublicUserProfile> userIdProfileMap;
+  final bool isMockDataMode;
 
   const PostAlreadyProvidedByParent({
     required this.currentUserId,
     required this.currentPost,
     required this.currentPostComments,
     required this.likedUsersForCurrentPost,
-    required this.userIdProfileMap
+    required this.userIdProfileMap,
+    required this.isMockDataMode,
   });
 
   @override
@@ -47,7 +51,8 @@ class PostAlreadyProvidedByParent extends SelectedPostEvent {
     currentPostComments,
     likedUsersForCurrentPost,
     userIdProfileMap,
-    currentUserId
+    currentUserId,
+    isMockDataMode,
   ];
 }
 
@@ -81,13 +86,15 @@ class AddNewComment extends SelectedPostEvent {
   final String postId;
   final String userId;
   final String comment;
+  final bool isMockDataMode;
 
   const AddNewComment({
     required this.postId,
     required this.userId,
     required this.comment,
+    required this.isMockDataMode,
   });
 
   @override
-  List<Object> get props => [comment, postId, comment];
+  List<Object> get props => [comment, postId, comment, isMockDataMode];
 }
