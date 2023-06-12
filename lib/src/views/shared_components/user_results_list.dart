@@ -228,6 +228,8 @@ class UserResultsListState extends State<UserResultsList> {
           ),
           WidgetUtils.spacer(10),
           Text(
+            userProfile.userId == widget.currentUserProfile.userId ?
+            "You are about to remove yourself as an admin of this chat room. Are you sure?" :
             "You are about to remove ${StringUtils.getUserNameFromUserProfile(userProfile)} as an admin of this chat room. Are you sure?",
             style: const TextStyle(
               fontSize: 16,
