@@ -475,9 +475,9 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       TargetFocus(
         identify: "welcomeTargetKey",
         keyTarget: bottomBarKey,
-        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+        alignSkip: Alignment.centerRight,
         color: Colors.teal,
-        shape: ShapeLightFocus.RRect,
+        shape: ShapeLightFocus.Circle,
         enableOverlayTab: true,
         enableTargetTab: true,
         paddingFocus: 10,
