@@ -266,6 +266,7 @@ class UserChatViewState extends State<UserChatView> {
         currentChatRoom: state.currentChatRoom,
         currentUserProfile: widget.currentUserProfile,
         otherUserProfiles: List.from(state.chatRoomUserProfiles)..removeWhere((element) => element.userId == widget.currentUserProfile.userId),
+        adminUserIds: state.roomAdmins.map((e) => e.userId).toList()
     )).then((value) {
       _userChatBloc.add(ConnectWebsocketAndFetchHistoricalChats(
           roomId: widget.currentRoomId,

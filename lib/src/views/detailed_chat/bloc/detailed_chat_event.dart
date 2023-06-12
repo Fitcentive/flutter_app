@@ -45,3 +45,29 @@ class UsersAddedToChatRoom extends DetailedChatEvent {
   @override
   List<Object?> get props => [userIds, roomId];
 }
+
+class MakeUserAdminForChatRoom extends DetailedChatEvent {
+  final String userId;
+  final String roomId;
+
+  const MakeUserAdminForChatRoom({
+    required this.userId,
+    required this.roomId
+  });
+
+  @override
+  List<Object?> get props => [userId, roomId];
+}
+
+class RemoveUserAsAdminFromChatRoom extends DetailedChatEvent {
+  final String userId;
+  final String roomId;
+
+  const RemoveUserAsAdminFromChatRoom({
+    required this.userId,
+    required this.roomId
+  });
+
+  @override
+  List<Object?> get props => [userId, roomId];
+}

@@ -159,6 +159,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
           associatedMeetup: currentState.associatedMeetup,
           userLastSeen: currentState.userLastSeen,
+          roomAdmins: currentState.roomAdmins,
       ));
     }
   }
@@ -190,6 +191,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
     // final currentChatRoom = (await chatRepository.getChatRoomDefinitions([event.roomId], accessToken)).first;
     // final chatRoomsWithUser = await chatRepository.getUsersForRoom(event.roomId, accessToken);
 
+    final roomAdmins = await chatRepository.getChatRoomAdmins(event.roomId, accessToken);
     // We use this instead of chatRoom userIds as previously existing users in chatRoom may have also sent messages
     final distinctChatMessageSenderIds = (
         chatMessages.map((e) => e.senderId).toSet()
@@ -213,6 +215,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
         chatRoomUserProfiles: chatRoomUserProfiles,
         associatedMeetup: meetupOpt,
         userLastSeen: userLastSeen,
+        roomAdmins: roomAdmins,
     ));
   }
 
@@ -280,6 +283,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
           associatedMeetup: currentState.associatedMeetup,
           userLastSeen: currentState.userLastSeen,
+          roomAdmins: currentState.roomAdmins,
       ));
     }
   }
@@ -311,6 +315,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
           associatedMeetup: currentState.associatedMeetup,
           userLastSeen: currentState.userLastSeen,
+          roomAdmins: currentState.roomAdmins,
       ));
     }
   }
@@ -330,6 +335,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           chatRoomUserProfiles: currentState.chatRoomUserProfiles,
           associatedMeetup: currentState.associatedMeetup,
           userLastSeen: currentState.userLastSeen,
+          roomAdmins: currentState.roomAdmins,
       ));
     }
   }

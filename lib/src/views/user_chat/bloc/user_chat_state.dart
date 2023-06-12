@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
+import 'package:flutter_app/src/models/chats/chat_room_admin.dart';
 import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/chats/user_last_seen.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
@@ -40,6 +41,8 @@ class HistoricalChatsFetched extends UserChatState {
   // includes ALL userProfiles, including currentUserProfile and previous chat room users who have sent messages
   final List<PublicUserProfile> allMessagingUserProfiles;
 
+  final List<ChatRoomAdmin> roomAdmins;
+
   final Meetup? associatedMeetup;
 
   final UserLastSeen? userLastSeen;
@@ -53,6 +56,7 @@ class HistoricalChatsFetched extends UserChatState {
     required this.allMessagingUserProfiles,
     required this.associatedMeetup,
     required this.userLastSeen,
+    required this.roomAdmins,
   });
 
   @override
@@ -64,6 +68,7 @@ class HistoricalChatsFetched extends UserChatState {
     allMessagingUserProfiles,
     chatRoomUserProfiles,
     associatedMeetup,
-    userLastSeen
+    userLastSeen,
+    roomAdmins,
   ];
 }

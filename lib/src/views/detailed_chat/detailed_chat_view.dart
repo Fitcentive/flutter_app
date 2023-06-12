@@ -22,12 +22,14 @@ class DetailedChatView extends StatefulWidget {
   final DetailedChatRoom currentChatRoom;
   final PublicUserProfile currentUserProfile;
   final List<PublicUserProfile> otherUserProfiles;
+  final List<String> adminUserIds;
 
   static Route route({
     required Meetup? associatedMeetup,
     required DetailedChatRoom currentChatRoom,
     required PublicUserProfile currentUserProfile,
     required List<PublicUserProfile> otherUserProfiles,
+    required List<String> adminUserIds,
   }) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -45,7 +47,8 @@ class DetailedChatView extends StatefulWidget {
               associatedMeetup: associatedMeetup,
               currentChatRoom: currentChatRoom,
               otherUserProfiles: otherUserProfiles,
-              currentUserProfile: currentUserProfile
+              currentUserProfile: currentUserProfile,
+              adminUserIds: adminUserIds,
           ),
         )
     );
@@ -56,7 +59,8 @@ class DetailedChatView extends StatefulWidget {
     required this.associatedMeetup,
     required this.currentChatRoom,
     required this.currentUserProfile,
-    required this.otherUserProfiles
+    required this.otherUserProfiles,
+    required this.adminUserIds
   }): super(key: key);
 
 
@@ -81,6 +85,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
 
   bool isEditParticipantsButtonEnabled = false;
   List<PublicUserProfile> chatParticipantUserProfiles = [];
+  List<String> currentChatAdminUserIds = [];
 
   @override
   void initState() {
@@ -88,6 +93,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
 
     chatParticipantUserProfiles = [widget.currentUserProfile, ...widget.otherUserProfiles];
     currentChatTitleEdited = widget.currentChatRoom.roomName;
+    currentChatAdminUserIds = widget.adminUserIds;
     currentChatTitleWidget = Text(
       widget.currentChatRoom.roomName,
       style: const TextStyle(
@@ -132,6 +138,8 @@ class DetailedChatViewState extends State<DetailedChatView> {
               WidgetUtils.spacer(10),
               _renderEditParticipantsButtonIfNeeded(),
               WidgetUtils.spacer(5),
+              _renderUserTextHintIfNeeded(),
+              WidgetUtils.spacer(5),
               _renderHintIfNeeded(),
               WidgetUtils.spacer(10),
               _renderChatParticipants(),
@@ -142,6 +150,22 @@ class DetailedChatViewState extends State<DetailedChatView> {
         ),
       ),
     );
+  }
+
+  _renderUserTextHintIfNeeded() {
+    if (widget.currentChatRoom.roomType == "group" && widget.associatedMeetup == null &&
+        currentChatAdminUserIds.contains(widget.currentUserProfile.userId)
+    ) {
+      return const Center(
+        child: Text(
+          "Long press on a participant to view additional options",
+          style: TextStyle(
+            color: Colors.teal,
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
   }
 
   _updateChatParticipantsViaApiCall() {
@@ -275,9 +299,28 @@ class DetailedChatViewState extends State<DetailedChatView> {
           fetchMoreResultsCallback:  () {},
           shouldListBeSwipable: isEditParticipantsButtonEnabled,
           swipeToDismissUserCallback: _swipeToDismissUserCallback,
+          adminUserIds: currentChatAdminUserIds,
+          isLongPressToMakeUserAdminEnabled: currentChatAdminUserIds.contains(widget.currentUserProfile.userId),
+          makeUserAnAdminCallback: _makeUserAnAdminCallback,
+          removeAdminStatusForUserCallback: _removeAdminStatusForUserCallback,
         ),
       ),
     );
+  }
+
+  _makeUserAnAdminCallback(PublicUserProfile userProfile) {
+    // Dispatch via blco
+    _detailedChatBloc.add(MakeUserAdminForChatRoom(roomId: widget.currentChatRoom.roomId, userId: userProfile.userId));
+    setState(() {
+      currentChatAdminUserIds = List.from(currentChatAdminUserIds)..add(userProfile.userId);
+    });
+  }
+
+  _removeAdminStatusForUserCallback(PublicUserProfile userProfile) {
+    _detailedChatBloc.add(RemoveUserAsAdminFromChatRoom(roomId: widget.currentChatRoom.roomId, userId: userProfile.userId));
+    setState(() {
+      currentChatAdminUserIds = List.from(currentChatAdminUserIds)..remove(userProfile.userId);
+    });
   }
 
   _swipeToDismissUserCallback(PublicUserProfile dismissedUserProfile) {
@@ -315,7 +358,9 @@ class DetailedChatViewState extends State<DetailedChatView> {
   }
 
   _renderEditParticipantsButtonIfNeeded() {
-    if (widget.currentChatRoom.roomType == "group" && widget.associatedMeetup == null) {
+    if (widget.currentChatRoom.roomType == "group" && widget.associatedMeetup == null &&
+        currentChatAdminUserIds.contains(widget.currentUserProfile.userId)
+    ) {
       return InkWell(
         onTap: () {
           _handleEditParticipantsButtonPressed();

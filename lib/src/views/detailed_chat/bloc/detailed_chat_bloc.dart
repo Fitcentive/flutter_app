@@ -16,6 +16,18 @@ class DetailedChatBloc extends Bloc<DetailedChatEvent, DetailedChatState> {
     on<ChatRoomNameChanged>(_chatRoomNameChanged);
     on<UsersRemovedFromChatRoom>(_usersRemovedFromChatRoom);
     on<UsersAddedToChatRoom>(_usersAddedToChatRoom);
+    on<MakeUserAdminForChatRoom>(_makeUserAdminForChatRoom);
+    on<RemoveUserAsAdminFromChatRoom>(_removeUserAsAdminFromChatRoom);
+  }
+
+  void _removeUserAsAdminFromChatRoom(RemoveUserAsAdminFromChatRoom event, Emitter<DetailedChatState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await chatRepository.removeChatRoomAdmins(event.roomId, event.userId, accessToken!);
+  }
+
+  void _makeUserAdminForChatRoom(MakeUserAdminForChatRoom event, Emitter<DetailedChatState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await chatRepository.upsertChatRoomAdmins(event.roomId, event.userId, accessToken!);
   }
 
   void _usersAddedToChatRoom(UsersAddedToChatRoom event, Emitter<DetailedChatState> emit) async {

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
+import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 
 typedef FetchMoreResultsCallback = void Function();
 typedef GoToChatRoomCallBack = void Function(PublicUserProfile targetUserProfile);
 typedef SwipeToDismissUserCallback = void Function(PublicUserProfile targetUserProfile);
+typedef ModifyUserAdminStatusCallback = void Function(PublicUserProfile targetUserProfile);
 
 class UserResultsList extends StatefulWidget {
 
@@ -21,6 +23,13 @@ class UserResultsList extends StatefulWidget {
   final GoToChatRoomCallBack? goToChatRoomCallBack;
   final SwipeToDismissUserCallback? swipeToDismissUserCallback;
 
+  // Every userId that is in this list will get an admin badge suffixed into the ListTile
+  // Only used from chat participants list, nowehere else
+  final List<String> adminUserIds;
+  final bool isLongPressToMakeUserAdminEnabled;
+  final ModifyUserAdminStatusCallback ? makeUserAnAdminCallback;
+  final ModifyUserAdminStatusCallback ? removeAdminStatusForUserCallback;
+
   const UserResultsList({
     Key? key,
     this.shouldListBeSwipable = false,
@@ -31,6 +40,10 @@ class UserResultsList extends StatefulWidget {
     required this.doesNextPageExist,
     required this.fetchMoreResultsCallback,
     required this.swipeToDismissUserCallback,
+    this.adminUserIds = const [],
+    this.isLongPressToMakeUserAdminEnabled = false,
+    this.makeUserAnAdminCallback,
+    this.removeAdminStatusForUserCallback,
   }): super(key: key);
 
   @override
@@ -90,11 +103,210 @@ class UserResultsListState extends State<UserResultsList> {
     );
   }
 
+  _createAdminBadge() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.teal,
+          border: Border.all(
+            color: Colors.teal,
+          ),
+          borderRadius: const BorderRadius.all(Radius.circular(10))
+      ),
+      child: const Padding(
+        padding: EdgeInsets.all(10),
+        child: Text(
+          "Admin",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold
+          ),
+        ),
+      ),
+    );
+  }
+
+  _showConfirmationToMakeUserAnAdmin(PublicUserProfile userProfile) {
+    _dialogContent() {
+      return Column(
+        children: [
+          WidgetUtils.spacer(5),
+          const Text(
+            "Admin confirmation",
+            style: TextStyle(
+                fontSize: 20,
+                color: Colors.teal
+            ),
+          ),
+          WidgetUtils.spacer(10),
+          Text(
+            "You are about to make ${StringUtils.getUserNameFromUserProfile(userProfile)} an admin of this chat room. Are you sure?",
+            style: const TextStyle(
+              fontSize: 16,
+              // color: Colors.teal
+            ),
+          ),
+          WidgetUtils.spacer(10),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel", style: TextStyle(fontSize: 15, color: Colors.white)),
+                ),
+              ),
+              const Expanded(
+                  flex: 1,
+                  child: Visibility(
+                    visible: false,
+                    child: Text(""),
+                  )
+              ),
+              Expanded(
+                flex: 3,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    if (widget.makeUserAnAdminCallback != null) {
+                      widget.makeUserAnAdminCallback!(userProfile);
+                    }
+                  },
+                  child: const Text(
+                      "Continue",
+                      style: TextStyle(fontSize: 15, color: Colors.white)
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      );
+    }
+
+    _dialogContentCard() {
+      return IntrinsicHeight(
+        child: Card(
+            elevation: 0,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                child: _dialogContent(),
+              ),
+            )
+        ),
+      );
+    }
+
+    showDialog(context: context, builder: (context) {
+      return Dialog(
+        child: _dialogContentCard(),
+      );
+    });
+  }
+
+  _showConfirmationToRemoveUserAsAdmin(PublicUserProfile userProfile) {
+    _dialogContent() {
+      return Column(
+        children: [
+          WidgetUtils.spacer(5),
+          const Text(
+            "Admin confirmation",
+            style: TextStyle(
+                fontSize: 20,
+                color: Colors.teal
+            ),
+          ),
+          WidgetUtils.spacer(10),
+          Text(
+            "You are about to remove ${StringUtils.getUserNameFromUserProfile(userProfile)} as an admin of this chat room. Are you sure?",
+            style: const TextStyle(
+              fontSize: 16,
+              // color: Colors.teal
+            ),
+          ),
+          WidgetUtils.spacer(10),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel", style: TextStyle(fontSize: 15, color: Colors.white)),
+                ),
+              ),
+              const Expanded(
+                  flex: 1,
+                  child: Visibility(
+                    visible: false,
+                    child: Text(""),
+                  )
+              ),
+              Expanded(
+                flex: 3,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    if (widget.removeAdminStatusForUserCallback != null) {
+                      widget.removeAdminStatusForUserCallback!(userProfile);
+                    }
+                  },
+                  child: const Text(
+                      "Remove",
+                      style: TextStyle(fontSize: 15, color: Colors.white)
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      );
+    }
+
+    _dialogContentCard() {
+      return IntrinsicHeight(
+        child: Card(
+            elevation: 0,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                child: _dialogContent(),
+              ),
+            )
+        ),
+      );
+    }
+
+    showDialog(context: context, builder: (context) {
+      return Dialog(
+        child: _dialogContentCard(),
+      );
+    });
+  }
+
   Widget _userSearchResultItem(PublicUserProfile userProfile) {
     final plainTile = ListTile(
       title: Text("${userProfile.firstName ?? ""} ${userProfile.lastName ?? ""}",
           style: const TextStyle(fontWeight: FontWeight.w500)),
-      trailing: const Text(""),
+      trailing: widget.adminUserIds.contains(userProfile.userId) ? _createAdminBadge() : const Text(""),
       subtitle: Text(userProfile.username ?? ""),
       leading: CircleAvatar(
         radius: 30,
@@ -107,6 +319,63 @@ class UserResultsListState extends State<UserResultsList> {
           ),
         ),
       ),
+      onLongPress: () {
+        if (widget.isLongPressToMakeUserAdminEnabled && widget.adminUserIds.contains(widget.currentUserProfile.userId)) {
+          // Show menu here with options only if user current user is an admin
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text(
+                      "Participant options",
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontSize: 16,
+                    ),
+                  ),
+                  content: SizedBox(
+                    height: 100.0,
+                    width: 100.0,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: 2,
+                      itemBuilder: (BuildContext context, int index) {
+                        if (index == 0) {
+                          return ListTile(
+                            onTap: () {
+                              Navigator.pop(context);
+                              if (widget.adminUserIds.contains(userProfile.userId)) {
+                                SnackbarUtils.showSnackBarMedium(context, "User is already an admin!");
+                              }
+                              else {
+                                _showConfirmationToMakeUserAnAdmin(userProfile);
+                              }
+                            },
+                            title: const Text('Add as admin'),
+                          );
+                        }
+                        else {
+                          return ListTile(
+                            onTap: () {
+                              Navigator.pop(context);
+                              if (widget.adminUserIds.length >= 2) {
+                                _showConfirmationToRemoveUserAsAdmin(userProfile);
+                              }
+                              else {
+                                SnackbarUtils.showSnackBarMedium(context, "Cannot remove any more admins!");
+                              }
+                            },
+                            title: const Text('Remove as admin'),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                );
+              }
+          );
+        }
+      },
       onTap: () {
         if (widget.shouldTapGoToChatRoom) {
           widget.goToChatRoomCallBack!(userProfile);

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_app/src/models/chats/chat_message.dart';
 import 'package:flutter_app/src/models/chats/chat_room.dart';
+import 'package:flutter_app/src/models/chats/chat_room_admin.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_users.dart';
 import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/chats/room_most_recent_message.dart';
@@ -337,6 +338,61 @@ class ChatRepository {
     } else {
       throw Exception(
           "getUserChatRoomLastSeen: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<List<ChatRoomAdmin>> getChatRoomAdmins(String roomId, String accessToken) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/room/$roomId/admins"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken'
+        },
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final roomAdmins = jsonResponse.map((e) => ChatRoomAdmin.fromJson(e)).toList();
+      return roomAdmins;
+    } else {
+      throw Exception(
+          "getChatRoomAdmins: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<ChatRoomAdmin> upsertChatRoomAdmins(String roomId, String userId, String accessToken) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/room/$roomId/admins/$userId"),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken'
+      },
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final dynamic jsonResponse = jsonDecode(response.body);
+      final roomAdmin = ChatRoomAdmin.fromJson(jsonResponse);
+      return roomAdmin;
+    } else {
+      throw Exception(
+          "upsertChatRoomAdmins: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> removeChatRoomAdmins(String roomId, String userId, String accessToken) async {
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/room/$roomId/admins/$userId"),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken'
+      },
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return;
+    } else {
+      throw Exception(
+          "removeChatRoomAdmins: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
