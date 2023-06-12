@@ -480,7 +480,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         shape: ShapeLightFocus.Circle,
         enableOverlayTab: true,
         enableTargetTab: true,
-        paddingFocus: 10,
+        paddingFocus: 0,
         contents: [
           TargetContent(
             align: ContentAlign.top,
@@ -505,7 +505,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   const Padding(
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: AutoSizeText(
-                      "In a few short steps, we will take a look at what's on offer",
+                      "This short tour will provide you with a brief introduction",
                       maxLines: 2,
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -942,26 +942,27 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   _showBasicTutorialIfNeeded() {
-    final currentState = _authenticationBloc.state;
-    if (currentState is AuthSuccessUserUpdateState) {
-      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+    _createTutorialAndMarkAsComplete(String userId) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_){
         createTutorial();
         if (!hasBasicTutorialBeenShown) {
           basicTutorialCoachMark?.show(context: context);
           // Show tutorial here
-          _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
+          _markUserAppTutorialAsComplete(userId);
         }
+      });
+    }
+
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        _createTutorialAndMarkAsComplete(currentState.authenticatedUser.user.id);
       }
     }
     else if (currentState is AuthSuccessState) {
-      if (!(currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
-        // Show tutorial here
-        createTutorial();
-        if (!hasBasicTutorialBeenShown) {
-          basicTutorialCoachMark?.show(context: context);
-          // Show tutorial here
-          _markUserAppTutorialAsComplete(currentState.authenticatedUser.user.id);
-        }
+      if ((currentState.authenticatedUser.userTutorialStatus?.isTutorialComplete ?? false)) {
+        _createTutorialAndMarkAsComplete(currentState.authenticatedUser.user.id);
       }
     }
   }
@@ -1233,7 +1234,8 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
               icon: const Icon(Icons.menu, color: Colors.teal,),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
-                Future.delayed(const Duration(milliseconds: 100), () {
+                // We wait to ensure drawer is open and elements are in scope
+                Future.delayed(const Duration(milliseconds: 250), () {
                 createAppDrawerTutorialIfNeeded();
                 _showAppDrawerTutorialIfNeeded();
                 });
