@@ -332,7 +332,7 @@ class UserResultsListState extends State<UserResultsList> {
                       "Participant options",
                     style: TextStyle(
                       color: Colors.teal,
-                      fontSize: 16,
+                      fontSize: 18,
                     ),
                   ),
                   content: SizedBox(
