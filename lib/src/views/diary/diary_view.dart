@@ -16,6 +16,7 @@ import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_state.dart';
 import 'package:flutter_app/src/views/exercise_diary/exercise_diary_view.dart';
 import 'package:flutter_app/src/views/exercise_search/exercise_search_view.dart';
+import 'package:flutter_app/src/views/food_diary/food_diary_view.dart';
 import 'package:flutter_app/src/views/food_search/food_search_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
@@ -698,7 +699,7 @@ class DiaryViewState extends State<DiaryView> {
               },
               child: InkWell(
                 onTap: () {
-                  // todo - go to detailed food view here?
+                  _goToDetailedFoodView(foodEntryForHeadingRaw.foodId, foodEntryForHeadingRaw.id, heading);
                 },
                 child: Card(
                   child: Padding(
@@ -799,7 +800,7 @@ class DiaryViewState extends State<DiaryView> {
             },
             child: InkWell(
               onTap: () {
-                _goToDetailedExerciseView(state, currentCardioEntry.workoutId, true);
+                _goToDetailedExerciseView(state, currentCardioEntry.workoutId, currentCardioEntry.id, true);
               },
               child: Card(
                 child: Padding(
@@ -885,7 +886,7 @@ class DiaryViewState extends State<DiaryView> {
             },
             child: InkWell(
               onTap: () {
-                _goToDetailedExerciseView(state, currentStrengthEntry.workoutId, false);
+                _goToDetailedExerciseView(state, currentStrengthEntry.workoutId, currentStrengthEntry.id, false);
               },
               child: Card(
                 child: Padding(
@@ -968,23 +969,30 @@ class DiaryViewState extends State<DiaryView> {
     );
   }
 
-  _goToDetailedExerciseView(DiaryDataFetched state, String workoutId, bool isCardio) {
+  _goToDetailedExerciseView(DiaryDataFetched state, String workoutId, String diaryEntryId, bool isCardio) {
     Navigator.push(
         context,
         ExerciseDiaryView.route(
             widget.currentUserProfile,
             state.fitnessUserProfile!,
             workoutId,
+            diaryEntryId,
             isCardio,
             currentSelectedDate
         )
       ).then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
   }
 
-  // _goToDetailedFoodView(DiaryDataFetched state, String foodId) {
-  //   Navigator.push(
-  //       context,
-  //       todo - go to the right route
-    // ).then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
-  // }
+  _goToDetailedFoodView(int foodId, String diaryEntryId, String mealOfDay) {
+    Navigator.push(
+        context,
+        FoodDiaryView.route(
+            widget.currentUserProfile,
+            foodId,
+            diaryEntryId,
+            currentSelectedDate,
+            mealOfDay
+        )
+    ).then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
+  }
 }

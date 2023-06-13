@@ -298,6 +298,7 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
                 Expanded(
                     flex: 8,
                     child: DropdownButton<String>(
+                      isExpanded: true,
                       value: selectedServingOption?.serving_description ?? "No serving size",
                       icon: const Padding(
                         padding: EdgeInsets.fromLTRB(10, 0, 10, 0),

@@ -89,3 +89,32 @@ class StrengthDiaryEntryCreate extends Equatable {
   ];
 
 }
+
+class StrengthDiaryEntryUpdate extends Equatable {
+  final DateTime exerciseDate;
+  final int? sets;
+  final int? reps;
+  final List<int> weightsInLbs;
+  final double? caloriesBurned;
+  final String? meetupId;
+
+  const StrengthDiaryEntryUpdate({
+    required this.exerciseDate,
+    required this.sets,
+    required this.reps,
+    required this.weightsInLbs,
+    required this.caloriesBurned,
+    required this.meetupId
+  });
+
+  @override
+  List<Object?> get props => [
+    exerciseDate,
+    sets,
+    reps,
+    weightsInLbs,
+    caloriesBurned,
+    meetupId,
+  ];
+
+}

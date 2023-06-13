@@ -169,6 +169,53 @@ class DiaryRepository {
     }
   }
 
+  Future<CardioDiaryEntry> getCardioUserDiaryEntry(
+      String userId,
+      String cardioDiaryEntryId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/user/$userId/cardio/$cardioDiaryEntryId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return CardioDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "getCardioUserDiaryEntry: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<CardioDiaryEntry> updateCardioUserDiaryEntry(
+      String userId,
+      String cardioDiaryEntryId,
+      CardioDiaryEntryUpdate entry,
+      String accessToken
+      ) async {
+    final response = await http.put(
+        Uri.parse("$BASE_URL/user/$userId/cardio/$cardioDiaryEntryId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: jsonEncode({
+          "cardioDate": entry.cardioDate.toUtc().toIso8601String(),
+          "durationInMinutes": entry.durationInMinutes,
+          "caloriesBurned": entry.caloriesBurned,
+          "meetupId": entry.meetupId,
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return CardioDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "updateCardioUserDiaryEntry: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<void> deleteCardioEntryFromUserDiary(
       String userId,
       String cardioWorkoutDiaryEntryId,
@@ -214,6 +261,55 @@ class DiaryRepository {
     else {
       throw Exception(
           "addStrengthEntryToUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<StrengthDiaryEntry> updateStrengthUserDiaryEntry(
+      String userId,
+      String strengthDiaryEntryId,
+      StrengthDiaryEntryUpdate entry,
+      String accessToken
+      ) async {
+    final response = await http.put(
+        Uri.parse("$BASE_URL/user/$userId/strength/$strengthDiaryEntryId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: jsonEncode({
+          "exerciseDate": entry.exerciseDate.toUtc().toIso8601String(),
+          "sets": entry.sets,
+          "reps": entry.reps,
+          "weightsInLbs": entry.weightsInLbs,
+          "caloriesBurned": entry.caloriesBurned,
+          "meetupId": entry.meetupId,
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return StrengthDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "updateStrengthUserDiaryEntry: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<StrengthDiaryEntry> getStrengthUserDiaryEntry(
+      String userId,
+      String strengthDiaryEntryId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/user/$userId/strength/$strengthDiaryEntryId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return StrengthDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "getStrengthUserDiaryEntry: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 
@@ -449,6 +545,52 @@ class DiaryRepository {
     else {
       throw Exception(
           "addFoodEntryToUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<FoodDiaryEntry> updateFoodDiaryEntryForUser(
+      String userId,
+      String diaryEntryId,
+      FoodDiaryEntryUpdate entry,
+      String accessToken
+      ) async {
+    final response = await http.put(
+        Uri.parse("$BASE_URL/user/$userId/food/$diaryEntryId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+        body: jsonEncode({
+          "servingId": entry.servingId,
+          "numberOfServings": entry.numberOfServings,
+          "entryDate": entry.entryDate.toUtc().toIso8601String(),
+        })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return FoodDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "updateFoodDiaryEntryForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<FoodDiaryEntry> getFoodDiaryEntryById(
+      String userId,
+      String diaryEntryId,
+      String accessToken
+      ) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/user/$userId/food/$diaryEntryId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return FoodDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "getFoodDiaryEntryById: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

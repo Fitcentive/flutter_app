@@ -68,6 +68,7 @@ class TransportPreferenceViewState extends State<TransportPreferenceView> {
       children: [
         const Text('Transport mode', style: TextStyle(fontSize: 13),),
         DropdownButton<String>(
+            isExpanded: true,
             value: selectedTransportMode,
             items: ConstantUtils.transportTypes.map((e) => DropdownMenuItem<String>(
               value: e,

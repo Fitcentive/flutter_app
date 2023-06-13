@@ -115,6 +115,7 @@ class ProfileInfoViewState extends State<ProfileInfoView> {
     return  Container(
       margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 0),
       child: DropdownButton<String>(
+          isExpanded: true,
           value: selectedUserGender,
           items: ConstantUtils.genderTypes.map((e) => DropdownMenuItem<String>(
             value: e,

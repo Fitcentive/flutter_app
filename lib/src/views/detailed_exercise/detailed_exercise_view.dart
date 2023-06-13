@@ -116,7 +116,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
     }
     else {
       return SizedBox(
-        height: maxHeight + 20,
+        height: maxHeight + 100,
         child: Column(
           children: [
             _bottomBarInternal(maxHeight),

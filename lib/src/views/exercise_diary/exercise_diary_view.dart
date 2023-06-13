@@ -1,8 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
+import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -24,6 +25,7 @@ class ExerciseDiaryView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final FitnessUserProfile currentFitnessUserProfile;
   final String workoutId;
+  final String diaryEntryId;
   final bool isCurrentExerciseDefinitionCardio;
   final DateTime selectedDayInQuestion;
 
@@ -32,6 +34,7 @@ class ExerciseDiaryView extends StatefulWidget {
     required this.currentUserProfile,
     required this.currentFitnessUserProfile,
     required this.workoutId,
+    required this.diaryEntryId,
     required this.isCurrentExerciseDefinitionCardio,
     required this.selectedDayInQuestion
   }): super(key: key);
@@ -40,6 +43,7 @@ class ExerciseDiaryView extends StatefulWidget {
       PublicUserProfile currentUserProfile,
       FitnessUserProfile currentFitnessUserProfile,
       String workoutId,
+      String diaryEntryId,
       bool isCurrentExerciseDefinitionCardio,
       DateTime selectedDayInQuestion
       ) {
@@ -51,6 +55,7 @@ class ExerciseDiaryView extends StatefulWidget {
             currentUserProfile,
             currentFitnessUserProfile,
             workoutId,
+            diaryEntryId,
             isCurrentExerciseDefinitionCardio,
             selectedDayInQuestion
         )
@@ -61,6 +66,7 @@ class ExerciseDiaryView extends StatefulWidget {
       PublicUserProfile currentUserProfile,
       FitnessUserProfile currentFitnessUserProfile,
       String workoutId,
+      String diaryEntryId,
       bool isCurrentExerciseDefinitionCardio,
       DateTime selectedDayInQuestion
       ) => MultiBlocProvider(
@@ -78,6 +84,7 @@ class ExerciseDiaryView extends StatefulWidget {
       workoutId: workoutId,
       isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
       selectedDayInQuestion: selectedDayInQuestion,
+      diaryEntryId: diaryEntryId,
     ),
   );
 
@@ -105,6 +112,9 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
   final TextEditingController _caloriesBurnedTextController = TextEditingController();
 
   DateTime selectedWorkoutDateTime = DateTime.now();
+  String cardioMinutesPerformed = "";
+  String setsPerformed = "";
+  String repsPerformed = "";
 
   @override
   void initState() {
@@ -116,6 +126,8 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
     _exerciseDiaryBloc.add(FetchExerciseDiaryEntryInfo(
         userId: widget.currentUserProfile.userId,
         workoutId: widget.workoutId,
+        diaryEntryId: widget.diaryEntryId,
+        isCardio: widget.isCurrentExerciseDefinitionCardio,
     ));
 
     selectedWorkoutDateTime = widget.selectedDayInQuestion;
@@ -138,9 +150,39 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
       bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       body: BlocListener<ExerciseDiaryBloc, ExerciseDiaryState>(
         listener: (context, state) {
-          if (state is ExerciseDiaryDataLoaded) {
+          if (state is ExerciseEntryUpdatedAndReadyToPop) {
+            SnackbarUtils.showSnackBarMedium(context, "Diary entry updated successfully!");
+            Navigator.pop(context);
+          }
+          else if (state is ExerciseDiaryDataLoaded) {
             setState(() {
-              // set state here
+              if (state.diaryEntry.isLeft) {
+                selectedWorkoutDateTime = state.diaryEntry.left.cardioDate.toLocal();
+                cardioMinutesPerformed = state.diaryEntry.left.durationInMinutes.toString();
+                _mintuesPerformedTextController.text = cardioMinutesPerformed;
+                _caloriesBurnedTextController.text =
+                    ExerciseUtils.calculateCaloriesBurnedForCardioActivity(
+                        widget.currentFitnessUserProfile,
+                        state.exerciseDefinition.name,
+                        state.diaryEntry.left.durationInMinutes
+                    ).toStringAsFixed(0);
+
+              }
+              else {
+                selectedWorkoutDateTime = state.diaryEntry.right.exerciseDate.toLocal();
+                setsPerformed = state.diaryEntry.right.sets.toString();
+                repsPerformed = state.diaryEntry.right.reps.toString();
+
+                _setsTextController.text = setsPerformed;
+                _repsTextController.text = repsPerformed;
+                _caloriesBurnedTextController.text =
+                    ExerciseUtils.calculateCaloriesBurnedForNonCardioActivity(
+                        widget.currentFitnessUserProfile,
+                        state.exerciseDefinition.name,
+                        state.diaryEntry.right.sets,
+                        state.diaryEntry.right.reps
+                    ).toStringAsFixed(0);
+              }
             });
           }
         },
@@ -192,7 +234,7 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
     );
   }
 
-  _showSaveChangesButton() {
+  _showSaveChangesButton(ExerciseDiaryDataLoaded state) {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: ElevatedButton(
@@ -203,20 +245,19 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
           if (widget.isCurrentExerciseDefinitionCardio) {
             if (_mintuesPerformedTextController.value.text.isNotEmpty) {
               final durationInMins = int.parse(_mintuesPerformedTextController.value.text);
-              // todo - use an ExerciseDiaryEntryUpdated event to make progress here
-              // _addExerciseToDiaryBloc.add(
-              //     AddCardioEntryToDiary(
-              //       userId: widget.currentUserProfile.userId,
-              //       newEntry: CardioDiaryEntryCreate(
-              //         workoutId: widget.exerciseDefinition.uuid,
-              //         name: widget.exerciseDefinition.name,
-              //         cardioDate: selectedWorkoutDateTime,
-              //         durationInMinutes: durationInMins,
-              //         caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
-              //         meetupId: null,
-              //       ),
-              //     )
-              // );
+              SnackbarUtils.showSnackBarMedium(context, "Hold on... saving changes...");
+              _exerciseDiaryBloc.add(
+                  CardioExerciseDiaryEntryUpdated(
+                    userId: widget.currentUserProfile.userId,
+                    cardioDiaryEntryId: state.diaryEntry.left.id,
+                    entry: CardioDiaryEntryUpdate(
+                        cardioDate: selectedWorkoutDateTime,
+                        durationInMinutes: durationInMins,
+                        caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
+                        meetupId: state.diaryEntry.left.meetupId,
+                    )
+                  )
+              );
             }
             else {
               SnackbarUtils.showSnackBar(context, "Please add minutes performed!");
@@ -226,21 +267,20 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
             if (_setsTextController.value.text.isNotEmpty && _repsTextController.value.text.isNotEmpty) {
               final sets = int.parse(_setsTextController.value.text);
               final reps = int.parse(_repsTextController.value.text);
-              // _addExerciseToDiaryBloc.add(
-              //     AddStrengthEntryToDiary(
-              //       userId: widget.currentUserProfile.userId,
-              //       newEntry: StrengthDiaryEntryCreate(
-              //         workoutId: widget.exerciseDefinition.uuid,
-              //         name: widget.exerciseDefinition.name,
-              //         exerciseDate: selectedWorkoutDateTime,
-              //         sets: sets,
-              //         reps: reps,
-              //         caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
-              //         weightsInLbs: const [], // todo - update this
-              //         meetupId: null,
-              //       ),
-              //     )
-              // );
+              _exerciseDiaryBloc.add(
+                  StrengthExerciseDiaryEntryUpdated(
+                      userId: widget.currentUserProfile.userId,
+                      strengthDiaryEntryId: state.diaryEntry.right.id,
+                      entry: StrengthDiaryEntryUpdate(
+                        exerciseDate: selectedWorkoutDateTime,
+                        sets: sets,
+                        reps: reps,
+                        weightsInLbs: state.diaryEntry.right.weightsInLbs,
+                        caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
+                        meetupId: state.diaryEntry.right.meetupId,
+                      )
+                  )
+              );
             }
             else {
               if (_setsTextController.value.text.isEmpty) {
@@ -279,37 +319,37 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
             WidgetUtils.spacer(2.5),
             _renderCaloriesBurned(),
             WidgetUtils.spacer(5),
-            _showSaveChangesButton(),
+            _showSaveChangesButton(state),
           ]),
         ),
       );
     }
     else {
       // Needs weight per set
-      return Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: WidgetUtils.skipNulls([
-              WidgetUtils.spacer(5),
-              _showExerciseTitle(state),
-              WidgetUtils.spacer(2.5),
-              _displayExerciseImageIfAny(state),
-              _generateDotsIfNeeded(state),
-              WidgetUtils.spacer(2.5),
-              _renderWorkoutDate(state),
-              WidgetUtils.spacer(2.5),
-              _renderWorkoutTime(state),
-              WidgetUtils.spacer(2.5),
-              _renderSets(state),
-              WidgetUtils.spacer(2.5),
-              _renderReps(state),
-              WidgetUtils.spacer(2.5),
-              _renderCaloriesBurned(),
-              WidgetUtils.spacer(5),
-              _showSaveChangesButton(),
-            ]),
-          ),
+      return SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: WidgetUtils.skipNulls([
+            WidgetUtils.spacer(5),
+            _showExerciseTitle(state),
+            WidgetUtils.spacer(5),
+            _displayExerciseImageIfAny(state),
+            _generateDotsIfNeeded(state),
+            WidgetUtils.spacer(2.5),
+            _renderWorkoutDate(state),
+            WidgetUtils.spacer(2.5),
+            _renderWorkoutTime(state),
+            WidgetUtils.spacer(2.5),
+            _renderSets(state),
+            WidgetUtils.spacer(2.5),
+            _renderReps(state),
+            WidgetUtils.spacer(2.5),
+            _renderCaloriesBurned(),
+            WidgetUtils.spacer(5),
+            _showSaveChangesButton(state),
+          ]),
         ),
       );
     }

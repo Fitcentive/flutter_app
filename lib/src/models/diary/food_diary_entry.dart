@@ -72,3 +72,23 @@ class FoodDiaryEntryCreate extends Equatable {
     entryDate
   ];
 }
+
+class FoodDiaryEntryUpdate extends Equatable {
+  final int servingId;
+  final double numberOfServings;
+  final DateTime entryDate;
+
+
+  const FoodDiaryEntryUpdate({
+    required this.servingId,
+    required this.numberOfServings,
+    required this.entryDate
+  });
+
+  @override
+  List<Object?> get props => [
+    servingId,
+    numberOfServings,
+    entryDate
+  ];
+}

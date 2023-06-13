@@ -1,99 +1,102 @@
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:either_dart/either.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
-import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
-import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
+import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_bloc.dart';
-import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_event.dart';
-import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_state.dart';
+import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_event.dart';
+import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_state.dart';
+import 'package:flutter_app/src/views/food_diary/bloc/food_diary_bloc.dart';
+import 'package:flutter_app/src/views/food_diary/bloc/food_diary_event.dart';
+import 'package:flutter_app/src/views/food_diary/bloc/food_diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class AddFoodToDiaryView extends StatefulWidget {
+class FoodDiaryView extends StatefulWidget {
 
-  static const String routeName = "food/search/add-to-diary";
+  static const String routeName = "diary/view-food";
 
   final PublicUserProfile currentUserProfile;
-  final Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition;
-  final String mealEntry;
+  final int foodId;
+  final String diaryEntryId;
+  final String mealOfDay;
   final DateTime selectedDayInQuestion;
-  final Serving? selectedServingOption;
 
-  const AddFoodToDiaryView({
+  const FoodDiaryView({
     Key? key,
     required this.currentUserProfile,
-    required this.foodDefinition,
-    required this.mealEntry,
+    required this.foodId,
+    required this.diaryEntryId,
     required this.selectedDayInQuestion,
-    required this.selectedServingOption,
+    required this.mealOfDay,
   }): super(key: key);
 
   static Route route(
       PublicUserProfile currentUserProfile,
-      Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition,
-      String mealEntry,
+      int foodId,
+      String diaryEntryId,
       DateTime selectedDayInQuestion,
-      Serving? selectedServingOption,
+      String mealOfDay
       ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
             name: routeName
         ),
-        builder: (_) => AddFoodToDiaryView.withBloc(
+        builder: (_) => FoodDiaryView.withBloc(
             currentUserProfile,
-            foodDefinition,
-            mealEntry,
+            foodId,
+            diaryEntryId,
             selectedDayInQuestion,
-            selectedServingOption,
+            mealOfDay
         )
     );
   }
 
   static Widget withBloc(
       PublicUserProfile currentUserProfile,
-      Either<FoodGetResult, FoodGetResultSingleServing> foodDefinition,
-      String mealEntry,
+      int foodId,
+      String diaryEntryId,
       DateTime selectedDayInQuestion,
-      Serving? selectedServingOption,
+      String mealOfDay,
       ) => MultiBlocProvider(
     providers: [
-      BlocProvider<AddFoodToDiaryBloc>(
-          create: (context) => AddFoodToDiaryBloc(
+      BlocProvider<FoodDiaryBloc>(
+          create: (context) => FoodDiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
       ),
     ],
-    child: AddFoodToDiaryView(
+    child: FoodDiaryView(
       currentUserProfile: currentUserProfile,
-      foodDefinition: foodDefinition,
-      mealEntry: mealEntry,
+      foodId: foodId,
       selectedDayInQuestion: selectedDayInQuestion,
-      selectedServingOption: selectedServingOption,
+      diaryEntryId: diaryEntryId,
+      mealOfDay: mealOfDay
     ),
   );
 
 
+
   @override
-  State createState() {
-    return AddFoodToDiaryViewState();
+  State<StatefulWidget> createState() {
+    return FoodDiaryViewState();
   }
+
 }
 
-class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
-  static const int MAX_TABS = 2;
+class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderStateMixin {
+  static const int MAX_TABS = 1;
 
-  late AddFoodToDiaryBloc _addFoodToDiaryBloc;
+  late FoodDiaryBloc _foodDiaryBloc;
+  late final TabController _tabController;
 
   final TextEditingController _servingsTextController = TextEditingController();
 
@@ -105,39 +108,14 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
   void initState() {
     super.initState();
 
-    _addFoodToDiaryBloc = BlocProvider.of<AddFoodToDiaryBloc>(context);
+    _tabController = TabController(vsync: this, length: MAX_TABS);
 
-    servingOptions = widget.foodDefinition.isLeft ?
-                      widget.foodDefinition.left.food.servings.serving :
-                      [widget.foodDefinition.right.food.servings.serving];
-
-    selectedServingOption = widget.selectedServingOption ?? servingOptions.first;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: _bottomBarWithOptAd(),
-      appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.teal,
-        ),
-        toolbarHeight: 75,
-        title: Text(
-            widget.foodDefinition.isLeft ? widget.foodDefinition.left.food.food_name : widget.foodDefinition.right.food.food_name,
-            style: const TextStyle(color: Colors.teal)
-        ),
-      ),
-      body: BlocListener<AddFoodToDiaryBloc, AddFoodToDiaryState>(
-        listener: (context, state) {
-          if (state is FoodDiaryEntryAdded) {
-            var count = 0;
-            Navigator.popUntil(context, (route) => count++ == 3);
-          }
-        },
-        child: _displayMainBody(),
-      ),
-    );
+    _foodDiaryBloc = BlocProvider.of<FoodDiaryBloc>(context);
+    _foodDiaryBloc.add(FetchFoodDiaryEntryInfo(
+      userId: widget.currentUserProfile.userId,
+      diaryEntryId: widget.diaryEntryId,
+      foodId: widget.foodId,
+    ));
   }
 
   @override
@@ -146,40 +124,124 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
     super.dispose();
   }
 
-  _bottomBarWithOptAd() {
-    final maxHeight = AdUtils.defaultBannerAdHeightForDetailedFoodAndExerciseView(context) * 2;
-    final Widget? adWidget = WidgetUtils.showHomePageAdIfNeeded(context, maxHeight);
-    if (adWidget == null) {
-      return _bottomBarInternal();
-    }
-    else {
-      return IntrinsicHeight(
-        child: Column(
-          children: [
-            _bottomBarInternal(),
-            adWidget,
-          ],
-        ),
-      );
-    }
-  }
+  @override
+  Widget build(BuildContext context) {
+    final maxHeight = AdUtils.defaultBannerAdHeight(context);
+    final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
+    return Scaffold(
+      bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
+      body: BlocListener<FoodDiaryBloc, FoodDiaryState>(
+        listener: (context, state) {
+          if (state is FoodEntryUpdatedAndReadyToPop) {
+            SnackbarUtils.showSnackBarMedium(context, "Diary entry updated successfully!");
+            Navigator.pop(context);
+          }
+          else if (state is FoodDiaryDataLoaded) {
+            setState(() {
+              selectedServingSize = state.diaryEntry.numberOfServings;
+              servingOptions = state.foodDefinition.isLeft ?
+                  state.foodDefinition.left.food.servings.serving :
+                  [state.foodDefinition.right.food.servings.serving];
 
-  _bottomBarInternal() {
-    return IntrinsicHeight(
-      child: Column(
-        children: WidgetUtils.skipNulls([
-          WidgetUtils.showUpgradeToMobileAppMessageIfNeeded(),
-          BottomAppBar(
-            color: Colors.transparent,
-            child: _showAddToDiaryButton(),
-            elevation: 0,
-          ),
-        ]),
+              if (state.foodDefinition.isLeft) {
+                servingOptions = state.foodDefinition.left.food.servings.serving;
+                selectedServingOption = servingOptions
+                    .firstWhere(
+                        (element) => element.serving_id == state.diaryEntry.servingId.toString(),
+                        orElse: () => servingOptions.first
+                );
+              }
+              else {
+                // In this case, it is a single serving
+                servingOptions = [state.foodDefinition.right.food.servings.serving];
+                selectedServingOption = servingOptions
+                    .firstWhere(
+                        (element) => element.serving_id == state.diaryEntry.servingId.toString(),
+                    orElse: () => servingOptions.first
+                );
+              }
+
+              _servingsTextController.text = selectedServingSize.toStringAsFixed(2);
+            });
+          }
+        },
+        child: BlocBuilder<FoodDiaryBloc, FoodDiaryState>(
+          builder: (context, state) {
+            if (state is FoodDiaryDataLoaded) {
+              return _mainBody(state);
+            }
+            else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
       ),
     );
   }
 
-  _displayMainBody() {
+  Widget _mainBody(FoodDiaryDataLoaded state) {
+    return DefaultTabController(
+        length: MAX_TABS,
+        child: Scaffold(
+          appBar: AppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.save,
+                  color: Colors.teal,
+                ),
+                onPressed: () {
+                  _saveDiaryEntryButtonPressed(state);
+                },
+              )
+            ],
+            iconTheme: const IconThemeData(
+              color: Colors.teal,
+            ),
+            toolbarHeight: 75,
+            title: Text("Edit ${widget.mealOfDay} Entry", style: const TextStyle(color: Colors.teal)),
+            bottom: TabBar(
+              labelColor: Colors.teal,
+              controller: _tabController,
+              tabs: const [
+                Tab(icon: Icon(Icons.menu_book, color: Colors.teal,), text: "Entry"),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _showDiaryEntryToEdit(state),
+            ],
+          ),
+        )
+    );
+  }
+
+
+  _saveDiaryEntryButtonPressed(FoodDiaryDataLoaded state) {
+    if (_servingsTextController.value.text.isNotEmpty) {
+      _foodDiaryBloc.add(
+          FoodDiaryEntryUpdated(
+              userId: widget.currentUserProfile.userId,
+              foodDiaryEntryId: widget.diaryEntryId,
+              entry: FoodDiaryEntryUpdate(
+                servingId: int.parse(selectedServingOption!.serving_id!),
+                numberOfServings: selectedServingSize,
+                entryDate: state.diaryEntry.entryDate,
+              )
+          )
+      );
+    }
+    else {
+      SnackbarUtils.showSnackBarMedium(context, "Please add number of servings!");
+    }
+
+  }
+
+  _showDiaryEntryToEdit(FoodDiaryDataLoaded state) {
     return Center(
       child: SingleChildScrollView(
         child: Column(
@@ -357,53 +419,6 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
               child: Text(value ?? "n/a")
           ),
         ],
-      ),
-    );
-  }
-
-  _showAddToDiaryButton() {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: ElevatedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-        ),
-        onPressed: () async {
-          if (_servingsTextController.value.text.isNotEmpty) {
-            if (widget.foodDefinition.isLeft) {
-              _addFoodToDiaryBloc.add(
-                  AddFoodEntryToDiary(
-                    userId: widget.currentUserProfile.userId,
-                    newEntry: FoodDiaryEntryCreate(
-                        foodId: int.parse(widget.foodDefinition.left.food.food_id),
-                        servingId: int.parse(selectedServingOption!.serving_id!),
-                        numberOfServings: selectedServingSize,
-                        mealEntry: widget.mealEntry,
-                        entryDate: widget.selectedDayInQuestion
-                    ),
-                  )
-              );
-            }
-            else {
-              _addFoodToDiaryBloc.add(
-                  AddFoodEntryToDiary(
-                    userId: widget.currentUserProfile.userId,
-                    newEntry: FoodDiaryEntryCreate(
-                        foodId: int.parse(widget.foodDefinition.right.food.food_id),
-                        servingId: int.parse(selectedServingOption!.serving_id!),
-                        numberOfServings: selectedServingSize,
-                        mealEntry: widget.mealEntry,
-                        entryDate: widget.selectedDayInQuestion
-                    ),
-                  )
-              );
-            }
-          }
-          else {
-            SnackbarUtils.showSnackBar(context, "Please add number of servings!");
-          }
-        },
-        child: const Text("Add to diary", style: TextStyle(fontSize: 15, color: Colors.white)),
       ),
     );
   }
