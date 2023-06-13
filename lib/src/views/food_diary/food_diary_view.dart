@@ -258,8 +258,8 @@ class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderS
         Colors.green,
       ];
       return SizedBox(
-        height: 400,
-        width: 400,
+        height: 200,
+        width: min(ConstantUtils.WEB_APP_MAX_WIDTH, ScreenUtils.getScreenWidth(context)),
         child: PieChart(
           dataMap: dataMap,
           animationDuration: const Duration(milliseconds: 800),
@@ -284,6 +284,11 @@ class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderS
             showChartValuesInPercentage: true,
             showChartValuesOutside: false,
             decimalPlaces: 1,
+            chartValueStyle: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            )
           ),
           // gradientList: ---To add gradient colors---
           // emptyColorGradient: ---Empty Color gradient---
