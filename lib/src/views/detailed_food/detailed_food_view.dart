@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_app/src/models/fatsecret/serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_food_to_diary/add_food_to_diary_view.dart';
 import 'package:flutter_app/src/views/detailed_food/bloc/detailed_food_bloc.dart';
@@ -14,6 +17,7 @@ import 'package:flutter_app/src/views/detailed_food/bloc/detailed_food_event.dar
 import 'package:flutter_app/src/views/detailed_food/bloc/detailed_food_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:pie_chart/pie_chart.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailedFoodView extends StatefulWidget {
@@ -279,10 +283,57 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
     );
   }
 
+  _showMacrosPieChartIfPossible(String? carbs, String? fats, String? protein) {
+    if (carbs != null && fats != null && protein != null) {
+      Map<String, double> dataMap = {
+        "Carbohydrates": double.parse(carbs),
+        "Fats": double.parse(fats),
+        "Proteins": double.parse(protein),
+      };
+      final colorList = <Color>[
+        Colors.blue,
+        Colors.red,
+        Colors.green,
+      ];
+      return SizedBox(
+        height: 400,
+        width: 400,
+        child: PieChart(
+          dataMap: dataMap,
+          animationDuration: const Duration(milliseconds: 800),
+          chartLegendSpacing: 32,
+          chartRadius: min(ConstantUtils.WEB_APP_MAX_WIDTH, ScreenUtils.getScreenWidth(context)) / 3.2,
+          colorList: colorList,
+          initialAngleInDegree: 0,
+          chartType: ChartType.disc,
+          // ringStrokeWidth: 32,
+          // centerText: "HYBRID",
+          legendOptions: const LegendOptions(
+            showLegendsInRow: false,
+            legendPosition: LegendPosition.right,
+            showLegends: true,
+            legendTextStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          chartValuesOptions: const ChartValuesOptions(
+            showChartValueBackground: true,
+            showChartValues: true,
+            showChartValuesInPercentage: true,
+            showChartValuesOutside: false,
+            decimalPlaces: 1,
+          ),
+          // gradientList: ---To add gradient colors---
+          // emptyColorGradient: ---Empty Color gradient---
+        ),
+      );
+    }
+  }
+
   _showDetailedFoodInfo(DetailedFoodState state) {
     if (state is DetailedFoodDataFetched) {
       return Column(
-        children: [
+        children: WidgetUtils.skipNulls([
           Padding(
             padding: const EdgeInsets.all(10),
             child: Row(
@@ -326,38 +377,37 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
                 ),
               ],
             ),
-          )
-          ,
+          ),
           WidgetUtils.spacer(2.5),
-          _infoItem("Serving Size", "${selectedServingOption?.metric_serving_amount} ${selectedServingOption?.metric_serving_unit}"),
+          _infoItem("Serving Size", "${selectedServingOption?.metric_serving_amount ?? ""} ${selectedServingOption?.metric_serving_unit ?? ""}"),
           WidgetUtils.spacer(2.5),
           _infoItem("Calories", selectedServingOption?.calories),
+          _showMacrosPieChartIfPossible(selectedServingOption?.carbohydrate, selectedServingOption?.fat, selectedServingOption?.protein),
+          _infoItem("Carbohydrates", "${_stringOptToDouble(selectedServingOption?.carbohydrate)} g"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Carbohydrates", selectedServingOption?.carbohydrate),
+          _infoItem("Fat", "${_stringOptToDouble(selectedServingOption?.fat)} g"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Fat", selectedServingOption?.fat),
+          _infoItem("Protein", "${_stringOptToDouble(selectedServingOption?.protein)} g"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Protein", selectedServingOption?.protein),
+          _infoItem("Calcium", "${_stringOptToDouble(selectedServingOption?.calcium)} mg"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Calcium", selectedServingOption?.calcium),
+          _infoItem("Cholesterol", "${_stringOptToDouble(selectedServingOption?.cholesterol)} mg"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Cholesterol", selectedServingOption?.cholesterol),
+          _infoItem("Fiber", "${_stringOptToDouble(selectedServingOption?.fiber)} g"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Fiber", selectedServingOption?.fiber),
+          _infoItem("Iron", "${_stringOptToDouble(selectedServingOption?.iron)} mg"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Iron", selectedServingOption?.iron),
+          _infoItem("Monounsaturated Fat", "${_stringOptToDouble(selectedServingOption?.monounsaturated_fat)} g"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Monounsaturated Fat", selectedServingOption?.monounsaturated_fat),
+          _infoItem("Polyunsaturated Fat", "${_stringOptToDouble(selectedServingOption?.polyunsaturated_fat)} g"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Polyunsaturated Fat", selectedServingOption?.polyunsaturated_fat),
+          _infoItem("Potassium", "${_stringOptToDouble(selectedServingOption?.potassium)} mg"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Potassium", selectedServingOption?.potassium),
+          _infoItem("Saturated Fat", "${_stringOptToDouble(selectedServingOption?.saturated_fat)} g"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Saturated Fat", selectedServingOption?.saturated_fat),
+          _infoItem("Sodium", "${_stringOptToDouble(selectedServingOption?.sodium)} mg"),
           WidgetUtils.spacer(2.5),
-          _infoItem("Sodium", selectedServingOption?.sodium),
-          WidgetUtils.spacer(2.5),
-          _infoItem("Sugar", selectedServingOption?.sugar),
+          _infoItem("Sugar", "${_stringOptToDouble(selectedServingOption?.sugar)} g"),
           WidgetUtils.spacer(2.5),
           Padding(
             padding: const EdgeInsets.all(10),
@@ -390,7 +440,7 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
               ],
             ),
           ),
-        ],
+        ]),
       );
     }
     else {
@@ -400,6 +450,10 @@ class DetailedFoodViewState extends State<DetailedFoodView> with SingleTickerPro
         ),
       );
     }
+  }
+
+  _stringOptToDouble(String? value) {
+    return (double.parse(value ?? "0")).toStringAsFixed(2);
   }
 
   _infoItem(String name, String? value) {
