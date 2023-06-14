@@ -18,7 +18,7 @@ import 'package:flutter_app/src/views/shared_components/meetup_comments_list/blo
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/bloc/meetup_comments_list_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class MeetupCommentsListView extends StatefulWidget {
   final String currentUserId;
@@ -362,7 +362,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
               child: Text(
-                DateFormat(ConstantUtils.timestampFormat).format(comment.createdAt.add(DateTime.now().timeZoneOffset)),
+                timeago.format(comment.createdAt.toLocal()),
                 style: const TextStyle(
                     fontSize: 10
                 ),

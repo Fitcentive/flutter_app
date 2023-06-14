@@ -153,6 +153,7 @@ class SocialPostsListState extends State<SocialPostsList> {
         _goToSelectedPostView(post);
       },
       child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         itemCount: previewComments.length,
         itemBuilder: (BuildContext context, int index) {
