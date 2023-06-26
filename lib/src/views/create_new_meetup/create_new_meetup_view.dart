@@ -99,6 +99,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
             Navigator.pop(context);
           }
           else if (state is MeetupBeingCreated) {
+            SnackbarUtils.showSnackBarShort(context, "Hang on while we save your meetup...");
             setState(() {
               isMeetupBeingSavedCurrently = true;
               dynamicActionButtons = _dynamicFloatingActionButtons();

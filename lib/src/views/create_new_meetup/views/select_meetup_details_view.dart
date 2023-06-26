@@ -46,6 +46,8 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
   List<String> selectedParticipants = List<String>.empty(growable: true);
   late DateTime selectedMeetupDate;
 
+  bool hasDefaultSelectedMeetupDateBeenChanged = false;
+
   Timer? _debounce;
 
   @override
@@ -161,7 +163,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
           NewMeetupChanged(
             currentUserProfile: currentState.currentUserProfile,
             meetupName: currentState.meetupName,
-            meetupTime: selectedMeetupDate,
+            meetupTime: hasDefaultSelectedMeetupDateBeenChanged ? selectedMeetupDate : null,
             location: location,
             meetupParticipantUserIds: currentState.participantUserProfiles.map((e) => e.userId).toList(),
             currentUserAvailabilities: currentState.currentUserAvailabilities,
@@ -248,7 +250,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
       ),
       onPressed: () async {
         final selectedTime = await showTimePicker(
-          initialTime: TimeOfDay.now(),
+          initialTime: TimeOfDay.fromDateTime(selectedMeetupDate),
           builder: (BuildContext context, Widget? child) {
             return Theme(
                 data: ThemeData(primarySwatch: Colors.teal),
@@ -262,6 +264,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
 
         final currentState = _createNewMeetupBloc.state;
         if(currentState is MeetupModified && selectedTime != null) {
+          hasDefaultSelectedMeetupDateBeenChanged = true;
           setState(() {
             selectedMeetupDate = DateTime(
               selectedMeetupDate.year,
@@ -285,7 +288,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
         }
       },
       child: Text(
-          DateFormat("hh:mm a").format(selectedMeetupDate),
+          hasDefaultSelectedMeetupDateBeenChanged ? DateFormat("hh:mm a").format(selectedMeetupDate) : "Time unset",
           style: const TextStyle(
               fontSize: 16,
               color: Colors.white
@@ -317,6 +320,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
 
         final currentState = _createNewMeetupBloc.state;
         if(currentState is MeetupModified && selectedDate != null) {
+          hasDefaultSelectedMeetupDateBeenChanged = true;
           _createNewMeetupBloc.add(
               NewMeetupChanged(
                   currentUserProfile: currentState.currentUserProfile,
@@ -334,7 +338,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
         }
       },
       child: Text(
-          DateFormat('yyyy-MM-dd').format(selectedMeetupDate),
+          hasDefaultSelectedMeetupDateBeenChanged ?  DateFormat('yyyy-MM-dd').format(selectedMeetupDate) : "Date unset",
           style: const TextStyle(
               fontSize: 16,
               color: Colors.white
