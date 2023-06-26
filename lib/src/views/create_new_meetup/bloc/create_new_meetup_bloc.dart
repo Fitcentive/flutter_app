@@ -57,8 +57,9 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
   }
 
   void _saveNewMeetup(SaveNewMeetup event, Emitter<CreateNewMeetupState> emit) async {
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    emit(const MeetupBeingCreated());
 
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     List <MeetupAvailabilityUpsert> availabilitiesToSave = MiscUtils.convertBooleanCellStateMatrixToAvailabilities(
         event.currentUserAvailabilities,
         timeSegmentToDateTimeMap,

@@ -55,6 +55,8 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
   Icon floatingActionButtonIcon = const Icon(Icons.navigate_next, color: Colors.white);
   Widget? dynamicActionButtons;
 
+  bool isMeetupBeingSavedCurrently = false;
+
   List<PublicUserProfile> meetupParticipantsState = List.empty();
 
   @override
@@ -96,6 +98,12 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
             SnackbarUtils.showSnackBar(context, "Meetup created successfully!");
             Navigator.pop(context);
           }
+          else if (state is MeetupBeingCreated) {
+            setState(() {
+              isMeetupBeingSavedCurrently = true;
+              dynamicActionButtons = _dynamicFloatingActionButtons();
+            });
+          }
         },
         child: _pageViews(isPremiumEnabled),
       ),
@@ -115,25 +123,28 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
 
 
   _dynamicFloatingActionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Container(
-          margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
-          child: FloatingActionButton(
-              heroTag: "CreateNewMeetupViewbutton1",
-              onPressed: _onBackFloatingActionButtonPress,
-              backgroundColor: Colors.teal,
-              child: const Icon(Icons.navigate_before, color: Colors.white)
+    return Visibility(
+      visible: !isMeetupBeingSavedCurrently,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+            child: FloatingActionButton(
+                heroTag: "CreateNewMeetupViewbutton1",
+                onPressed: _onBackFloatingActionButtonPress,
+                backgroundColor: Colors.teal,
+                child: const Icon(Icons.navigate_before, color: Colors.white)
+            ),
           ),
-        ),
-        FloatingActionButton(
-            heroTag: "CreateNewMeetupViewbutton2",
-            onPressed: _onActionButtonPress,
-            backgroundColor: Colors.teal,
-            child: floatingActionButtonIcon
-        )
-      ],
+          FloatingActionButton(
+              heroTag: "CreateNewMeetupViewbutton2",
+              onPressed: _onActionButtonPress,
+              backgroundColor: Colors.teal,
+              child: floatingActionButtonIcon
+          )
+        ],
+      ),
     );
   }
 

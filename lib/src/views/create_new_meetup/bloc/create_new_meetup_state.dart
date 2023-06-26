@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/location/location.dart';
-import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -62,6 +61,14 @@ class MeetupModified extends CreateNewMeetupState {
     userIdToColorSet,
   ];
 }
+
+class MeetupBeingCreated extends CreateNewMeetupState {
+  const MeetupBeingCreated();
+
+  @override
+  List<Object?> get props => [];
+}
+
 
 class MeetupCreatedAndReadyToPop extends CreateNewMeetupState {
   const MeetupCreatedAndReadyToPop();
