@@ -19,6 +19,8 @@ class ParticipantsList extends StatefulWidget {
 
   final double circleRadius;
 
+  final bool shouldRenderName;
+
   const ParticipantsList({
     super.key,
     required this.participantUserProfiles,
@@ -28,6 +30,7 @@ class ParticipantsList extends StatefulWidget {
     required this.shouldShowAvailabilityIcon,
     required this.shouldTapChangeCircleColour,
     this.circleRadius = 60,
+    this.shouldRenderName = true,
   });
 
   @override
@@ -60,7 +63,7 @@ class ParticipantsListState extends State<ParticipantsList> {
 
   Widget _renderParticipantCircleViewWithCloseButton(PublicUserProfile userProfile) {
     return Column(
-      children: [
+      children: WidgetUtils.skipNulls([
         CircleAvatar(
           radius: (widget.circleRadius / 2) + ((widget.circleRadius / 2)/10),
           backgroundColor: widget.onParticipantTapped == null ? Colors.teal : (
@@ -124,14 +127,14 @@ class ParticipantsListState extends State<ParticipantsList> {
         ),
         WidgetUtils.spacer(2),
         // Render name
-        Text(
+        widget.shouldRenderName ? Text(
           "${userProfile.firstName} ${userProfile.lastName}",
           style: const TextStyle(
             fontSize: 12,
             color: Colors.teal,
           ),
-        )
-      ],
+        ) : null
+      ]),
     );
   }
 

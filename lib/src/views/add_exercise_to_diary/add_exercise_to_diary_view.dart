@@ -5,6 +5,9 @@ import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
+import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
+import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -14,6 +17,8 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_exercise_to_diary/bloc/add_exercise_to_diary_bloc.dart';
 import 'package:flutter_app/src/views/add_exercise_to_diary/bloc/add_exercise_to_diary_event.dart';
 import 'package:flutter_app/src/views/add_exercise_to_diary/bloc/add_exercise_to_diary_state.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_mini_card_view.dart';
+import 'package:flutter_app/src/views/shared_components/select_from_meetups/select_from_meetups_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
@@ -104,6 +109,11 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
   final TextEditingController _repsTextController = TextEditingController();
   final TextEditingController _caloriesBurnedTextController = TextEditingController();
 
+  Meetup? associatedMeetup;
+  List<MeetupParticipant>? associatedMeetupParticipants;
+  List<MeetupDecision>? associatedMeetupDecisions;
+  Map<String, PublicUserProfile>? associatedUserIdProfileMap;
+
   @override
   void initState() {
     super.initState();
@@ -176,32 +186,71 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
     );
   }
 
+  _generateSelectFromMeetupsList() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Select Meetup', style: TextStyle(color: Colors.teal),),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+      ),
+      body: SelectFromMeetupsList.withBloc(
+        currentUserProfile: widget.currentUserProfile,
+        selectedMeetupIdAddedCallback: _selectedMeetupIdAddedCallback,
+        selectedMeetupIdRemovedCallback: _selectedMeetupIdRemovedCallback,
+        previouslySelectedMeetupId: associatedMeetup?.id,
+      ),
+    );
+  }
+
+  _selectedMeetupIdAddedCallback(SelectedMeetupInfo info) {
+    setState(() {
+      associatedMeetup = info.associatedMeetup;
+      associatedMeetupDecisions = info.associatedMeetupDecisions;
+      associatedMeetupParticipants = info.associatedMeetupParticipants;
+      associatedUserIdProfileMap = info.userIdProfileMap;
+    });
+  }
+
+  _selectedMeetupIdRemovedCallback(SelectedMeetupInfo info) {
+    setState(() {
+      associatedMeetup = null;
+      associatedMeetupDecisions = null;
+      associatedMeetupParticipants = null;
+      associatedUserIdProfileMap = null;
+    });
+  }
+
   _displayMainBody() {
     if (widget.isCurrentExerciseDefinitionCardio) {
-      return SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: WidgetUtils.skipNulls([
-            WidgetUtils.spacer(2.5),
-            _displayExerciseImageIfAny(),
-            _generateDotsIfNeeded(),
-            WidgetUtils.spacer(2.5),
-            _renderWorkoutDate(),
-            WidgetUtils.spacer(2.5),
-            _renderWorkoutTime(),
-            WidgetUtils.spacer(2.5),
-            _renderMinutesPerformed(),
-            WidgetUtils.spacer(2.5),
-            _renderCaloriesBurned(),
-          ]),
+      return Scrollbar(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: WidgetUtils.skipNulls([
+              WidgetUtils.spacer(2.5),
+              _displayExerciseImageIfAny(),
+              _generateDotsIfNeeded(),
+              WidgetUtils.spacer(2.5),
+              _renderWorkoutDate(),
+              WidgetUtils.spacer(2.5),
+              _renderWorkoutTime(),
+              WidgetUtils.spacer(2.5),
+              _renderMinutesPerformed(),
+              WidgetUtils.spacer(2.5),
+              _renderCaloriesBurned(),
+              WidgetUtils.spacer(2.5),
+              _renderAssociatedMeetupView(),
+            ]),
+          ),
         ),
       );
     }
     else {
       // Needs weight per set
-      return Center(
+      return Scrollbar(
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -219,6 +268,8 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
               _renderReps(),
               WidgetUtils.spacer(2.5),
               _renderCaloriesBurned(),
+              WidgetUtils.spacer(2.5),
+              _renderAssociatedMeetupView(),
             ]),
           ),
         ),
@@ -324,6 +375,110 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
         ],
       ),
     );
+  }
+
+  _renderAssociatedMeetupView() {
+    if (associatedMeetup != null && associatedMeetupParticipants != null
+        && associatedMeetupDecisions != null && associatedUserIdProfileMap != null) {
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Expanded(
+                flex: 5,
+                child: Text(
+                  "Associated meetup",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )
+            ),
+            Expanded(
+                flex: 8,
+                child: Stack(
+                  children: [
+                      MeetupMiniCardView(
+                        currentUserProfile: widget.currentUserProfile,
+                        meetup: associatedMeetup!,
+                        participants: associatedMeetupParticipants!,
+                        decisions: associatedMeetupDecisions!,
+                        userIdProfileMap: associatedUserIdProfileMap!,
+                        onCardTapped: () {
+                          showDialog(context: context, builder: (context) {
+                            return Dialog(
+                              child: _generateSelectFromMeetupsList(),
+                            );
+                          });
+                      },
+                    ),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            associatedMeetup = null;
+                            associatedMeetupDecisions = null;
+                            associatedMeetupParticipants = null;
+                            associatedUserIdProfileMap = null;
+                          });
+                        },
+                        child: CircleAvatar(
+                            radius: 12,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            child: const Icon(
+                              Icons.remove,
+                              size: 10,
+                              color: Colors.white,
+                            )
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+            ),
+          ],
+        ),
+      );
+    }
+    else {
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Expanded(
+                flex: 5,
+                child: Text(
+                  "Associated meetup",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )
+            ),
+            Expanded(
+                flex: 8,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed: () async {
+                    showDialog(context: context, builder: (context) {
+                      return Dialog(
+                        child: _generateSelectFromMeetupsList(),
+                      );
+                    });
+                  },
+                  child: const Text(
+                      "No meetup associated",
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white
+                      )
+                  ),
+                )
+            ),
+          ],
+        ),
+      );
+    }
+
   }
 
   _renderCaloriesBurned() {
