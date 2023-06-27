@@ -631,12 +631,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         ),
       );
     }
-    else if (currentSelectedTab == ACTIVITIES_MEETUP_VIEW_TAB) {
-      return const Center(
-        child: Text("Tap on a participant to view their associated meetup activities", style: TextStyle(fontSize: 12),
-        ),
-      );
-    }
   }
 
   _renderMeetupStatus() {
@@ -831,29 +825,17 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _onParticipantTapped(PublicUserProfile userProfile, bool isSelected) {
     // Select only availabilities to show here
-    if (currentSelectedTab != AVAILABILITY_MEETUP_VIEW_TAB && currentSelectedTab != ACTIVITIES_MEETUP_VIEW_TAB) {
+    if (currentSelectedTab != AVAILABILITY_MEETUP_VIEW_TAB) {
       _goToUserProfilePage(userProfile);
     }
     setState(() {
-      if (currentSelectedTab != AVAILABILITY_MEETUP_VIEW_TAB) {
-        if (isSelected) {
-          if (!selectedUserProfilesToShowAvailabilitiesFor.contains(userProfile)) {
-            selectedUserProfilesToShowAvailabilitiesFor.add(userProfile);
-          }
-        }
-        else {
-          selectedUserProfilesToShowAvailabilitiesFor.remove(userProfile);
+      if (isSelected) {
+        if (!selectedUserProfilesToShowAvailabilitiesFor.contains(userProfile)) {
+          selectedUserProfilesToShowAvailabilitiesFor.add(userProfile);
         }
       }
       else {
-        // This will ensure that only one is ever selected at most
-        if (isSelected) {
-          selectedUserProfilesToShowAvailabilitiesFor = List.from(List.empty());
-          selectedUserProfilesToShowAvailabilitiesFor.add(userProfile);
-        }
-        else {
-          selectedUserProfilesToShowAvailabilitiesFor.remove(userProfile);
-        }
+        selectedUserProfilesToShowAvailabilitiesFor.remove(userProfile);
       }
     });
   }
@@ -866,7 +848,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         onParticipantTapped: _onParticipantTapped,
         participantDecisions: selectedMeetupParticipantDecisions,
         shouldShowAvailabilityIcon: true,
-        shouldTapChangeCircleColour: currentSelectedTab == AVAILABILITY_MEETUP_VIEW_TAB || currentSelectedTab == ACTIVITIES_MEETUP_VIEW_TAB,
+        shouldTapChangeCircleColour: currentSelectedTab == AVAILABILITY_MEETUP_VIEW_TAB,
       );
     }
     else {

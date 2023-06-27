@@ -9,6 +9,7 @@ import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile_with_location.dart';
+import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -99,6 +100,8 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   late final TabController _tabController;
 
+  late String selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -110,6 +113,8 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     _tabController.addListener(() {
       widget.currentSelectedTabCallback(_tabController.index);
     });
+
+    selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor = widget.selectedMeetupParticipantUserProfiles.first.userId;
   }
 
   @override
@@ -212,10 +217,82 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
+        _showFilterByDropDown(),
+        WidgetUtils.spacer(2.5),
         _renderExerciseDiaryEntries(),
         WidgetUtils.spacer(2.5),
         _renderFoodDiaryEntriesWithContainer(),
       ],
+    );
+  }
+
+  _showFilterByDropDown() {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Filter by",
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14
+            ),
+          ),
+          WidgetUtils.spacer(2.5),
+          DropdownButton<String>(
+              isExpanded: true,
+              value: selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor,
+              items: widget.selectedMeetupParticipantUserProfiles.map((e) => DropdownMenuItem<String>(
+                value: e.userId,
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: CircleAvatar(
+                          radius: 15,
+                          child: Stack(
+                            children: WidgetUtils.skipNulls([
+                              Center(
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: ImageUtils.getUserProfileImage(e, 500, 500),
+                                  ),
+                                ),
+                              ),
+                            ]),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 8,
+                      child: Text(
+                        "${e.firstName} ${e.lastName}",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.teal,
+                        ),
+                      )
+                    )
+                  ],
+                ),
+              )).toList(),
+              onChanged: (newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor = newValue;
+                  });
+                }
+              }
+          )
+        ],
+      ),
     );
   }
 
@@ -264,8 +341,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   _renderCardioDiaryEntries() {
     if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
-      final selectedUserProfile = widget.selectedUserProfilesToShowDetailsFor.first;
-      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedUserProfile.userId]!;
+      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
       return diaryEntriesForSelectedUser.cardioWorkouts.isNotEmpty ? ListView.builder(
           shrinkWrap: true,
           itemCount: diaryEntriesForSelectedUser.cardioWorkouts.length,
@@ -348,8 +424,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   _renderStrengthDiaryEntries() {
     if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
-      final selectedUserProfile = widget.selectedUserProfilesToShowDetailsFor.first;
-      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedUserProfile.userId]!;
+      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
       return diaryEntriesForSelectedUser.strengthWorkouts.isNotEmpty ? ListView.builder(
           shrinkWrap: true,
           itemCount: diaryEntriesForSelectedUser.strengthWorkouts.length,
@@ -466,8 +541,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   _renderFoodDiaryEntries() {
     if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
-      final selectedUserProfile = widget.selectedUserProfilesToShowDetailsFor.first;
-      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedUserProfile.userId]!;
+      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
 
       if (diaryEntriesForSelectedUser.foodEntries.isNotEmpty) {
         return ListView.builder(
