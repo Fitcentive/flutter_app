@@ -162,3 +162,48 @@ class DeleteMeetupForUser extends DetailedMeetupEvent {
   @override
   List<Object?> get props => [currentUserId, meetupId];
 }
+
+class DissociateCardioDiaryEntryFromMeetup extends DetailedMeetupEvent {
+  final String currentUserId;
+  final String meetupId;
+  final String cardioDiaryEntryId;
+
+  const DissociateCardioDiaryEntryFromMeetup({
+    required this.currentUserId,
+    required this.meetupId,
+    required this.cardioDiaryEntryId,
+  });
+
+  @override
+  List<Object?> get props => [currentUserId, meetupId, cardioDiaryEntryId];
+}
+
+class DissociateStrengthDiaryEntryFromMeetup extends DetailedMeetupEvent {
+  final String currentUserId;
+  final String meetupId;
+  final String strengthDiaryEntryId;
+
+  const DissociateStrengthDiaryEntryFromMeetup({
+    required this.currentUserId,
+    required this.meetupId,
+    required this.strengthDiaryEntryId,
+  });
+
+  @override
+  List<Object?> get props => [currentUserId, meetupId, strengthDiaryEntryId];
+}
+
+class DissociateFoodDiaryEntryFromMeetup extends DetailedMeetupEvent {
+  final String currentUserId;
+  final String meetupId;
+  final String foodDiaryEntryId;
+
+  const DissociateFoodDiaryEntryFromMeetup({
+    required this.currentUserId,
+    required this.meetupId,
+    required this.foodDiaryEntryId,
+  });
+
+  @override
+  List<Object?> get props => [currentUserId, meetupId, foodDiaryEntryId];
+}

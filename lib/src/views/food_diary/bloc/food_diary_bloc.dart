@@ -64,6 +64,7 @@ class FoodDiaryBloc extends Bloc<FoodDiaryEvent, FoodDiaryState> {
     final currentState = state;
 
     if (currentState is FoodDiaryDataLoaded) {
+      emit(const FoodDiaryDataLoading());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final updatedEntry = await diaryRepository.updateFoodDiaryEntryForUser(event.userId, event.foodDiaryEntryId, event.entry, accessToken!);
       if (event.entry.meetupId != null) {

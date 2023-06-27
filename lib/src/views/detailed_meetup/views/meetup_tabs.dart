@@ -14,6 +14,8 @@ import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
+import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_bloc.dart';
+import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
 import 'package:flutter_app/src/views/exercise_diary/exercise_diary_view.dart';
 import 'package:flutter_app/src/views/food_diary/food_diary_view.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
@@ -23,6 +25,7 @@ import 'package:flutter_app/src/views/shared_components/search_locations/search_
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 
@@ -101,6 +104,9 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   late final TabController _tabController;
 
   late String selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor;
+  late DetailedMeetupBloc _detailedMeetupBloc;
+
+  Map<String, AllDiaryEntries> participantDiaryEntriesMapState = {};
 
   @override
   bool get wantKeepAlive => true;
@@ -109,12 +115,15 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   void initState() {
     super.initState();
 
+    _detailedMeetupBloc = BlocProvider.of<DetailedMeetupBloc>(context);
+
     _tabController = TabController(vsync: this, length: MAX_TABS);
     _tabController.addListener(() {
       widget.currentSelectedTabCallback(_tabController.index);
     });
 
-    selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor = widget.selectedMeetupParticipantUserProfiles.first.userId;
+    selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor = widget.currentUserProfile.userId;
+    participantDiaryEntriesMapState = widget.participantDiaryEntriesMap;
   }
 
   @override
@@ -341,7 +350,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   _renderCardioDiaryEntries() {
     if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
-      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
+      final diaryEntriesForSelectedUser = participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
       return diaryEntriesForSelectedUser.cardioWorkouts.isNotEmpty ? ListView.builder(
           shrinkWrap: true,
           itemCount: diaryEntriesForSelectedUser.cardioWorkouts.length,
@@ -351,10 +360,31 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
               background: WidgetUtils.viewUnderDismissibleListTile(),
               direction: DismissDirection.endToStart,
               key: Key(currentCardioEntry.id),
+              confirmDismiss: (direction) {
+                if (widget.currentUserProfile.userId == currentCardioEntry.userId) {
+                  return Future.value(true);
+                }
+                else {
+                  SnackbarUtils.showSnackBarShort(
+                      context,
+                      "Cannot remove another user's associated activities!"
+                  );
+                  return Future.value(false);
+                }
+
+              },
               onDismissed: (direction) {
                 if (direction == DismissDirection.endToStart) {
                   // Now we also have to remove it from the state variable
                   // Remove it when dismissed carefully
+                  setState(() {
+                    final newDiaryEntriesForSelectedUser = AllDiaryEntries(
+                        diaryEntriesForSelectedUser.cardioWorkouts.where((element) => element.id != currentCardioEntry.id).toList(),
+                        diaryEntriesForSelectedUser.strengthWorkouts,
+                        diaryEntriesForSelectedUser.foodEntries
+                    );
+                    participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor] = newDiaryEntriesForSelectedUser;
+                  });
 
                   ScaffoldMessenger
                       .of(context)
@@ -365,13 +395,24 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
                         action: SnackBarAction(
                             label: "Undo",
                             onPressed: () {
-                              // fill this in
+                              setState(() {
+                                participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor] = diaryEntriesForSelectedUser;
+                              });
                             }) // this is what you needed
                     ),
                   )
                       .closed
                       .then((value) {
-                    // Actually remove it here
+                          if (value != SnackBarClosedReason.action) {
+                            // Actually remove it now. Removing only means disassociating it from meetup not deleting underlying diary entry
+                            _detailedMeetupBloc.add(
+                                DissociateCardioDiaryEntryFromMeetup(
+                                    meetupId: widget.currentMeetup.id,
+                                    currentUserId: widget.currentUserProfile.userId,
+                                    cardioDiaryEntryId: currentCardioEntry.id
+                                )
+                            );
+                          }
                   });
                 }
               },
@@ -424,7 +465,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   _renderStrengthDiaryEntries() {
     if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
-      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
+      final diaryEntriesForSelectedUser = participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
       return diaryEntriesForSelectedUser.strengthWorkouts.isNotEmpty ? ListView.builder(
           shrinkWrap: true,
           itemCount: diaryEntriesForSelectedUser.strengthWorkouts.length,
@@ -434,10 +475,30 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
               background: WidgetUtils.viewUnderDismissibleListTile(),
               key: Key(currentStrengthEntry.id),
               direction: DismissDirection.endToStart,
+              confirmDismiss: (direction) {
+                if (widget.currentUserProfile.userId == currentStrengthEntry.userId) {
+                  return Future.value(true);
+                }
+                else {
+                  SnackbarUtils.showSnackBarShort(
+                      context,
+                      "Cannot remove another user's associated activities!"
+                  );
+                  return Future.value(false);
+                }
+
+              },
               onDismissed: (direction) {
                 if (direction == DismissDirection.endToStart) {
                   // Now we also have to remove it from the state variable
-                  // fix this here
+                  setState(() {
+                    final newDiaryEntriesForSelectedUser = AllDiaryEntries(
+                        diaryEntriesForSelectedUser.cardioWorkouts,
+                        diaryEntriesForSelectedUser.strengthWorkouts.where((element) => element.id != currentStrengthEntry.id).toList(),
+                        diaryEntriesForSelectedUser.foodEntries
+                    );
+                    participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor] = newDiaryEntriesForSelectedUser;
+                  });
 
                   ScaffoldMessenger
                       .of(context)
@@ -448,16 +509,27 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
                         action: SnackBarAction(
                             label: "Undo",
                             onPressed: () {
-                              // fix this as well
+                              setState(() {
+                                participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor] = diaryEntriesForSelectedUser;
+                              });
                             }) // this is what you needed
                     ),
                   )
                       .closed
                       .then((value) {
-                    // ACTUALLY remove it here
-                  });
-                }
-              },
+                        if (value != SnackBarClosedReason.action) {
+                          // Actually remove it now. Removing only means disassociating it from meetup not deleting underlying diary entry
+                          _detailedMeetupBloc.add(
+                              DissociateStrengthDiaryEntryFromMeetup(
+                                  meetupId: widget.currentMeetup.id,
+                                  currentUserId: widget.currentUserProfile.userId,
+                                  strengthDiaryEntryId: currentStrengthEntry.id
+                              )
+                            );
+                          }
+                    });
+                  }
+                },
               child: InkWell(
                 onTap: () {},
                 child: Card(
@@ -541,7 +613,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   _renderFoodDiaryEntries() {
     if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
-      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
+      final diaryEntriesForSelectedUser = participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
 
       if (diaryEntriesForSelectedUser.foodEntries.isNotEmpty) {
         return ListView.builder(
@@ -565,10 +637,30 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
                 background: WidgetUtils.viewUnderDismissibleListTile(),
                 direction: DismissDirection.endToStart,
                 key: Key(foodEntryForHeadingRaw.id),
+                confirmDismiss: (direction) {
+                  if (widget.currentUserProfile.userId == foodEntryForHeadingRaw.userId) {
+                    return Future.value(true);
+                  }
+                  else {
+                    SnackbarUtils.showSnackBarShort(
+                        context,
+                        "Cannot modify another user's data!"
+                    );
+                    return Future.value(false);
+                  }
+
+                },
                 onDismissed: (direction) {
                   if (direction == DismissDirection.endToStart) {
                     // Now we also have to remove it from the state variable
-                    // Ask user for prompt confirming what they want to do here
+                    setState(() {
+                      final newDiaryEntriesForSelectedUser = AllDiaryEntries(
+                          diaryEntriesForSelectedUser.cardioWorkouts,
+                          diaryEntriesForSelectedUser.strengthWorkouts,
+                          diaryEntriesForSelectedUser.foodEntries.where((element) => element.id != foodEntryForHeadingRaw.id).toList(),
+                      );
+                      participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor] = newDiaryEntriesForSelectedUser;
+                    });
 
                     ScaffoldMessenger
                         .of(context)
@@ -579,14 +671,23 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
                           action: SnackBarAction(
                               label: "Undo",
                               onPressed: () {
-                                // fill this in
+                                setState(() {
+                                  participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor] = diaryEntriesForSelectedUser;
+                                });
                               })
                       ),
                     )
                         .closed
                         .then((value) {
                       if (value != SnackBarClosedReason.action) {
-                        // Proceed to soft or hard delete over here
+                        // Actually remove it now. Removing only means disassociating it from meetup not deleting underlying diary entry
+                        _detailedMeetupBloc.add(
+                            DissociateFoodDiaryEntryFromMeetup(
+                                meetupId: widget.currentMeetup.id,
+                                currentUserId: widget.currentUserProfile.userId,
+                                foodDiaryEntryId: foodEntryForHeadingRaw.id
+                            )
+                        );
                       }
                     });
                   }

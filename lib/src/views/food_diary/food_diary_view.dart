@@ -248,6 +248,7 @@ class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderS
 
   _saveDiaryEntryButtonPressed(FoodDiaryDataLoaded state) {
     if (_servingsTextController.value.text.isNotEmpty) {
+      SnackbarUtils.showSnackBarMedium(context, "Hold on... saving changes...");
       _foodDiaryBloc.add(
           FoodDiaryEntryUpdated(
               userId: widget.currentUserProfile.userId,

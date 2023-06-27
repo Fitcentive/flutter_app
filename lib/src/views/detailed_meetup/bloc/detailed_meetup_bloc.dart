@@ -39,6 +39,34 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     on<GetDirectMessagePrivateChatRoomForMeetup>(_getDirectMessagePrivateChatRoomForMeetup);
     on<CreateChatRoomForMeetup>(_createChatRoomForMeetup);
     on<DeleteMeetupForUser>(_deleteMeetupForUser);
+    on<DissociateCardioDiaryEntryFromMeetup>(_dissociateCardioDiaryEntryFromMeetup);
+    on<DissociateStrengthDiaryEntryFromMeetup>(_dissociateStrengthDiaryEntryFromMeetup);
+    on<DissociateFoodDiaryEntryFromMeetup>(_dissociateFoodDiaryEntryFromMeetup);
+  }
+
+  void _dissociateFoodDiaryEntryFromMeetup(
+      DissociateFoodDiaryEntryFromMeetup event,
+      Emitter<DetailedMeetupState> emit
+      ) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await meetupRepository.deleteFoodDiaryEntryFromAssociatedMeetup(event.meetupId, event.foodDiaryEntryId, accessToken!);
+
+  }
+
+  void _dissociateStrengthDiaryEntryFromMeetup(
+      DissociateStrengthDiaryEntryFromMeetup event,
+      Emitter<DetailedMeetupState> emit
+      ) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await meetupRepository.deleteStrengthDiaryEntryFromAssociatedMeetup(event.meetupId, event.strengthDiaryEntryId, accessToken!);
+  }
+
+  void _dissociateCardioDiaryEntryFromMeetup(
+      DissociateCardioDiaryEntryFromMeetup event,
+      Emitter<DetailedMeetupState> emit
+  ) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await meetupRepository.deleteCardioDiaryEntryFromAssociatedMeetup(event.meetupId, event.cardioDiaryEntryId, accessToken!);
   }
 
   void _deleteMeetupForUser(DeleteMeetupForUser event, Emitter<DetailedMeetupState> emit) async {

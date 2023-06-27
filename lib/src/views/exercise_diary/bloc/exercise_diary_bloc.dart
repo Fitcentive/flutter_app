@@ -32,6 +32,7 @@ class ExerciseDiaryBloc extends Bloc<ExerciseDiaryEvent, ExerciseDiaryState> {
     final currentState = state;
 
     if (currentState is ExerciseDiaryDataLoaded) {
+      emit(const ExerciseDiaryDataLoading());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final updatedEntry = await diaryRepository.updateCardioUserDiaryEntry(event.userId, event.cardioDiaryEntryId, event.entry, accessToken!);
 
@@ -52,6 +53,7 @@ class ExerciseDiaryBloc extends Bloc<ExerciseDiaryEvent, ExerciseDiaryState> {
     final currentState = state;
 
     if (currentState is ExerciseDiaryDataLoaded) {
+      emit(const ExerciseDiaryDataLoading());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final updatedEntry = await diaryRepository.updateStrengthUserDiaryEntry(event.userId, event.strengthDiaryEntryId, event.entry, accessToken!);
 
