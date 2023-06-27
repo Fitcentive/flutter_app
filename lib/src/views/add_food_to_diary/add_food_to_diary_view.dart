@@ -247,7 +247,6 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
     }
   }
 
-  // todo - add new tab for detailed meetup view & filter by selected particiapnt
   _displayMainBody() {
     return Center(
       child: Scrollbar(

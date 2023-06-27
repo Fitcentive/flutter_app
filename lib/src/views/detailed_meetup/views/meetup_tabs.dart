@@ -2,6 +2,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
+import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/location/location.dart';
@@ -16,16 +19,17 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_bloc.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
-import 'package:flutter_app/src/views/exercise_diary/exercise_diary_view.dart';
-import 'package:flutter_app/src/views/food_diary/food_diary_view.dart';
+import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/meetup_comments_list.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
+import 'package:flutter_app/src/views/shared_components/select_from_diary_entries/select_from_diary_entries_view.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:intl/intl.dart';
 
 
@@ -108,6 +112,8 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   Map<String, AllDiaryEntries> participantDiaryEntriesMapState = {};
 
+  bool _isFloatingButtonVisible = true;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -135,73 +141,140 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return DefaultTabController(
-        length: MAX_TABS,
-        child: Scaffold(
-          appBar: AppBar(
-            toolbarHeight: 0,
-            automaticallyImplyLeading: false,
-            bottom: TabBar(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Select Diary Entries", style: TextStyle(color: Colors.teal)),
+        iconTheme: const IconThemeData(color: Colors.teal),
+      ),
+      body: DefaultTabController(
+          length: MAX_TABS,
+          child: Scaffold(
+            floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
+            floatingActionButton: _animatedButton(),
+            appBar: AppBar(
+              toolbarHeight: 0,
+              automaticallyImplyLeading: false,
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(
+                    icon: Icon(Icons.location_on, color: Colors.teal,),
+                    child: Text(
+                      "Location",
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: Colors.teal,
+                          fontSize: 10
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    icon: Icon(Icons.event_available, color: Colors.teal),
+                    child: Text(
+                      "Availabilities",
+                      maxLines: 1,
+                      style: TextStyle(
+                          color: Colors.teal,
+                          fontSize: 10
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    icon: Icon(Icons.fitness_center, color: Colors.teal),
+                    child: Text(
+                      "Activities",
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: Colors.teal,
+                        fontSize: 10
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    icon: Icon(Icons.history, color: Colors.teal),
+                    child: Text(
+                      "Conversation",
+                      maxLines: 1,
+                      style: TextStyle(
+                          color: Colors.teal,
+                          fontSize: 10
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            body: TabBarView(
               controller: _tabController,
-              tabs: const [
-                Tab(
-                  icon: Icon(Icons.location_on, color: Colors.teal,),
-                  child: Text(
-                    "Location",
-                    maxLines: 1,
-                    style: TextStyle(
-                      color: Colors.teal,
-                        fontSize: 10
-                    ),
-                  ),
-                ),
-                Tab(
-                  icon: Icon(Icons.event_available, color: Colors.teal),
-                  child: Text(
-                    "Availabilities",
-                    maxLines: 1,
-                    style: TextStyle(
-                        color: Colors.teal,
-                        fontSize: 10
-                    ),
-                  ),
-                ),
-                Tab(
-                  icon: Icon(Icons.fitness_center, color: Colors.teal),
-                  child: Text(
-                    "Activities",
-                    maxLines: 1,
-                    style: TextStyle(
-                      color: Colors.teal,
-                      fontSize: 10
-                    ),
-                  ),
-                ),
-                Tab(
-                  icon: Icon(Icons.history, color: Colors.teal),
-                  child: Text(
-                    "Conversation",
-                    maxLines: 1,
-                    style: TextStyle(
-                        color: Colors.teal,
-                        fontSize: 10
-                    ),
-                  ),
-                ),
+              children: [
+                renderMeetupLocationView(),
+                renderAvailabilitiesView(),
+                renderMeetupActivitiesView(),
+                renderMeetupCommentsView(),
               ],
             ),
           ),
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              renderMeetupLocationView(),
-              renderAvailabilitiesView(),
-              renderMeetupActivitiesView(),
-              renderMeetupCommentsView(),
-            ],
-          ),
         ),
+    );
+  }
+
+  _animatedButton() {
+    return AnimatedOpacity(
+      opacity: _isFloatingButtonVisible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      child: Visibility(
+        visible: _isFloatingButtonVisible && _tabController.index == DetailedMeetupViewState.ACTIVITIES_MEETUP_VIEW_TAB,
+        child: FloatingActionButton(
+          heroTag: "MeetupTabsViewAnimatedButton",
+          onPressed: () {
+            _showDiaryEntrySelectDialog();
+          },
+          tooltip: 'Share your thoughts!',
+          backgroundColor: Colors.teal,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  _showDiaryEntrySelectDialog() {
+    showDialog(context: context, builder: (context) {
+      return Dialog(
+        child: _generateSelectFromDiaryEntriesView(),
       );
+    });
+  }
+
+  _generateSelectFromDiaryEntriesView() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Select Diary Entries', style: TextStyle(color: Colors.teal),),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+      ),
+      body: SelectFromDiaryEntriesView.withBloc(
+        currentUserProfile: widget.currentUserProfile,
+          previouslySelectedCardioDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.cardioWorkouts.map((e) => e.id).toList(),
+          previouslySelectedStrengthDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.strengthWorkouts.map((e) => e.id).toList(),
+          previouslySelectedFoodDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.foodEntries.map((e) => e.id).toList(),
+          updateSelectedCardioDiaryEntryIdCallback: _updateSelectedCardioDiaryEntryIdCallback,
+          updateSelectedStrengthDiaryEntryIdCallback: _updateSelectedStrengthDiaryEntryIdCallback,
+          updateSelectedFoodDiaryEntryIdCallback: _updateSelectedFoodDiaryEntryIdCallback,
+      ),
+    );
+  }
+
+  void _updateSelectedCardioDiaryEntryIdCallback(CardioDiaryEntry cardioInfo, bool isSelected) {
+    // do nothing for now
+  }
+
+  void _updateSelectedStrengthDiaryEntryIdCallback(StrengthDiaryEntry cardioInfo, bool isSelected) {
+
+  }
+
+  void _updateSelectedFoodDiaryEntryIdCallback(FoodDiaryEntry cardioInfo, bool isSelected) {
+
   }
 
   bool shouldMeetupBeReadOnly() {
@@ -224,7 +297,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   // Must fetch diary entries for all users pertaining to this meeup
   Widget renderMeetupActivitiesView() {
     return Column(
-      mainAxisSize: MainAxisSize.max,
+      mainAxisSize: MainAxisSize.min,
       children: [
         _showFilterByDropDown(),
         WidgetUtils.spacer(2.5),

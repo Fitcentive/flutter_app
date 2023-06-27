@@ -148,6 +148,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   String? selectedMeetupLocationId;
   String? selectedMeetupLocationFsqId;
 
+  List <String> selectedCardioDiaryEntryIds = [];
+  List <String> selectedStrengthDiaryEntryIds = [];
+  List <String> selectedFoodDiaryEntryIds = [];
+
   List<Either<FoodGetResult, FoodGetResultSingleServing>> rawFoodEntries = [];
   Map<String, AllDiaryEntries> participantDiaryEntriesMap = {};
   late List<PublicUserProfile> selectedUserProfilesToShowAvailabilitiesFor;
