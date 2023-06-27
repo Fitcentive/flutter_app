@@ -535,6 +535,7 @@ class DiaryRepository {
           "numberOfServings": entry.numberOfServings,
           "mealEntry": entry.mealEntry,
           "entryDate": entry.entryDate.toUtc().toIso8601String(),
+          "meetupId": entry.meetupId,
         })
     );
 
@@ -561,6 +562,7 @@ class DiaryRepository {
           "servingId": entry.servingId,
           "numberOfServings": entry.numberOfServings,
           "entryDate": entry.entryDate.toUtc().toIso8601String(),
+          "meetupId": entry.meetupId,
         })
     );
 

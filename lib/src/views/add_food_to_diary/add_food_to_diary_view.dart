@@ -4,6 +4,7 @@ import 'package:either_dart/either.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -78,6 +80,7 @@ class AddFoodToDiaryView extends StatefulWidget {
       BlocProvider<AddFoodToDiaryBloc>(
           create: (context) => AddFoodToDiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
       ),
@@ -244,159 +247,165 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
     }
   }
 
+  // todo - add new tab for detailed meetup view & filter by selected particiapnt
   _displayMainBody() {
     return Center(
       child: Scrollbar(
-        child: SingleChildScrollView(
-          child: Column(
-            children: WidgetUtils.skipNulls([
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    const Expanded(
-                        flex: 5,
-                        child: Text(
-                          "# of servings",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        )
-                    ),
-                    Expanded(
-                        flex: 8,
-                        child: TextFormField(
-                          controller: _servingsTextController,
-                          onChanged: (text) {
-                            final servingSize = double.parse(text);
-                            setState(() {
-                              selectedServingSize = servingSize;
-                            });
-                          },
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(
-                            hintText: "Eg - 1.5",
-                            hintStyle: TextStyle(color: Colors.teal),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Colors.teal,
+        child: GestureDetector(
+          onTap: () {
+            KeyboardUtils.hideKeyboard(context);
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              children: WidgetUtils.skipNulls([
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const Expanded(
+                          flex: 5,
+                          child: Text(
+                            "# of servings",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          )
+                      ),
+                      Expanded(
+                          flex: 8,
+                          child: TextFormField(
+                            controller: _servingsTextController,
+                            onChanged: (text) {
+                              final servingSize = double.parse(text);
+                              setState(() {
+                                selectedServingSize = servingSize;
+                              });
+                            },
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: const InputDecoration(
+                              hintText: "Eg - 1.5",
+                              hintStyle: TextStyle(color: Colors.teal),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.teal,
+                                ),
                               ),
                             ),
-                          ),
-                        )
-                    ),
-                  ],
+                          )
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              WidgetUtils.spacer(2.5),
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    const Expanded(
-                        flex: 5,
-                        child: Text(
-                          "Selected serving size",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        )
-                    ),
-                    Expanded(
-                        flex: 8,
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: selectedServingOption?.serving_description ?? "No serving size",
-                          icon: const Padding(
-                            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                            child: Icon(Icons.fastfood),
-                          ),
-                          elevation: 16,
-                          style: const TextStyle(color: Colors.teal),
-                          underline: Container(
-                            height: 2,
-                            // color: Colors.tealAccent,
-                          ),
-                          onChanged: (String? value) {
-                            // This is called when the user selects an item.
-                            setState(() {
-                              selectedServingOption = servingOptions.firstWhere((element) => element.serving_description == value);
-                            });
-                          },
-                          items: servingOptions.map((e) => e.serving_description).map<DropdownMenuItem<String>>((String? value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value ?? "No serving size"),
-                            );
-                          }).toList(),
-                        )
-                    ),
-                  ],
+                WidgetUtils.spacer(2.5),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const Expanded(
+                          flex: 5,
+                          child: Text(
+                            "Selected serving size",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          )
+                      ),
+                      Expanded(
+                          flex: 8,
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: selectedServingOption?.serving_description ?? "No serving size",
+                            icon: const Padding(
+                              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                              child: Icon(Icons.fastfood),
+                            ),
+                            elevation: 16,
+                            style: const TextStyle(color: Colors.teal),
+                            underline: Container(
+                              height: 2,
+                              // color: Colors.tealAccent,
+                            ),
+                            onChanged: (String? value) {
+                              // This is called when the user selects an item.
+                              setState(() {
+                                selectedServingOption = servingOptions.firstWhere((element) => element.serving_description == value);
+                              });
+                            },
+                            items: servingOptions.map((e) => e.serving_description).map<DropdownMenuItem<String>>((String? value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value ?? "No serving size"),
+                              );
+                            }).toList(),
+                          )
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Serving Size", "${selectedServingOption?.metric_serving_amount ?? ""} ${selectedServingOption?.metric_serving_unit ?? ""}"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Calories", _stringOptToDouble(selectedServingOption?.calories)),
-              _showMacrosPieChartIfPossible(selectedServingOption?.carbohydrate, selectedServingOption?.fat, selectedServingOption?.protein),
-              _infoItem("Carbohydrates", "${_stringOptToDouble(selectedServingOption?.carbohydrate)} g"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Fat", "${_stringOptToDouble(selectedServingOption?.fat)} g"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Protein", "${_stringOptToDouble(selectedServingOption?.protein)} g"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Calcium", "${_stringOptToDouble(selectedServingOption?.calcium)} mg"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Cholesterol", "${_stringOptToDouble(selectedServingOption?.cholesterol)} mg"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Fiber", "${_stringOptToDouble(selectedServingOption?.fiber)} g"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Iron", "${_stringOptToDouble(selectedServingOption?.iron)} mg"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Monounsaturated Fat", "${_stringOptToDouble(selectedServingOption?.monounsaturated_fat)} g"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Polyunsaturated Fat", "${_stringOptToDouble(selectedServingOption?.polyunsaturated_fat)} g"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Potassium", "${_stringOptToDouble(selectedServingOption?.potassium)} mg"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Saturated Fat", "${_stringOptToDouble(selectedServingOption?.saturated_fat)} g"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Sodium", "${_stringOptToDouble(selectedServingOption?.sodium)} mg"),
-              WidgetUtils.spacer(2.5),
-              _infoItem("Sugar", "${_stringOptToDouble(selectedServingOption?.sugar)} g"),
-              WidgetUtils.spacer(2.5),
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    const Expanded(
-                        flex: 5,
-                        child: Text(
-                          "Serving URL",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        )
-                    ),
-                    Expanded(
-                        flex: 8,
-                        child: RichText(
-                            text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                      text: "View in browser",
-                                      style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
-                                      recognizer: TapGestureRecognizer()..onTap = () {
-                                        launchUrl(Uri.parse(selectedServingOption?.serving_url ?? ConstantUtils.FALLBACK_URL));
-                                      }
-                                  ),
-                                ]
-                            )
-                        )
-                    ),
-                  ],
+                WidgetUtils.spacer(2.5),
+                _infoItem("Serving Size", "${selectedServingOption?.metric_serving_amount ?? ""} ${selectedServingOption?.metric_serving_unit ?? ""}"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Calories", _stringOptToDouble(selectedServingOption?.calories)),
+                WidgetUtils.spacer(2.5),
+                _renderAssociatedMeetupView(),
+                _showMacrosPieChartIfPossible(selectedServingOption?.carbohydrate, selectedServingOption?.fat, selectedServingOption?.protein),
+                _infoItem("Carbohydrates", "${_stringOptToDouble(selectedServingOption?.carbohydrate)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Fat", "${_stringOptToDouble(selectedServingOption?.fat)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Protein", "${_stringOptToDouble(selectedServingOption?.protein)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Calcium", "${_stringOptToDouble(selectedServingOption?.calcium)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Cholesterol", "${_stringOptToDouble(selectedServingOption?.cholesterol)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Fiber", "${_stringOptToDouble(selectedServingOption?.fiber)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Iron", "${_stringOptToDouble(selectedServingOption?.iron)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Monounsaturated Fat", "${_stringOptToDouble(selectedServingOption?.monounsaturated_fat)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Polyunsaturated Fat", "${_stringOptToDouble(selectedServingOption?.polyunsaturated_fat)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Potassium", "${_stringOptToDouble(selectedServingOption?.potassium)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Saturated Fat", "${_stringOptToDouble(selectedServingOption?.saturated_fat)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Sodium", "${_stringOptToDouble(selectedServingOption?.sodium)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Sugar", "${_stringOptToDouble(selectedServingOption?.sugar)} g"),
+                WidgetUtils.spacer(2.5),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const Expanded(
+                          flex: 5,
+                          child: Text(
+                            "Serving URL",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          )
+                      ),
+                      Expanded(
+                          flex: 8,
+                          child: RichText(
+                              text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                        text: "View in browser",
+                                        style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                                        recognizer: TapGestureRecognizer()..onTap = () {
+                                          launchUrl(Uri.parse(selectedServingOption?.serving_url ?? ConstantUtils.FALLBACK_URL));
+                                        }
+                                    ),
+                                  ]
+                              )
+                          )
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              WidgetUtils.spacer(2.5),
-              _renderAssociatedMeetupView(),
-            ]),
+              ]),
+            ),
           ),
         ),
       ),
@@ -442,12 +451,14 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
               _addFoodToDiaryBloc.add(
                   AddFoodEntryToDiary(
                     userId: widget.currentUserProfile.userId,
+                    associatedMeetupId: associatedMeetup?.id,
                     newEntry: FoodDiaryEntryCreate(
                         foodId: int.parse(widget.foodDefinition.left.food.food_id),
                         servingId: int.parse(selectedServingOption!.serving_id!),
                         numberOfServings: selectedServingSize,
                         mealEntry: widget.mealEntry,
-                        entryDate: widget.selectedDayInQuestion
+                        entryDate: widget.selectedDayInQuestion,
+                        meetupId: associatedMeetup?.id,
                     ),
                   )
               );
@@ -456,12 +467,14 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
               _addFoodToDiaryBloc.add(
                   AddFoodEntryToDiary(
                     userId: widget.currentUserProfile.userId,
+                    associatedMeetupId: associatedMeetup?.id,
                     newEntry: FoodDiaryEntryCreate(
                         foodId: int.parse(widget.foodDefinition.right.food.food_id),
                         servingId: int.parse(selectedServingOption!.serving_id!),
                         numberOfServings: selectedServingSize,
                         mealEntry: widget.mealEntry,
-                        entryDate: widget.selectedDayInQuestion
+                        entryDate: widget.selectedDayInQuestion,
+                        meetupId: associatedMeetup?.id,
                     ),
                   )
               );

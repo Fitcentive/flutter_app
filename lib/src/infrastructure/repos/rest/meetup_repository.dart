@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
 import 'package:flutter_app/src/models/location/location.dart';
+import 'package:flutter_app/src/models/meetup_diary/meetup_cardio_diary_entry.dart';
+import 'package:flutter_app/src/models/meetup_diary/meetup_food_diary_entry.dart';
+import 'package:flutter_app/src/models/meetup_diary/meetup_strength_diary_entry.dart';
 import 'package:flutter_app/src/models/meetups/detailed_meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
@@ -19,6 +23,155 @@ class MeetupRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/meetup";
 
   final logger = Logger("MeetupRepository");
+
+  Future<AllDiaryEntries> getAllDiaryEntriesForMeetupUser(
+      String meetupId,
+      String userId,
+      String accessToken,
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/meetups/$meetupId/user/$userId/diary-entry"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return AllDiaryEntries.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "getAllDiaryEntriesForMeetupUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<MeetupStrengthDiaryEntry> upsertStrengthDiaryEntryToMeetup(
+      String meetupId,
+      String strengthDiaryEntryId,
+      String accessToken
+      ) async {
+
+    final response = await http.post(
+      Uri.parse("$BASE_URL/meetups/$meetupId/strength-entry/$strengthDiaryEntryId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return MeetupStrengthDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "upsertStrengthDiaryEntryToMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+
+  }
+
+  Future<MeetupCardioDiaryEntry> upsertCardioDiaryEntryToMeetup(
+      String meetupId,
+      String cardioDiaryEntryId,
+      String accessToken
+      ) async {
+
+    final response = await http.post(
+      Uri.parse("$BASE_URL/meetups/$meetupId/cardio-entry/$cardioDiaryEntryId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return MeetupCardioDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "upsertCardioDiaryEntryToMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+
+  }
+
+  Future<MeetupFoodDiaryEntry> upsertFoodDiaryEntryToMeetup(
+      String meetupId,
+      String foodDiaryEntryId,
+      String accessToken
+      ) async {
+
+    final response = await http.post(
+      Uri.parse("$BASE_URL/meetups/$meetupId/food-entry/$foodDiaryEntryId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return MeetupFoodDiaryEntry.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "upsertFoodDiaryEntryToMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+
+  }
+
+  Future<void> deleteStrengthDiaryEntryFromAssociatedMeetup(
+      String meetupId,
+      String strengthDiaryEntryId,
+      String accessToken
+      ) async {
+
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/meetups/$meetupId/strength-entry/$strengthDiaryEntryId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.accepted) {
+      return;
+    }
+    else {
+      throw Exception(
+          "deleteStrengthDiaryEntryFromAssociatedMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+
+  }
+
+  Future<void> deleteCardioDiaryEntryFromAssociatedMeetup(
+      String meetupId,
+      String cardioDiaryEntryId,
+      String accessToken
+      ) async {
+
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/meetups/$meetupId/cardio-entry/$cardioDiaryEntryId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.accepted) {
+      return;
+    }
+    else {
+      throw Exception(
+          "deleteCardioDiaryEntryFromAssociatedMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+
+  }
+
+  Future<void> deleteFoodDiaryEntryFromAssociatedMeetup(
+      String meetupId,
+      String foodDiaryEntryId,
+      String accessToken
+      ) async {
+
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/meetups/$meetupId/food-entry/$foodDiaryEntryId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.accepted) {
+      return;
+    }
+    else {
+      throw Exception(
+          "deleteFoodDiaryEntryFromAssociatedMeetup: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+
+  }
 
   Future<Meetup?> getMeetupByChatRoomId(
       String chatRoomId,
@@ -270,6 +423,25 @@ class MeetupRepository {
     else {
       throw Exception(
           "getDetailedMeetupsForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<DetailedMeetup> getDetailedMeetupForUserById(
+      String meetupId,
+      String accessToken,
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/detailed-meetups/$meetupId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final dynamic jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      return DetailedMeetup.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "getDetailedMeetupForUserById: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

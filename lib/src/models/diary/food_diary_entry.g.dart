@@ -17,6 +17,7 @@ FoodDiaryEntry _$FoodDiaryEntryFromJson(Map<String, dynamic> json) =>
       DateTime.parse(json['entryDate'] as String),
       DateTime.parse(json['createdAt'] as String),
       DateTime.parse(json['updatedAt'] as String),
+      json['meetupId'] as String?,
     );
 
 Map<String, dynamic> _$FoodDiaryEntryToJson(FoodDiaryEntry instance) =>
@@ -30,4 +31,5 @@ Map<String, dynamic> _$FoodDiaryEntryToJson(FoodDiaryEntry instance) =>
       'entryDate': instance.entryDate.toIso8601String(),
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
+      'meetupId': instance.meetupId,
     };

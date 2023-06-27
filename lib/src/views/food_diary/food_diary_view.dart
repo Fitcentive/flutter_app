@@ -3,21 +3,25 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
-import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
-import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/serving.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
+import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
+import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_event.dart';
-import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_state.dart';
 import 'package:flutter_app/src/views/food_diary/bloc/food_diary_bloc.dart';
 import 'package:flutter_app/src/views/food_diary/bloc/food_diary_event.dart';
 import 'package:flutter_app/src/views/food_diary/bloc/food_diary_state.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_mini_card_view.dart';
+import 'package:flutter_app/src/views/shared_components/select_from_meetups/select_from_meetups_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pie_chart/pie_chart.dart';
@@ -74,6 +78,8 @@ class FoodDiaryView extends StatefulWidget {
       BlocProvider<FoodDiaryBloc>(
           create: (context) => FoodDiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
       ),
@@ -107,6 +113,11 @@ class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderS
   List<Serving> servingOptions = [];
   Serving? selectedServingOption;
   double selectedServingSize = 1;
+
+  Meetup? associatedMeetup;
+  List<MeetupParticipant>? associatedMeetupParticipants;
+  List<MeetupDecision>? associatedMeetupDecisions;
+  Map<String, PublicUserProfile>? associatedUserIdProfileMap;
 
   @override
   void initState() {
@@ -167,6 +178,16 @@ class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderS
 
               _servingsTextController.text = selectedServingSize.toStringAsFixed(2);
             });
+
+            // Setstate pertaining to meetup info
+            if (state.associatedMeetup != null) {
+              setState(() {
+                associatedMeetup = state.associatedMeetup!.meetup;
+                associatedMeetupParticipants = state.associatedMeetup!.participants;
+                associatedMeetupDecisions = state.associatedMeetup!.decisions;
+                associatedUserIdProfileMap = state.associatedUserIdProfileMap;
+              });
+            }
           }
         },
         child: BlocBuilder<FoodDiaryBloc, FoodDiaryState>(
@@ -235,6 +256,7 @@ class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderS
                 servingId: int.parse(selectedServingOption!.serving_id!),
                 numberOfServings: selectedServingSize,
                 entryDate: state.diaryEntry.entryDate,
+                meetupId: associatedMeetup?.id,
               )
           )
       );
@@ -310,160 +332,308 @@ class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderS
 
   _showDiaryEntryToEdit(FoodDiaryDataLoaded state) {
     return Center(
-      child: SingleChildScrollView(
-        child: Column(
-          children: WidgetUtils.skipNulls([
-            WidgetUtils.spacer(5),
-            _renderFoodTitle(state),
-            WidgetUtils.spacer(2.5),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  const Expanded(
-                      flex: 5,
-                      child: Text(
-                        "# of servings",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      )
-                  ),
-                  Expanded(
-                      flex: 8,
-                      child: TextFormField(
-                        controller: _servingsTextController,
-                        onChanged: (text) {
-                          final servingSize = double.parse(text);
-                          setState(() {
-                            selectedServingSize = servingSize;
-                          });
-                        },
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
-                          hintText: "Eg - 1.5",
-                          hintStyle: TextStyle(color: Colors.teal),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.teal,
-                            ),
-                          ),
-                        ),
-                      )
-                  ),
-                ],
-              ),
-            ),
-            WidgetUtils.spacer(2.5),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  const Expanded(
-                      flex: 5,
-                      child: Text(
-                        "Selected serving size",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      )
-                  ),
-                  Expanded(
-                      flex: 8,
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedServingOption?.serving_description ?? "No serving size",
-                        icon: const Padding(
-                          padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                          child: Icon(Icons.fastfood),
-                        ),
-                        elevation: 16,
-                        style: const TextStyle(color: Colors.teal),
-                        underline: Container(
-                          height: 2,
-                          // color: Colors.tealAccent,
-                        ),
-                        onChanged: (String? value) {
-                          // This is called when the user selects an item.
-                          setState(() {
-                            selectedServingOption = servingOptions.firstWhere((element) => element.serving_description == value);
-                          });
-                        },
-                        items: servingOptions.map((e) => e.serving_description).map<DropdownMenuItem<String>>((String? value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value ?? "No serving size"),
-                          );
-                        }).toList(),
-                      )
-                  ),
-                ],
-              ),
-            ),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Serving Size", "${selectedServingOption?.metric_serving_amount ?? ""} ${selectedServingOption?.metric_serving_unit ?? ""}"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Calories", _stringOptToDouble(selectedServingOption?.calories)),
-            _showMacrosPieChartIfPossible(selectedServingOption?.carbohydrate, selectedServingOption?.fat, selectedServingOption?.protein),
-            _infoItem("Carbohydrates", "${_stringOptToDouble(selectedServingOption?.carbohydrate)} g"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Fat", "${_stringOptToDouble(selectedServingOption?.fat)} g"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Protein", "${_stringOptToDouble(selectedServingOption?.protein)} g"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Calcium", "${_stringOptToDouble(selectedServingOption?.calcium)} mg"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Cholesterol", "${_stringOptToDouble(selectedServingOption?.cholesterol)} mg"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Fiber", "${_stringOptToDouble(selectedServingOption?.fiber)} g"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Iron", "${_stringOptToDouble(selectedServingOption?.iron)} mg"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Monounsaturated Fat", "${_stringOptToDouble(selectedServingOption?.monounsaturated_fat)} g"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Polyunsaturated Fat", "${_stringOptToDouble(selectedServingOption?.polyunsaturated_fat)} g"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Potassium", "${_stringOptToDouble(selectedServingOption?.potassium)} mg"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Saturated Fat", "${_stringOptToDouble(selectedServingOption?.saturated_fat)} g"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Sodium", "${_stringOptToDouble(selectedServingOption?.sodium)} mg"),
-            WidgetUtils.spacer(2.5),
-            _infoItem("Sugar", "${_stringOptToDouble(selectedServingOption?.sugar)} g"),
-            WidgetUtils.spacer(2.5),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  const Expanded(
-                      flex: 5,
-                      child: Text(
-                        "Serving URL",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      )
-                  ),
-                  Expanded(
-                      flex: 8,
-                      child: RichText(
-                          text: TextSpan(
-                              children: [
-                                TextSpan(
-                                    text: "View in browser",
-                                    style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
-                                    recognizer: TapGestureRecognizer()..onTap = () {
-                                      launchUrl(Uri.parse(selectedServingOption?.serving_url ?? ConstantUtils.FALLBACK_URL));
-                                    }
-                                ),
-                              ]
+      child: Scrollbar(
+        child: GestureDetector(
+          onTap: () {
+            KeyboardUtils.hideKeyboard(context);
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              children: WidgetUtils.skipNulls([
+                WidgetUtils.spacer(5),
+                _renderFoodTitle(state),
+                WidgetUtils.spacer(2.5),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const Expanded(
+                          flex: 5,
+                          child: Text(
+                            "# of servings",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                           )
-                      )
+                      ),
+                      Expanded(
+                          flex: 8,
+                          child: TextFormField(
+                            controller: _servingsTextController,
+                            onChanged: (text) {
+                              final servingSize = double.parse(text);
+                              setState(() {
+                                selectedServingSize = servingSize;
+                              });
+                            },
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: const InputDecoration(
+                              hintText: "Eg - 1.5",
+                              hintStyle: TextStyle(color: Colors.teal),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.teal,
+                                ),
+                              ),
+                            ),
+                          )
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                WidgetUtils.spacer(2.5),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const Expanded(
+                          flex: 5,
+                          child: Text(
+                            "Selected serving size",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          )
+                      ),
+                      Expanded(
+                          flex: 8,
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: selectedServingOption?.serving_description ?? "No serving size",
+                            icon: const Padding(
+                              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                              child: Icon(Icons.fastfood),
+                            ),
+                            elevation: 16,
+                            style: const TextStyle(color: Colors.teal),
+                            underline: Container(
+                              height: 2,
+                              // color: Colors.tealAccent,
+                            ),
+                            onChanged: (String? value) {
+                              // This is called when the user selects an item.
+                              setState(() {
+                                selectedServingOption = servingOptions.firstWhere((element) => element.serving_description == value);
+                              });
+                            },
+                            items: servingOptions.map((e) => e.serving_description).map<DropdownMenuItem<String>>((String? value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value ?? "No serving size"),
+                              );
+                            }).toList(),
+                          )
+                      ),
+                    ],
+                  ),
+                ),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Serving Size", "${selectedServingOption?.metric_serving_amount ?? ""} ${selectedServingOption?.metric_serving_unit ?? ""}"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Calories", _stringOptToDouble(selectedServingOption?.calories)),
+                WidgetUtils.spacer(2.5),
+                _renderAssociatedMeetupView(),
+                _showMacrosPieChartIfPossible(selectedServingOption?.carbohydrate, selectedServingOption?.fat, selectedServingOption?.protein),
+                _infoItem("Carbohydrates", "${_stringOptToDouble(selectedServingOption?.carbohydrate)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Fat", "${_stringOptToDouble(selectedServingOption?.fat)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Protein", "${_stringOptToDouble(selectedServingOption?.protein)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Calcium", "${_stringOptToDouble(selectedServingOption?.calcium)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Cholesterol", "${_stringOptToDouble(selectedServingOption?.cholesterol)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Fiber", "${_stringOptToDouble(selectedServingOption?.fiber)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Iron", "${_stringOptToDouble(selectedServingOption?.iron)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Monounsaturated Fat", "${_stringOptToDouble(selectedServingOption?.monounsaturated_fat)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Polyunsaturated Fat", "${_stringOptToDouble(selectedServingOption?.polyunsaturated_fat)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Potassium", "${_stringOptToDouble(selectedServingOption?.potassium)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Saturated Fat", "${_stringOptToDouble(selectedServingOption?.saturated_fat)} g"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Sodium", "${_stringOptToDouble(selectedServingOption?.sodium)} mg"),
+                WidgetUtils.spacer(2.5),
+                _infoItem("Sugar", "${_stringOptToDouble(selectedServingOption?.sugar)} g"),
+                WidgetUtils.spacer(2.5),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const Expanded(
+                          flex: 5,
+                          child: Text(
+                            "Serving URL",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          )
+                      ),
+                      Expanded(
+                          flex: 8,
+                          child: RichText(
+                              text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                        text: "View in browser",
+                                        style: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.teal),
+                                        recognizer: TapGestureRecognizer()..onTap = () {
+                                          launchUrl(Uri.parse(selectedServingOption?.serving_url ?? ConstantUtils.FALLBACK_URL));
+                                        }
+                                    ),
+                                  ]
+                              )
+                          )
+                      ),
+                    ],
+                  ),
+                ),
+              ]),
             ),
-          ]),
+          ),
         ),
       ),
     );
+  }
+
+  _selectedMeetupIdAddedCallback(SelectedMeetupInfo info) {
+    setState(() {
+      associatedMeetup = info.associatedMeetup;
+      associatedMeetupDecisions = info.associatedMeetupDecisions;
+      associatedMeetupParticipants = info.associatedMeetupParticipants;
+      associatedUserIdProfileMap = info.userIdProfileMap;
+    });
+  }
+
+  _selectedMeetupIdRemovedCallback(SelectedMeetupInfo info) {
+    setState(() {
+      associatedMeetup = null;
+      associatedMeetupDecisions = null;
+      associatedMeetupParticipants = null;
+      associatedUserIdProfileMap = null;
+    });
+  }
+
+  _generateSelectFromMeetupsList() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Select Meetup', style: TextStyle(color: Colors.teal),),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+      ),
+      body: SelectFromMeetupsList.withBloc(
+        currentUserProfile: widget.currentUserProfile,
+        selectedMeetupIdAddedCallback: _selectedMeetupIdAddedCallback,
+        selectedMeetupIdRemovedCallback: _selectedMeetupIdRemovedCallback,
+        previouslySelectedMeetupId: associatedMeetup?.id,
+      ),
+    );
+  }
+
+  _renderAssociatedMeetupView() {
+    if (associatedMeetup != null && associatedMeetupParticipants != null
+        && associatedMeetupDecisions != null && associatedUserIdProfileMap != null) {
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Expanded(
+                flex: 5,
+                child: Text(
+                  "Associated meetup",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )
+            ),
+            Expanded(
+                flex: 8,
+                child: Stack(
+                  children: [
+                    MeetupMiniCardView(
+                      currentUserProfile: widget.currentUserProfile,
+                      meetup: associatedMeetup!,
+                      participants: associatedMeetupParticipants!,
+                      decisions: associatedMeetupDecisions!,
+                      userIdProfileMap: associatedUserIdProfileMap!,
+                      onCardTapped: () {
+                        showDialog(context: context, builder: (context) {
+                          return Dialog(
+                            child: _generateSelectFromMeetupsList(),
+                          );
+                        });
+                      },
+                    ),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            associatedMeetup = null;
+                            associatedMeetupDecisions = null;
+                            associatedMeetupParticipants = null;
+                            associatedUserIdProfileMap = null;
+                          });
+                        },
+                        child: CircleAvatar(
+                            radius: 12,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            child: const Icon(
+                              Icons.remove,
+                              size: 10,
+                              color: Colors.white,
+                            )
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+            ),
+          ],
+        ),
+      );
+    }
+    else {
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Expanded(
+                flex: 5,
+                child: Text(
+                  "Associated meetup",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )
+            ),
+            Expanded(
+                flex: 8,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed: () async {
+                    showDialog(context: context, builder: (context) {
+                      return Dialog(
+                        child: _generateSelectFromMeetupsList(),
+                      );
+                    });
+                  },
+                  child: const Text(
+                      "No meetup associated",
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white
+                      )
+                  ),
+                )
+            ),
+          ],
+        ),
+      );
+    }
+
   }
 
   _stringOptToDouble(String? value) {

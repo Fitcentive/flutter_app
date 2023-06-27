@@ -1,9 +1,14 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
+import 'package:flutter_app/src/models/meetups/meetup.dart';
+import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
+import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -13,6 +18,8 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_bloc.dart';
 import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_event.dart';
 import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_state.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_mini_card_view.dart';
+import 'package:flutter_app/src/views/shared_components/select_from_meetups/select_from_meetups_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -74,6 +81,8 @@ class ExerciseDiaryView extends StatefulWidget {
       BlocProvider<ExerciseDiaryBloc>(
           create: (context) => ExerciseDiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
       ),
@@ -115,6 +124,11 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
   String cardioMinutesPerformed = "";
   String setsPerformed = "";
   String repsPerformed = "";
+
+  Meetup? associatedMeetup;
+  List<MeetupParticipant>? associatedMeetupParticipants;
+  List<MeetupDecision>? associatedMeetupDecisions;
+  Map<String, PublicUserProfile>? associatedUserIdProfileMap;
 
   @override
   void initState() {
@@ -184,6 +198,16 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
                     ).toStringAsFixed(0);
               }
             });
+
+            // Setstate pertaining to meetup info
+            if (state.associatedMeetup != null) {
+              setState(() {
+                associatedMeetup = state.associatedMeetup!.meetup;
+                associatedMeetupParticipants = state.associatedMeetup!.participants;
+                associatedMeetupDecisions = state.associatedMeetup!.decisions;
+                associatedUserIdProfileMap = state.associatedUserIdProfileMap;
+              });
+            }
           }
         },
         child: BlocBuilder<ExerciseDiaryBloc, ExerciseDiaryState>(
@@ -254,7 +278,7 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
                         cardioDate: selectedWorkoutDateTime,
                         durationInMinutes: durationInMins,
                         caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
-                        meetupId: state.diaryEntry.left.meetupId,
+                        meetupId: associatedMeetup?.id,
                     )
                   )
               );
@@ -277,7 +301,7 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
                         reps: reps,
                         weightsInLbs: state.diaryEntry.right.weightsInLbs,
                         caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
-                        meetupId: state.diaryEntry.right.meetupId,
+                        meetupId: associatedMeetup?.id,
                       )
                   )
               );
@@ -318,6 +342,8 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
             _renderMinutesPerformed(state),
             WidgetUtils.spacer(2.5),
             _renderCaloriesBurned(),
+            WidgetUtils.spacer(2.5),
+            _renderAssociatedMeetupView(),
             WidgetUtils.spacer(5),
             _showSaveChangesButton(state),
           ]),
@@ -347,12 +373,154 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
             _renderReps(state),
             WidgetUtils.spacer(2.5),
             _renderCaloriesBurned(),
+            WidgetUtils.spacer(2.5),
+            _renderAssociatedMeetupView(),
             WidgetUtils.spacer(5),
             _showSaveChangesButton(state),
           ]),
         ),
       );
     }
+  }
+
+  _selectedMeetupIdAddedCallback(SelectedMeetupInfo info) {
+    setState(() {
+      associatedMeetup = info.associatedMeetup;
+      associatedMeetupDecisions = info.associatedMeetupDecisions;
+      associatedMeetupParticipants = info.associatedMeetupParticipants;
+      associatedUserIdProfileMap = info.userIdProfileMap;
+    });
+  }
+
+  _selectedMeetupIdRemovedCallback(SelectedMeetupInfo info) {
+    setState(() {
+      associatedMeetup = null;
+      associatedMeetupDecisions = null;
+      associatedMeetupParticipants = null;
+      associatedUserIdProfileMap = null;
+    });
+  }
+
+  _generateSelectFromMeetupsList() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Select Meetup', style: TextStyle(color: Colors.teal),),
+        iconTheme: const IconThemeData(
+          color: Colors.teal,
+        ),
+      ),
+      body: SelectFromMeetupsList.withBloc(
+        currentUserProfile: widget.currentUserProfile,
+        selectedMeetupIdAddedCallback: _selectedMeetupIdAddedCallback,
+        selectedMeetupIdRemovedCallback: _selectedMeetupIdRemovedCallback,
+        previouslySelectedMeetupId: associatedMeetup?.id,
+      ),
+    );
+  }
+
+
+  _renderAssociatedMeetupView() {
+    if (associatedMeetup != null && associatedMeetupParticipants != null
+        && associatedMeetupDecisions != null && associatedUserIdProfileMap != null) {
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Expanded(
+                flex: 5,
+                child: Text(
+                  "Associated meetup",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )
+            ),
+            Expanded(
+                flex: 8,
+                child: Stack(
+                  children: [
+                    MeetupMiniCardView(
+                      currentUserProfile: widget.currentUserProfile,
+                      meetup: associatedMeetup!,
+                      participants: associatedMeetupParticipants!,
+                      decisions: associatedMeetupDecisions!,
+                      userIdProfileMap: associatedUserIdProfileMap!,
+                      onCardTapped: () {
+                        showDialog(context: context, builder: (context) {
+                          return Dialog(
+                            child: _generateSelectFromMeetupsList(),
+                          );
+                        });
+                      },
+                    ),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            associatedMeetup = null;
+                            associatedMeetupDecisions = null;
+                            associatedMeetupParticipants = null;
+                            associatedUserIdProfileMap = null;
+                          });
+                        },
+                        child: CircleAvatar(
+                            radius: 12,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            child: const Icon(
+                              Icons.remove,
+                              size: 10,
+                              color: Colors.white,
+                            )
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+            ),
+          ],
+        ),
+      );
+    }
+    else {
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Expanded(
+                flex: 5,
+                child: Text(
+                  "Associated meetup",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )
+            ),
+            Expanded(
+                flex: 8,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed: () async {
+                    showDialog(context: context, builder: (context) {
+                      return Dialog(
+                        child: _generateSelectFromMeetupsList(),
+                      );
+                    });
+                  },
+                  child: const Text(
+                      "No meetup associated",
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white
+                      )
+                  ),
+                )
+            ),
+          ],
+        ),
+      );
+    }
+
   }
 
   _showExerciseTitle(ExerciseDiaryDataLoaded state) {

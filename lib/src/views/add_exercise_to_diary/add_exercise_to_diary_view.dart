@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/exercise_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_exercise_to_diary/bloc/add_exercise_to_diary_bloc.dart';
@@ -74,6 +76,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
       BlocProvider<AddExerciseToDiaryBloc>(
           create: (context) => AddExerciseToDiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
       ),
@@ -224,26 +227,31 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
   _displayMainBody() {
     if (widget.isCurrentExerciseDefinitionCardio) {
       return Scrollbar(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: WidgetUtils.skipNulls([
-              WidgetUtils.spacer(2.5),
-              _displayExerciseImageIfAny(),
-              _generateDotsIfNeeded(),
-              WidgetUtils.spacer(2.5),
-              _renderWorkoutDate(),
-              WidgetUtils.spacer(2.5),
-              _renderWorkoutTime(),
-              WidgetUtils.spacer(2.5),
-              _renderMinutesPerformed(),
-              WidgetUtils.spacer(2.5),
-              _renderCaloriesBurned(),
-              WidgetUtils.spacer(2.5),
-              _renderAssociatedMeetupView(),
-            ]),
+        child: GestureDetector(
+          onTap: () {
+            KeyboardUtils.hideKeyboard(context);
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: WidgetUtils.skipNulls([
+                WidgetUtils.spacer(2.5),
+                _displayExerciseImageIfAny(),
+                _generateDotsIfNeeded(),
+                WidgetUtils.spacer(2.5),
+                _renderWorkoutDate(),
+                WidgetUtils.spacer(2.5),
+                _renderWorkoutTime(),
+                WidgetUtils.spacer(2.5),
+                _renderMinutesPerformed(),
+                WidgetUtils.spacer(2.5),
+                _renderCaloriesBurned(),
+                WidgetUtils.spacer(2.5),
+                _renderAssociatedMeetupView(),
+              ]),
+            ),
           ),
         ),
       );
@@ -251,26 +259,31 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
     else {
       // Needs weight per set
       return Scrollbar(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: WidgetUtils.skipNulls([
-              WidgetUtils.spacer(2.5),
-              _displayExerciseImageIfAny(),
-              _generateDotsIfNeeded(),
-              WidgetUtils.spacer(2.5),
-              _renderWorkoutDate(),
-              WidgetUtils.spacer(2.5),
-              _renderWorkoutTime(),
-              WidgetUtils.spacer(2.5),
-              _renderSets(),
-              WidgetUtils.spacer(2.5),
-              _renderReps(),
-              WidgetUtils.spacer(2.5),
-              _renderCaloriesBurned(),
-              WidgetUtils.spacer(2.5),
-              _renderAssociatedMeetupView(),
-            ]),
+        child: GestureDetector(
+          onTap: () {
+            KeyboardUtils.hideKeyboard(context);
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: WidgetUtils.skipNulls([
+                WidgetUtils.spacer(2.5),
+                _displayExerciseImageIfAny(),
+                _generateDotsIfNeeded(),
+                WidgetUtils.spacer(2.5),
+                _renderWorkoutDate(),
+                WidgetUtils.spacer(2.5),
+                _renderWorkoutTime(),
+                WidgetUtils.spacer(2.5),
+                _renderSets(),
+                WidgetUtils.spacer(2.5),
+                _renderReps(),
+                WidgetUtils.spacer(2.5),
+                _renderCaloriesBurned(),
+                WidgetUtils.spacer(2.5),
+                _renderAssociatedMeetupView(),
+              ]),
+            ),
           ),
         ),
       );
@@ -774,13 +787,14 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
               _addExerciseToDiaryBloc.add(
                   AddCardioEntryToDiary(
                     userId: widget.currentUserProfile.userId,
+                    associatedMeetupId: associatedMeetup?.id,
                     newEntry: CardioDiaryEntryCreate(
                         workoutId: widget.exerciseDefinition.uuid,
                         name: widget.exerciseDefinition.name,
                         cardioDate: selectedWorkoutDateTime,
                         durationInMinutes: durationInMins,
                         caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
-                        meetupId: null,
+                        meetupId: associatedMeetup?.id,
                     ),
                   )
               );
@@ -796,6 +810,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
               _addExerciseToDiaryBloc.add(
                   AddStrengthEntryToDiary(
                     userId: widget.currentUserProfile.userId,
+                    associatedMeetupId: associatedMeetup?.id,
                     newEntry: StrengthDiaryEntryCreate(
                       workoutId: widget.exerciseDefinition.uuid,
                       name: widget.exerciseDefinition.name,
@@ -804,7 +819,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
                       reps: reps,
                       caloriesBurned: double.parse(_caloriesBurnedTextController.value.text),
                       weightsInLbs: const [], // todo - update this
-                      meetupId: null,
+                      meetupId: associatedMeetup?.id,
                     ),
                   )
               );

@@ -14,6 +14,7 @@ class FoodDiaryEntry extends Equatable {
   final DateTime entryDate;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? meetupId;
 
 
   const FoodDiaryEntry(
@@ -25,7 +26,8 @@ class FoodDiaryEntry extends Equatable {
       this.mealEntry,
       this.entryDate,
       this.createdAt,
-      this.updatedAt
+      this.updatedAt,
+      this.meetupId,
   );
 
   factory FoodDiaryEntry.fromJson(Map<String, dynamic> json) => _$FoodDiaryEntryFromJson(json);
@@ -42,7 +44,8 @@ class FoodDiaryEntry extends Equatable {
     mealEntry,
     entryDate,
     createdAt,
-    updatedAt
+    updatedAt,
+    meetupId,
   ];
 
 }
@@ -53,6 +56,7 @@ class FoodDiaryEntryCreate extends Equatable {
   final double numberOfServings;
   final String mealEntry;
   final DateTime entryDate;
+  final String? meetupId;
 
 
   const FoodDiaryEntryCreate({
@@ -60,7 +64,8 @@ class FoodDiaryEntryCreate extends Equatable {
     required this.servingId,
     required this.numberOfServings,
     required this.mealEntry,
-    required this.entryDate
+    required this.entryDate,
+    required this.meetupId,
   });
 
   @override
@@ -69,7 +74,8 @@ class FoodDiaryEntryCreate extends Equatable {
     servingId,
     numberOfServings,
     mealEntry,
-    entryDate
+    entryDate,
+    meetupId
   ];
 }
 
@@ -77,18 +83,20 @@ class FoodDiaryEntryUpdate extends Equatable {
   final int servingId;
   final double numberOfServings;
   final DateTime entryDate;
-
+  final String? meetupId;
 
   const FoodDiaryEntryUpdate({
     required this.servingId,
     required this.numberOfServings,
-    required this.entryDate
+    required this.entryDate,
+    required this.meetupId,
   });
 
   @override
   List<Object?> get props => [
     servingId,
     numberOfServings,
-    entryDate
+    entryDate,
+    meetupId
   ];
 }

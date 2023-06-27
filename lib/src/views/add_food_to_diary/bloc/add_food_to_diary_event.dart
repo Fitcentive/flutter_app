@@ -10,14 +10,16 @@ abstract class AddFoodToDiaryEvent extends Equatable {
 
 class AddFoodEntryToDiary extends AddFoodToDiaryEvent {
   final String userId;
+  final String? associatedMeetupId;
   final FoodDiaryEntryCreate newEntry;
 
   const AddFoodEntryToDiary({
     required this.userId,
+    required this.associatedMeetupId,
     required this.newEntry
   });
 
   @override
-  List<Object?> get props => [userId, newEntry];
+  List<Object?> get props => [userId, associatedMeetupId, newEntry];
 
 }

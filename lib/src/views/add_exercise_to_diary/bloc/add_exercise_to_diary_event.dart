@@ -11,29 +11,33 @@ abstract class AddExerciseToDiaryEvent extends Equatable {
 
 class AddCardioEntryToDiary extends AddExerciseToDiaryEvent {
   final String userId;
+  final String? associatedMeetupId;
   final CardioDiaryEntryCreate newEntry;
 
   const AddCardioEntryToDiary({
     required this.userId,
+    required this.associatedMeetupId,
     required this.newEntry
   });
 
   @override
-  List<Object?> get props => [userId, newEntry];
+  List<Object?> get props => [userId, newEntry, associatedMeetupId];
 
 }
 
 
 class AddStrengthEntryToDiary extends AddExerciseToDiaryEvent {
   final String userId;
+  final String? associatedMeetupId;
   final StrengthDiaryEntryCreate newEntry;
 
   const AddStrengthEntryToDiary({
     required this.userId,
+    required this.associatedMeetupId,
     required this.newEntry
   });
 
   @override
-  List<Object?> get props => [userId, newEntry];
+  List<Object?> get props => [userId, newEntry, associatedMeetupId];
 
 }
