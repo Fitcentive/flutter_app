@@ -1,4 +1,8 @@
+import 'package:either_dart/either.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
@@ -39,6 +43,9 @@ class DetailedMeetupDataFetched extends DetailedMeetupState {
   final List<MeetupDecision> decisions;
   final List<PublicUserProfile> userProfiles;
 
+  final Map<String, AllDiaryEntries> participantDiaryEntriesMap;
+  final List<Either<FoodGetResult, FoodGetResultSingleServing>> rawFoodEntries;
+
   const DetailedMeetupDataFetched({
     required this.meetupId,
     required this.userAvailabilities,
@@ -47,6 +54,8 @@ class DetailedMeetupDataFetched extends DetailedMeetupState {
     required this.participants,
     required this.decisions,
     required this.userProfiles,
+    required this.participantDiaryEntriesMap,
+    required this.rawFoodEntries,
   });
 
   @override
@@ -58,6 +67,8 @@ class DetailedMeetupDataFetched extends DetailedMeetupState {
     participants,
     decisions,
     userProfiles,
+    participantDiaryEntriesMap,
+    rawFoodEntries,
   ];
 }
 

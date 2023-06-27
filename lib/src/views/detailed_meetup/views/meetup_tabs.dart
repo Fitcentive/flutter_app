@@ -1,5 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
@@ -9,6 +13,8 @@ import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
+import 'package:flutter_app/src/views/exercise_diary/exercise_diary_view.dart';
+import 'package:flutter_app/src/views/food_diary/food_diary_view.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/meetup_comments_list.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
@@ -27,13 +33,16 @@ class MeetupTabs extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final bool isAvailabilitySelectHappening;
   final Map<String, List<MeetupAvailabilityUpsert>> userMeetupAvailabilities;
-  final List<PublicUserProfile> selectedUserProfilesToShowAvailabilitiesFor;
+  final List<PublicUserProfile> selectedUserProfilesToShowDetailsFor;
   final Meetup currentMeetup;
 
   final List<PublicUserProfile> selectedMeetupParticipantUserProfiles;
   final Location? selectedMeetupLocation;
   final String? selectedMeetupLocationId;
   final String? selectedMeetupLocationFsqId;
+
+  final List<Either<FoodGetResult, FoodGetResultSingleServing>> rawFoodEntries;
+  final Map<String, AllDiaryEntries> participantDiaryEntriesMap;
 
   final AvailabilitiesChangedCallback availabilitiesChangedCallback;
 
@@ -51,13 +60,20 @@ class MeetupTabs extends StatefulWidget {
     required this.currentUserProfile,
     required this.isAvailabilitySelectHappening,
     required this.userMeetupAvailabilities,
-    required this.selectedUserProfilesToShowAvailabilitiesFor,
+
+    // Note - when it comes to availability, parent determined behaviour that this can include multiple values
+    // Otherwise - it only has one value in case of showing associated diary entries
+    required this.selectedUserProfilesToShowDetailsFor,
+
     required this.currentMeetup,
 
     required this.selectedMeetupParticipantUserProfiles,
     required this.selectedMeetupLocation,
     required this.selectedMeetupLocationId,
     required this.selectedMeetupLocationFsqId,
+
+    required this.rawFoodEntries,
+    required this.participantDiaryEntriesMap,
 
     required this.availabilitiesChangedCallback,
 
@@ -79,7 +95,7 @@ class MeetupTabs extends StatefulWidget {
 }
 
 class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
-  static const int MAX_TABS = 3;
+  static const int MAX_TABS = 4;
 
   late final TabController _tabController;
 
@@ -118,8 +134,10 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
                   icon: Icon(Icons.location_on, color: Colors.teal,),
                   child: Text(
                     "Location",
+                    maxLines: 1,
                     style: TextStyle(
-                      color: Colors.teal
+                      color: Colors.teal,
+                        fontSize: 10
                     ),
                   ),
                 ),
@@ -127,17 +145,32 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
                   icon: Icon(Icons.event_available, color: Colors.teal),
                   child: Text(
                     "Availabilities",
+                    maxLines: 1,
                     style: TextStyle(
-                        color: Colors.teal
+                        color: Colors.teal,
+                        fontSize: 10
+                    ),
+                  ),
+                ),
+                Tab(
+                  icon: Icon(Icons.fitness_center, color: Colors.teal),
+                  child: Text(
+                    "Activities",
+                    maxLines: 1,
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontSize: 10
                     ),
                   ),
                 ),
                 Tab(
                   icon: Icon(Icons.history, color: Colors.teal),
                   child: Text(
-                    "Activity",
+                    "Conversation",
+                    maxLines: 1,
                     style: TextStyle(
-                        color: Colors.teal
+                        color: Colors.teal,
+                        fontSize: 10
                     ),
                   ),
                 ),
@@ -149,7 +182,8 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
             children: [
               renderMeetupLocationView(),
               renderAvailabilitiesView(),
-              renderMeetupActivityView(),
+              renderMeetupActivitiesView(),
+              renderMeetupCommentsView(),
             ],
           ),
         ),
@@ -169,8 +203,380 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     }
   }
 
-  Widget renderMeetupActivityView() {
+  Widget renderMeetupCommentsView() {
     return _renderMeetupComments();
+  }
+
+  // Must fetch diary entries for all users pertaining to this meeup
+  Widget renderMeetupActivitiesView() {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        _renderExerciseDiaryEntries(),
+        WidgetUtils.spacer(2.5),
+        _renderFoodDiaryEntriesWithContainer(),
+      ],
+    );
+  }
+
+  _renderExerciseDiaryEntries() {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.teal)
+        ),
+        child: Column(
+          children: [
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.all(5),
+              child: const Text(
+                "Cardio",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16
+                ),
+              ),
+            ),
+            WidgetUtils.spacer(1),
+            _renderCardioDiaryEntries(),
+            WidgetUtils.spacer(5),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.all(5),
+              child: const Text(
+                "Strength",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16
+                ),
+              ),
+            ),
+            WidgetUtils.spacer(1),
+            _renderStrengthDiaryEntries(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _renderCardioDiaryEntries() {
+    if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
+      final selectedUserProfile = widget.selectedUserProfilesToShowDetailsFor.first;
+      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedUserProfile.userId]!;
+      return diaryEntriesForSelectedUser.cardioWorkouts.isNotEmpty ? ListView.builder(
+          shrinkWrap: true,
+          itemCount: diaryEntriesForSelectedUser.cardioWorkouts.length,
+          itemBuilder: (context, index) {
+            final currentCardioEntry = diaryEntriesForSelectedUser.cardioWorkouts[index];
+            return Dismissible(
+              background: WidgetUtils.viewUnderDismissibleListTile(),
+              direction: DismissDirection.endToStart,
+              key: Key(currentCardioEntry.id),
+              onDismissed: (direction) {
+                if (direction == DismissDirection.endToStart) {
+                  // Now we also have to remove it from the state variable
+                  // Remove it when dismissed carefully
+
+                  ScaffoldMessenger
+                      .of(context)
+                      .showSnackBar(
+                    SnackBar(
+                        duration: const Duration(milliseconds: 1500),
+                        content: const Text("Successfully removed cardio entry!"),
+                        action: SnackBarAction(
+                            label: "Undo",
+                            onPressed: () {
+                              // fill this in
+                            }) // this is what you needed
+                    ),
+                  )
+                      .closed
+                      .then((value) {
+                    // Actually remove it here
+                  });
+                }
+              },
+              child: InkWell(
+                onTap: () {},
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            flex: 2,
+                            child: Container(
+                                padding: const EdgeInsets.all(5),
+                                child: Text(currentCardioEntry.name)
+                            )
+                        ),
+                        Expanded(
+                            flex: 1,
+                            child: Text(
+                              "${currentCardioEntry.durationInMinutes} minutes",
+                            )
+                        ),
+                        Expanded(
+                            flex: 1,
+                            child: Text(
+                              "${currentCardioEntry.caloriesBurned.toInt()} calories",
+                              style: const TextStyle(
+                                  color: Colors.teal
+                              ),
+                            )
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+      ) : const Center(
+        child: Text("No items here..."),
+      );
+    }
+    else {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
+  }
+
+  _renderStrengthDiaryEntries() {
+    if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
+      final selectedUserProfile = widget.selectedUserProfilesToShowDetailsFor.first;
+      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedUserProfile.userId]!;
+      return diaryEntriesForSelectedUser.strengthWorkouts.isNotEmpty ? ListView.builder(
+          shrinkWrap: true,
+          itemCount: diaryEntriesForSelectedUser.strengthWorkouts.length,
+          itemBuilder: (context, index) {
+            final currentStrengthEntry = diaryEntriesForSelectedUser.strengthWorkouts[index];
+            return Dismissible(
+              background: WidgetUtils.viewUnderDismissibleListTile(),
+              key: Key(currentStrengthEntry.id),
+              direction: DismissDirection.endToStart,
+              onDismissed: (direction) {
+                if (direction == DismissDirection.endToStart) {
+                  // Now we also have to remove it from the state variable
+                  // fix this here
+
+                  ScaffoldMessenger
+                      .of(context)
+                      .showSnackBar(
+                    SnackBar(
+                        duration: const Duration(milliseconds: 1500),
+                        content: const Text("Successfully removed workout entry!"),
+                        action: SnackBarAction(
+                            label: "Undo",
+                            onPressed: () {
+                              // fix this as well
+                            }) // this is what you needed
+                    ),
+                  )
+                      .closed
+                      .then((value) {
+                    // ACTUALLY remove it here
+                  });
+                }
+              },
+              child: InkWell(
+                onTap: () {},
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            flex: 6,
+                            child: Container(
+                                padding: const EdgeInsets.all(5),
+                                child: Text(currentStrengthEntry.name)
+                            )
+                        ),
+                        Expanded(
+                            flex: 3,
+                            child: Text("${currentStrengthEntry.sets} sets")
+                        ),
+                        Expanded(
+                            flex: 3,
+                            child: Text("${currentStrengthEntry.reps} reps")
+                        ),
+                        Expanded(
+                            flex: 4,
+                            child: Text(
+                              "${currentStrengthEntry.caloriesBurned.toInt()} calories",
+                              style: const TextStyle(
+                                  color: Colors.teal
+                              ),
+                            )
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+      ) : const Center(
+        child: Text("No items here..."),
+      );
+    }
+    else {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
+
+  }
+
+  _renderFoodDiaryEntriesWithContainer() {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.teal)
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+          // Heading
+              Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.all(5),
+              child: const Text(
+                "Nutrition",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16
+                ),
+              ),
+            ),
+            WidgetUtils.spacer(1.5),
+            _renderFoodDiaryEntries(),
+          ]
+        ),
+      ),
+    );
+  }
+
+  _renderFoodDiaryEntries() {
+    if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
+      final selectedUserProfile = widget.selectedUserProfilesToShowDetailsFor.first;
+      final diaryEntriesForSelectedUser = widget.participantDiaryEntriesMap[selectedUserProfile.userId]!;
+
+      if (diaryEntriesForSelectedUser.foodEntries.isNotEmpty) {
+        return ListView.builder(
+            shrinkWrap: true,
+            itemCount: diaryEntriesForSelectedUser.foodEntries.length,
+            itemBuilder: (context, index) {
+              final foodEntryForHeadingRaw = diaryEntriesForSelectedUser.foodEntries[index];
+              final detailedFoodEntry = widget.rawFoodEntries.firstWhere((element) {
+                if (element.isLeft) {
+                  return element.left.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+                }
+                else {
+                  return element.right.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+                }
+              });
+              final caloriesRaw = detailedFoodEntry.isLeft ?
+              detailedFoodEntry.left.food.servings.serving.firstWhere((element) => element.serving_id == foodEntryForHeadingRaw.servingId.toString()).calories :
+              detailedFoodEntry.right.food.servings.serving.calories;
+
+              return Dismissible(
+                background: WidgetUtils.viewUnderDismissibleListTile(),
+                direction: DismissDirection.endToStart,
+                key: Key(foodEntryForHeadingRaw.id),
+                onDismissed: (direction) {
+                  if (direction == DismissDirection.endToStart) {
+                    // Now we also have to remove it from the state variable
+                    // Ask user for prompt confirming what they want to do here
+
+                    ScaffoldMessenger
+                        .of(context)
+                        .showSnackBar(
+                      SnackBar(
+                          duration: const Duration(milliseconds: 1500),
+                          content: const Text("Successfully removed food entry!"),
+                          action: SnackBarAction(
+                              label: "Undo",
+                              onPressed: () {
+                                // fill this in
+                              })
+                      ),
+                    )
+                        .closed
+                        .then((value) {
+                      if (value != SnackBarClosedReason.action) {
+                        // Proceed to soft or hard delete over here
+                      }
+                    });
+                  }
+                },
+                child: InkWell(
+                  onTap: () {},
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              flex: 12,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                      padding: const EdgeInsets.all(5),
+                                      child: Text(
+                                          detailedFoodEntry.isLeft ? detailedFoodEntry.left.food.food_name : detailedFoodEntry.right.food.food_name
+                                      )
+                                  ),
+                                  Container(
+                                      padding: const EdgeInsets.all(5),
+                                      child: Text(
+                                        "${foodEntryForHeadingRaw.numberOfServings.toStringAsFixed(2)} servings",
+                                        style: const TextStyle(
+                                            fontSize: 12
+                                        ),
+                                      )
+                                  ),
+                                ],
+                              )
+                          ),
+                          Expanded(
+                              flex: 4,
+                              child: Text(
+                                "${(double.parse(caloriesRaw ?? "0") * foodEntryForHeadingRaw.numberOfServings).toStringAsFixed(0)} calories",
+                                style: const TextStyle(
+                                    color: Colors.teal
+                                ),
+                              )
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
+        );
+      }
+      else {
+        return const Center(
+          child: Text("No items here..."),
+        );
+      }
+    }
+    else {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
   }
 
   _renderMeetupComments() {
@@ -256,7 +662,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     }
     else {
       return SizedBox(
-        height: 275,
+        height: 270,
         child: Center(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -380,7 +786,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
               .userMeetupAvailabilities
               .entries
               .where((element) =>
-              widget.selectedUserProfilesToShowAvailabilitiesFor.map((e) => e.userId).contains(element.key))
+              widget.selectedUserProfilesToShowDetailsFor.map((e) => e.userId).contains(element.key))
           ),
         ),
       ),

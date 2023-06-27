@@ -1,9 +1,14 @@
 import 'dart:async';
 
+import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
@@ -96,6 +101,7 @@ class DetailedMeetupView extends StatefulWidget {
           create: (context) => DetailedMeetupBloc(
             chatRepository: RepositoryProvider.of<ChatRepository>(context),
             userRepository: RepositoryProvider.of<UserRepository>(context),
+            diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
             meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
@@ -120,7 +126,8 @@ class DetailedMeetupView extends StatefulWidget {
 class DetailedMeetupViewState extends State<DetailedMeetupView> {
   static const int LOCATION_MEETUP_VIEW_TAB = 0;
   static const int AVAILABILITY_MEETUP_VIEW_TAB = 1;
-  static const int ACTIVITY_MEETUP_VIEW_TAB = 2;
+  static const int ACTIVITIES_MEETUP_VIEW_TAB = 2;
+  static const int CONVERSATION_MEETUP_VIEW_TAB = 3;
 
   bool isPremiumEnabled = false;
   int maxOtherChatParticipants = ConstantUtils.MAX_OTHER_CHAT_PARTICIPANTS_FREE;
@@ -141,6 +148,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   String? selectedMeetupLocationId;
   String? selectedMeetupLocationFsqId;
 
+  List<Either<FoodGetResult, FoodGetResultSingleServing>> rawFoodEntries = [];
+  Map<String, AllDiaryEntries> participantDiaryEntriesMap = {};
   late List<PublicUserProfile> selectedUserProfilesToShowAvailabilitiesFor;
   late Meetup currentMeetup;
 
@@ -328,6 +337,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             setState(() {
               _setUpTimeSegmentDateTimeMap(state.meetup.createdAt.toLocal());
               _setLocalStateFromBlocState(state);
+              participantDiaryEntriesMap = state.participantDiaryEntriesMap;
+              rawFoodEntries = state.rawFoodEntries;
             });
           }
           else if (state is MeetupChatRoomCreated) {
@@ -620,6 +631,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         ),
       );
     }
+    else if (currentSelectedTab == ACTIVITIES_MEETUP_VIEW_TAB) {
+      return const Center(
+        child: Text("Tap on a participant to view their associated meetup activities", style: TextStyle(fontSize: 12),
+        ),
+      );
+    }
   }
 
   _renderMeetupStatus() {
@@ -687,12 +704,14 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         currentUserProfile: widget.currentUserProfile,
         isAvailabilitySelectHappening: isAvailabilitySelectHappening,
         userMeetupAvailabilities: userMeetupAvailabilities,
-        selectedUserProfilesToShowAvailabilitiesFor:  selectedUserProfilesToShowAvailabilitiesFor,
+        selectedUserProfilesToShowDetailsFor:  selectedUserProfilesToShowAvailabilitiesFor,
         currentMeetup: currentMeetup,
         selectedMeetupParticipantUserProfiles: selectedMeetupParticipantUserProfiles,
         selectedMeetupLocation: selectedMeetupLocation,
         selectedMeetupLocationId: selectedMeetupLocationId,
         selectedMeetupLocationFsqId: selectedMeetupLocationFsqId,
+        rawFoodEntries: rawFoodEntries,
+        participantDiaryEntriesMap: participantDiaryEntriesMap,
         availabilitiesChangedCallback: _availabilityChangedCallback,
         editAvailabilitiesButtonCallback: _editAvailabilityButtonOnPressed,
         cancelEditAvailabilitiesButtonCallback: _cancelEditAvailabilityButtonOnPressed,
@@ -812,17 +831,29 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _onParticipantTapped(PublicUserProfile userProfile, bool isSelected) {
     // Select only availabilities to show here
-    if (currentSelectedTab != AVAILABILITY_MEETUP_VIEW_TAB) {
+    if (currentSelectedTab != AVAILABILITY_MEETUP_VIEW_TAB && currentSelectedTab != ACTIVITIES_MEETUP_VIEW_TAB) {
       _goToUserProfilePage(userProfile);
     }
     setState(() {
-      if (isSelected) {
-        if (!selectedUserProfilesToShowAvailabilitiesFor.contains(userProfile)) {
-          selectedUserProfilesToShowAvailabilitiesFor.add(userProfile);
+      if (currentSelectedTab != AVAILABILITY_MEETUP_VIEW_TAB) {
+        if (isSelected) {
+          if (!selectedUserProfilesToShowAvailabilitiesFor.contains(userProfile)) {
+            selectedUserProfilesToShowAvailabilitiesFor.add(userProfile);
+          }
+        }
+        else {
+          selectedUserProfilesToShowAvailabilitiesFor.remove(userProfile);
         }
       }
       else {
-        selectedUserProfilesToShowAvailabilitiesFor.remove(userProfile);
+        // This will ensure that only one is ever selected at most
+        if (isSelected) {
+          selectedUserProfilesToShowAvailabilitiesFor = List.from(List.empty());
+          selectedUserProfilesToShowAvailabilitiesFor.add(userProfile);
+        }
+        else {
+          selectedUserProfilesToShowAvailabilitiesFor.remove(userProfile);
+        }
       }
     });
   }
@@ -835,7 +866,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         onParticipantTapped: _onParticipantTapped,
         participantDecisions: selectedMeetupParticipantDecisions,
         shouldShowAvailabilityIcon: true,
-        shouldTapChangeCircleColour: currentSelectedTab == AVAILABILITY_MEETUP_VIEW_TAB,
+        shouldTapChangeCircleColour: currentSelectedTab == AVAILABILITY_MEETUP_VIEW_TAB || currentSelectedTab == ACTIVITIES_MEETUP_VIEW_TAB,
       );
     }
     else {

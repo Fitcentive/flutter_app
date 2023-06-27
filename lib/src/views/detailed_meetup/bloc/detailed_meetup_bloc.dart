@@ -1,7 +1,9 @@
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
+import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
@@ -17,6 +19,7 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
   final MeetupRepository meetupRepository;
   final UserRepository userRepository;
   final ChatRepository chatRepository;
+  final DiaryRepository diaryRepository;
 
   Uuid uuid = const Uuid();
 
@@ -25,6 +28,7 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     required this.meetupRepository,
     required this.userRepository,
     required this.chatRepository,
+    required this.diaryRepository,
   }): super(const DetailedMeetupStateInitial()) {
 
     on<FetchAdditionalMeetupData>(_fetchAdditionalMeetupData);
@@ -60,7 +64,9 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
           meetup: updatedMeetup,
           participants: currentState.participants,
           decisions: currentState.decisions,
-          userProfiles: currentState.userProfiles
+          userProfiles: currentState.userProfiles,
+          participantDiaryEntriesMap: currentState.participantDiaryEntriesMap,
+          rawFoodEntries: currentState.rawFoodEntries,
       ));
     }
 
@@ -82,7 +88,9 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
           meetup: currentState.meetup,
           participants: currentState.participants,
           decisions: currentState.decisions,
-          userProfiles: currentState.userProfiles
+          userProfiles: currentState.userProfiles,
+          participantDiaryEntriesMap: currentState.participantDiaryEntriesMap,
+          rawFoodEntries: currentState.rawFoodEntries,
       ));
     }
   }
@@ -107,8 +115,10 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
 
       final participantIds = meetupParticipants.map((e) => e.userId).toList();
       Map<String, List<MeetupAvailability>> availabilityMap = {};
+      Map<String, AllDiaryEntries> participantDiaryEntriesMap = {};
+
       final availabilities = (await Future.wait(participantIds.map((e) =>
-          meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))
+          meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken))
       )).map((mList) =>
           mList.map((m) {
             return MeetupAvailability(
@@ -133,6 +143,18 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
 
       final List<PublicUserProfile> userProfileDetails =
       await userRepository.getPublicUserProfiles(meetupParticipants.map((e) => e.userId).toList(), accessToken);
+      
+      final List<AllDiaryEntries> diaryEntries =
+        await Future.wait(participantIds.map((e) => meetupRepository.getAllDiaryEntriesForMeetupUser(event.meetupId, e, accessToken)));
+
+      var j = 0;
+      while(j < diaryEntries.length) {
+        participantDiaryEntriesMap[participantIds[i]] = diaryEntries[i];
+        j++;
+      }
+
+      final allFoodEntriesOnly = diaryEntries.map((e) => e.foodEntries).expand((element) => element).toList();
+      final foodEntries = await Future.wait(allFoodEntriesOnly.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken!)));
 
       emit(DetailedMeetupDataFetched(
           meetupId: event.meetupId,
@@ -141,7 +163,9 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
           meetup: meetup,
           participants: meetupParticipants,
           decisions: meetupDecisions,
-          userProfiles: userProfileDetails
+          userProfiles: userProfileDetails,
+          participantDiaryEntriesMap: participantDiaryEntriesMap,
+          rawFoodEntries: foodEntries
       ));
     } catch (ex) {
       emit(const ErrorState());
@@ -214,6 +238,8 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
       await meetupRepository.getLocationByFsqId(event.meetupLocationFsqId!, accessToken!);
 
     Map<String, List<MeetupAvailability>> availabilityMap = {};
+    Map<String, AllDiaryEntries> participantDiaryEntriesMap = {};
+
     final availabilities = (await Future.wait(event.participantIds.map((e) => meetupRepository.getMeetupParticipantAvailabilities(event.meetupId, e, accessToken!))))
         .map((mList) =>
             mList.map((m) {
@@ -236,6 +262,18 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
       i++;
     }
 
+    final List<AllDiaryEntries> diaryEntries =
+    await Future.wait(event.participantIds.map((e) => meetupRepository.getAllDiaryEntriesForMeetupUser(event.meetupId, e, accessToken!)));
+
+    var j = 0;
+    while(j < diaryEntries.length) {
+      participantDiaryEntriesMap[event.participantIds[j]] = diaryEntries[j];
+      j++;
+    }
+
+    final allFoodEntriesOnly = diaryEntries.map((e) => e.foodEntries).expand((element) => element).toList();
+    final foodEntries = await Future.wait(allFoodEntriesOnly.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken!)));
+
     emit(DetailedMeetupDataFetched(
         meetupId: event.meetupId,
         userAvailabilities: availabilityMap,
@@ -243,7 +281,9 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
         meetup: event.meetup,
         participants: event.participants,
         decisions: event.decisions,
-        userProfiles: event.userProfiles
+        userProfiles: event.userProfiles,
+        participantDiaryEntriesMap: participantDiaryEntriesMap,
+        rawFoodEntries: foodEntries
     ));
   }
 
