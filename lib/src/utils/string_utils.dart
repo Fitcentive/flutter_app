@@ -24,6 +24,15 @@ class StringUtils {
     }
   }
 
+  static String truncateLongStringWithLimit(String s, int limit) {
+    if (s.length <= limit) {
+      return s;
+    }
+    else {
+      return "${s.substring(0, min(limit, s.length))}...";
+    }
+  }
+
   static String generateRandomString(int len) {
     var r = Random();
     return String.fromCharCodes(List.generate(len, (index) => r.nextInt(33) + 89));

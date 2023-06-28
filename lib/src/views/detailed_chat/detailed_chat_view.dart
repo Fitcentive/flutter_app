@@ -5,10 +5,12 @@ import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_chat/bloc/detailed_chat_bloc.dart';
 import 'package:flutter_app/src/views/detailed_chat/bloc/detailed_chat_event.dart';
+import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/select_chat_users/select_chat_users_view.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
@@ -110,42 +112,46 @@ class DetailedChatViewState extends State<DetailedChatView> {
   Widget build(BuildContext context) {
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
+    final customAppBar = AppBar(
+      iconTheme: const IconThemeData(
+        color: Colors.teal,
+      ),
+      title: const Text('Chat Info', style: TextStyle(color: Colors.teal),),
+    );
     return Scaffold(
       bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
       floatingActionButton: Visibility(
           visible: isEditParticipantsButtonEnabled,
           child: _addParticipantsToChatButton()
       ),
-      appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.teal,
-        ),
-        title: const Text('Chat Info', style: TextStyle(color: Colors.teal),),
-      ),
+      appBar: customAppBar,
       body: WillPopScope(
         onWillPop: () async {
           await _updateChatParticipantsViaApiCall();
           return true;
         },
-        child: Scrollbar(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: WidgetUtils.skipNulls([
-              WidgetUtils.spacer(5),
-              _renderChatTitle(),
-              WidgetUtils.spacer(10),
-              _renderChatPictures(),
-              WidgetUtils.spacer(10),
-              _renderEditParticipantsButtonIfNeeded(),
-              WidgetUtils.spacer(5),
-              _renderUserTextHintIfNeeded(),
-              WidgetUtils.spacer(5),
-              _renderHintIfNeeded(),
-              WidgetUtils.spacer(10),
-              _renderChatParticipants(),
-              WidgetUtils.spacer(5),
-              _renderLeaveChatButtonIfNeeded(),
-            ]),
+        child: SingleChildScrollView(
+          child: SizedBox(
+            height: ScreenUtils.getScreenHeight(context) - (customAppBar.toolbarHeight ?? kToolbarHeight),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: WidgetUtils.skipNulls([
+                WidgetUtils.spacer(5),
+                _renderChatTitle(),
+                WidgetUtils.spacer(10),
+                _renderChatPictures(),
+                WidgetUtils.spacer(10),
+                _renderEditParticipantsButtonOrAssociatedMeetupButtonAsNeeded(),
+                WidgetUtils.spacer(5),
+                _renderUserTextHintIfNeeded(),
+                WidgetUtils.spacer(5),
+                _renderHintIfNeeded(),
+                WidgetUtils.spacer(10),
+                _renderChatParticipants(),
+                WidgetUtils.spacer(5),
+                _renderLeaveChatButtonIfNeeded(),
+              ]),
+            ),
           ),
         ),
       ),
@@ -228,7 +234,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
   }
 
   _renderLeaveChatButtonIfNeeded() {
-    if (widget.currentChatRoom.roomType == "group") {
+    if (widget.currentChatRoom.roomType == "group" && widget.associatedMeetup == null) {
       return Align(
         alignment: Alignment.bottomCenter,
         child: Padding(
@@ -357,7 +363,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
     }
   }
 
-  _renderEditParticipantsButtonIfNeeded() {
+  _renderEditParticipantsButtonOrAssociatedMeetupButtonAsNeeded() {
     if (widget.currentChatRoom.roomType == "group" && widget.associatedMeetup == null &&
         currentChatAdminUserIds.contains(widget.currentUserProfile.userId)
     ) {
@@ -376,6 +382,42 @@ class DetailedChatViewState extends State<DetailedChatView> {
         ),
       );
     }
+    else if (widget.associatedMeetup != null && widget.currentChatRoom.roomType == "group") {
+      return ListTile(
+        onTap: () {
+          _goToDetailedMeetupView(widget.associatedMeetup!.id);
+        },
+        tileColor: Colors.teal,
+        title: Center(
+          child: Text(
+            widget.associatedMeetup!.name ?? "Unnamed Meetup",
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16
+            ),
+          ),
+        ),
+        subtitle: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(5),
+            child: Text(
+              "This chat is associated with a meetup!",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  _goToDetailedMeetupView(String meetupId) {
+    Navigator.push(
+        context,
+        DetailedMeetupView.route(meetupId: meetupId, currentUserProfile: widget.currentUserProfile)
+    );
   }
 
   _renderChatPictures() {

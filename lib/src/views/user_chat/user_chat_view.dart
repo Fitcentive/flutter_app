@@ -282,7 +282,7 @@ class UserChatViewState extends State<UserChatView> {
         _goToDetailedChatView(state);
       },
       child: Text(
-        chatTitle,
+        StringUtils.truncateLongStringWithLimit(chatTitle, 20),
         style: const TextStyle(color: Colors.teal),
       ),
     );
@@ -444,11 +444,14 @@ class UserChatViewState extends State<UserChatView> {
             ),
           ),
           subtitle: const Center(
-            child: Text(
-              "This chat is associated with a meetup!",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12
+            child: Padding(
+              padding: EdgeInsets.all(5),
+              child: Text(
+                "This chat is associated with a meetup!",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12
+                ),
               ),
             ),
           ),

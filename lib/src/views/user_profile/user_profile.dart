@@ -418,7 +418,9 @@ class UserProfileViewState extends State<UserProfileView> {
             child: Column(
               children: [
                 Text("${widget.userProfile.firstName} ${widget.userProfile.lastName} has sent you a friend request",
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)
+                ),
+                WidgetUtils.spacer(2.5),
                 Row(
                   children: [
                     Expanded(
