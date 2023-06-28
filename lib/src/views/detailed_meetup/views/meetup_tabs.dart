@@ -29,7 +29,6 @@ import 'package:flutter_app/src/views/shared_components/time_planner/time_planne
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:intl/intl.dart';
 
 
@@ -110,9 +109,8 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   late String selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor;
   late DetailedMeetupBloc _detailedMeetupBloc;
 
+  List<Either<FoodGetResult, FoodGetResultSingleServing>> rawFoodEntriesState = [];
   Map<String, AllDiaryEntries> participantDiaryEntriesMapState = {};
-
-  bool _isFloatingButtonVisible = true;
 
   @override
   bool get wantKeepAlive => true;
@@ -130,6 +128,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
     selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor = widget.currentUserProfile.userId;
     participantDiaryEntriesMapState = widget.participantDiaryEntriesMap;
+    rawFoodEntriesState = widget.rawFoodEntries;
   }
 
   @override
@@ -219,20 +218,16 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   }
 
   _animatedButton() {
-    return AnimatedOpacity(
-      opacity: _isFloatingButtonVisible ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 200),
-      child: Visibility(
-        visible: _isFloatingButtonVisible && _tabController.index == DetailedMeetupViewState.ACTIVITIES_MEETUP_VIEW_TAB,
-        child: FloatingActionButton(
-          heroTag: "MeetupTabsViewAnimatedButton",
-          onPressed: () {
-            _showDiaryEntrySelectDialog();
-          },
-          tooltip: 'Share your thoughts!',
-          backgroundColor: Colors.teal,
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
+    return Visibility(
+      visible: selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor == widget.currentUserProfile.userId,
+      child: FloatingActionButton(
+        heroTag: "MeetupTabsViewAnimatedButton",
+        onPressed: () {
+          _showDiaryEntrySelectDialog();
+        },
+        tooltip: 'Share your thoughts!',
+        backgroundColor: Colors.teal,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -242,7 +237,15 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
       return Dialog(
         child: _generateSelectFromDiaryEntriesView(),
       );
-    });
+    }).then((value) => _detailedMeetupBloc.add(
+        SaveAllDiaryEntriesAssociatedWithMeetup(
+         currentUserId: widget.currentUserProfile.userId,
+         meetupId: widget.currentMeetup.id,
+         cardioDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.cardioWorkouts.map((e) => e.id).toList(),
+         strengthDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.strengthWorkouts.map((e) => e.id).toList(),
+         foodDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.foodEntries.map((e) => e.id).toList(),
+        )
+    ));
   }
 
   _generateSelectFromDiaryEntriesView() {
@@ -266,15 +269,83 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   }
 
   void _updateSelectedCardioDiaryEntryIdCallback(CardioDiaryEntry cardioInfo, bool isSelected) {
-    // do nothing for now
+    if (isSelected) {
+      final currentEntries = participantDiaryEntriesMapState[widget.currentUserProfile.userId]!;
+      final newDiaryEntries = AllDiaryEntries(
+          List.from(currentEntries.cardioWorkouts)..add(cardioInfo),
+          currentEntries.strengthWorkouts,
+          currentEntries.foodEntries,
+      );
+      setState(() {
+        participantDiaryEntriesMapState[widget.currentUserProfile.userId] = newDiaryEntries;
+      });
+    }
+    else {
+      final currentEntries = participantDiaryEntriesMapState[widget.currentUserProfile.userId]!;
+      final newDiaryEntries = AllDiaryEntries(
+        List.from(currentEntries.cardioWorkouts.where((element) => element.id != cardioInfo.id)),
+        currentEntries.strengthWorkouts,
+        currentEntries.foodEntries,
+      );
+      setState(() {
+        participantDiaryEntriesMapState[widget.currentUserProfile.userId] = newDiaryEntries;
+      });
+    }
   }
 
-  void _updateSelectedStrengthDiaryEntryIdCallback(StrengthDiaryEntry cardioInfo, bool isSelected) {
-
+  void _updateSelectedStrengthDiaryEntryIdCallback(StrengthDiaryEntry info, bool isSelected) {
+    if (isSelected) {
+      final currentEntries = participantDiaryEntriesMapState[widget.currentUserProfile.userId]!;
+      final newDiaryEntries = AllDiaryEntries(
+        currentEntries.cardioWorkouts,
+        List.from(currentEntries.strengthWorkouts)..add(info),
+        currentEntries.foodEntries,
+      );
+      setState(() {
+        participantDiaryEntriesMapState[widget.currentUserProfile.userId] = newDiaryEntries;
+      });
+    }
+    else {
+      final currentEntries = participantDiaryEntriesMapState[widget.currentUserProfile.userId]!;
+      final newDiaryEntries = AllDiaryEntries(
+        currentEntries.cardioWorkouts,
+        List.from(currentEntries.strengthWorkouts.where((element) => element.id != info.id)),
+        currentEntries.foodEntries,
+      );
+      setState(() {
+        participantDiaryEntriesMapState[widget.currentUserProfile.userId] = newDiaryEntries;
+      });
+    }
   }
 
-  void _updateSelectedFoodDiaryEntryIdCallback(FoodDiaryEntry cardioInfo, bool isSelected) {
-
+  void _updateSelectedFoodDiaryEntryIdCallback(
+      FoodDiaryEntry info,
+      Either<FoodGetResult, FoodGetResultSingleServing> infoRaw,
+      bool isSelected,
+      ) {
+    if (isSelected) {
+      final currentEntries = participantDiaryEntriesMapState[widget.currentUserProfile.userId]!;
+      final newDiaryEntries = AllDiaryEntries(
+        currentEntries.cardioWorkouts,
+        currentEntries.strengthWorkouts,
+        List.from(currentEntries.foodEntries)..add(info),
+      );
+      setState(() {
+        participantDiaryEntriesMapState[widget.currentUserProfile.userId] = newDiaryEntries;
+        rawFoodEntriesState = List.from(rawFoodEntriesState)..add(infoRaw);
+      });
+    }
+    else {
+      final currentEntries = participantDiaryEntriesMapState[widget.currentUserProfile.userId]!;
+      final newDiaryEntries = AllDiaryEntries(
+        currentEntries.cardioWorkouts,
+        currentEntries.strengthWorkouts,
+        List.from(currentEntries.foodEntries.where((element) => element.id != info.id)),
+      );
+      setState(() {
+        participantDiaryEntriesMapState[widget.currentUserProfile.userId] = newDiaryEntries;
+      });
+    }
   }
 
   bool shouldMeetupBeReadOnly() {
@@ -296,15 +367,22 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   // Must fetch diary entries for all users pertaining to this meeup
   Widget renderMeetupActivitiesView() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _showFilterByDropDown(),
-        WidgetUtils.spacer(2.5),
-        _renderExerciseDiaryEntries(),
-        WidgetUtils.spacer(2.5),
-        _renderFoodDiaryEntriesWithContainer(),
-      ],
+    return Scrollbar(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 25),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _showFilterByDropDown(),
+              WidgetUtils.spacer(2.5),
+              _renderExerciseDiaryEntries(),
+              WidgetUtils.spacer(2.5),
+              _renderFoodDiaryEntriesWithContainer(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -694,7 +772,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
             itemCount: diaryEntriesForSelectedUser.foodEntries.length,
             itemBuilder: (context, index) {
               final foodEntryForHeadingRaw = diaryEntriesForSelectedUser.foodEntries[index];
-              final detailedFoodEntry = widget.rawFoodEntries.firstWhere((element) {
+              final detailedFoodEntry = rawFoodEntriesState.firstWhere((element) {
                 if (element.isLeft) {
                   return element.left.food.food_id == foodEntryForHeadingRaw.foodId.toString();
                 }
@@ -841,13 +919,17 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   }
 
   Widget renderMeetupLocationView() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        _renderMeetupLocation(),
-        WidgetUtils.spacer(2.5),
-        _renderMeetupFsqLocationCardIfNeeded(),
-      ],
+    return Scrollbar(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            _renderMeetupLocation(),
+            WidgetUtils.spacer(2.5),
+            _renderMeetupFsqLocationCardIfNeeded(),
+          ],
+        ),
+      ),
     );
   }
 

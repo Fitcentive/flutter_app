@@ -23,6 +23,15 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
 
   Uuid uuid = const Uuid();
 
+  void _dissociateFoodDiaryEntryFromMeetup(
+      DissociateFoodDiaryEntryFromMeetup event,
+      Emitter<DetailedMeetupState> emit
+      ) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await meetupRepository.deleteFoodDiaryEntryFromAssociatedMeetup(event.meetupId, event.foodDiaryEntryId, accessToken!);
+
+  }
+
   DetailedMeetupBloc({
     required this.secureStorage,
     required this.meetupRepository,
@@ -42,15 +51,35 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     on<DissociateCardioDiaryEntryFromMeetup>(_dissociateCardioDiaryEntryFromMeetup);
     on<DissociateStrengthDiaryEntryFromMeetup>(_dissociateStrengthDiaryEntryFromMeetup);
     on<DissociateFoodDiaryEntryFromMeetup>(_dissociateFoodDiaryEntryFromMeetup);
+    on<SaveAllDiaryEntriesAssociatedWithMeetup>(_saveAllDiaryEntriesAssociatedWithMeetup);
   }
 
-  void _dissociateFoodDiaryEntryFromMeetup(
-      DissociateFoodDiaryEntryFromMeetup event,
+  void _saveAllDiaryEntriesAssociatedWithMeetup(
+      SaveAllDiaryEntriesAssociatedWithMeetup event,
       Emitter<DetailedMeetupState> emit
       ) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    await meetupRepository.deleteFoodDiaryEntryFromAssociatedMeetup(event.meetupId, event.foodDiaryEntryId, accessToken!);
 
+    // Delete all existing associations for a given a meetup, user combo
+    // Save ones in event afresh after that
+    await meetupRepository.deleteAllAssociatedDiaryEntriesToMeetupByUser(event.meetupId, event.currentUserId, accessToken!);
+
+    final cardioFut = Future.wait(event.cardioDiaryEntryIds.map((e) => meetupRepository.upsertCardioDiaryEntryToMeetup(event.meetupId, e, accessToken)));
+    final strengthFut = Future.wait(event.strengthDiaryEntryIds.map((e) => meetupRepository.upsertStrengthDiaryEntryToMeetup(event.meetupId, e, accessToken)));
+    final foodFut = Future.wait(event.foodDiaryEntryIds.map((e) => meetupRepository.upsertFoodDiaryEntryToMeetup(event.meetupId, e, accessToken)));
+    final assocFut = diaryRepository.associateDiaryEntriesWithMeetupId(
+      event.currentUserId,
+      event.meetupId,
+      event.cardioDiaryEntryIds,
+      event.strengthDiaryEntryIds,
+      event.foodDiaryEntryIds,
+      accessToken,
+    );
+
+    await cardioFut;
+    await strengthFut;
+    await foodFut;
+    await assocFut;
   }
 
   void _dissociateStrengthDiaryEntryFromMeetup(

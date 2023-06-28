@@ -173,6 +173,27 @@ class MeetupRepository {
 
   }
 
+  Future<void> deleteAllAssociatedDiaryEntriesToMeetupByUser(
+      String meetupId,
+      String userId,
+      String accessToken
+      ) async {
+    final response = await http.delete(
+      Uri.parse("$BASE_URL/meetups/$meetupId/associated-diary-entries"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    }
+    else {
+      throw Exception(
+          "deleteAllAssociatedDiaryEntriesToMeetupByUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+
+  }
+
+
   Future<Meetup?> getMeetupByChatRoomId(
       String chatRoomId,
       String accessToken,

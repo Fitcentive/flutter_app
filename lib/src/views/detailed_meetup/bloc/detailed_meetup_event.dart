@@ -207,3 +207,29 @@ class DissociateFoodDiaryEntryFromMeetup extends DetailedMeetupEvent {
   @override
   List<Object?> get props => [currentUserId, meetupId, foodDiaryEntryId];
 }
+
+// Delete existing associations and save afresh
+class SaveAllDiaryEntriesAssociatedWithMeetup extends DetailedMeetupEvent {
+  final String currentUserId;
+  final String meetupId;
+  final List<String> cardioDiaryEntryIds;
+  final List<String> strengthDiaryEntryIds;
+  final List<String> foodDiaryEntryIds;
+
+  const SaveAllDiaryEntriesAssociatedWithMeetup({
+    required this.currentUserId,
+    required this.meetupId,
+    required this.cardioDiaryEntryIds,
+    required this.strengthDiaryEntryIds,
+    required this.foodDiaryEntryIds,
+  });
+
+  @override
+  List<Object?> get props => [
+    currentUserId,
+    meetupId,
+    cardioDiaryEntryIds,
+    strengthDiaryEntryIds,
+    foodDiaryEntryIds,
+  ];
+}

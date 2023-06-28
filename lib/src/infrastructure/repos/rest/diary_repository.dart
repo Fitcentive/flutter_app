@@ -614,6 +614,32 @@ class DiaryRepository {
     }
   }
 
+  Future<void> associateDiaryEntriesWithMeetupId(
+      String userId,
+      String meetupId,
+      List<String> cardioDiaryEntryIds,
+      List<String> strengthDiaryEntryIds,
+      List<String> foodDiaryEntryIds,
+      String accessToken
+      ) async {
+    final response = await http.post(
+      Uri.parse("$BASE_URL/user/$userId/meetup/$meetupId"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: jsonEncode({
+        "foodEntryIds": foodDiaryEntryIds,
+        "strengthEntryIds": strengthDiaryEntryIds,
+        "cardioEntryIds": cardioDiaryEntryIds,
+      })
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    } else {
+      throw Exception(
+          "associateDiaryEntriesWithMeetupId: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<FitnessUserProfile?> getFitnessUserProfile(String userId, String accessToken) async {
     final response = await http.get(
       Uri.parse("$BASE_URL/user/$userId/profile"),

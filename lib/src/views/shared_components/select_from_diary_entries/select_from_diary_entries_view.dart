@@ -1,11 +1,12 @@
+import 'package:either_dart/src/either.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
-import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
+import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_diary_entries/bloc/select_from_diary_entries_bloc.dart';
@@ -16,8 +17,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 typedef UpdateSelectedCardioDiaryEntryIdCallback = void Function(CardioDiaryEntry cardioInfo, bool isSelected);
-typedef UpdateSelectedStrengthDiaryEntryIdCallback = void Function(StrengthDiaryEntry cardioInfo, bool isSelected);
-typedef UpdateSelectedFoodDiaryEntryIdCallback = void Function(FoodDiaryEntry cardioInfo, bool isSelected);
+typedef UpdateSelectedStrengthDiaryEntryIdCallback = void Function(StrengthDiaryEntry info, bool isSelected);
+typedef UpdateSelectedFoodDiaryEntryIdCallback = void Function(FoodDiaryEntry info, Either<FoodGetResult, FoodGetResultSingleServing> infoRaw, bool isSelected);
 
 GlobalKey<SelectFromDiaryEntriesViewState> selectFromFriendsViewStateGlobalKey = GlobalKey();
 
@@ -369,6 +370,7 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
 
   _checkBoxFood(
       FoodDiaryEntry entry,
+      Either<FoodGetResult, FoodGetResultSingleServing> entryRaw,
       ) {
     return Transform.scale(
       scale: 1.25,
@@ -390,10 +392,10 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
 
           // Need to update parent bloc state here
           if (value!) {
-            widget.updateSelectedFoodDiaryEntryIdCallback(entry, true);
+            widget.updateSelectedFoodDiaryEntryIdCallback(entry, entryRaw, true);
           }
           else if (!value) {
-            widget.updateSelectedFoodDiaryEntryIdCallback(entry, false);
+            widget.updateSelectedFoodDiaryEntryIdCallback(entry, entryRaw, false);
           }
         },
       ),
@@ -469,7 +471,7 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
       child: ListView.builder(
         shrinkWrap: true,
         controller: _scrollController,
-        itemCount: state.cardioDiaryEntries.length,
+        itemCount: state.strengthDiaryEntries.length,
         itemBuilder: (BuildContext context, int index) {
           final currentStrengthEntry = state.strengthDiaryEntries[index];
 
@@ -543,7 +545,7 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
       child: ListView.builder(
         shrinkWrap: true,
         controller: _scrollController,
-        itemCount: state.cardioDiaryEntries.length,
+        itemCount: state.foodDiaryEntriesRaw.length,
         itemBuilder: (BuildContext context, int index) {
           final detailedFoodEntry = state.foodDiaryEntries[index];
           final detailedFoodEntryRaw = state.foodDiaryEntriesRaw[index];
@@ -555,7 +557,7 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
             children: [
               Expanded(
                 flex: 2,
-                child: _checkBoxFood(detailedFoodEntryRaw),
+                child: _checkBoxFood(detailedFoodEntryRaw, detailedFoodEntry),
               ),
               Expanded(
                 flex: 8,
