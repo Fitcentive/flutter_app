@@ -403,20 +403,26 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
   }
 
   renderCardioDiaryEntries(SelectFromDiaryEntriesDiaryDataFetched state) {
-    return Scrollbar(
-      child: ListView.builder(
-        shrinkWrap: true,
-        controller: _scrollController,
-        itemCount: state.cardioDiaryEntries.length,
-        itemBuilder: (BuildContext context, int index) {
-          final currentCardioEntry = state.cardioDiaryEntries[index];
-          return Row(
-            children: [
-              Expanded(
+    if (state.cardioDiaryEntries.isEmpty) {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
+    else {
+      return Scrollbar(
+        child: ListView.builder(
+          shrinkWrap: true,
+          controller: _scrollController,
+          itemCount: state.cardioDiaryEntries.length,
+          itemBuilder: (BuildContext context, int index) {
+            final currentCardioEntry = state.cardioDiaryEntries[index];
+            return Row(
+              children: [
+                Expanded(
                   flex: 2,
                   child: _checkBoxCardio(currentCardioEntry),
-              ),
-              Expanded(
+                ),
+                Expanded(
                   flex: 8,
                   child: Card(
                     child: Padding(
@@ -438,7 +444,7 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
                           Expanded(
                               flex: 1,
                               child: Text(
-                                "${currentCardioEntry.durationInMinutes} minutes",
+                                  "${currentCardioEntry.durationInMinutes} minutes",
                                   style: const TextStyle(
                                     fontSize: 10,
                                   )
@@ -450,7 +456,7 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
                                 "${currentCardioEntry.caloriesBurned.toInt()} calories",
                                 style: const TextStyle(
                                     color: Colors.teal,
-                                  fontSize: 10
+                                    fontSize: 10
                                 ),
                               )
                           )
@@ -458,161 +464,178 @@ class SelectFromDiaryEntriesViewState extends State<SelectFromDiaryEntriesView> 
                       ),
                     ),
                   ),
-              )
-            ],
-          );
-        },
-      ),
-    );
+                )
+              ],
+            );
+          },
+        ),
+      );
+    }
   }
 
   renderStrengthDiaryEntries(SelectFromDiaryEntriesDiaryDataFetched state) {
-    return Scrollbar(
-      child: ListView.builder(
-        shrinkWrap: true,
-        controller: _scrollController,
-        itemCount: state.strengthDiaryEntries.length,
-        itemBuilder: (BuildContext context, int index) {
-          final currentStrengthEntry = state.strengthDiaryEntries[index];
+    if (state.strengthDiaryEntries.isEmpty) {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
+    else {
+      return Scrollbar(
+        child: ListView.builder(
+          shrinkWrap: true,
+          controller: _scrollController,
+          itemCount: state.strengthDiaryEntries.length,
+          itemBuilder: (BuildContext context, int index) {
+            final currentStrengthEntry = state.strengthDiaryEntries[index];
 
-          return Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: _checkBoxStrength(currentStrengthEntry),
-              ),
-              Expanded(
-                flex: 8,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                            flex: 6,
-                            child: Container(
-                                padding: const EdgeInsets.all(5),
-                                child: Text(
-                                    currentStrengthEntry.name,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                    )
-                                )
-                            )
-                        ),
-                        Expanded(
-                            flex: 3,
-                            child: Text(
-                                "${currentStrengthEntry.sets} sets",
+            return Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: _checkBoxStrength(currentStrengthEntry),
+                ),
+                Expanded(
+                  flex: 8,
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              flex: 6,
+                              child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(
+                                      currentStrengthEntry.name,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                      )
+                                  )
+                              )
+                          ),
+                          Expanded(
+                              flex: 3,
+                              child: Text(
+                                  "${currentStrengthEntry.sets} sets",
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                  )
+                              )
+                          ),
+                          Expanded(
+                              flex: 3,
+                              child: Text(
+                                  "${currentStrengthEntry.reps} reps",
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                  )
+                              )
+                          ),
+                          Expanded(
+                              flex: 4,
+                              child: Text(
+                                "${currentStrengthEntry.caloriesBurned.toInt()} calories",
                                 style: const TextStyle(
-                                  fontSize: 10,
-                                )
-                            )
-                        ),
-                        Expanded(
-                            flex: 3,
-                            child: Text(
-                                "${currentStrengthEntry.reps} reps",
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                )
-                            )
-                        ),
-                        Expanded(
-                            flex: 4,
-                            child: Text(
-                              "${currentStrengthEntry.caloriesBurned.toInt()} calories",
-                              style: const TextStyle(
                                   color: Colors.teal,
                                   fontSize: 10,
-                              ),
-                            )
-                        )
-                      ],
+                                ),
+                              )
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              )
-            ],
-          );
-        },
-      ),
-    );
+                )
+              ],
+            );
+          },
+        ),
+      );
+
+    }
   }
 
   renderNutritionDiaryEntries(SelectFromDiaryEntriesDiaryDataFetched state) {
-    return Scrollbar(
-      child: ListView.builder(
-        shrinkWrap: true,
-        controller: _scrollController,
-        itemCount: state.foodDiaryEntriesRaw.length,
-        itemBuilder: (BuildContext context, int index) {
-          final detailedFoodEntry = state.foodDiaryEntries[index];
-          final detailedFoodEntryRaw = state.foodDiaryEntriesRaw[index];
-          final caloriesRaw = detailedFoodEntry.isLeft ?
+    if (state.foodDiaryEntriesRaw.isEmpty) {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
+    else {
+      return Scrollbar(
+        child: ListView.builder(
+          shrinkWrap: true,
+          controller: _scrollController,
+          itemCount: state.foodDiaryEntriesRaw.length,
+          itemBuilder: (BuildContext context, int index) {
+            final detailedFoodEntry = state.foodDiaryEntries[index];
+            final detailedFoodEntryRaw = state.foodDiaryEntriesRaw[index];
+            final caloriesRaw = detailedFoodEntry.isLeft ?
             detailedFoodEntry.left.food.servings.serving.firstWhere((element) => element.serving_id == detailedFoodEntryRaw.servingId.toString()).calories :
             detailedFoodEntry.right.food.servings.serving.calories;
 
-          return Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: _checkBoxFood(detailedFoodEntryRaw, detailedFoodEntry),
-              ),
-              Expanded(
-                flex: 8,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                            flex: 12,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Text(
-                                        detailedFoodEntry.isLeft ? detailedFoodEntry.left.food.food_name : detailedFoodEntry.right.food.food_name,
+            return Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: _checkBoxFood(detailedFoodEntryRaw, detailedFoodEntry),
+                ),
+                Expanded(
+                  flex: 8,
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              flex: 12,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                      padding: const EdgeInsets.all(5),
+                                      child: Text(
+                                          detailedFoodEntry.isLeft ? detailedFoodEntry.left.food.food_name : detailedFoodEntry.right.food.food_name,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                          )
+                                      )
+                                  ),
+                                  Container(
+                                      padding: const EdgeInsets.all(5),
+                                      child: Text(
+                                        "${detailedFoodEntryRaw.numberOfServings.toStringAsFixed(2)} servings",
                                         style: const TextStyle(
-                                          fontSize: 12,
-                                        )
-                                    )
+                                            fontSize: 10
+                                        ),
+                                      )
+                                  ),
+                                ],
+                              )
+                          ),
+                          Expanded(
+                              flex: 4,
+                              child: Text(
+                                "${(double.parse(caloriesRaw ?? "0") * detailedFoodEntryRaw.numberOfServings).toStringAsFixed(0)} calories",
+                                style: const TextStyle(
+                                    color: Colors.teal,
+                                    fontSize: 10
                                 ),
-                                Container(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Text(
-                                      "${detailedFoodEntryRaw.numberOfServings.toStringAsFixed(2)} servings",
-                                      style: const TextStyle(
-                                          fontSize: 10
-                                      ),
-                                    )
-                                ),
-                              ],
-                            )
-                        ),
-                        Expanded(
-                            flex: 4,
-                            child: Text(
-                              "${(double.parse(caloriesRaw ?? "0") * detailedFoodEntryRaw.numberOfServings).toStringAsFixed(0)} calories",
-                              style: const TextStyle(
-                                  color: Colors.teal,
-                                  fontSize: 10
-                              ),
-                            )
-                        )
-                      ],
+                              )
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              )
-            ],
-          );
-        },
-      ),
-    );
+                )
+              ],
+            );
+          },
+        ),
+      );
+
+    }
   }
 
 }

@@ -206,7 +206,7 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
 
       var j = 0;
       while(j < diaryEntries.length) {
-        participantDiaryEntriesMap[participantIds[i]] = diaryEntries[i];
+        participantDiaryEntriesMap[participantIds[j]] = diaryEntries[j];
         j++;
       }
 

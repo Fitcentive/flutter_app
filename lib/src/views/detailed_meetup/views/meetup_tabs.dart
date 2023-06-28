@@ -30,6 +30,7 @@ import 'package:flutter_app/src/views/shared_components/time_planner/time_planne
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 
 typedef AvailabilitiesChangedCallback = void Function(List<List<bool>> availabilitiesChanged);
@@ -141,10 +142,6 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Select Diary Entries", style: TextStyle(color: Colors.teal)),
-        iconTheme: const IconThemeData(color: Colors.teal),
-      ),
       body: DefaultTabController(
           length: MAX_TABS,
           child: Scaffold(
@@ -219,13 +216,14 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   _animatedButton() {
     return Visibility(
-      visible: selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor == widget.currentUserProfile.userId,
+      visible: selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor == widget.currentUserProfile.userId
+          && _tabController.index == DetailedMeetupViewState.ACTIVITIES_MEETUP_VIEW_TAB,
       child: FloatingActionButton(
         heroTag: "MeetupTabsViewAnimatedButton",
         onPressed: () {
           _showDiaryEntrySelectDialog();
         },
-        tooltip: 'Share your thoughts!',
+        tooltip: 'Associate diary entries to meetup!',
         backgroundColor: Colors.teal,
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -249,21 +247,39 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   }
 
   _generateSelectFromDiaryEntriesView() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select Diary Entries', style: TextStyle(color: Colors.teal),),
-        iconTheme: const IconThemeData(
-          color: Colors.teal,
+    return PointerInterceptor(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Select Diary Entries', style: TextStyle(color: Colors.teal),),
+          iconTheme: const IconThemeData(
+            color: Colors.teal,
+          ),
         ),
+        body: SelectFromDiaryEntriesView.withBloc(
+          currentUserProfile: widget.currentUserProfile,
+            previouslySelectedCardioDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.cardioWorkouts.map((e) => e.id).toList(),
+            previouslySelectedStrengthDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.strengthWorkouts.map((e) => e.id).toList(),
+            previouslySelectedFoodDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.foodEntries.map((e) => e.id).toList(),
+            updateSelectedCardioDiaryEntryIdCallback: _updateSelectedCardioDiaryEntryIdCallback,
+            updateSelectedStrengthDiaryEntryIdCallback: _updateSelectedStrengthDiaryEntryIdCallback,
+            updateSelectedFoodDiaryEntryIdCallback: _updateSelectedFoodDiaryEntryIdCallback,
+        ),
+        bottomNavigationBar: _dismissDialogButton(),
       ),
-      body: SelectFromDiaryEntriesView.withBloc(
-        currentUserProfile: widget.currentUserProfile,
-          previouslySelectedCardioDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.cardioWorkouts.map((e) => e.id).toList(),
-          previouslySelectedStrengthDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.strengthWorkouts.map((e) => e.id).toList(),
-          previouslySelectedFoodDiaryEntryIds: participantDiaryEntriesMapState[widget.currentUserProfile.userId]!.foodEntries.map((e) => e.id).toList(),
-          updateSelectedCardioDiaryEntryIdCallback: _updateSelectedCardioDiaryEntryIdCallback,
-          updateSelectedStrengthDiaryEntryIdCallback: _updateSelectedStrengthDiaryEntryIdCallback,
-          updateSelectedFoodDiaryEntryIdCallback: _updateSelectedFoodDiaryEntryIdCallback,
+    );
+  }
+
+  _dismissDialogButton() {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () async {
+          Navigator.pop(context);
+        },
+        child: const Text("Go back", style: TextStyle(fontSize: 15, color: Colors.white)),
       ),
     );
   }
