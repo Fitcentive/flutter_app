@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -281,30 +283,32 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
           builder: (context, state) {
             return Scaffold(
               appBar: !widget.isRoute ? null : AppBar(
-                title: const Text('Search Locations', style: TextStyle(color: Colors.teal),),
+                title: const Text("Search Locations", style: TextStyle(color: Colors.teal),),
                 iconTheme: const IconThemeData(
                   color: Colors.teal,
                 ),
               ),
               body: Stack(
                 children: WidgetUtils.skipNulls([
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: WidgetUtils.skipNulls([
-                      _renderSearchTextBar(),
-                      WidgetUtils.spacer(2.5),
-                      _renderHelpText(),
-                      WidgetUtils.spacer(2.5),
-                      Stack(
-                          children: [
-                            _renderMap(state),
-                            _recenterButton(),
-                          ]
-                      )
-                      // Expanded(
-                      //     child: _renderMap(state)
-                      // ),
-                    ]),
+                  SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: WidgetUtils.skipNulls([
+                        _renderSearchTextBar(),
+                        WidgetUtils.spacer(2.5),
+                        _renderHelpText(),
+                        WidgetUtils.spacer(2.5),
+                        Stack(
+                            children: [
+                              _renderMap(state),
+                              _recenterButton(),
+                            ]
+                        )
+                        // Expanded(
+                        //     child: _renderMap(state)
+                        // ),
+                      ]),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
@@ -512,10 +516,28 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   }
 
   _renderHelpText() {
-    return const Text(
+    if (shouldCurrentPositionBeUpdatedWithCameraPosition) {
+      return Column(
+        children: [
+          const Text(
+            "Long press on map to unlock viewing radius. Long press again to lock",
+            style: TextStyle(fontSize: 11),
+          ),
+          WidgetUtils.spacer(2.5),
+          const Text(
+            "Viewing radius unlocked",
+            style: TextStyle(fontSize: 11, color: Colors.teal, fontWeight: FontWeight.bold),
+          ),
+        ],
+      );
+    }
+    else {
+      return const Text(
         "Long press on map to unlock viewing radius. Long press again to lock",
-      style: TextStyle(fontSize: 11),
-    );
+        style: TextStyle(fontSize: 11),
+      );
+    }
+
   }
 
   _slideUpPanelGymOptions(SearchLocationsState state) {
@@ -653,7 +675,12 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
           }
         },
         onLongPress: (latlng) {
-          shouldCurrentPositionBeUpdatedWithCameraPosition = !shouldCurrentPositionBeUpdatedWithCameraPosition;
+          setState(() {
+            shouldCurrentPositionBeUpdatedWithCameraPosition = !shouldCurrentPositionBeUpdatedWithCameraPosition;
+          });
+        },
+        gestureRecognizers: {
+          Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer())
         },
         // onCameraIdle: _onCameraIdle,
       ),
