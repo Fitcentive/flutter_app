@@ -53,3 +53,11 @@ class ChatRoomHasNewMessage extends ChatHomeEvent {
   @override
   List<Object?> get props => [roomId];
 }
+
+class TrackViewChatHomeEvent extends ChatHomeEvent {
+
+  const TrackViewChatHomeEvent();
+
+  @override
+  List<Object?> get props => [];
+}

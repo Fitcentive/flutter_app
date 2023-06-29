@@ -40,10 +40,16 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     on<FetchMoreUserRooms>(_fetchMoreUserRooms);
     on<FilterSearchQueryChanged>(_filterSearchQueryChanged);
     on<ChatRoomHasNewMessage>(_chatRoomHasNewMessage);
+    on<TrackViewChatHomeEvent>(_trackViewChatHomeEvent);
 
     _userRoomUpdatedPayloadSubscription = chatRoomUpdatedStreamRepository.nextPayload.listen((payload) {
       add(ChatRoomHasNewMessage(roomId: payload.roomId));
     });
+  }
+
+  void _trackViewChatHomeEvent(TrackViewChatHomeEvent event, Emitter<ChatHomeState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(ViewChatHome(), accessToken!);
   }
 
   // Returns true if query matches names of any of the users listed in userIds
@@ -244,8 +250,6 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     final Map<String, DateTime> roomIdMostRecentMessageTimeMap = { for (var e in userRoomsLastSeen)  (e).roomId : e.lastSeen };
 
     final doesNextPageExist = detailedChatRooms.length == event.limit ? true : false;
-
-    userRepository.trackUserEvent(ViewChatHome(), accessToken);
 
     emit(
         UserRoomsLoaded(

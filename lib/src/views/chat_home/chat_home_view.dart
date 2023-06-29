@@ -75,6 +75,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
 
     _chatBloc = BlocProvider.of<ChatHomeBloc>(context);
     _fetchDefaultChatRooms();
+    _chatBloc.add(const TrackViewChatHomeEvent());
 
     _scrollController.addListener(_onScroll);
   }
