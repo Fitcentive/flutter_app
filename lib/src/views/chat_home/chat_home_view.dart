@@ -310,7 +310,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
     else {
       return const Center(
         child: Text(
-            "No results... refine search query"
+            "No chats found... refine search query or get started by creating one!"
         ),
       );
     }

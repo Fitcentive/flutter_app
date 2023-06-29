@@ -111,7 +111,7 @@ class NotificationsViewState extends State<NotificationsView> {
             isDataBeingRequested = false;
             _markNotificationsAsRead(state);
             if (state.notifications.isEmpty) {
-              return const Center(child: Text('No Results'));
+              return const Center(child: Text('No notifications here... come back another time!'));
             }
             else {
               return Padding(

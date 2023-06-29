@@ -71,7 +71,8 @@ class FriendsViewState extends State<FriendsView> {
     return Scaffold(
       body: BlocBuilder<FollowersBloc, FollowersState>(builder: (context, state) {
         if (state is FriendsDataLoaded) {
-          return state.userProfiles.isEmpty ? const Center(child: Text('No Results'))
+          return state.userProfiles.isEmpty ?
+              const Center(child: Text('No friends here... get started by adding one!'))
               : _generateUserResultsList(state);
         } else {
           return const Center(
