@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -43,6 +44,7 @@ class DetailedChatView extends StatefulWidget {
                 create: (context) => DetailedChatBloc(
                   secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                   chatRepository: RepositoryProvider.of<ChatRepository>(context),
+                  userRepository: RepositoryProvider.of<UserRepository>(context),
                 )),
           ],
           child: DetailedChatView(
@@ -186,6 +188,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
     );
     _detailedChatBloc.add(
         UsersRemovedFromChatRoom(
+            currentUserId: widget.currentUserProfile.userId,
             userIds: removedParticipants.map((e) => e.userId).toList(),
             roomId: widget.currentChatRoom.roomId)
     );
@@ -205,6 +208,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
         // Add callback here
         _detailedChatBloc.add(
             UsersRemovedFromChatRoom(
+                currentUserId: widget.currentUserProfile.userId,
                 userIds: [widget.currentUserProfile.userId],
                 roomId: widget.currentChatRoom.roomId
             )

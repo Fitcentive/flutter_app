@@ -33,3 +33,12 @@ class ReFetchFriendsRequested extends FriendsEvent {
   @override
   List<Object> get props => [userId, limit, offset];
 }
+
+class TrackViewFriendsEvent extends FriendsEvent {
+
+  const TrackViewFriendsEvent();
+
+  @override
+  List<Object> get props => [];
+
+}

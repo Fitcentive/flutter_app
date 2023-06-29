@@ -31,6 +31,7 @@ class SearchView extends StatefulWidget {
       BlocProvider<ActivitySearchBloc>(
           create: (context) => ActivitySearchBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -21,6 +22,7 @@ class FriendsView extends StatefulWidget {
       BlocProvider<FollowersBloc>(
           create: (context) => FollowersBloc(
             socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
@@ -99,6 +101,7 @@ class FriendsViewState extends State<FriendsView> {
 
     if (currentAuthState is AuthSuccessUserUpdateState &&
         currentFollowingState is FriendsDataLoaded) {
+      _followersBloc.add(const TrackViewFriendsEvent());
       _followersBloc.add(
           FetchFriendsRequested(
               userId: currentAuthState.authenticatedUser.user.id,

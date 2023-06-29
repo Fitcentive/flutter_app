@@ -1,6 +1,7 @@
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/search/bloc/user_search/user_search_event.dart';
 import 'package:flutter_app/src/views/search/bloc/user_search/user_search_state.dart';
@@ -28,6 +29,7 @@ class UserSearchBloc extends Bloc<UserSearchEvent, UserSearchState> {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final friends = await socialMediaRepository.fetchUserFriends(event.currentUserId, accessToken!, event.limit, event.offset);
       final doesNextPageExist = friends.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
+      userRepository.trackUserEvent(SearchForUsers(), accessToken);
       emit(UserSearchResultsLoaded(query: "", userData: friends, doesNextPageExist: doesNextPageExist));
     } catch (ex) {
       emit(UserSearchResultsError(query: "", error: ex.toString()));

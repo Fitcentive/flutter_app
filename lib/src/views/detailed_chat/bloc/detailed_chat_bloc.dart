@@ -1,5 +1,7 @@
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/detailed_chat/bloc/detailed_chat_event.dart';
 import 'package:flutter_app/src/views/detailed_chat/bloc/detailed_chat_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,10 +10,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class DetailedChatBloc extends Bloc<DetailedChatEvent, DetailedChatState> {
   final FlutterSecureStorage secureStorage;
   final ChatRepository chatRepository;
+  final UserRepository userRepository;
 
   DetailedChatBloc({
     required this.secureStorage,
     required this.chatRepository,
+    required this.userRepository,
   }) : super(const DetailedChatStateInitial()) {
     on<ChatRoomNameChanged>(_chatRoomNameChanged);
     on<UsersRemovedFromChatRoom>(_usersRemovedFromChatRoom);
@@ -44,6 +48,11 @@ class DetailedChatBloc extends Bloc<DetailedChatEvent, DetailedChatState> {
         event.userIds,
             (userId) => chatRepository.removeUserFromChatRoom(event.roomId, userId, accessToken!)
     );
+
+    // Current user is leaving the chat
+    if (event.userIds.contains(event.currentUserId)) {
+      userRepository.trackUserEvent(LeaveChatRoom(), accessToken!);
+    }
   }
 
   void _chatRoomNameChanged(ChatRoomNameChanged event, Emitter<DetailedChatState> emit) async {

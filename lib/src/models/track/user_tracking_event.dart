@@ -170,3 +170,23 @@ class RemoveFromNewlyDiscoveredUsers extends UserTrackingEvent {
   @override
   String eventName() => "RemoveFromNewlyDiscoveredUsers";
 }
+class LeaveChatRoom extends UserTrackingEvent {
+  @override
+  String eventName() => "LeaveChatRoom";
+}
+class SearchForUsers extends UserTrackingEvent {
+  @override
+  String eventName() => "SearchForUsers";
+}
+class ViewCalendar extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewCalendar";
+}
+class ViewFriends extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewFriends";
+}
+class CancelPremium extends UserTrackingEvent {
+  @override
+  String eventName() => "CancelPremium";
+}

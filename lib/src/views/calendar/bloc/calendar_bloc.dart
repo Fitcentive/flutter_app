@@ -3,7 +3,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_event.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,8 +22,13 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
   }) : super(const CalendarStateInitial()) {
 
     on<FetchCalendarMeetupData>(_fetchCalendarMeetupData);
+    on<TrackViewCalendarEvent>(_trackViewCalendarEvent);
   }
 
+  void _trackViewCalendarEvent(TrackViewCalendarEvent event, Emitter<CalendarState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(ViewCalendar(), accessToken!);
+  }
   void _fetchCalendarMeetupData(FetchCalendarMeetupData event, Emitter<CalendarState> emit) async {
     final currentState = state;
     if (currentState is CalendarMeetupUserDataFetched) {

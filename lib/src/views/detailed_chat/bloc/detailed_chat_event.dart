@@ -22,15 +22,17 @@ class ChatRoomNameChanged extends DetailedChatEvent {
 
 class UsersRemovedFromChatRoom extends DetailedChatEvent {
   final List<String> userIds;
+  final String currentUserId;
   final String roomId;
 
   const UsersRemovedFromChatRoom({
+    required this.currentUserId,
     required this.userIds,
     required this.roomId
   });
 
   @override
-  List<Object?> get props => [userIds, roomId];
+  List<Object?> get props => [currentUserId, userIds, roomId];
 }
 
 class UsersAddedToChatRoom extends DetailedChatEvent {

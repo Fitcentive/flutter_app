@@ -372,6 +372,7 @@ class CalendarViewState extends State<CalendarView> {
 
   _fetchMeetupDataForSelectedDateMonth(DateTime selected) {
     if (selected.month != previouslyFetchedDataFor.month || selected.year != previouslyFetchedDataFor.year) {
+      _calendarBloc.add(const TrackViewCalendarEvent());
       _calendarBloc.add(
           FetchCalendarMeetupData(
             userId: widget.currentUserProfile.userId,

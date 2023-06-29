@@ -3,6 +3,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/authenticated_user_stream_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart' as tracking;
 import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/views/manage_premium/bloc/manage_premium_event.dart';
 import 'package:flutter_app/src/views/manage_premium/bloc/manage_premium_state.dart';
@@ -155,6 +156,8 @@ class ManagePremiumBloc extends Bloc<ManagePremiumEvent, ManagePremiumState> {
         userTutorialStatus: event.user.userTutorialStatus,
     );
     authUserStreamRepository.newUser(updatedAuthenticatedUser);
+
+    userRepository.trackUserEvent(tracking.CancelPremium(), accessToken);
 
     emit(const CancelPremiumComplete());
   }

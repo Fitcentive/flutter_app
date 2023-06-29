@@ -19,3 +19,11 @@ class FetchCalendarMeetupData extends CalendarEvent {
   @override
   List<Object?> get props => [userId, currentSelectedDateTime];
 }
+
+class TrackViewCalendarEvent extends CalendarEvent {
+
+  const TrackViewCalendarEvent();
+
+  @override
+  List<Object?> get props => [];
+}
