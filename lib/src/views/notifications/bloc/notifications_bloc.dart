@@ -126,6 +126,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
       final doesNextPageExist = notifications.length == ConstantUtils.DEFAULT_LIMIT ? true : false;
 
+      userRepository.trackUserEvent(ViewNotifications(), accessToken);
+
       emit(NotificationsLoaded(
               notifications: notifications,
               user: event.user,
@@ -150,8 +152,6 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
       final completeNotifications = [...currentState.notifications, ...notifications];
       final completeUserIdProfileMap = {...currentState.userProfileMap, ...userIdProfileMap};
-
-      userRepository.trackUserEvent(ViewNotifications(), accessToken);
 
       emit(NotificationsLoaded(
           notifications: completeNotifications,

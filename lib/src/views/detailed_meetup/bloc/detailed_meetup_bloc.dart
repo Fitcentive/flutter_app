@@ -340,6 +340,8 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     final allFoodEntriesOnly = diaryEntries.map((e) => e.foodEntries).expand((element) => element).toList();
     final foodEntries = await Future.wait(allFoodEntriesOnly.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken!)));
 
+    userRepository.trackUserEvent(ViewDetailedMeetup(), accessToken!);
+
     emit(DetailedMeetupDataFetched(
         meetupId: event.meetupId,
         userAvailabilities: availabilityMap,
