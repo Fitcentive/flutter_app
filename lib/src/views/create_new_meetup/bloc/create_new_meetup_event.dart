@@ -67,3 +67,12 @@ class SaveNewMeetup extends CreateNewMeetupEvent {
   ];
 }
 
+class TrackAttemptToCreateMeetupEvent extends CreateNewMeetupEvent {
+
+  const TrackAttemptToCreateMeetupEvent();
+
+  @override
+  List<Object?> get props => [];
+
+}
+

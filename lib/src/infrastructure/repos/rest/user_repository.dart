@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_agreements.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/models/user_tutorial_status.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -428,6 +430,25 @@ class UserRepository {
     } else {
       throw Exception(
           "deleteUserData: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<void> trackUserEvent(UserTrackingEvent event, String accessToken) async {
+    final response = await http.post(Uri.parse("$BASE_URL/event/action"),
+        headers: {
+          'Content-type': 'application/json',
+          "Authorization": "Bearer $accessToken"
+        },
+        body: json.encode({
+          "eventName": event.eventName(),
+          "eventPlatform": DeviceUtils.getEventPlatformForEventTracking(),
+        }));
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    } else {
+      throw Exception(
+          "trackUserEvent: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 }

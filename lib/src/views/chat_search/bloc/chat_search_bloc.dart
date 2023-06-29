@@ -2,6 +2,7 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_event.dart';
 import 'package:flutter_app/src/views/chat_search/bloc/chat_search_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,6 +35,8 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
       else {
         userProfiles = [];
       }
+
+      userRepository.trackUserEvent(AttemptToCreateChatRoom(), accessToken!);
 
       emit(ChatParticipantsModified(
         currentUserProfile: event.currentUserProfile,
@@ -106,6 +109,8 @@ class ChatSearchBloc extends Bloc<ChatSearchEvent, ChatSearchState> {
         else {
           chatRoom = await chatRepository.getChatRoomForGroupConversation(event.targetUserProfiles.map((e) => e.userId).toList(), accessToken!);
         }
+
+        userRepository.trackUserEvent(CreateChatRoom(), accessToken);
 
         emit(GoToUserChatView(roomId: chatRoom.id, targetUserProfiles: event.targetUserProfiles));
         emit(

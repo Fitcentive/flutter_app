@@ -1,10 +1,12 @@
 import 'package:either_dart/src/either.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/fatsecret/food_results.dart';
 import 'package:flutter_app/src/models/fatsecret/food_search_results.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/food_search/bloc/food_search_event.dart';
 import 'package:flutter_app/src/views/food_search/bloc/food_search_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,9 +15,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class FoodSearchBloc extends Bloc<FoodSearchEvent, FoodSearchState> {
   final FlutterSecureStorage secureStorage;
   final DiaryRepository diaryRepository;
+  final UserRepository userRepository;
 
   FoodSearchBloc({
     required this.diaryRepository,
+    required this.userRepository,
     required this.secureStorage,
   }) : super(const FoodSearchStateInitial()) {
     on<FetchFoodSearchInfo>(_fetchFoodSearchInfo);
@@ -29,6 +33,9 @@ class FoodSearchBloc extends Bloc<FoodSearchEvent, FoodSearchState> {
     final recentFoodIds = await diaryRepository.getUserMostRecentlyViewedFoodIds(event.currentUserId, accessToken!);
     final List<Either<FoodGetResult, FoodGetResultSingleServing>> recentFoods =
       await diaryRepository.getFoodsByIds(recentFoodIds, accessToken);
+
+    userRepository.trackUserEvent(SearchForFood(), accessToken);
+
     emit(
         OnlyRecentFoodDataFetched(
           recentFoods: recentFoods

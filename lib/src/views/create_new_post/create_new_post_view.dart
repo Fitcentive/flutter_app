@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/image_picker/custom_image_picker.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
@@ -37,6 +38,7 @@ class CreateNewPostView extends StatefulWidget {
                 BlocProvider<CreateNewPostBloc>(
                     create: (context) => CreateNewPostBloc(
                       socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
+                      userRepository: RepositoryProvider.of<UserRepository>(context),
                       imageRepository: RepositoryProvider.of<PublicGatewayRepository>(context),
                       secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                     )),
@@ -62,6 +64,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
     super.initState();
 
     _createNewPostBloc = BlocProvider.of<CreateNewPostBloc>(context);
+    _createNewPostBloc.add(const TrackAttemptToCreatePostEvent());
     _createNewPostBloc.add(
         PostDetailsChanged(userId: widget.userProfile.userId, text: "", selectedImage: null, selectedImageName: null)
     );

@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
@@ -76,6 +77,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
       BlocProvider<AddExerciseToDiaryBloc>(
           create: (context) => AddExerciseToDiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )

@@ -4,6 +4,7 @@ import 'package:either_dart/either.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
@@ -57,6 +58,7 @@ class FoodSearchView extends StatefulWidget {
       BlocProvider<FoodSearchBloc>(
           create: (context) => FoodSearchBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
       ),

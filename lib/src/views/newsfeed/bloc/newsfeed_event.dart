@@ -54,3 +54,11 @@ class UnlikePostForUser extends NewsFeedEvent {
   @override
   List<Object> get props => [userId, postId];
 }
+
+class TrackViewNewsfeedHomeEvent extends NewsFeedEvent {
+
+  const TrackViewNewsfeedHomeEvent();
+
+  @override
+  List<Object> get props => [];
+}

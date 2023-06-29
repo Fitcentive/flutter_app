@@ -15,6 +15,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/authenticated_user_stream_repository.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/jwt_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -119,6 +120,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final authenticatedUser =
         await _storeTokensAndGetAuthenticatedUser(authTokens, OidcProviderInfo.NATIVE_AUTH_PROVIDER);
       await chatRepository.upsertChatUser(authTokens.accessToken);
+      userRepository.trackUserEvent(UserLoggedIn(), authTokens.accessToken);
       _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
       emit(AuthSuccessState(authenticatedUser: authenticatedUser));
     } catch (e) {
@@ -134,6 +136,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final authenticatedUser = await _storeTokensAndGetAuthenticatedUser(authTokens, event.provider);
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       await chatRepository.upsertChatUser(accessToken!);
+      userRepository.trackUserEvent(UserLoggedIn(), accessToken);
       _setUpRefreshAccessTokenTrigger(authTokens, authenticatedUser);
       emit(AuthSuccessState(authenticatedUser: authenticatedUser));
     } catch (e) {
@@ -219,6 +222,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       await notificationRepository.unregisterDeviceToken(userId, registrationToken!, accessToken);
       await FirebaseMessaging.instance.deleteToken();
     }
+    userRepository.trackUserEvent(UserLoggedOut(), accessToken);
 
     await secureStorage.delete(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await secureStorage.delete(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY);

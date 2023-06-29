@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter_app/src/views/shared_components/liked_users/liked_users_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,6 @@ import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/liked_users/liked_users_view.dart';
 import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';

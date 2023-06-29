@@ -8,6 +8,7 @@ import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -75,6 +76,8 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
       event.foodDiaryEntryIds,
       accessToken,
     );
+
+    userRepository.trackUserEvent(AssociateDiaryEntryToMeetup(), accessToken);
 
     await cardioFut;
     await strengthFut;
@@ -213,6 +216,8 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
       final allFoodEntriesOnly = diaryEntries.map((e) => e.foodEntries).expand((element) => element).toList();
       final foodEntries = await Future.wait(allFoodEntriesOnly.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken!)));
 
+      userRepository.trackUserEvent(ViewDetailedMeetup(), accessToken);
+
       emit(DetailedMeetupDataFetched(
           meetupId: event.meetupId,
           userAvailabilities: availabilityMap,
@@ -239,6 +244,7 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
 
     // Add current decision
     await meetupRepository.upsertMeetupDecision(event.meetupId, event.participantId, event.hasAccepted, accessToken!);
+    userRepository.trackUserEvent(RespondToMeetup(), accessToken);
   }
   
   void _updateMeetupDetails(UpdateMeetupDetails event, Emitter<DetailedMeetupState> emit) async {
@@ -275,6 +281,8 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
           meetupRepository.removeParticipantFromMeetup(meetup.id, e, accessToken)));
     }
 
+    userRepository.trackUserEvent(EditMeetup(), accessToken);
+
   }
 
   void _saveAvailabilitiesForCurrentUser(SaveAvailabilitiesForCurrentUser event, Emitter<DetailedMeetupState> emit) async {
@@ -284,6 +292,7 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
     await meetupRepository.deleteMeetupParticipantAvailabilities(event.meetupId, event.currentUserId, accessToken!);
     await meetupRepository.upsertMeetupParticipantAvailabilities(event.meetupId, event.currentUserId, accessToken, event.availabilities);
 
+    userRepository.trackUserEvent(AddAvailabilityToMeetup(), accessToken);
     // No change in emitted state, this is a background operation
   }
 

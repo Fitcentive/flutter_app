@@ -3,6 +3,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/authenticated_user_stream_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/views/upgrade_to_premium/bloc/upgrade_to_premium_event.dart';
 import 'package:flutter_app/src/views/upgrade_to_premium/bloc/upgrade_to_premium_state.dart';
@@ -22,6 +23,12 @@ class UpgradeToPremiumBloc extends Bloc<UpgradeToPremiumEvent, UpgradeToPremiumS
     required this.authUserStreamRepository,
   }) : super(const UpgradeToPremiumStateInitial()) {
     on<InitiateUpgradeToPremium>(_initiateUpgradeToPremium);
+    on<TrackAttemptToActivatePremiumEvent>(_trackAttemptToActivatePremiumEvent);
+  }
+
+  void _trackAttemptToActivatePremiumEvent(TrackAttemptToActivatePremiumEvent event, Emitter<UpgradeToPremiumState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(AttemptToActivatePremium(), accessToken!);
   }
 
   void _initiateUpgradeToPremium(InitiateUpgradeToPremium event, Emitter<UpgradeToPremiumState> emit) async {
@@ -50,6 +57,8 @@ class UpgradeToPremiumBloc extends Bloc<UpgradeToPremiumEvent, UpgradeToPremiumS
           userTutorialStatus: event.user.userTutorialStatus,
       );
       authUserStreamRepository.newUser(updatedAuthenticatedUser);
+
+      userRepository.trackUserEvent(ActivatePremium(), accessToken!);
 
       emit(const UpgradeToPremiumComplete());
     } catch (ex) {

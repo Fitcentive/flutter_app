@@ -84,3 +84,12 @@ class UserFitnessProfileUpdated extends DiaryEvent {
     fitnessUserProfile,
   ];
 }
+
+class TrackViewDiaryHomeEvent extends DiaryEvent {
+
+  const TrackViewDiaryHomeEvent();
+
+  @override
+  List<Object?> get props => [];
+
+}

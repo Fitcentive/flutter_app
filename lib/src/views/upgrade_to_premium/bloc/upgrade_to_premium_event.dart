@@ -21,3 +21,12 @@ class InitiateUpgradeToPremium extends UpgradeToPremiumEvent {
   List<Object?> get props => [paymentMethodId, user];
 
 }
+
+class TrackAttemptToActivatePremiumEvent extends UpgradeToPremiumEvent {
+
+  const TrackAttemptToActivatePremiumEvent();
+
+  @override
+  List<Object?> get props => [];
+
+}

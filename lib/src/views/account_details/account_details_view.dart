@@ -104,6 +104,8 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       _fillInUserProfileDetails(authState.authenticatedUser);
       _setupMap(authState.authenticatedUser);
       selectedUserGender = authState.authenticatedUser.userProfile?.gender ?? 'Other';
+
+      _accountDetailsBloc.add(const TrackViewCurrentUserAccountDetailsEvent());
     }
   }
 

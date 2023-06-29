@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
@@ -80,6 +81,7 @@ class AddFoodToDiaryView extends StatefulWidget {
       BlocProvider<AddFoodToDiaryBloc>(
           create: (context) => AddFoodToDiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )

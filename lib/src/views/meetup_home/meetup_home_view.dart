@@ -81,6 +81,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     super.initState();
 
     _meetupHomeBloc = BlocProvider.of<MeetupHomeBloc>(context);
+    _meetupHomeBloc.add(const TraceViewMeetupHomeEvent());
     _meetupHomeBloc.add(
         FetchUserMeetupData(
           userId: widget.currentUserProfile.userId,

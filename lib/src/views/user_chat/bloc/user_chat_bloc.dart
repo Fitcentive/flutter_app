@@ -5,6 +5,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/chats/chat_message.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/models/websocket/shout_payload.dart';
 import 'package:flutter_app/src/models/websocket/typing_started_payload.dart';
 import 'package:flutter_app/src/models/websocket/typing_stopped_payload.dart';
@@ -205,6 +206,8 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
 
     final userLastSeenList = await chatRepository.getUserChatRoomLastSeen([event.roomId], accessToken);
     final userLastSeen = userLastSeenList.length == 1 ? userLastSeenList.first : null;
+
+    userRepository.trackUserEvent(EnterChatRoom(), accessToken);
 
     emit(HistoricalChatsFetched(
         roomId: event.roomId,

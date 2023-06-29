@@ -2,6 +2,25 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class DeviceUtils {
+
+  /// Returns one of three values
+  /// 1. iOS
+  /// 2. Android
+  /// 3. Web
+  static String getEventPlatformForEventTracking() {
+    if (DeviceUtils.isMobileDevice()) {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        return "iOS";
+      }
+      else {
+        return "Android";
+      }
+    }
+    else {
+      return "Web";
+    }
+  }
+
   static bool isMobileDevice() {
     if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android)) {
       return true;

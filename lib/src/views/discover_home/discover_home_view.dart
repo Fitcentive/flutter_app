@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
@@ -28,6 +29,7 @@ class DiscoverHomeView extends StatefulWidget {
       BlocProvider<DiscoverHomeBloc>(
           create: (context) => DiscoverHomeBloc(
             discoverRepository: RepositoryProvider.of<DiscoverRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],

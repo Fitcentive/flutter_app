@@ -38,3 +38,11 @@ class PostSubmitted extends CreateNewPostEvent {
   @override
   List<Object?> get props => [userId, text, selectedImage, selectedImageName];
 }
+
+class TrackAttemptToCreatePostEvent extends CreateNewPostEvent {
+
+  const TrackAttemptToCreatePostEvent();
+
+  @override
+  List<Object?> get props => [];
+}

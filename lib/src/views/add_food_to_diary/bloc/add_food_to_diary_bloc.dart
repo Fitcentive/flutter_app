@@ -1,6 +1,8 @@
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_event.dart';
 import 'package:flutter_app/src/views/add_food_to_diary/bloc/add_food_to_diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,9 +12,11 @@ class AddFoodToDiaryBloc extends Bloc<AddFoodToDiaryEvent, AddFoodToDiaryState> 
   final FlutterSecureStorage secureStorage;
   final DiaryRepository diaryRepository;
   final MeetupRepository meetupRepository;
+  final UserRepository userRepository;
 
   AddFoodToDiaryBloc({
     required this.diaryRepository,
+    required this.userRepository,
     required this.meetupRepository,
     required this.secureStorage,
   }) : super(const AddToFoodDiaryStateInitial()) {
@@ -27,6 +31,8 @@ class AddFoodToDiaryBloc extends Bloc<AddFoodToDiaryEvent, AddFoodToDiaryState> 
     if (event.associatedMeetupId != null) {
       await meetupRepository.upsertFoodDiaryEntryToMeetup(event.associatedMeetupId!, entry.id, accessToken);
     }
+
+    userRepository.trackUserEvent(CreateFoodDiaryEntry(), accessToken);
     emit(const FoodDiaryEntryAdded());
   }
 

@@ -74,3 +74,11 @@ class DisablePremiumAccountStatusForUser extends AccountDetailsEvent {
   @override
   List<Object?> get props => [user];
 }
+
+class TrackViewCurrentUserAccountDetailsEvent extends AccountDetailsEvent {
+
+  const TrackViewCurrentUserAccountDetailsEvent();
+
+  @override
+  List<Object?> get props => [];
+}

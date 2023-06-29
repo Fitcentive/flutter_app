@@ -1,5 +1,7 @@
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,16 +11,24 @@ import 'package:intl/intl.dart';
 class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
   final FlutterSecureStorage secureStorage;
   final DiaryRepository diaryRepository;
+  final UserRepository userRepository;
 
   DiaryBloc({
     required this.diaryRepository,
+    required this.userRepository,
     required this.secureStorage,
   }) : super(const DiaryStateInitial()) {
+    on<TrackViewDiaryHomeEvent>(trackViewDiaryHomeEvent);
     on<FetchDiaryInfo>(_fetchDiaryInfo);
     on<RemoveFoodDiaryEntryFromDiary>(_removeFoodDiaryEntryFromDiary);
     on<RemoveCardioDiaryEntryFromDiary>(_removeCardioDiaryEntryFromDiary);
     on<RemoveStrengthDiaryEntryFromDiary>(_removeStrengthDiaryEntryFromDiary);
     on<UserFitnessProfileUpdated>(_userFitnessProfileUpdated);
+  }
+
+  void trackViewDiaryHomeEvent(TrackViewDiaryHomeEvent event, Emitter<DiaryState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(ViewDiaryHome(), accessToken!);
   }
 
   void _userFitnessProfileUpdated(UserFitnessProfileUpdated event, Emitter<DiaryState> emit) async {

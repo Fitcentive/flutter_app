@@ -2,6 +2,7 @@ import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
@@ -41,6 +42,7 @@ class DiaryView extends StatefulWidget {
       BlocProvider<DiaryBloc>(
           create: (context) => DiaryBloc(
             diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+            userRepository: RepositoryProvider.of<UserRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )
       ),
@@ -98,6 +100,7 @@ class DiaryViewState extends State<DiaryView> {
 
     _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
     _diaryBloc = BlocProvider.of<DiaryBloc>(context);
+    _diaryBloc.add(const TrackViewDiaryHomeEvent());
     _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
     _scrollController.addListener(_onScroll);
   }

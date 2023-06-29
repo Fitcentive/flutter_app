@@ -7,6 +7,15 @@ abstract class MeetupHomeEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class TraceViewMeetupHomeEvent extends MeetupHomeEvent {
+
+  const TraceViewMeetupHomeEvent();
+
+  @override
+  List<Object?> get props => [];
+
+}
+
 class FetchUserMeetupData extends MeetupHomeEvent {
   final String userId;
   final String? selectedFilterByOption;

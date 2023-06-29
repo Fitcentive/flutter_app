@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_event.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,15 +24,22 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
     required this.userRepository,
     required this.secureStorage
   }): super(const NewsFeedStateInitial()) {
+    on<TrackViewNewsfeedHomeEvent>(_trackViewNewsfeedHomeEvent);
     on<NewsFeedFetchRequested>(_newsFeedFetchRequested);
     on<NewsFeedReFetchRequested>(_newsFeedReFetchRequested);
     on<LikePostForUser>(_likePostForUser);
     on<UnlikePostForUser>(_unlikePostForUser);
   }
 
+  void _trackViewNewsfeedHomeEvent(TrackViewNewsfeedHomeEvent event, Emitter<NewsFeedState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(ViewNewsfeedHome(), accessToken!);
+  }
+
   void _likePostForUser(LikePostForUser event, Emitter<NewsFeedState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.likePostForUser(event.postId, event.userId, accessToken!);
+    userRepository.trackUserEvent(LikeSocialPost(), accessToken);
   }
 
   void _unlikePostForUser(UnlikePostForUser event, Emitter<NewsFeedState> emit) async {

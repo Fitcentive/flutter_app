@@ -64,6 +64,7 @@ class CreateNewMeetupViewState extends State<CreateNewMeetupView> {
     super.initState();
 
     _createNewMeetupBloc = BlocProvider.of<CreateNewMeetupBloc>(context);
+    _createNewMeetupBloc.add(const TrackAttemptToCreateMeetupEvent());
     _createNewMeetupBloc.add(NewMeetupChanged(
       currentUserProfile: widget.currentUserProfile,
       meetupParticipantUserIds: List.empty(),

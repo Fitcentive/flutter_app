@@ -1,3 +1,4 @@
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/spatial/coordinates.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,9 +16,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, DiscoverUserPreferencesState> {
   final FlutterSecureStorage secureStorage;
   final DiscoverRepository discoverRepository;
+  final UserRepository userRepository;
 
   DiscoverUserPreferencesBloc({
     required this.discoverRepository,
+    required this.userRepository,
     required this.secureStorage,
   }) : super(const DiscoverUserPreferencesStateInitial()) {
     on<DiscoverUserPreferencesInitial>(_discoverUserPreferencesInitial);
@@ -117,6 +121,10 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
 
     final latLng = event.discoveryPreferences == null ? null :
       LatLng(event.discoveryPreferences!.locationCenter.latitude, event.discoveryPreferences!.locationCenter.longitude);
+
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(UpdateDiscoveryPreferences(), accessToken!);
+
     emit(UserDiscoverPreferencesModified(
         userProfile: event.userProfile,
         locationCenter: latLng,

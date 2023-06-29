@@ -3,6 +3,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/selected_post/bloc/selected_post_event.dart';
 import 'package:flutter_app/src/views/selected_post/bloc/selected_post_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,6 +36,7 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     if (!event.isMockDataMode) {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       await socialMediaRepository.addCommentToPost(event.postId, event.userId, event.comment, accessToken!);
+      userRepository.trackUserEvent(AddSocialPostComment(), accessToken);
     }
   }
 
@@ -46,6 +48,7 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
   void _likePostForUser(LikePostForUser event, Emitter<SelectedPostState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.likePostForUser(event.postId, event.currentUserId, accessToken!);
+    userRepository.trackUserEvent(LikeSocialPost(), accessToken);
   }
 
   // We reload comments async to be up to date

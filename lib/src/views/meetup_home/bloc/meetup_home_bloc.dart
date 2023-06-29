@@ -3,6 +3,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_event.dart';
 import 'package:flutter_app/src/views/meetup_home/bloc/meetup_home_state.dart';
@@ -19,9 +20,15 @@ class MeetupHomeBloc extends Bloc<MeetupHomeEvent, MeetupHomeState> {
     required this.meetupRepository,
     required this.secureStorage,
   }) : super(const MeetupHomeStateInitial()) {
+    on<TraceViewMeetupHomeEvent>(_traceViewMeetupHomeEvent);
     on<FetchUserMeetupData>(_fetchUserMeetupData);
     on<FetchMoreUserMeetupData>(_fetchMoreUserMeetupData);
     on<DeleteMeetupForUser>(_deleteMeetupForUser);
+  }
+
+  void _traceViewMeetupHomeEvent(TraceViewMeetupHomeEvent event, Emitter<MeetupHomeState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(ViewMeetupHome(), accessToken!);
   }
 
   void _deleteMeetupForUser(DeleteMeetupForUser event, Emitter<MeetupHomeState> emit) async {

@@ -27,3 +27,11 @@ class UpsertNewlyDiscoveredUser extends DiscoverRecommendationsEvent {
   @override
   List<Object?> get props => [currentUserId, newUserId];
 }
+
+class TrackRejectNewDiscoveredUserEvent extends DiscoverRecommendationsEvent {
+
+  const TrackRejectNewDiscoveredUserEvent();
+
+  @override
+  List<Object?> get props => [];
+}

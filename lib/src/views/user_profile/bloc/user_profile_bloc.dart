@@ -7,6 +7,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/models/user_friend_status.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart';
@@ -308,6 +309,9 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
     }
     final doesNextPageExist = detailedPosts?.length == ConstantUtils.DEFAULT_NEWSFEED_LIMIT ? true : false;
+
+    userRepository.trackUserEvent(ViewOtherUserProfile(), accessToken);
+
     emit(RequiredDataResolved(
         userFollowStatus: userFollowStatus,
         currentUser: event.currentUser,
@@ -346,6 +350,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       await socialMediaRepository.requestToFriendUser(event.currentUser.user.id, event.targetUserId, accessToken!);
       final userFollowStatus =
       await socialMediaRepository.getUserFriendStatus(event.currentUser.user.id, event.targetUserId, accessToken);
+      userRepository.trackUserEvent(SendFriendRequestToUser(), accessToken);
       emit(RequiredDataResolved(
           userFollowStatus: userFollowStatus,
           currentUser: event.currentUser,
@@ -411,6 +416,14 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       );
       final userFollowStatus =
       await socialMediaRepository.getUserFriendStatus(event.currentUser.user.id, event.targetUserId, accessToken);
+
+      if (event.isFollowRequestApproved) {
+        userRepository.trackUserEvent(AcceptUserFriendRequest(), accessToken);
+      }
+      else {
+        userRepository.trackUserEvent(DeclineUserFriendRequest(), accessToken);
+      }
+
       emit(RequiredDataResolved(
           userFollowStatus: userFollowStatus,
           currentUser: event.currentUser,

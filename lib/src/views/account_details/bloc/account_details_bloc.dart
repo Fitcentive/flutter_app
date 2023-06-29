@@ -1,8 +1,10 @@
 import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/authenticated_user_stream_repository.dart';
+import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/models/complete_profile/name.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/models/user.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/views/account_details/bloc/account_details_event.dart';
@@ -23,10 +25,16 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
     required this.secureStorage,
     required this.authUserStreamRepository,
   }) : super(const InitialState()) {
+    on<TrackViewCurrentUserAccountDetailsEvent>(_trackViewCurrentUserAccountDetailsEvent);
     on<AccountDetailsChanged>(_accountDetailsChanged);
     on<AccountDetailsSaved>(_accountDetailsSaved);
     on<EnablePremiumAccountStatusForUser>(_enablePremiumAccountStatusForUser);
     on<DisablePremiumAccountStatusForUser>(_disablePremiumAccountStatusForUser);
+  }
+
+  void _trackViewCurrentUserAccountDetailsEvent(TrackViewCurrentUserAccountDetailsEvent event, Emitter<AccountDetailsState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(ViewCurrentUserAccountDetails(), accessToken!);
   }
 
   void _disablePremiumAccountStatusForUser(DisablePremiumAccountStatusForUser event, Emitter<AccountDetailsState> emit) async {
@@ -176,5 +184,7 @@ class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> 
           gender: event.gender,
       ));
     }
+
+    userRepository.trackUserEvent(EditCurrentUserAccountDetails(), accessToken);
   }
 }

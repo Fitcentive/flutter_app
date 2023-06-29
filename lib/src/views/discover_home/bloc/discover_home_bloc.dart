@@ -1,5 +1,7 @@
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_event.dart';
 import 'package:flutter_app/src/views/discover_home/bloc/discover_home_state.dart';
@@ -9,9 +11,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class DiscoverHomeBloc extends Bloc<DiscoverHomeEvent, DiscoverHomeState> {
   final FlutterSecureStorage secureStorage;
   final DiscoverRepository discoverRepository;
+  final UserRepository userRepository;
 
   DiscoverHomeBloc({
     required this.discoverRepository,
+    required this.userRepository,
     required this.secureStorage,
   }) : super(const DiscoverHomeStateInitial()) {
     on<FetchUserDiscoverData>(_fetchUserDiscoverPreferences);
@@ -28,6 +32,7 @@ class DiscoverHomeBloc extends Bloc<DiscoverHomeEvent, DiscoverHomeState> {
   void _removeUserFromListOfDiscoveredUsers(RemoveUserFromListOfDiscoveredUsers event, Emitter<DiscoverHomeState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await discoverRepository.removeDiscoveredUser(event.currentUserId, event.discoveredUserId, accessToken!);
+    userRepository.trackUserEvent(RemoveFromNewlyDiscoveredUsers(), accessToken);
   }
 
   void _fetchMoreDiscoveredUsers(FetchMoreDiscoveredUsers event, Emitter<DiscoverHomeState> emit) async {

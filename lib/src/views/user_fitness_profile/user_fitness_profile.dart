@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
@@ -37,6 +38,7 @@ class UserFitnessProfileView extends StatefulWidget {
             BlocProvider<UserFitnessProfileBloc>(
                 create: (context) => UserFitnessProfileBloc(
                   diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
+                  userRepository: RepositoryProvider.of<UserRepository>(context),
                   secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                 )),
           ],

@@ -1,8 +1,8 @@
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/views/liked_users/bloc/liked_users_event.dart';
-import 'package:flutter_app/src/views/liked_users/bloc/liked_users_state.dart';
+import 'package:flutter_app/src/views/shared_components/liked_users/bloc/liked_users_event.dart';
+import 'package:flutter_app/src/views/shared_components/liked_users/bloc/liked_users_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 

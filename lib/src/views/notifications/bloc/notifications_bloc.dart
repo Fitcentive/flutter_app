@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_event.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_state.dart';
@@ -149,6 +150,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
       final completeNotifications = [...currentState.notifications, ...notifications];
       final completeUserIdProfileMap = {...currentState.userProfileMap, ...userIdProfileMap};
+
+      userRepository.trackUserEvent(ViewNotifications(), accessToken);
 
       emit(NotificationsLoaded(
           notifications: completeNotifications,

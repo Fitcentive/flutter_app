@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/discover/discover_recommendation.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
@@ -37,6 +38,7 @@ class DiscoverRecommendationsView extends StatefulWidget {
             BlocProvider<DiscoverRecommendationsBloc>(
                 create: (context) => DiscoverRecommendationsBloc(
                   discoverRepository: RepositoryProvider.of<DiscoverRepository>(context),
+                  userRepository: RepositoryProvider.of<UserRepository>(context),
                   secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                 )),
           ],
@@ -158,6 +160,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
               currentSelectedRecommendationIndex = max(currentSelectedRecommendationIndex - 1, 0);
             });
     });
+    // track
   }
 
   _generateBody() {

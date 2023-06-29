@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_event.dart';
 import 'package:flutter_app/src/views/exercise_diary/bloc/exercise_diary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -44,6 +45,7 @@ class ExerciseDiaryBloc extends Bloc<ExerciseDiaryEvent, ExerciseDiaryState> {
           await meetupRepository.deleteCardioDiaryEntryFromAssociatedMeetup(currentState.associatedMeetup!.meetup.id, updatedEntry.id, accessToken);
         }
       }
+      userRepository.trackUserEvent(EditDiaryEntry(), accessToken);
       emit(const ExerciseEntryUpdatedAndReadyToPop());
     }
 
@@ -65,6 +67,7 @@ class ExerciseDiaryBloc extends Bloc<ExerciseDiaryEvent, ExerciseDiaryState> {
           await meetupRepository.deleteStrengthDiaryEntryFromAssociatedMeetup(currentState.associatedMeetup!.meetup.id, updatedEntry.id, accessToken);
         }
       }
+      userRepository.trackUserEvent(EditDiaryEntry(), accessToken);
       emit(const ExerciseEntryUpdatedAndReadyToPop());
     }
 
@@ -133,5 +136,7 @@ class ExerciseDiaryBloc extends Bloc<ExerciseDiaryEvent, ExerciseDiaryState> {
         );
       }
     }
+
+    userRepository.trackUserEvent(ViewDiaryEntry(), accessToken);
   }
 }

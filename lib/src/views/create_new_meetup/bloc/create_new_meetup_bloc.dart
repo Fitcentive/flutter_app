@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/misc_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -35,6 +36,7 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
   }) : super(const CreateNewMeetupStateInitial()) {
 
     _setUpTimeSegmentDateTimeMap();
+    on<TrackAttemptToCreateMeetupEvent>(_trackAttemptToCreateMeetupEvent);
     on<NewMeetupChanged>(_newMeetupChanged);
     on<SaveNewMeetup>(_saveNewMeetup);
   }
@@ -54,6 +56,11 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
       i += 2;
       k += 1;
     }
+  }
+
+  void _trackAttemptToCreateMeetupEvent(TrackAttemptToCreateMeetupEvent event, Emitter<CreateNewMeetupState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(AttemptToCreateMeetup(), accessToken!);
   }
 
   void _saveNewMeetup(SaveNewMeetup event, Emitter<CreateNewMeetupState> emit) async {
@@ -90,6 +97,8 @@ class CreateNewMeetupBloc extends Bloc<CreateNewMeetupEvent, CreateNewMeetupStat
 
     // Add owner decision as yes - since they control the details, they should be ok with it!
     await meetupRepository.upsertMeetupDecision(meetup.id, event.currentUserProfile.userId, true, accessToken);
+
+    userRepository.trackUserEvent(CreateMeetup(), accessToken);
     emit(const MeetupCreatedAndReadyToPop());
   }
 

@@ -71,6 +71,7 @@ class NewsFeedViewState extends State<NewsFeedView> {
 
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
+      _newsFeedBloc.add(const TrackViewNewsfeedHomeEvent());
       _newsFeedBloc.add(
           NewsFeedFetchRequested(
               user: currentAuthState.authenticatedUser,

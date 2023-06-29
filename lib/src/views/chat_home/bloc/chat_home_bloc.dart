@@ -8,6 +8,7 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/models/websocket/user_room_updated_payload.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_event.dart';
@@ -243,6 +244,8 @@ class ChatHomeBloc extends Bloc<ChatHomeEvent, ChatHomeState> {
     final Map<String, DateTime> roomIdMostRecentMessageTimeMap = { for (var e in userRoomsLastSeen)  (e).roomId : e.lastSeen };
 
     final doesNextPageExist = detailedChatRooms.length == event.limit ? true : false;
+
+    userRepository.trackUserEvent(ViewChatHome(), accessToken);
 
     emit(
         UserRoomsLoaded(

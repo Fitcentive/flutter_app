@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/discover/user_discovery_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
@@ -58,6 +59,7 @@ class DiscoverUserPreferencesView extends StatefulWidget {
             BlocProvider<DiscoverUserPreferencesBloc>(
                 create: (context) => DiscoverUserPreferencesBloc(
                   discoverRepository: RepositoryProvider.of<DiscoverRepository>(context),
+                  userRepository: RepositoryProvider.of<UserRepository>(context),
                   secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                 )),
           ],

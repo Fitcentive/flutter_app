@@ -1,8 +1,10 @@
+import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/social/new_post.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/public_gateway_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_event.dart';
 import 'package:flutter_app/src/views/create_new_post/bloc/create_new_post_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,16 +13,24 @@ import 'package:formz/formz.dart';
 
 class CreateNewPostBloc extends Bloc<CreateNewPostEvent, CreateNewPostState> {
   final SocialMediaRepository socialMediaRepository;
+  final UserRepository userRepository;
   final PublicGatewayRepository imageRepository;
   final FlutterSecureStorage secureStorage;
 
   CreateNewPostBloc({
     required this.socialMediaRepository,
+    required this.userRepository,
     required this.imageRepository,
     required this.secureStorage
   }): super(const CreateNewPostInitialState()) {
     on<PostDetailsChanged>(_postDetailsChanged);
+    on<TrackAttemptToCreatePostEvent>(_trackAttemptToCreatePostEvent);
     on<PostSubmitted>(_postSubmitted);
+  }
+
+  void _trackAttemptToCreatePostEvent(TrackAttemptToCreatePostEvent event, Emitter<CreateNewPostState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(AttemptToCreatePost(), accessToken!);
   }
 
   void _postDetailsChanged(PostDetailsChanged event, Emitter<CreateNewPostState> emit) async {
@@ -57,6 +67,7 @@ class CreateNewPostBloc extends Bloc<CreateNewPostEvent, CreateNewPostState> {
       }
       final newPost = SocialPostCreate(userId: event.userId, text: event.text, photoUrl: postPhotoUrl);
       await socialMediaRepository.createPostForUser(event.userId, newPost, accessToken!);
+      userRepository.trackUserEvent(CreatePost(), accessToken);
       emit(const PostSubmittedSuccessfully());
     } catch (e) {
       emit(PostSubmissionFailure(error: e.toString()));
