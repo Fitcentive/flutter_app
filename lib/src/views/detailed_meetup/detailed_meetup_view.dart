@@ -260,6 +260,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         // We now save participants updated
         _updateMeetingDetails();
       }
+      setState(() {
+        isParticipantSelectHappening = !isParticipantSelectHappening;
+      });
     }
     else {
      _showSnackbarForReadOnlyMeetup();
