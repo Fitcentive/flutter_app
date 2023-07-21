@@ -78,7 +78,7 @@ class UpdateMeetupDetails extends DetailedMeetupEvent {
   final DateTime? meetupTime;
   final String? meetupName;
   final Location? location;
-  final List<String> meetupParticipantUserIds;
+  final List<PublicUserProfile> meetupParticipantProfiles;
 
 
   const UpdateMeetupDetails({
@@ -86,7 +86,7 @@ class UpdateMeetupDetails extends DetailedMeetupEvent {
     required this.meetupTime,
     required this.meetupName,
     required this.location,
-    required this.meetupParticipantUserIds
+    required this.meetupParticipantProfiles
   });
 
   @override
@@ -95,7 +95,7 @@ class UpdateMeetupDetails extends DetailedMeetupEvent {
     meetupTime,
     meetupName,
     location,
-    meetupParticipantUserIds,
+    meetupParticipantProfiles,
   ];
 }
 

@@ -258,7 +258,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
       if (isParticipantSelectHappening) {
         // Participant select is already happening, and it has been pressed to toggle
         // We now save participants updated
-        _updateMeetingDetails();
+        // Update - we are not saving it here, instead we save it upon every change to participant list for better UX
+        // _updateMeetingDetails();
       }
       setState(() {
         isParticipantSelectHappening = !isParticipantSelectHappening;
@@ -489,8 +490,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     }
     else {
       setState(() {
-        selectedMeetupParticipantUserProfiles.add(userProfile);
+        selectedMeetupParticipantUserProfiles = List.from(selectedMeetupParticipantUserProfiles)..add(userProfile);
       });
+      _updateMeetingDetails();
     }
   }
 
@@ -504,8 +506,9 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _removeSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
     setState(() {
-      selectedMeetupParticipantUserProfiles.remove(userProfile);
+      selectedMeetupParticipantUserProfiles = List.from(selectedMeetupParticipantUserProfiles)..remove(userProfile);
     });
+    _updateMeetingDetails();
   }
 
   _participantSelectView(DetailedMeetupDataFetched state) {
@@ -611,7 +614,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         meetupTime: selectedMeetupDate,
         meetupName: selectedMeetupName,
         location: selectedMeetupLocation,
-        meetupParticipantUserIds: selectedMeetupParticipantUserProfiles.map((e) => e.userId).toList(),
+        meetupParticipantProfiles: selectedMeetupParticipantUserProfiles,
     ));
   }
 
@@ -811,6 +814,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         setState(() {
           selectedMeetupParticipantUserProfiles.remove(userProfile);
         });
+        _updateMeetingDetails();
         selectFromFriendsViewStateGlobalKey.currentState?.makeUserListItemUnselected(userProfile.userId);
       }
       else {
@@ -878,13 +882,13 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   }
 
   _goToChatRoom() {
-    if (selectedMeetupParticipants.length < 3) {
+    if (selectedMeetupParticipantUserProfiles.length < 3) {
       _detailedMeetupBloc.add(
           // Get chat room and listen for this and jump to it
           GetDirectMessagePrivateChatRoomForMeetup(
               meetup: currentMeetup,
               currentUserProfileId: widget.currentUserProfile.userId,
-              participants: widget.participants!.map((e) => e.userId).toList(),
+              participants: selectedMeetupParticipantUserProfiles.map((e) => e.userId).toList(),
           )
       );
     }
@@ -908,7 +912,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
           CreateChatRoomForMeetup(
               meetup: currentMeetup,
               roomName: currentMeetup.name ?? "Unnamed meetup",
-              participants: widget.participants!.map((e) => e.userId).toList()
+              participants: selectedMeetupParticipantUserProfiles.map((e) => e.userId).toList()
           )
       );
     }

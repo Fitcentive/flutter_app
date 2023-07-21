@@ -4,6 +4,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
+import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
@@ -248,40 +249,69 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
   }
   
   void _updateMeetupDetails(UpdateMeetupDetails event, Emitter<DetailedMeetupState> emit) async {
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+   final currentState = state;
 
-    final originalMeetup = await meetupRepository.getMeetupById(event.meetupId, accessToken!);
+   if (currentState is DetailedMeetupDataFetched) {
+     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    final updatedMeetup = MeetupUpdate(
-      meetupType: "Workout",
-      name: event.meetupName,
-      time: event.meetupTime,
-      durationInMinutes: null, // Need to update things to include a time duration
-      locationId: event.location?.locationId,
-      chatRoomId: originalMeetup.chatRoomId,
-    );
+     final originalMeetup = await meetupRepository.getMeetupById(event.meetupId, accessToken!);
 
-    final meetup = await meetupRepository.updateMeetup(event.meetupId, updatedMeetup, accessToken!);
+     final updatedMeetup = MeetupUpdate(
+       meetupType: "Workout",
+       name: event.meetupName,
+       time: event.meetupTime,
+       durationInMinutes: null, // Need to update things to include a time duration
+       locationId: event.location?.locationId,
+       chatRoomId: originalMeetup.chatRoomId,
+     );
 
-    final existingSavedMeetupParticipants = await meetupRepository.getMeetupParticipants(event.meetupId, accessToken);
-    final existingSavedMeetupParticipantsUserIds = existingSavedMeetupParticipants.map((e) => e.userId);
+     final meetup = await meetupRepository.updateMeetup(event.meetupId, updatedMeetup, accessToken!);
 
-    /// Creates a new set with the elements of this that are not in [other].
-    final participantsToRemove =
-      existingSavedMeetupParticipantsUserIds.toSet().difference(event.meetupParticipantUserIds.toSet());
-    final participantsToAdd =
-      event.meetupParticipantUserIds.toSet().difference(existingSavedMeetupParticipantsUserIds.toSet());
+     final existingSavedMeetupParticipants = await meetupRepository.getMeetupParticipants(event.meetupId, accessToken);
+     final existingSavedMeetupParticipantsUserIds = existingSavedMeetupParticipants.map((e) => e.userId);
 
-    if (participantsToAdd.isNotEmpty) {
-      await Future.wait(participantsToAdd.map((e) =>
-          meetupRepository.addParticipantToMeetup(meetup.id, e, accessToken)));
-    }
-    if (participantsToRemove.isNotEmpty) {
-      await Future.wait(participantsToRemove.map((e) =>
-          meetupRepository.removeParticipantFromMeetup(meetup.id, e, accessToken)));
-    }
+     /// Creates a new set with the elements of this that are not in [other].
+     final participantsToRemove =
+     existingSavedMeetupParticipantsUserIds.toSet().difference(event.meetupParticipantProfiles.map((e) => e.userId).toSet());
+     final participantsToAdd =
+     event.meetupParticipantProfiles.map((e) => e.userId).toSet().difference(existingSavedMeetupParticipantsUserIds.toSet());
 
-    userRepository.trackUserEvent(EditMeetup(), accessToken);
+     if (participantsToAdd.isNotEmpty) {
+       await Future.wait(participantsToAdd.map((e) =>
+           meetupRepository.addParticipantToMeetup(meetup.id, e, accessToken)));
+     }
+     if (participantsToRemove.isNotEmpty) {
+       await Future.wait(participantsToRemove.map((e) =>
+           meetupRepository.removeParticipantFromMeetup(meetup.id, e, accessToken)));
+     }
+
+     final updatedMeetupParticipants = await meetupRepository.getMeetupParticipants(meetup.id, accessToken);
+
+     // Fetch location only if we need to
+     Location? updatedLocation;
+     if (meetup.locationId != currentState.meetupLocation?.locationId) {
+       MeetupLocation? meetupLocation;
+       if (meetup.locationId != null) {
+         meetupLocation = await meetupRepository.getLocationByLocationId(meetup.locationId!, accessToken);
+       }
+
+       updatedLocation = meetupLocation == null ? null : await meetupRepository.getLocationByFsqId(meetupLocation.fsqId, accessToken);
+     }
+
+     userRepository.trackUserEvent(EditMeetup(), accessToken);
+
+     emit(DetailedMeetupDataFetched(
+         meetupId: currentState.meetupId,
+         userAvailabilities: currentState.userAvailabilities,
+         meetupLocation: meetup.locationId != currentState.meetupLocation?.locationId ? updatedLocation : currentState.meetupLocation,
+         meetup: meetup,
+         participants: updatedMeetupParticipants,
+         decisions: currentState.decisions,
+         userProfiles: event.meetupParticipantProfiles,
+         participantDiaryEntriesMap: currentState.participantDiaryEntriesMap,
+         rawFoodEntries: currentState.rawFoodEntries,
+     ));
+   }
 
   }
 
