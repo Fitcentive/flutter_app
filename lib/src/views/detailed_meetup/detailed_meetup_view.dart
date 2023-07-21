@@ -966,9 +966,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 hintText: 'Enter meetup name',
-                hintStyle: const TextStyle(
-                    fontWeight: FontWeight.normal
-                ),
+                hintStyle: const TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
               filled: widget.currentUserProfile.userId != currentMeetup.ownerId || shouldMeetupBeReadOnly(),
               fillColor: widget.currentUserProfile.userId != currentMeetup.ownerId || shouldMeetupBeReadOnly() ? Colors.grey.shade200 : null
             ),

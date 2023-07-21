@@ -286,6 +286,7 @@ class SelectFromUsersViewState extends State<SelectFromUsersView> {
               decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: "Search by name/username",
+                  hintStyle: const TextStyle(color: Colors.grey),
                   suffixIcon: IconButton(
                     onPressed: () {
                       _suggestionsController.close();

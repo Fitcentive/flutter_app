@@ -264,7 +264,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
                   maxLines: null,
                   decoration: const InputDecoration.collapsed(
                     hintText: 'Share your thoughts here...',
-                    hintStyle: TextStyle(fontSize: 15)
+                    hintStyle: TextStyle(fontSize: 15, color: Colors.grey),
                   ),
                 ),
               ),

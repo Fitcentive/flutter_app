@@ -455,6 +455,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
                     hintText: "Search by location name",
+                    hintStyle: const TextStyle(color: Colors.grey),
                     prefixIcon: IconButton(
                       onPressed: () {
                         _suggestionsController.close();

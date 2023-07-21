@@ -167,7 +167,7 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   hintText: "150",
-                  hintStyle: TextStyle(color: Colors.teal),
+                  hintStyle: TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.teal,
@@ -215,7 +215,7 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   hintText: "150",
-                  hintStyle: TextStyle(color: Colors.teal),
+                  hintStyle: TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.teal,

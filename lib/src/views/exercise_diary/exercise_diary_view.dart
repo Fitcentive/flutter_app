@@ -596,7 +596,7 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: "Eg - 3",
-                  hintStyle: TextStyle(color: Colors.teal),
+                  hintStyle: const TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.teal,
@@ -643,7 +643,7 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: "Eg - 3",
-                  hintStyle: TextStyle(color: Colors.teal),
+                  hintStyle: const TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.teal,
@@ -677,7 +677,7 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
                 controller: _caloriesBurnedTextController,
                 decoration: const InputDecoration(
                   hintText: "Auto calculated",
-                  hintStyle: TextStyle(color: Colors.teal),
+                  hintStyle: const TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.teal,
@@ -720,7 +720,7 @@ class ExerciseDiaryViewState extends State<ExerciseDiaryView> with SingleTickerP
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: "Eg - 30",
-                  hintStyle: TextStyle(color: Colors.teal),
+                  hintStyle: TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.teal,

@@ -102,6 +102,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                   decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       hintText: "Search by name/username",
+                      hintStyle: const TextStyle(color: Colors.grey),
                       suffixIcon: IconButton(
                         onPressed: () {
                           _suggestionsController.close();

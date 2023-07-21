@@ -158,7 +158,8 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
                   });
                 },
                 decoration: const InputDecoration(
-                    hintText: "Write a comment..."
+                    hintText: "Write a comment...",
+                    hintStyle: const TextStyle(color: Colors.grey),
                 ),
                 controller: _textEditingController,
                 expands: true,
@@ -235,7 +236,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
                         maxLines: null,
                         decoration: const InputDecoration.collapsed(
                             hintText: 'Share your thoughts here...',
-                            hintStyle: TextStyle(fontSize: 15)
+                            hintStyle: TextStyle(fontSize: 15, color: Colors.grey),
                         ),
                       ),
                     ),

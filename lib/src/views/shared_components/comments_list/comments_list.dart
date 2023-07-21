@@ -152,7 +152,8 @@ class CommentsListViewState extends State<CommentsListView> {
                   });
                 },
                 decoration: const InputDecoration(
-                    hintText: "Write a comment..."
+                    hintText: "Write a comment...",
+                    hintStyle: const TextStyle(color: Colors.grey),
                 ),
                 controller: _textEditingController,
                 expands: true,

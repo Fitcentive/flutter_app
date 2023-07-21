@@ -220,9 +220,7 @@ class SelectMeetupDetailsViewState extends State<SelectMeetupDetailsView> with A
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
               hintText: 'Enter meetup name',
-              hintStyle: TextStyle(
-                fontWeight: FontWeight.normal
-              )
+              hintStyle: const TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
             ),
           ),
         )

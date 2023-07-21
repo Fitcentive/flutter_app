@@ -221,6 +221,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
               decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: "Search by exercise name",
+                  hintStyle: const TextStyle(color: Colors.grey),
                   suffixIcon: IconButton(
                     onPressed: () {
                       _suggestionsController.close();

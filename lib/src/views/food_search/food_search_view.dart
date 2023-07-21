@@ -78,7 +78,7 @@ class FoodSearchView extends StatefulWidget {
 }
 
 class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProviderStateMixin {
-  static const int MAX_TABS = 2;
+  static const int MAX_TABS = 1;
   static const double _scrollThreshold = 400.0;
 
   late FoodSearchBloc _foodSearchBloc;
@@ -94,6 +94,8 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
 
   late final DiaryRepository _diaryRepository;
   late final FlutterSecureStorage _flutterSecureStorage;
+
+  bool showOnlyRecent = true;
 
   bool shouldShow = false;
 
@@ -182,17 +184,18 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
             bottom: TabBar(
               labelColor: Colors.teal,
               controller: _tabController,
-              tabs: const [
-                Tab(icon: Icon(Icons.timelapse, color: Colors.teal,), text: "Recent"),
-                Tab(icon: Icon(Icons.dinner_dining, color: Colors.teal,), text: "All"),
+              tabs: [
+                Tab(
+                    icon: Icon(showOnlyRecent ? Icons.timelapse : Icons.dinner_dining,
+                    color: Colors.teal,), text: showOnlyRecent ? "Recent Foods" : "All Foods"
+                ),
               ],
             ),
           ),
           body: TabBarView(
             controller: _tabController,
             children: [
-              _showFoodList(state, true),
-              _showFoodList(state, false),
+              _showFoodList(state),
             ],
           ),
         )
@@ -217,7 +220,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     );
   }
 
-  _showFoodList(FoodSearchState state, bool showOnlyRecent) {
+  _showFoodList(FoodSearchState state) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -226,12 +229,12 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
         WidgetUtils.spacer(5),
         _foodSearchBar(),
         WidgetUtils.spacer(2.5),
-        ..._renderResultsOrProgressIndicator(state, showOnlyRecent)
+        ..._renderResultsOrProgressIndicator(state)
       ],
     );
   }
 
-  List<Widget> _renderResultsOrProgressIndicator(FoodSearchState state, bool showOnlyRecent) {
+  List<Widget> _renderResultsOrProgressIndicator(FoodSearchState state) {
     if (state is FoodSearchStateInitial) {
       return [
         const ListTile(
@@ -309,6 +312,9 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                         maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
                       )
                   );
+                  setState(() {
+                    showOnlyRecent = false;
+                  });
                 }
               },
               autocorrect: false,
@@ -322,12 +328,16 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
               decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: "Search by food name",
+                  hintStyle: const TextStyle(color: Colors.grey),
                   suffixIcon: IconButton(
                     onPressed: () {
                       _suggestionsController.close();
                       _searchTextController.text = "";
                       _foodSearchBloc.add(const ClearFoodSearchQuery());
                       shouldShow = false;
+                      setState(() {
+                        showOnlyRecent = true;
+                      });
                     },
                     icon: const Icon(Icons.close),
                   ))),
@@ -361,6 +371,9 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                   maxResults: DiaryRepository.DEFAULT_MAX_SEARCH_FOOD_RESULTS,
                 )
             );
+            setState(() {
+              showOnlyRecent = false;
+            });
           },
           hideOnEmpty: true,
         )

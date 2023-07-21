@@ -284,7 +284,7 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             decoration: const InputDecoration(
                               hintText: "Eg - 1.5",
-                              hintStyle: TextStyle(color: Colors.teal),
+                              hintStyle: const TextStyle(color: Colors.grey),
                               border: OutlineInputBorder(
                                 borderSide: BorderSide(
                                   color: Colors.teal,

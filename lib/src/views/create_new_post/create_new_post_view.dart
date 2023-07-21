@@ -173,6 +173,7 @@ class CreateNewPostViewState extends State<CreateNewPostView> {
                           child: TextField(
                             decoration: InputDecoration(
                               hintText: "What's on your mind?",
+                              hintStyle: const TextStyle(color: Colors.grey),
                               errorText: state.text.invalid ? 'This cannot be left blank' : null,
                             ),
                             textCapitalization: TextCapitalization.sentences,

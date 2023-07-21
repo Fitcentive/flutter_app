@@ -209,6 +209,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
               decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: "Search by user, conversation... ",
+                  hintStyle: const TextStyle(color: Colors.grey),
                   suffixIcon: IconButton(
                     onPressed: () {
                       _suggestionsController.close();
