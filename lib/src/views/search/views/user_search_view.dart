@@ -184,6 +184,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                     fetchMoreResultsCallback: _fetchMoreResultsCallback,
                     doesNextPageExist: state.doesNextPageExist,
                     swipeToDismissUserCallback: null,
+                    listHeadingText: "Total Users",
                 )
               );
         } else {

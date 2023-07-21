@@ -235,7 +235,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     if (state is FoodSearchStateInitial) {
       return [
         const ListTile(
-          title: Text("Total Results", style: TextStyle(color: Colors.teal)),
+          title: Text("Total Foods", style: TextStyle(color: Colors.teal)),
           trailing: Text("0", style: TextStyle(color: Colors.teal)),
         ),
         Expanded(
@@ -246,7 +246,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     else if (state is FoodDataFetched) {
       return [
         ListTile(
-          title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
+          title: const Text("Total Foods", style: TextStyle(color: Colors.teal)),
           trailing: Text(showOnlyRecent ? state.recentFoods.length.toString() : state.results.foods.food.length.toString(), style: const TextStyle(color: Colors.teal)),
         ),
         Expanded(
@@ -258,7 +258,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
       if (showOnlyRecent) {
         return [
           ListTile(
-            title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
+            title: const Text("Total Foods", style: TextStyle(color: Colors.teal)),
             trailing: Text(state.recentFoods.length.toString(), style: const TextStyle(color: Colors.teal)),
           ),
           Expanded(
@@ -269,7 +269,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
       else {
         return [
           const ListTile(
-            title: Text("Total Results", style: TextStyle(color: Colors.teal)),
+            title: Text("Total Foods", style: TextStyle(color: Colors.teal)),
             trailing: Text("0", style: TextStyle(color: Colors.teal)),
           ),
           Expanded(

@@ -75,6 +75,7 @@ class LikedUsersViewState extends State<LikedUsersView> {
         fetchMoreResultsCallback: () {},
         doesNextPageExist: false,
         swipeToDismissUserCallback: null,
+        listHeadingText: "Total Users",
       );
     } else {
       return const Center(

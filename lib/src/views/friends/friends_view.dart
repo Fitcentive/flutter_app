@@ -92,6 +92,7 @@ class FriendsViewState extends State<FriendsView> {
             fetchMoreResultsCallback: _fetchMoreResultsCallback,
             doesNextPageExist: state.doesNextPageExist,
             swipeToDismissUserCallback: null,
+          listHeadingText: "Total Friends",
         ),
     );
   }

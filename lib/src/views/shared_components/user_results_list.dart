@@ -30,6 +30,8 @@ class UserResultsList extends StatefulWidget {
   final ModifyUserAdminStatusCallback ? makeUserAnAdminCallback;
   final ModifyUserAdminStatusCallback ? removeAdminStatusForUserCallback;
 
+  final String listHeadingText;
+
   const UserResultsList({
     Key? key,
     this.shouldListBeSwipable = false,
@@ -44,6 +46,7 @@ class UserResultsList extends StatefulWidget {
     this.isLongPressToMakeUserAdminEnabled = false,
     this.makeUserAnAdminCallback,
     this.removeAdminStatusForUserCallback,
+    this.listHeadingText = "Total Results"
   }): super(key: key);
 
   @override
@@ -75,7 +78,7 @@ class UserResultsListState extends State<UserResultsList> {
     return Column(
       children: [
         ListTile(
-          title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
+          title: Text(widget.listHeadingText, style: const TextStyle(color: Colors.teal)),
           trailing: Text(widget.userProfiles.length.toString(), style: const TextStyle(color: Colors.teal)),
         ),
         Expanded(child: _searchResults(widget.userProfiles))

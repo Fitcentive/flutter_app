@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
 import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
+import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/track/user_tracking_event.dart';
@@ -237,15 +238,36 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
   }
 
   void _addParticipantDecisionToMeetup(AddParticipantDecisionToMeetup event, Emitter<DetailedMeetupState> emit) async {
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    
-    // Remove previous decision
-    // await meetupRepository.deleteUserMeetupDecision(event.meetupId, event.participantId, accessToken!);
-    // No need to remove previous as upsert takes care of it
+    final currentState = state;
+    if (currentState is DetailedMeetupDataFetched) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
-    // Add current decision
-    await meetupRepository.upsertMeetupDecision(event.meetupId, event.participantId, event.hasAccepted, accessToken!);
-    userRepository.trackUserEvent(RespondToMeetup(), accessToken);
+      // Remove previous decision
+      // await meetupRepository.deleteUserMeetupDecision(event.meetupId, event.participantId, accessToken!);
+      // No need to remove previous as upsert takes care of it
+
+      // Add current decision
+      await meetupRepository.upsertMeetupDecision(event.meetupId, event.participantId, event.hasAccepted, accessToken!);
+      userRepository.trackUserEvent(RespondToMeetup(), accessToken);
+
+      final now = DateTime.now();
+      final updatedDecisions = [
+        ...currentState.decisions.where((element) => element.userId != event.participantId).toList(),
+        MeetupDecision(event.meetupId, event.participantId, event.hasAccepted, now, now)
+      ];
+
+      emit(DetailedMeetupDataFetched(
+        meetupId: currentState.meetupId,
+        userAvailabilities: currentState.userAvailabilities,
+        meetupLocation: currentState.meetupLocation,
+        meetup: currentState.meetup,
+        participants: currentState.participants,
+        decisions: updatedDecisions,
+        userProfiles: currentState.userProfiles,
+        participantDiaryEntriesMap: currentState.participantDiaryEntriesMap,
+        rawFoodEntries: currentState.rawFoodEntries,
+      ));
+    }
   }
   
   void _updateMeetupDetails(UpdateMeetupDetails event, Emitter<DetailedMeetupState> emit) async {

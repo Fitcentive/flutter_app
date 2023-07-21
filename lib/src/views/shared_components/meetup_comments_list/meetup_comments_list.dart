@@ -55,6 +55,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
   final ScrollController _scrollController = ScrollController();
   List<MeetupComment> fetchedComments = List.empty();
 
+  final focusNode = FocusNode();
 
   String? newUserComment;
 
@@ -203,37 +204,44 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          FittedBox(
-            fit:BoxFit.fitHeight,
-            child:  Container(
-                width: min(ScreenUtils.getScreenWidth(context) * 0.75, ConstantUtils.WEB_APP_MAX_WIDTH * 0.85),
-                padding: const EdgeInsets.all(15),
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 7.5),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 150),
-                    child: TextField(
-                      controller: _textEditingController,
-                      textCapitalization: TextCapitalization.sentences,
-                      onChanged: (text) {
-                        setState(() {
-                          if (text.trim().isNotEmpty) {
-                            newUserComment = text;
-                          }
-                          else {
-                            newUserComment = null;
-                          }
-                        });
-                      },
-                      maxLines: null,
-                      decoration: const InputDecoration.collapsed(
-                          hintText: 'Share your thoughts here...',
-                          hintStyle: TextStyle(fontSize: 15)
+          InkWell(
+            focusColor: Colors.transparent,
+            onTap: () {
+              FocusScope.of(context).requestFocus(focusNode);
+            },
+            child: FittedBox(
+              fit:BoxFit.fitHeight,
+              child:  Container(
+                  width: min(ScreenUtils.getScreenWidth(context) * 0.75, ConstantUtils.WEB_APP_MAX_WIDTH * 0.85),
+                  padding: const EdgeInsets.all(15),
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 7.5, 0, 7.5),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 150),
+                      child: TextField(
+                        focusNode: focusNode,
+                        controller: _textEditingController,
+                        textCapitalization: TextCapitalization.sentences,
+                        onChanged: (text) {
+                          setState(() {
+                            if (text.trim().isNotEmpty) {
+                              newUserComment = text;
+                            }
+                            else {
+                              newUserComment = null;
+                            }
+                          });
+                        },
+                        maxLines: null,
+                        decoration: const InputDecoration.collapsed(
+                            hintText: 'Share your thoughts here...',
+                            hintStyle: TextStyle(fontSize: 15)
+                        ),
                       ),
                     ),
                   ),
-                ),
 
+              ),
             ),
           ),
 

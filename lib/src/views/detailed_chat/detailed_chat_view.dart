@@ -313,6 +313,7 @@ class DetailedChatViewState extends State<DetailedChatView> {
           isLongPressToMakeUserAdminEnabled: currentChatAdminUserIds.contains(widget.currentUserProfile.userId),
           makeUserAnAdminCallback: _makeUserAnAdminCallback,
           removeAdminStatusForUserCallback: _removeAdminStatusForUserCallback,
+          listHeadingText: "Total Participants",
         ),
       ),
     );

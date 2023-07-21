@@ -75,7 +75,7 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
         _exerciseSearchBar(),
         WidgetUtils.spacer(2.5),
         ListTile(
-          title: const Text("Total Results", style: TextStyle(color: Colors.teal)),
+          title: const Text("Total Exercises", style: TextStyle(color: Colors.teal)),
           trailing: Text(exercises.length.toString(), style: const TextStyle(color: Colors.teal)),
         ),
         Expanded(child: _searchResults(exercises))

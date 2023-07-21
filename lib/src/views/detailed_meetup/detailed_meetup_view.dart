@@ -398,7 +398,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     selectedMeetupDate = state.meetup.time?.toLocal();
     selectedMeetupParticipantUserProfiles = List.from(state.userProfiles);
     selectedMeetupParticipants = List.from(state.participants);
-    selectedMeetupParticipantDecisions = List.from(state.decisions);
     selectedMeetupName = state.meetup.name;
     selectedMeetupLocationId = state.meetupLocation?.locationId;
     selectedMeetupLocationFsqId = state.meetupLocation?.location.fsqId;
@@ -410,6 +409,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     initialMeetupDate = currentMeetup.time?.toLocal();
     initialMeetupName = currentMeetup.name;
     initialMeetupParticipantIds = selectedMeetupParticipants.map((e) => e.userId).toList();
+
+    setState(() {
+      selectedMeetupParticipantDecisions = List.from(state.decisions);
+    });
   }
 
   _performMeetupDeletion() {
@@ -991,10 +994,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   Widget _timePickerButton() {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: widget.currentUserProfile.userId == currentMeetup.ownerId && !shouldMeetupBeReadOnly() ?
+        backgroundColor: isMeetupEditable() ?
         MaterialStateProperty.all<Color>(Colors.teal) : MaterialStateProperty.all<Color>(Colors.grey),
       ),
-      onPressed: () async {
+      onPressed: !isMeetupEditable() ? null : () async {
         if (shouldMeetupBeReadOnly()) {
           _showSnackbarForReadOnlyMeetup();
         }
@@ -1040,13 +1043,17 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     );
   }
 
+  bool isMeetupEditable() {
+    return  widget.currentUserProfile.userId == currentMeetup.ownerId && !shouldMeetupBeReadOnly();
+  }
+
   Widget _datePickerButton() {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: widget.currentUserProfile.userId == currentMeetup.ownerId && !shouldMeetupBeReadOnly() ?
+        backgroundColor: isMeetupEditable() ?
             MaterialStateProperty.all<Color>(Colors.teal) : MaterialStateProperty.all<Color>(Colors.grey),
       ),
-      onPressed: () async {
+      onPressed: !isMeetupEditable() ? null : () async {
         if (shouldMeetupBeReadOnly()) {
           _showSnackbarForReadOnlyMeetup();
         }
