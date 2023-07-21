@@ -2,12 +2,12 @@ importScripts('https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.4.1/firebase-messaging.js');
 
 const firebaseConfig = {
-    apiKey: "AIzaSyARqvT6yJ-P2imc8-595kH5nsVDEpdt-kE",
-    authDomain: "fitcentive-dev-02.firebaseapp.com",
-    projectId: "fitcentive-dev-02",
-    storageBucket: "fitcentive-dev-02.appspot.com",
-    messagingSenderId: "27981216008",
-    appId: "1:27981216008:web:442a225e58f2cd4dd954bd"
+    apiKey: "AIzaSyBLWpPaBj5uvuRaOev3SDB3zLW32WfupYU",
+    authDomain: "fitcentive-dev-03.firebaseapp.com",
+    projectId: "fitcentive-dev-03",
+    storageBucket: "fitcentive-dev-03.appspot.com",
+    messagingSenderId: "675708031489",
+    appId: "1:675708031489:web:6757ea293a9cd20298a600"
 };
 firebase.initializeApp(firebaseConfig);
 

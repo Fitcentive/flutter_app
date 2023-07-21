@@ -1,37 +1,37 @@
 {
   "project_info": {
-    "project_number": "27981216008",
-    "project_id": "fitcentive-dev-02",
-    "storage_bucket": "fitcentive-dev-02.appspot.com"
+    "project_number": "675708031489",
+    "project_id": "fitcentive-dev-03",
+    "storage_bucket": "fitcentive-dev-03.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:27981216008:android:9e823848112e98c5d954bd",
+        "mobilesdk_app_id": "1:675708031489:android:013a6952d66033b098a600",
         "android_client_info": {
           "package_name": "io.fitcentive.flutter_app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "27981216008-7id284l1j53p4ftac296dpiu3rio0vv5.apps.googleusercontent.com",
+          "client_id": "675708031489-7gb85unpuj6lfeod1a328qial8ked4ev.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyARqvT6yJ-P2imc8-595kH5nsVDEpdt-kE"
+          "current_key": "AIzaSyCIkAL_wZd8u8HM6qr7YXmGH9fiWM5YdRQ"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "27981216008-7id284l1j53p4ftac296dpiu3rio0vv5.apps.googleusercontent.com",
+              "client_id": "675708031489-7gb85unpuj6lfeod1a328qial8ked4ev.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "27981216008-lccq2unlfjg9n757rol6459gduefgu0q.apps.googleusercontent.com",
+              "client_id": "675708031489-gknap6b7r9illrfnu79ll9ti8l9mqft4.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "io.fitcentive.flutterApp"
