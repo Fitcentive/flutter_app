@@ -516,6 +516,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     );
   }
 
+  // todo - make all these collapsible too
   _renderCardioDiaryEntries() {
     if (widget.selectedUserProfilesToShowDetailsFor.isNotEmpty) {
       final diaryEntriesForSelectedUser = participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;

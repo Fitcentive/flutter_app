@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:intl/intl.dart';
 
 class DiaryCardView extends StatefulWidget {
 
@@ -13,6 +14,7 @@ class DiaryCardView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final List<Either<FoodGetResult, FoodGetResultSingleServing>> foodDiaryEntries;
   final AllDiaryEntries allDiaryEntries;
+  final DateTime selectedDate;
 
   const DiaryCardView({
     super.key,
@@ -20,6 +22,7 @@ class DiaryCardView extends StatefulWidget {
     required this.foodDiaryEntries,
     required this.allDiaryEntries,
     required this.onCardTapped,
+    required this.selectedDate
   });
 
 
@@ -40,9 +43,6 @@ class DiaryCardViewState extends State<DiaryCardView> {
     super.initState();
   }
 
-  // todo - clicking on item should go to detailed diary entry view, clicking overall should go to diary age
-  // todo - replace collapsible list for each submenu in main diary page too as well as in detailed meetup activities page
-  // todo - fix navigation issue about going to the right diary page
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -69,6 +69,26 @@ class DiaryCardViewState extends State<DiaryCardView> {
     );
   }
 
+  _dateHeader() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+            flex: 6,
+            child: Center(
+              child: Text(
+                DateFormat('yyyy-MM-dd').format(widget.selectedDate),
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold
+                ),
+              ),
+            )
+        ),
+      ],
+    );
+  }
+
   _renderDiaryEntries() {
     return Scrollbar(
       child: SingleChildScrollView(
@@ -77,6 +97,8 @@ class DiaryCardViewState extends State<DiaryCardView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              _dateHeader(),
+              WidgetUtils.spacer(2.5),
               _renderExerciseDiaryEntries(),
               WidgetUtils.spacer(2.5),
               _renderFoodDiaryEntriesWithContainer(),

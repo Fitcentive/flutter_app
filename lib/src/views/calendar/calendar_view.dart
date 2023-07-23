@@ -372,6 +372,7 @@ class CalendarViewState extends State<CalendarView> {
               child: DiaryCardView(
                 currentUserProfile: widget.currentUserProfile,
                 foodDiaryEntries: state.foodDiaryEntries,
+                selectedDate: date,
                 allDiaryEntries: allDiaryEntries,
                 onCardTapped: () {
                   _goToDiaryPage(date);

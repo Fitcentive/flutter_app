@@ -1,3 +1,4 @@
+import 'package:calendar_view/calendar_view.dart';
 import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -80,7 +81,15 @@ class DiaryViewState extends State<DiaryView> {
   DateTime initialSelectedDate = DateTime.now();
   DateTime currentSelectedDate = DateTime.now();
 
-  int currentSelectedPage = MAX_PAGES ~/ 2;
+  bool isStrengthPanelExpanded = true;
+  bool isCardioPanelExpanded = true;
+
+  bool isBreakfastPanelExpanded = true;
+  bool isLunchPanelExpanded = true;
+  bool isDinnerPanelExpanded = true;
+  bool isSnacksPanelExpanded = true;
+
+  int currentSelectedPageBuilderPage = MAX_PAGES ~/ 2;
   final PageController _pageController = PageController(initialPage: MAX_PAGES ~/ 2);
   final _scrollController = ScrollController();
 
@@ -95,17 +104,28 @@ class DiaryViewState extends State<DiaryView> {
   List<CardioDiaryEntry> cardioEntries = [];
   List<StrengthDiaryEntry> strengthEntries = [];
 
+  /// int currentSelectedPageBuilderPage = MAX_PAGES ~/ 2 sets page as mid for current date
+  /// If currentSelectedDate is diff, we need to offset accordimngly
+  setCurrentSelectedPageBuilderPageValue() {
+    if (currentSelectedDate.dateYMD != initialSelectedDate.dateYMD) {
+      final currentDateYmd = DateTime(currentSelectedDate.year, currentSelectedDate.month, currentSelectedDate.day);
+      final initialDateYmd = DateTime(initialSelectedDate.year, initialSelectedDate.month, initialSelectedDate.day);
+      currentSelectedPageBuilderPage = currentSelectedPageBuilderPage + currentDateYmd.difference(initialDateYmd).inDays;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
+    currentSelectedDate = widget.preSelectedDateTime ?? currentSelectedDate;
+    setCurrentSelectedPageBuilderPageValue();
 
     _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
     _diaryBloc = BlocProvider.of<DiaryBloc>(context);
     _diaryBloc.add(const TrackViewDiaryHomeEvent());
     _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
     _scrollController.addListener(_onScroll);
-
-    initialSelectedDate = widget.preSelectedDateTime ?? initialSelectedDate;
   }
 
   @override
@@ -456,7 +476,7 @@ class DiaryViewState extends State<DiaryView> {
               color: Colors.teal,
             ),
             onPressed: () {
-              _pageController.animateToPage(currentSelectedPage - 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+              _pageController.animateToPage(currentSelectedPageBuilderPage - 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
             },
           ),
         ),
@@ -480,7 +500,7 @@ class DiaryViewState extends State<DiaryView> {
               color: Colors.teal,
             ),
             onPressed: () {
-              _pageController.animateToPage(currentSelectedPage + 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+              _pageController.animateToPage(currentSelectedPageBuilderPage + 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
             },
           ),
         ),
@@ -506,12 +526,11 @@ class DiaryViewState extends State<DiaryView> {
     );
   }
 
-  // todo - ensure pre-selected value is respected, not happening now.
   _diaryPageViews(DiaryDataFetched state) {
     return PageView.builder(
       controller: _pageController,
       onPageChanged: (pageNumber) {
-        currentSelectedPage = pageNumber;
+        currentSelectedPageBuilderPage = pageNumber;
         final daysToAdd = pageNumber - INITIAL_PAGE;
         setState(() {
           if (daysToAdd < 0) {
@@ -550,18 +569,18 @@ class DiaryViewState extends State<DiaryView> {
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         // Heading
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.all(5),
-                          child: Text(
-                              listItemIndexToTitleMap[index]!,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20
-                            ),
-                          ),
-                        ),
-                        WidgetUtils.spacer(1.5),
+                        // Container(
+                        //   alignment: Alignment.centerLeft,
+                        //   padding: const EdgeInsets.all(5),
+                        //   child: Text(
+                        //       listItemIndexToTitleMap[index]!,
+                        //     style: const TextStyle(
+                        //       fontWeight: FontWeight.bold,
+                        //       fontSize: 20
+                        //     ),
+                        //   ),
+                        // ),
+                        // WidgetUtils.spacer(1.5),
                         _renderDiaryEntries(listItemIndexToTitleMap[index]!, state),
                         WidgetUtils.spacer(5),
                         // Add food/Add exercise button
@@ -619,146 +638,195 @@ class DiaryViewState extends State<DiaryView> {
   }
 
   _renderFoodDiaryEntries(String heading, List<FoodDiaryEntry> foodEntriesForHeadingRaw, DiaryDataFetched state) {
-    if (foodEntriesForHeadingRaw.isNotEmpty) {
-      return ListView.builder(
-          shrinkWrap: true,
-          itemCount: foodEntriesForHeadingRaw.length,
-          itemBuilder: (context, index) {
-            final foodEntryForHeadingRaw = foodEntriesForHeadingRaw[index];
-            final detailedFoodEntry = state.foodDiaryEntries.firstWhere((element) {
-              if (element.isLeft) {
-                return element.left.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+    return ExpansionPanelList(
+        expansionCallback: (index, isExpanded) {
+          setState(() {
+            if (listItemIndexToTitleMap.values.contains(heading)) {
+              if (heading == listItemIndexToTitleMap[0]!) {
+                isBreakfastPanelExpanded = !isExpanded;
+              }
+              else if (heading == listItemIndexToTitleMap[1]!) {
+                isLunchPanelExpanded = !isExpanded;
+              }
+              else if (heading == listItemIndexToTitleMap[2]!) {
+                isDinnerPanelExpanded = !isExpanded;
               }
               else {
-                return element.right.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+                isSnacksPanelExpanded = !isExpanded;
               }
-            });
-            final caloriesRaw = detailedFoodEntry.isLeft ?
-              detailedFoodEntry.left.food.servings.serving.firstWhere((element) => element.serving_id == foodEntryForHeadingRaw.servingId.toString()).calories :
-              detailedFoodEntry.right.food.servings.serving.calories;
-
-            return Dismissible(
-              background: WidgetUtils.viewUnderDismissibleListTile(),
-              direction: DismissDirection.endToStart,
-              key: Key(foodEntryForHeadingRaw.id),
-              onDismissed: (direction) {
-                if (direction == DismissDirection.endToStart) {
-                  // Now we also have to remove it from the state variable
-                  setState(() {
-                    if (heading == "Breakfast") {
-                      breakfastEntries = List.from(breakfastEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                    }
-                    else if (heading == "Lunch") {
-                      lunchEntries = List.from(lunchEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                    }
-                    else if (heading == "Dinner") {
-                      dinnerEntries = List.from(dinnerEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                    }
-                    else {
-                      snackEntries = List.from(snackEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                    }
-
-                    // final allFoodEntriesRawIndexToRemove = allFoodEntriesRaw.indexWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                    allFoodEntriesRaw = List.from(allFoodEntriesRaw)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
-                    // allDetailedFoodEntries = List.from(allDetailedFoodEntries)..removeAt(allFoodEntriesRawIndexToRemove);
-                  });
-
-                  ScaffoldMessenger
-                      .of(context)
-                      .showSnackBar(
-                    SnackBar(
-                        duration: const Duration(milliseconds: 1500),
-                        content: Text("Successfully removed $heading entry!"),
-                        action: SnackBarAction(
-                            label: "Undo",
-                            onPressed: () {
-                              setState(() {
-                                if (heading == "Breakfast") {
-                                  breakfastEntries = List.from(breakfastEntries)..add(foodEntryForHeadingRaw);
-                                }
-                                else if (heading == "Lunch") {
-                                  lunchEntries = List.from(lunchEntries)..add(foodEntryForHeadingRaw);
-                                }
-                                else if (heading == "Dinner") {
-                                  dinnerEntries = List.from(dinnerEntries)..add(foodEntryForHeadingRaw);
-                                }
-                                else {
-                                  snackEntries = List.from(snackEntries)..add(foodEntryForHeadingRaw);
-                                }
-
-                                allFoodEntriesRaw = List.from(allFoodEntriesRaw)..add(foodEntryForHeadingRaw);
-                              });
-                            })
-                    ),
-                  )
-                  .closed
-                  .then((value) {
-                    if (value != SnackBarClosedReason.action) {
-                      _diaryBloc.add(
-                          RemoveFoodDiaryEntryFromDiary(
-                              userId: widget.currentUserProfile.userId,
-                              foodDiaryEntryId: foodEntryForHeadingRaw.id
-                          )
-                      );
-                    }
-                  });
-                }
-              },
-              child: InkWell(
-                onTap: () {
-                  _goToDetailedFoodView(foodEntryForHeadingRaw.foodId, foodEntryForHeadingRaw.id, heading);
-                },
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                            flex: 12,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Text(
-                                        detailedFoodEntry.isLeft ? detailedFoodEntry.left.food.food_name : detailedFoodEntry.right.food.food_name
-                                    )
-                                ),
-                                Container(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Text(
-                                      "${foodEntryForHeadingRaw.numberOfServings.toStringAsFixed(2)} servings",
-                                      style: const TextStyle(
-                                        fontSize: 12
-                                      ),
-                                    )
-                                ),
-                              ],
-                            )
-                        ),
-                        Expanded(
-                            flex: 4,
-                            child: Text(
-                              "${(double.parse(caloriesRaw ?? "0") * foodEntryForHeadingRaw.numberOfServings).toStringAsFixed(0)} calories",
-                              style: const TextStyle(
-                                  color: Colors.teal
-                              ),
-                            )
-                        )
-                      ],
-                    ),
+            }
+          });
+        },
+        children: [
+          ExpansionPanel(
+            headerBuilder: (BuildContext context, bool isExpanded) {
+              return ListTile(
+                title: Text(
+                  heading,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.grey
                   ),
                 ),
-              ),
-            );
-          }
+              );
+            },
+            body: foodEntriesForHeadingRaw.isNotEmpty ? ListView.builder(
+                shrinkWrap: true,
+                itemCount: foodEntriesForHeadingRaw.length,
+                itemBuilder: (context, index) {
+                  final foodEntryForHeadingRaw = foodEntriesForHeadingRaw[index];
+                  final detailedFoodEntry = state.foodDiaryEntries.firstWhere((element) {
+                    if (element.isLeft) {
+                      return element.left.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+                    }
+                    else {
+                      return element.right.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+                    }
+                  });
+                  final caloriesRaw = detailedFoodEntry.isLeft ?
+                  detailedFoodEntry.left.food.servings.serving.firstWhere((element) => element.serving_id == foodEntryForHeadingRaw.servingId.toString()).calories :
+                  detailedFoodEntry.right.food.servings.serving.calories;
+
+                  return Dismissible(
+                    background: WidgetUtils.viewUnderDismissibleListTile(),
+                    direction: DismissDirection.endToStart,
+                    key: Key(foodEntryForHeadingRaw.id),
+                    onDismissed: (direction) {
+                      if (direction == DismissDirection.endToStart) {
+                        // Now we also have to remove it from the state variable
+                        setState(() {
+                          if (heading == "Breakfast") {
+                            breakfastEntries = List.from(breakfastEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                          }
+                          else if (heading == "Lunch") {
+                            lunchEntries = List.from(lunchEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                          }
+                          else if (heading == "Dinner") {
+                            dinnerEntries = List.from(dinnerEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                          }
+                          else {
+                            snackEntries = List.from(snackEntries)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                          }
+
+                          // final allFoodEntriesRawIndexToRemove = allFoodEntriesRaw.indexWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                          allFoodEntriesRaw = List.from(allFoodEntriesRaw)..removeWhere((element) => element.id == foodEntryForHeadingRaw.id);
+                          // allDetailedFoodEntries = List.from(allDetailedFoodEntries)..removeAt(allFoodEntriesRawIndexToRemove);
+                        });
+
+                        ScaffoldMessenger
+                            .of(context)
+                            .showSnackBar(
+                          SnackBar(
+                              duration: const Duration(milliseconds: 1500),
+                              content: Text("Successfully removed $heading entry!"),
+                              action: SnackBarAction(
+                                  label: "Undo",
+                                  onPressed: () {
+                                    setState(() {
+                                      if (heading == "Breakfast") {
+                                        breakfastEntries = List.from(breakfastEntries)..add(foodEntryForHeadingRaw);
+                                      }
+                                      else if (heading == "Lunch") {
+                                        lunchEntries = List.from(lunchEntries)..add(foodEntryForHeadingRaw);
+                                      }
+                                      else if (heading == "Dinner") {
+                                        dinnerEntries = List.from(dinnerEntries)..add(foodEntryForHeadingRaw);
+                                      }
+                                      else {
+                                        snackEntries = List.from(snackEntries)..add(foodEntryForHeadingRaw);
+                                      }
+
+                                      allFoodEntriesRaw = List.from(allFoodEntriesRaw)..add(foodEntryForHeadingRaw);
+                                    });
+                                  })
+                          ),
+                        )
+                            .closed
+                            .then((value) {
+                          if (value != SnackBarClosedReason.action) {
+                            _diaryBloc.add(
+                                RemoveFoodDiaryEntryFromDiary(
+                                    userId: widget.currentUserProfile.userId,
+                                    foodDiaryEntryId: foodEntryForHeadingRaw.id
+                                )
+                            );
+                          }
+                        });
+                      }
+                    },
+                    child: InkWell(
+                      onTap: () {
+                        _goToDetailedFoodView(foodEntryForHeadingRaw.foodId, foodEntryForHeadingRaw.id, heading);
+                      },
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  flex: 12,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                          padding: const EdgeInsets.all(5),
+                                          child: Text(
+                                              detailedFoodEntry.isLeft ? detailedFoodEntry.left.food.food_name : detailedFoodEntry.right.food.food_name
+                                          )
+                                      ),
+                                      Container(
+                                          padding: const EdgeInsets.all(5),
+                                          child: Text(
+                                            "${foodEntryForHeadingRaw.numberOfServings.toStringAsFixed(2)} servings",
+                                            style: const TextStyle(
+                                                fontSize: 12
+                                            ),
+                                          )
+                                      ),
+                                    ],
+                                  )
+                              ),
+                              Expanded(
+                                  flex: 4,
+                                  child: Text(
+                                    "${(double.parse(caloriesRaw ?? "0") * foodEntryForHeadingRaw.numberOfServings).toStringAsFixed(0)} calories",
+                                    style: const TextStyle(
+                                        color: Colors.teal
+                                    ),
+                                  )
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+            ) : const Center(
+              child: Text("No items here..."),
+            ),
+            isExpanded: _getIsExpandedVariable(heading),
+          )
+        ],
       );
-    }
-    else {
-      return const Center(
-        child: Text("No items here..."),
-      );
+  }
+
+  _getIsExpandedVariable(String heading) {
+    if (listItemIndexToTitleMap.values.contains(heading)) {
+      if (heading == listItemIndexToTitleMap[0]!) {
+        return isBreakfastPanelExpanded;
+      }
+      else if (heading == listItemIndexToTitleMap[1]!) {
+        return isLunchPanelExpanded;
+      }
+      else if (heading == listItemIndexToTitleMap[2]!) {
+        return isDinnerPanelExpanded;
+      }
+      else {
+        return isSnacksPanelExpanded;
+      }
     }
   }
 
@@ -944,33 +1012,86 @@ class DiaryViewState extends State<DiaryView> {
       ),
       child: Column(
         children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.all(5),
-            child: const Text(
-              "Cardio",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16
-              ),
-            ),
+          // Container(
+          //   alignment: Alignment.centerLeft,
+          //   padding: const EdgeInsets.all(5),
+          //   child: const Text(
+          //     "Cardio",
+          //     style: TextStyle(
+          //         fontWeight: FontWeight.bold,
+          //         fontSize: 16
+          //     ),
+          //   ),
+          // ),
+          // WidgetUtils.spacer(1),
+          // _renderCardioDiaryEntries(state),
+          ExpansionPanelList(
+            expansionCallback: (index, isExpanded) {
+              setState(() {
+                isCardioPanelExpanded = !isExpanded;
+              });
+            },
+            children: [
+              ExpansionPanel(
+                headerBuilder: (BuildContext context, bool isExpanded) {
+                  return const ListTile(
+                    title: Text(
+                      "Cardio",
+                      style:  TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Colors.grey
+                      ),
+                    ),
+                  );
+                },
+                body: _renderCardioDiaryEntries(state),
+                isExpanded: isCardioPanelExpanded,
+              )
+            ],
           ),
-          WidgetUtils.spacer(1),
-          _renderCardioDiaryEntries(state),
+
+
           WidgetUtils.spacer(5),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.all(5),
-            child: const Text(
-              "Strength",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16
-              ),
-            ),
-          ),
-          WidgetUtils.spacer(1),
-          _renderStrengthDiaryEntries(state),
+          // Container(
+          //   alignment: Alignment.centerLeft,
+          //   padding: const EdgeInsets.all(5),
+          //   child: const Text(
+          //     "Strength",
+          //     style: TextStyle(
+          //         fontWeight: FontWeight.bold,
+          //         fontSize: 16
+          //     ),
+          //   ),
+          // ),
+          // WidgetUtils.spacer(1),
+          // _renderStrengthDiaryEntries(state),
+
+          ExpansionPanelList(
+            expansionCallback: (index, isExpanded) {
+              setState(() {
+                isStrengthPanelExpanded = !isExpanded;
+              });
+            },
+            children: [
+              ExpansionPanel(
+                headerBuilder: (BuildContext context, bool isExpanded) {
+                  return const ListTile(
+                    title: Text(
+                      "Strength",
+                      style:  TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Colors.grey
+                      ),
+                    ),
+                  );
+                },
+                body: _renderStrengthDiaryEntries(state),
+                isExpanded: isStrengthPanelExpanded,
+              )
+            ],
+          )
         ],
       ),
     );
