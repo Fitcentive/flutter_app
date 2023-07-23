@@ -1,10 +1,12 @@
 import 'dart:math';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:calendar_view/calendar_view.dart';
+import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_decision.dart';
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
@@ -17,6 +19,10 @@ import 'package:flutter_app/src/views/calendar/bloc/calendar_bloc.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_event.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_state.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
+import 'package:flutter_app/src/views/shared_components/diary_card/diary_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_card/meetup_card_view.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_app/theme.dart';
@@ -35,6 +41,7 @@ class CalendarView extends StatefulWidget {
           create: (context) => CalendarBloc(
             userRepository: RepositoryProvider.of<UserRepository>(context),
             meetupRepository: RepositoryProvider.of<MeetupRepository>(context),
+            diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
@@ -52,15 +59,17 @@ class CalendarViewState extends State<CalendarView> {
   static final DateTime maximumDate = DateTime(2050);
 
   late CalendarBloc _calendarBloc;
+  late MenuNavigationBloc _menuNavigationBloc;
 
   String selectedCalendarView = "month"; // Options are month, week, day
   DateTime currentSelectedDateTime = DateTime.now();
   DateTime previouslyFetchedDataFor = DateTime.now();
-  List<CalendarEventData<Meetup>> calendarEvents = [];
+  List<CalendarEventData<Either<Meetup, AllDiaryEntries>>> meetupCalendarEvents = [];
+  List<CalendarEventData<Either<Meetup, AllDiaryEntries>>> diaryCalendarEvents = [];
 
-  EventController<Meetup> monthCalendarEventController = EventController<Meetup>();
-  EventController<Meetup> weekCalendarEventController = EventController<Meetup>();
-  EventController<Meetup> dayCalendarEventController = EventController<Meetup>();
+  EventController<Either<Meetup, AllDiaryEntries>> monthCalendarEventController = EventController<Either<Meetup, AllDiaryEntries>>();
+  EventController<Either<Meetup, AllDiaryEntries>> weekCalendarEventController = EventController<Either<Meetup, AllDiaryEntries>>();
+  EventController<Either<Meetup, AllDiaryEntries>> dayCalendarEventController = EventController<Either<Meetup, AllDiaryEntries>>();
 
   final HeaderStyle calendarHeaderStyle = const HeaderStyle(
       headerTextStyle: TextStyle(
@@ -79,6 +88,7 @@ class CalendarViewState extends State<CalendarView> {
   void initState() {
     super.initState();
 
+    _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
     _calendarBloc = BlocProvider.of<CalendarBloc>(context);
     _calendarBloc.add(
         FetchCalendarMeetupData(
@@ -102,14 +112,31 @@ class CalendarViewState extends State<CalendarView> {
       body: BlocListener<CalendarBloc, CalendarState>(
         listener: (context, state) {
           if (state is CalendarMeetupUserDataFetched) {
+
+            diaryCalendarEvents = state.allDiaryEntries.entries.entries.where((e) =>
+              (e.value.foodEntries.isNotEmpty || e.value.cardioWorkouts.isNotEmpty || e.value.strengthWorkouts.isNotEmpty)
+            ).map((e) {
+              final currentDate = DateTime.parse(e.key);
+              final startTime = DateTime(currentDate.year, currentDate.month, currentDate.day, 21, 0, 0, 0, 0);
+              return CalendarEventData(
+                  date: currentDate,
+                  event: Right<Meetup, AllDiaryEntries>(e.value),
+                  color: Colors.tealAccent,
+                  title: "Diary",
+                  description: "No description",
+                  startTime: startTime,
+                  endTime: startTime.add(const Duration(hours: 1))
+              );
+            } ).toList();
+
             setState(() {
-              calendarEvents = state.meetups
+              meetupCalendarEvents = state.meetups
                   .where((m) => m.time != null)
                   .map((m) {
                 // Note - we have translate into localtime
                 return CalendarEventData(
                   date: m.time!.toLocal(),
-                  event: m,
+                  event: Left<Meetup, AllDiaryEntries>(m),
                   color: Colors.teal,
                   title: m.name ?? "Unnamed meetup",
                   description: m.name ?? "No description",
@@ -118,9 +145,13 @@ class CalendarViewState extends State<CalendarView> {
                 );
               })
                   .toList();
-              monthCalendarEventController.addAll(calendarEvents);
-              weekCalendarEventController.addAll(calendarEvents);
-              dayCalendarEventController.addAll(calendarEvents);
+              monthCalendarEventController.addAll(meetupCalendarEvents);
+              weekCalendarEventController.addAll(meetupCalendarEvents);
+              dayCalendarEventController.addAll(meetupCalendarEvents);
+
+              monthCalendarEventController.addAll(diaryCalendarEvents);
+              weekCalendarEventController.addAll(diaryCalendarEvents);
+              dayCalendarEventController.addAll(diaryCalendarEvents);
             });
           }
         },
@@ -144,80 +175,14 @@ class CalendarViewState extends State<CalendarView> {
     return d1.day == d2.day && d1.month == d2.month && d1.year == d2.year;
   }
 
-  // Not needed
-  _renderMonthCellView(
-      DateTime date,
-      List<CalendarEventData<Meetup>> events,
-      CalendarMeetupUserDataFetched state
-  ) {
-    return Container(
-      color: date.month != currentSelectedDateTime.month ? Colors.grey.shade400 : null,
-      padding: const EdgeInsets.all(1),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          WidgetUtils.spacer(2),
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: !_areDaysTheSame(date, DateTime.now()) ? null : BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(width: 0, color: Colors.teal),
-              color: Colors.teal,
-            ),
-            child: Text(
-              date.day.toString(),
-              style: !_areDaysTheSame(date, DateTime.now()) ?
-              const TextStyle(fontSize: 12) :
-              const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12
-              ),
-            ),
-          ),
-          WidgetUtils.spacer(2),
-          ...events.map((e) {
-            return [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    _showMeetupCardDialog(state, [e]);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: Colors.teal,
-                    ),
-                    child: Center(
-                      child: AutoSizeText(
-                        e.title,
-                        minFontSize: 8,
-                        style: const TextStyle(
-                            color: Colors.white
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              WidgetUtils.spacer(2),
-            ];
-          }).expand((e) => e)
-              .toList(),
-          WidgetUtils.spacer(2),
-        ],
-      ),
-    );
-  }
-
   _renderCalendarView(CalendarState state) {
     if (state is CalendarMeetupUserDataFetched) {
       if (selectedCalendarView == "month") {
-        return CalendarControllerProvider<Meetup>(
+        return CalendarControllerProvider<Either<Meetup, AllDiaryEntries>>(
           controller: monthCalendarEventController,
           child: MonthView(
             width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
-            cellBuilder: (DateTime date, List<CalendarEventData<Meetup>> events, bool isToday, bool isInMonth) {
+            cellBuilder: (DateTime date, List<CalendarEventData<Either<Meetup, AllDiaryEntries>>> events, bool isToday, bool isInMonth) {
               return FilledCell(
                 date: date,
                 shouldHighlight: isToday,
@@ -225,7 +190,13 @@ class CalendarViewState extends State<CalendarView> {
                 highlightColor: Colors.teal,
                 backgroundColor: isInMonth ? ColorConstants.white : ColorConstants.offWhite,
                 onTileTap: (event, date) {
-                  _showMeetupCardDialog(state, [event]);
+                  final eitherEvent = event as CalendarEventData<Either<Meetup, AllDiaryEntries>>;
+                  if (eitherEvent.event?.isLeft ?? false) {
+                    _showMeetupCardDialog(state, eitherEvent.event!.left);
+                  }
+                  else {
+                    _showDiaryEntriesCardDialog(state, eitherEvent.event!.right, date);
+                  }
                 },
                 dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
               );
@@ -248,7 +219,10 @@ class CalendarViewState extends State<CalendarView> {
             startDay: WeekDays.monday, // To change the first day of the week.
             // This callback will only work if cellBuilder is null.
             onEventTap: (event, date) {
-              _showMeetupCardDialog(state, [event]);
+              final eitherEvent = event as Either<Meetup, AllDiaryEntries>;
+              if (eitherEvent.isLeft) {
+                _showMeetupCardDialog(state, eitherEvent.left);
+              }
             },
             onDateLongPress: (date) {
               // show popup menu with options
@@ -267,7 +241,7 @@ class CalendarViewState extends State<CalendarView> {
         );
       }
       else if (selectedCalendarView == "week") {
-        return CalendarControllerProvider<Meetup>(
+        return CalendarControllerProvider<Either<Meetup, AllDiaryEntries>>(
             controller: weekCalendarEventController,
             child: WeekView(
               width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
@@ -279,8 +253,9 @@ class CalendarViewState extends State<CalendarView> {
               heightPerMinute: 1, // height occupied by 1 minute time span.
               eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
               onEventTap: (events, date) {
-                if (events.isNotEmpty) {
-                  _showMeetupCardDialog(state, events);
+                final eitherEvent = events.first as Either<Meetup, AllDiaryEntries>;
+                if (eitherEvent.isLeft) {
+                  _showMeetupCardDialog(state, eitherEvent.left);
                 }
               },
               onDateLongPress: (date) {
@@ -325,7 +300,7 @@ class CalendarViewState extends State<CalendarView> {
         );
       }
       else {
-        return CalendarControllerProvider<Meetup>(
+        return CalendarControllerProvider<Either<Meetup, AllDiaryEntries>>(
             controller: dayCalendarEventController,
             child: DayView(
               width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
@@ -338,8 +313,9 @@ class CalendarViewState extends State<CalendarView> {
               heightPerMinute: 1, // height occupied by 1 minute time span.
               eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
               onEventTap: (events, date) {
-                if (events.isNotEmpty) {
-                  _showMeetupCardDialog(state, events);
+                final eitherEvent = events.first as Either<Meetup, AllDiaryEntries>;
+                if (eitherEvent.isLeft) {
+                  _showMeetupCardDialog(state, eitherEvent.left);
                 }
               },
               onDateLongPress: (date) => print(date),
@@ -384,11 +360,44 @@ class CalendarViewState extends State<CalendarView> {
     currentSelectedDateTime = selected;
   }
 
-  _showMeetupCardDialog(CalendarMeetupUserDataFetched state, List<CalendarEventData<Object?>> events) {
+  _showDiaryEntriesCardDialog(CalendarMeetupUserDataFetched state, AllDiaryEntries allDiaryEntries, DateTime date) {
     showDialog(
         context: context,
         builder: (context) {
-          final currentMeetup = events.first.event as Meetup;
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: ScreenUtils.getScreenHeight(context) * 0.75,
+              ),
+              child: DiaryCardView(
+                currentUserProfile: widget.currentUserProfile,
+                foodDiaryEntries: state.foodDiaryEntries,
+                allDiaryEntries: allDiaryEntries,
+                onCardTapped: () {
+                  _goToDiaryPage(date);
+                },
+              ),
+            ),
+          );
+        }
+    );
+  }
+
+  _goToDiaryPage(DateTime date) {
+    Navigator.pop(context); // This is done to dismiss the dialog shown on screen
+    _menuNavigationBloc.add(
+        MenuItemChosen(
+          selectedMenuItem: HomePageState.diary,
+          currentUserId: widget.currentUserProfile.userId,
+          preSelectedDiaryDateString: DateFormat("yyyy-MM-dd").format(date),
+        )
+    );
+  }
+
+  _showMeetupCardDialog(CalendarMeetupUserDataFetched state, Meetup currentMeetup) {
+    showDialog(
+        context: context,
+        builder: (context) {
           final currentMeetupLocation = state.meetupLocations.firstWhere((element) => element?.id == currentMeetup.locationId);
           final currentMeetupDecisions = state.meetupDecisions[currentMeetup.id]!;
           final currentMeetupParticipants = state.meetupParticipants[currentMeetup.id]!;

@@ -1,3 +1,4 @@
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
@@ -13,15 +14,17 @@ import 'package:intl/intl.dart';
 class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
   final FlutterSecureStorage secureStorage;
   final MeetupRepository meetupRepository;
+  final DiaryRepository diaryRepository;
   final UserRepository userRepository;
 
   CalendarBloc({
     required this.userRepository,
     required this.meetupRepository,
+    required this.diaryRepository,
     required this.secureStorage,
   }) : super(const CalendarStateInitial()) {
 
-    on<FetchCalendarMeetupData>(_fetchCalendarMeetupData);
+    on<FetchCalendarMeetupData>(_fetchCalendarMeetupAndDiaryData);
     on<TrackViewCalendarEvent>(_trackViewCalendarEvent);
   }
 
@@ -29,12 +32,20 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     userRepository.trackUserEvent(ViewCalendar(), accessToken!);
   }
-  void _fetchCalendarMeetupData(FetchCalendarMeetupData event, Emitter<CalendarState> emit) async {
+  void _fetchCalendarMeetupAndDiaryData(FetchCalendarMeetupData event, Emitter<CalendarState> emit) async {
     final currentState = state;
     if (currentState is CalendarMeetupUserDataFetched) {
       // emit(const CalendarMeetupDataLoading());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
+      final diaryEntriesFut = diaryRepository.getAllDiaryEntriesForUserByMonth(
+          event.userId,
+          DateFormat("yyyy-MM-dd")
+              .format(DateTime(event.currentSelectedDateTime.year, event.currentSelectedDateTime.month, 0)
+              .add(const Duration(days: 1))),
+          DateTime.now().timeZoneOffset.inMinutes,
+          accessToken!
+      );
       final meetups = await meetupRepository.getDetailedMeetupsForUserByMonth(
         accessToken!,
         DateFormat("yyyy-MM-dd")
@@ -64,12 +75,18 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
         await userRepository.getPublicUserProfiles(netNewUserIds, accessToken);
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in [...newUserProfileDetails, ...currentState.userIdProfileMap.values]) (e).userId : e };
 
+      final diaryEntries = await diaryEntriesFut;
+      final distinctFoodIds = diaryEntries.entries.values.map((e) => e.foodEntries).expand((e) => e).map((e) => e.foodId).toSet().toList();
+      final foodEntriesTotal = await Future.wait(distinctFoodIds.map((e) => diaryRepository.getFoodById(e.toString(), accessToken)));
+
       emit(CalendarMeetupUserDataFetched(
           meetups: meetups.map((e) => e.meetup).toList(),
           meetupLocations: meetups.map((e) => e.location).toList(),
           meetupDecisions: meetupDecisions,
           meetupParticipants: meetupParticipants,
-          userIdProfileMap: userIdProfileMap
+          userIdProfileMap: userIdProfileMap,
+          foodDiaryEntries: foodEntriesTotal,
+          allDiaryEntries: diaryEntries,
       ));
     }
 
@@ -102,12 +119,25 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       await userRepository.getPublicUserProfiles(distinctUserIdsFromParticipants, accessToken);
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
+      final diaryEntries = await diaryRepository.getAllDiaryEntriesForUserByMonth(
+          event.userId,
+          DateFormat("yyyy-MM-dd")
+              .format(DateTime(event.currentSelectedDateTime.year, event.currentSelectedDateTime.month, 0)
+              .add(const Duration(days: 1))),
+          DateTime.now().timeZoneOffset.inMinutes,
+          accessToken!
+      );
+      final distinctFoodIds = diaryEntries.entries.values.map((e) => e.foodEntries).expand((e) => e).map((e) => e.foodId).toSet().toList();
+      final foodEntriesTotal = await Future.wait(distinctFoodIds.map((e) => diaryRepository.getFoodById(e.toString(), accessToken)));
+
       emit(CalendarMeetupUserDataFetched(
           meetups: meetups.map((e) => e.meetup).toList(),
           meetupLocations: meetups.map((e) => e.location).toList(),
           meetupDecisions: meetupDecisions,
           meetupParticipants: meetupParticipants,
-          userIdProfileMap: userIdProfileMap
+          userIdProfileMap: userIdProfileMap,
+          foodDiaryEntries: foodEntriesTotal,
+          allDiaryEntries: diaryEntries,
       ));
     }
 

@@ -116,7 +116,8 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
             previouslySelectedMenuItem: currentState.previouslySelectedMenuItem,
             selectedMenuItem: currentState.selectedMenuItem,
             unreadNotificationCount: currentState.unreadNotificationCount,
-            unreadChatRoomIds: [...currentState.unreadChatRoomIds, event.roomId]
+            unreadChatRoomIds: [...currentState.unreadChatRoomIds, event.roomId],
+            preSelectedDiaryDateString: currentState.preSelectedDiaryDateString,
         ));
       } // If room updated is already contained, then we do nothing
     }
@@ -139,6 +140,7 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
         selectedMenuItem: event.selectedMenuItem,
         unreadNotificationCount: 0,
         unreadChatRoomIds: const [],
+        preSelectedDiaryDateString: event.preSelectedDiaryDateString,
       ));
 
       // Check if we are navigating INTO chat, or AWAY from chat (having already been there)
@@ -148,6 +150,7 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
             selectedMenuItem: event.selectedMenuItem,
             unreadNotificationCount: unreadNotificationCount,
             unreadChatRoomIds: const [],
+            preSelectedDiaryDateString: event.preSelectedDiaryDateString,
         ));
       }
       else {
@@ -155,7 +158,8 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
             previouslySelectedMenuItem: currentState.selectedMenuItem,
             selectedMenuItem: event.selectedMenuItem,
             unreadNotificationCount: unreadNotificationCount,
-            unreadChatRoomIds: currentState.unreadChatRoomIds
+            unreadChatRoomIds: currentState.unreadChatRoomIds,
+            preSelectedDiaryDateString: event.preSelectedDiaryDateString,
         ));
       }
     }
@@ -164,7 +168,8 @@ class MenuNavigationBloc extends Bloc<MenuNavigationEvent, MenuNavigationState> 
           previouslySelectedMenuItem: null,
           selectedMenuItem: event.selectedMenuItem,
           unreadNotificationCount: unreadNotificationCount,
-          unreadChatRoomIds: const []
+          unreadChatRoomIds: const [],
+          preSelectedDiaryDateString: event.preSelectedDiaryDateString,
       ));
     }
 

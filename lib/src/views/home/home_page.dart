@@ -117,6 +117,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final logger = Logger("HomePageState");
 
   late String selectedMenuItem;
+  late String? preSelectedDiaryDateString;
   late int unreadNotificationCount;
   late int unreadChatRoomCount;
 
@@ -206,6 +207,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   selectedMenuItem = state.selectedMenuItem;
                   unreadNotificationCount = state.unreadNotificationCount;
                   unreadChatRoomCount = state.unreadChatRoomIds.length;
+                  preSelectedDiaryDateString = state.preSelectedDiaryDateString;
                   _updateAppBadgeIfPossible();
                 }
                 return Scaffold(
@@ -1505,6 +1507,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Widget _generateBody(String selectedMenuItem) {
     final authState = _authenticationBloc.state;
+    final menuState = _menuNavigationBloc.state;
     if (authState is AuthSuccessUserUpdateState) {
       final publicUserProfile = PublicUserProfile(
           authState.authenticatedUser.user.id,
@@ -1536,7 +1539,11 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         case "Calendar":
           return CalendarView.withBloc(publicUserProfile);
         case "Diary":
-          return DiaryView.withBloc(diaryViewStateGlobalKey, publicUserProfile);
+          return DiaryView.withBloc(
+              diaryViewStateGlobalKey,
+              publicUserProfile,
+              preSelectedDiaryDateString != null ? DateTime.parse(preSelectedDiaryDateString!) : null
+          );
         default:
           return _oldStuff();
       }

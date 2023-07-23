@@ -33,11 +33,12 @@ GlobalKey<DiaryViewState> diaryViewStateGlobalKey = GlobalKey();
 class DiaryView extends StatefulWidget {
   static const String routeName = "exercise/search";
 
+  final DateTime? preSelectedDateTime;
   final PublicUserProfile currentUserProfile;
 
-  const DiaryView({Key? key, required this.currentUserProfile}): super(key: key);
+  const DiaryView({Key? key, required this.currentUserProfile, this.preSelectedDateTime}): super(key: key);
 
-  static Widget withBloc(Key? key, PublicUserProfile currentUserProfile) => MultiBlocProvider(
+  static Widget withBloc(Key? key, PublicUserProfile currentUserProfile, DateTime? preSelectedDateTime) => MultiBlocProvider(
     providers: [
       BlocProvider<DiaryBloc>(
           create: (context) => DiaryBloc(
@@ -47,7 +48,7 @@ class DiaryView extends StatefulWidget {
           )
       ),
     ],
-    child: DiaryView(key: key, currentUserProfile: currentUserProfile),
+    child: DiaryView(key: key, currentUserProfile: currentUserProfile, preSelectedDateTime: preSelectedDateTime),
   );
 
 
@@ -103,6 +104,8 @@ class DiaryViewState extends State<DiaryView> {
     _diaryBloc.add(const TrackViewDiaryHomeEvent());
     _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
     _scrollController.addListener(_onScroll);
+
+    initialSelectedDate = widget.preSelectedDateTime ?? initialSelectedDate;
   }
 
   @override
@@ -503,6 +506,7 @@ class DiaryViewState extends State<DiaryView> {
     );
   }
 
+  // todo - ensure pre-selected value is respected, not happening now.
   _diaryPageViews(DiaryDataFetched state) {
     return PageView.builder(
       controller: _pageController,

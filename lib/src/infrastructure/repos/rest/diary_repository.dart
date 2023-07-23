@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:either_dart/either.dart';
 import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
+import 'package:flutter_app/src/models/diary/all_diary_entries_for_month.dart';
 import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
@@ -328,6 +329,27 @@ class DiaryRepository {
     } else {
       throw Exception(
           "deleteStrengthEntryFromUserDiary: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<AllDiaryEntriesForMonth> getAllDiaryEntriesForUserByMonth(
+      String userId,
+      String dateString,
+      int timeZoneOffsetInMinutes,
+      String accessToken,
+      ) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/user/$userId/month/$dateString?offsetInMinutes=$timeZoneOffsetInMinutes"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return AllDiaryEntriesForMonth.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "getAllDiaryEntriesForUserByMonth: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
 

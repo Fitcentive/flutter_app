@@ -472,6 +472,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     );
   }
 
+  // todo - replace this with shared component
   _renderExerciseDiaryEntries() {
     return Container(
       padding: const EdgeInsets.all(5),

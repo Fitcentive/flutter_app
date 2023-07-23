@@ -7,14 +7,16 @@ abstract class MenuNavigationEvent extends Equatable {
 class MenuItemChosen extends MenuNavigationEvent {
   final String selectedMenuItem;
   final String currentUserId;
+  final String? preSelectedDiaryDateString;
 
   const MenuItemChosen({
     required this.selectedMenuItem,
     required this.currentUserId,
+    this.preSelectedDiaryDateString,
   });
 
   @override
-  List<Object> get props => [selectedMenuItem, currentUserId];
+  List<Object?> get props => [selectedMenuItem, currentUserId, preSelectedDiaryDateString];
 }
 
 class MarkUserAppTutorialAsComplete extends MenuNavigationEvent {
@@ -25,7 +27,7 @@ class MarkUserAppTutorialAsComplete extends MenuNavigationEvent {
   });
 
   @override
-  List<Object> get props => [currentUserId];
+  List<Object?> get props => [currentUserId];
 }
 
 
@@ -37,7 +39,7 @@ class NewIncomingChatMessageForRoom extends MenuNavigationEvent {
   });
 
   @override
-  List<Object> get props => [roomId];
+  List<Object?> get props => [roomId];
 }
 
 class ReInitWebSockets extends MenuNavigationEvent {
@@ -48,5 +50,5 @@ class ReInitWebSockets extends MenuNavigationEvent {
   });
 
   @override
-  List<Object> get props => [currentUserId];
+  List<Object?> get props => [currentUserId];
 }
