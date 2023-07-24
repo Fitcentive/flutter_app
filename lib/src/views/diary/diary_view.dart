@@ -805,7 +805,10 @@ class DiaryViewState extends State<DiaryView> {
                   );
                 }
             ) : const Center(
-              child: Text("No items here..."),
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Text("No items here..."),
+              ),
             ),
             isExpanded: _getIsExpandedVariable(heading),
           )
@@ -912,7 +915,10 @@ class DiaryViewState extends State<DiaryView> {
           );
         }
     ) : const Center(
-      child: Text("No items here..."),
+      child: Padding(
+        padding: EdgeInsets.all(10),
+        child: Text("No items here..."),
+      ),
     );
   }
 
@@ -1000,7 +1006,10 @@ class DiaryViewState extends State<DiaryView> {
           );
         }
     ) : const Center(
-      child: Text("No items here..."),
+      child: Padding(
+        padding: EdgeInsets.all(10),
+        child: Text("No items here..."),
+      ),
     );
   }
 

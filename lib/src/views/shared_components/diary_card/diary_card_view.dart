@@ -217,7 +217,10 @@ class DiaryCardViewState extends State<DiaryCardView> {
             );
           }
       ) : const Center(
-        child: Text("No items here..."),
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Text("No items here..."),
+        ),
       );
 
   }
@@ -263,7 +266,10 @@ class DiaryCardViewState extends State<DiaryCardView> {
             );
           }
       ) : const Center(
-        child: Text("No items here..."),
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Text("No items here..."),
+        ),
       );
     }
 
@@ -375,7 +381,10 @@ class DiaryCardViewState extends State<DiaryCardView> {
     }
     else {
       return const Center(
-        child: Text("No items here..."),
+        child: Padding(
+          padding: EdgeInsets.all(10.0),
+          child: Text("No items here..."),
+        ),
       );
     }
   }
