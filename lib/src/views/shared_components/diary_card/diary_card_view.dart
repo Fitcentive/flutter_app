@@ -14,7 +14,7 @@ class DiaryCardView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
   final List<Either<FoodGetResult, FoodGetResultSingleServing>> foodDiaryEntries;
   final AllDiaryEntries allDiaryEntries;
-  final DateTime selectedDate;
+  final DateTime? selectedDate;
 
   const DiaryCardView({
     super.key,
@@ -70,23 +70,25 @@ class DiaryCardViewState extends State<DiaryCardView> {
   }
 
   _dateHeader() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Expanded(
-            flex: 6,
-            child: Center(
-              child: Text(
-                DateFormat('yyyy-MM-dd').format(widget.selectedDate),
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold
+    if (widget.selectedDate != null) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+              flex: 6,
+              child: Center(
+                child: Text(
+                  DateFormat('yyyy-MM-dd').format(widget.selectedDate!),
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold
+                  ),
                 ),
-              ),
-            )
-        ),
-      ],
-    );
+              )
+          ),
+        ],
+      );
+    }
   }
 
   _renderDiaryEntries() {
@@ -96,13 +98,13 @@ class DiaryCardViewState extends State<DiaryCardView> {
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 25),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: WidgetUtils.skipNulls([
               _dateHeader(),
               WidgetUtils.spacer(2.5),
               _renderExerciseDiaryEntries(),
               WidgetUtils.spacer(2.5),
               _renderFoodDiaryEntriesWithContainer(),
-            ],
+            ]),
           ),
         ),
       ),
@@ -308,66 +310,73 @@ class DiaryCardViewState extends State<DiaryCardView> {
   }
 
   _renderFoodDiaryEntries() {
-        return ListView.builder(
-            shrinkWrap: true,
-            itemCount: widget.allDiaryEntries.foodEntries.length,
-            itemBuilder: (context, index) {
-              final foodEntryForHeadingRaw = widget.allDiaryEntries.foodEntries[index];
-              final detailedFoodEntry = widget.foodDiaryEntries.firstWhere((element) {
-                if (element.isLeft) {
-                  return element.left.food.food_id == foodEntryForHeadingRaw.foodId.toString();
-                }
-                else {
-                  return element.right.food.food_id == foodEntryForHeadingRaw.foodId.toString();
-                }
-              });
-              final caloriesRaw = detailedFoodEntry.isLeft ?
-              detailedFoodEntry.left.food.servings.serving.firstWhere((element) => element.serving_id == foodEntryForHeadingRaw.servingId.toString()).calories :
-              detailedFoodEntry.right.food.servings.serving.calories;
+    if (widget.allDiaryEntries.foodEntries.isNotEmpty) {
+      return ListView.builder(
+          shrinkWrap: true,
+          itemCount: widget.allDiaryEntries.foodEntries.length,
+          itemBuilder: (context, index) {
+            final foodEntryForHeadingRaw = widget.allDiaryEntries.foodEntries[index];
+            final detailedFoodEntry = widget.foodDiaryEntries.firstWhere((element) {
+              if (element.isLeft) {
+                return element.left.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+              }
+              else {
+                return element.right.food.food_id == foodEntryForHeadingRaw.foodId.toString();
+              }
+            });
+            final caloriesRaw = detailedFoodEntry.isLeft ?
+            detailedFoodEntry.left.food.servings.serving.firstWhere((element) => element.serving_id == foodEntryForHeadingRaw.servingId.toString()).calories :
+            detailedFoodEntry.right.food.servings.serving.calories;
 
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          flex: 12,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                  padding: const EdgeInsets.all(5),
-                                  child: Text(
-                                      detailedFoodEntry.isLeft ? detailedFoodEntry.left.food.food_name : detailedFoodEntry.right.food.food_name
-                                  )
-                              ),
-                              Container(
-                                  padding: const EdgeInsets.all(5),
-                                  child: Text(
-                                    "${foodEntryForHeadingRaw.numberOfServings.toStringAsFixed(2)} servings",
-                                    style: const TextStyle(
-                                        fontSize: 12
-                                    ),
-                                  )
-                              ),
-                            ],
-                          )
-                      ),
-                      Expanded(
-                          flex: 4,
-                          child: Text(
-                            "${(double.parse(caloriesRaw ?? "0") * foodEntryForHeadingRaw.numberOfServings).toStringAsFixed(0)} calories",
-                            style: const TextStyle(
-                                color: Colors.teal
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                        flex: 12,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                                padding: const EdgeInsets.all(5),
+                                child: Text(
+                                    detailedFoodEntry.isLeft ? detailedFoodEntry.left.food.food_name : detailedFoodEntry.right.food.food_name
+                                )
                             ),
-                          )
-                      )
-                    ],
-                  ),
+                            Container(
+                                padding: const EdgeInsets.all(5),
+                                child: Text(
+                                  "${foodEntryForHeadingRaw.numberOfServings.toStringAsFixed(2)} servings",
+                                  style: const TextStyle(
+                                      fontSize: 12
+                                  ),
+                                )
+                            ),
+                          ],
+                        )
+                    ),
+                    Expanded(
+                        flex: 4,
+                        child: Text(
+                          "${(double.parse(caloriesRaw ?? "0") * foodEntryForHeadingRaw.numberOfServings).toStringAsFixed(0)} calories",
+                          style: const TextStyle(
+                              color: Colors.teal
+                          ),
+                        )
+                    )
+                  ],
                 ),
-              );
-            }
-        );
+              ),
+            );
+          }
+      );
+    }
+    else {
+      return const Center(
+        child: Text("No items here..."),
+      );
+    }
   }
 }
