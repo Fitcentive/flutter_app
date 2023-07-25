@@ -14,6 +14,7 @@ import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/exercise_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_bloc.dart';
@@ -146,16 +147,18 @@ class DiaryViewState extends State<DiaryView> {
       _stepCountStream.listen(onStepCount).onError(onStepCountError);
     }
     else {
-      Map<Permission, PermissionStatus> statuses = await [
-        Permission.activityRecognition,
-      ].request();
-      if (statuses[Permission.activityRecognition] == PermissionStatus.denied) {
-        if (await Permission.speech.isPermanentlyDenied) {
-          openAppSettings();
+      if (DeviceUtils.isMobileDevice()) {
+        Map<Permission, PermissionStatus> statuses = await [
+          Permission.activityRecognition,
+        ].request();
+        if (statuses[Permission.activityRecognition] == PermissionStatus.denied) {
+          if (await Permission.speech.isPermanentlyDenied) {
+            openAppSettings();
+          }
         }
-      }
-      else {
-        _setupPedometer();
+        else {
+          _setupPedometer();
+        }
       }
     }
   }
@@ -747,7 +750,7 @@ class DiaryViewState extends State<DiaryView> {
   _renderStepInfo(DiaryDataFetched state) {
     final double stepGoalPercentage;
     final String stepCountString;
-    if (currentSelectedDaySameAsCurrentDay()) {
+    if (currentSelectedDaySameAsCurrentDay() && DeviceUtils.isMobileDevice()) {
       stepGoalPercentage = ((pedometerStepCount / (state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal)) * 100);
       stepCountString = pedometerStepCount.toString();
     }
@@ -1279,7 +1282,7 @@ class DiaryViewState extends State<DiaryView> {
 
   _renderStepsData(DiaryDataFetched state) {
     final String stepsToShow;
-    if (currentSelectedDaySameAsCurrentDay()) {
+    if (currentSelectedDaySameAsCurrentDay() && DeviceUtils.isMobileDevice()) {
       stepsToShow = pedometerStepCount.toString();
     }
     else {

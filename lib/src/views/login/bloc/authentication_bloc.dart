@@ -18,6 +18,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/notification_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/authenticated_user_stream_repository.dart';
 import 'package:flutter_app/src/models/track/user_tracking_event.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/exercise_utils.dart';
 import 'package:flutter_app/src/utils/jwt_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
@@ -84,18 +85,20 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   }
 
   void _syncStepsDataRequested(SyncStepsDataRequested event, Emitter<AuthenticationState> emit) async {
-    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.user.user.id, accessToken!);
-    if (fitnessUserProfile != null) {
-      diaryRepository.upsertUserStepsData(
-          event.user.user.id,
-          UserStepsDataUpsert(
-              stepsTaken: pedometerStepCount,
-              dateString: DateFormat('yyyy-MM-dd').format(DateTime.now())
-          ),
-          accessToken
-      );
-      _setUpSyncStepsDataRequestedTrigger(event.user);
+    if (DeviceUtils.isMobileDevice()) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.user.user.id, accessToken!);
+      if (fitnessUserProfile != null) {
+        diaryRepository.upsertUserStepsData(
+            event.user.user.id,
+            UserStepsDataUpsert(
+                stepsTaken: pedometerStepCount,
+                dateString: DateFormat('yyyy-MM-dd').format(DateTime.now())
+            ),
+            accessToken
+        );
+        _setUpSyncStepsDataRequestedTrigger(event.user);
+      }
     }
   }
 
