@@ -4,10 +4,12 @@ import 'package:bloc/bloc.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
+import 'package:flutter_app/src/models/diary/user_steps_data.dart';
 import 'package:flutter_app/src/models/login/login_password.dart';
 import 'package:flutter_app/src/models/login/email.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/authentication_repository.dart';
@@ -16,11 +18,14 @@ import 'package:flutter_app/src/infrastructure/repos/rest/notification_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/authenticated_user_stream_repository.dart';
 import 'package:flutter_app/src/models/track/user_tracking_event.dart';
+import 'package:flutter_app/src/utils/exercise_utils.dart';
 import 'package:flutter_app/src/utils/jwt_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formz/formz.dart';
+import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
+import 'package:pedometer/pedometer.dart';
 
 import 'authentication_event.dart';
 
@@ -30,20 +35,27 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   final NotificationRepository notificationRepository;
   final UserRepository userRepository;
   final ChatRepository chatRepository;
+  final DiaryRepository diaryRepository;
   final FlutterSecureStorage secureStorage;
   final AuthenticatedUserStreamRepository authUserStreamRepository;
 
   Timer? _refreshAccessTokenTimer;
+  Timer? _syncStepsDataTimer;
 
   late final StreamSubscription<AuthenticatedUser>_authenticatedUserSubscription;
+  late final Stream<StepCount> _stepCountStream;
 
   final logger = Logger("AuthenticationBloc");
+
+  bool isFirstTimeSync = true;
+  int pedometerStepCount = 0;
 
   AuthenticationBloc({
     required this.authenticationRepository,
     required this.notificationRepository,
     required this.userRepository,
     required this.chatRepository,
+    required this.diaryRepository,
     required this.secureStorage,
     required this.authUserStreamRepository
   }) : super(AuthInitialState()) {
@@ -57,10 +69,34 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<RefreshAccessTokenRequested>(_refreshAccessTokenRequested);
     on<RestoreAuthSuccessState>(_restoreAuthSuccessState);
     on<AccountDeletionRequested>(_accountDeletionRequested);
+    on<SyncStepsDataRequested>(_syncStepsDataRequested);
 
     _authenticatedUserSubscription = authUserStreamRepository.authenticatedUser.listen((newUser) {
       add(AuthenticatedUserDataUpdated(user: newUser));
     });
+
+    _stepCountStream = Pedometer.stepCountStream;
+    _stepCountStream.listen(onStepCount);
+  }
+
+  void onStepCount(StepCount event) {
+    pedometerStepCount = event.steps;
+  }
+
+  void _syncStepsDataRequested(SyncStepsDataRequested event, Emitter<AuthenticationState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.user.user.id, accessToken!);
+    if (fitnessUserProfile != null) {
+      diaryRepository.upsertUserStepsData(
+          event.user.user.id,
+          UserStepsDataUpsert(
+              stepsTaken: pedometerStepCount,
+              dateString: DateFormat('yyyy-MM-dd').format(DateTime.now())
+          ),
+          accessToken
+      );
+      _setUpSyncStepsDataRequestedTrigger(event.user);
+    }
   }
 
   void _accountDeletionRequested(AccountDeletionRequested event, Emitter<AuthenticationState> emit) async {
@@ -149,6 +185,18 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     _refreshAccessTokenTimer = Timer(Duration(seconds: authTokens.expiresIn - 60), () {
       add(RefreshAccessTokenRequested(user: user));
     });
+    _setUpSyncStepsDataRequestedTrigger(user);
+  }
+
+  void _setUpSyncStepsDataRequestedTrigger(AuthenticatedUser user) {
+    _syncStepsDataTimer?.cancel();
+    if (isFirstTimeSync) {
+      add(SyncStepsDataRequested(user: user));
+      isFirstTimeSync = false;
+    }
+    _syncStepsDataTimer = Timer(ExerciseUtils.backgroundStepCountSyncDuration, () {
+      add(SyncStepsDataRequested(user: user));
+    });
   }
 
   void _forceRefreshAccessToken(AuthenticatedUser user) {
@@ -208,6 +256,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
   void _signOutWorkflow(String userId, String authProvider) async {
     _refreshAccessTokenTimer?.cancel();
+    _syncStepsDataTimer?.cancel();
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final refreshToken = await secureStorage.read(key: SecureAuthTokens.REFRESH_TOKEN_SECURE_STORAGE_KEY);
     await authenticationRepository.logout(

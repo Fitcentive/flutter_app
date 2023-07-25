@@ -109,3 +109,12 @@ class AccountDeletionRequested extends AuthenticationEvent {
   @override
   List<Object> get props => [user];
 }
+
+class SyncStepsDataRequested extends AuthenticationEvent {
+  final AuthenticatedUser user;
+
+  const SyncStepsDataRequested({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}

@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/user_steps_data.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 
@@ -30,6 +31,7 @@ class DiaryDataFetched extends DiaryState {
   final List<CardioDiaryEntry> cardioDiaryEntries;
   final List<FoodDiaryEntry> foodDiaryEntriesRaw;
   final List<Either<FoodGetResult, FoodGetResultSingleServing>> foodDiaryEntries;
+  final UserStepsData? userStepsData;
 
   const DiaryDataFetched({
     required this.strengthDiaryEntries,
@@ -37,6 +39,7 @@ class DiaryDataFetched extends DiaryState {
     required this.foodDiaryEntriesRaw,
     required this.foodDiaryEntries,
     required this.fitnessUserProfile,
+    required this.userStepsData,
 });
 
   @override
@@ -46,5 +49,6 @@ class DiaryDataFetched extends DiaryState {
     foodDiaryEntriesRaw,
     foodDiaryEntries,
     fitnessUserProfile,
+    userStepsData
   ];
 }

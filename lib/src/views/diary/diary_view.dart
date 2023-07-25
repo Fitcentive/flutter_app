@@ -13,6 +13,7 @@ import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/exercise_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_bloc.dart';
@@ -30,7 +31,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:pedometer/pedometer.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 GlobalKey<DiaryViewState> diaryViewStateGlobalKey = GlobalKey();
 
@@ -101,6 +104,7 @@ class DiaryViewState extends State<DiaryView> {
   DateTime currentSelectedDate = DateTime.now();
 
   bool isStrengthPanelExpanded = true;
+  bool isStepsPanelExpanded = true;
   bool isCardioPanelExpanded = true;
 
   bool isBreakfastPanelExpanded = true;
@@ -123,6 +127,9 @@ class DiaryViewState extends State<DiaryView> {
   List<CardioDiaryEntry> cardioEntries = [];
   List<StrengthDiaryEntry> strengthEntries = [];
 
+  late Stream<StepCount> _stepCountStream;
+  int pedometerStepCount = 0;
+
   /// int currentSelectedPageBuilderPage = MAX_PAGES ~/ 2 sets page as mid for current date
   /// If currentSelectedDate is diff, we need to offset accordimngly
   setCurrentSelectedPageBuilderPageValue() {
@@ -130,6 +137,26 @@ class DiaryViewState extends State<DiaryView> {
       final currentDateYmd = DateTime(currentSelectedDate.year, currentSelectedDate.month, currentSelectedDate.day);
       final initialDateYmd = DateTime(initialSelectedDate.year, initialSelectedDate.month, initialSelectedDate.day);
       currentSelectedPageBuilderPage = currentSelectedPageBuilderPage + currentDateYmd.difference(initialDateYmd).inDays;
+    }
+  }
+
+  _setupPedometer() async {
+    _stepCountStream = Pedometer.stepCountStream;
+    if(await Permission.activityRecognition.request().isGranted) {
+      _stepCountStream.listen(onStepCount).onError(onStepCountError);
+    }
+    else {
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.activityRecognition,
+      ].request();
+      if (statuses[Permission.activityRecognition] == PermissionStatus.denied) {
+        if (await Permission.speech.isPermanentlyDenied) {
+          openAppSettings();
+        }
+      }
+      else {
+        _setupPedometer();
+      }
     }
   }
 
@@ -145,6 +172,8 @@ class DiaryViewState extends State<DiaryView> {
     _diaryBloc.add(const TrackViewDiaryHomeEvent());
     _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
     _scrollController.addListener(_onScroll);
+
+    _setupPedometer();
   }
 
   @override
@@ -152,6 +181,16 @@ class DiaryViewState extends State<DiaryView> {
     _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void onStepCountError(error) {
+    print('onStepCountError: $error');
+  }
+
+  void onStepCount(StepCount event) {
+    setState(() {
+      pedometerStepCount = event.steps;
+    });
   }
 
   goToUserFitnessProfileView() {
@@ -188,6 +227,47 @@ class DiaryViewState extends State<DiaryView> {
 
               strengthEntries = state.strengthDiaryEntries;
               cardioEntries = state.cardioDiaryEntries;
+
+              if (state.cardioDiaryEntries.isEmpty) {
+                isCardioPanelExpanded = false;
+              } else {
+                isCardioPanelExpanded = true;
+              }
+
+              if (state.strengthDiaryEntries.isEmpty) {
+                isStrengthPanelExpanded = false;
+              } else {
+                isStrengthPanelExpanded = true;
+              }
+              if (!currentSelectedDaySameAsCurrentDay() && state.userStepsData == null) {
+                isCardioPanelExpanded = false;
+              } else {
+                isCardioPanelExpanded = true;
+              }
+
+              if (breakfastEntries.isEmpty) {
+                isBreakfastPanelExpanded = false;
+              } else {
+                isBreakfastPanelExpanded = true;
+              }
+
+              if (dinnerEntries.isEmpty) {
+                isDinnerPanelExpanded = false;
+              } else {
+                isDinnerPanelExpanded = true;
+              }
+
+              if (lunchEntries.isEmpty) {
+                isLunchPanelExpanded = false;
+              } else {
+                isLunchPanelExpanded = true;
+              }
+
+              if (snackEntries.isEmpty) {
+                isSnacksPanelExpanded = false;
+              } else {
+                isSnacksPanelExpanded = true;
+              }
             });
 
             // If no fitness profile is found, we want to force the user to update this
@@ -390,9 +470,10 @@ class DiaryViewState extends State<DiaryView> {
     }).reduce((value, element) => value + element);
     final cardioCalories = cardioEntries.isEmpty ? 0 : cardioEntries.map((e) => e.caloriesBurned).reduce((value, element) => value + element);
     final strengthCalories = strengthEntries.isEmpty ? 0 : strengthEntries.map((e) => e.caloriesBurned).reduce((value, element) => value + element);
+    final stepsCalories = state.userStepsData?.caloriesBurned ?? 0;
 
     final targetCalories = _generateCalorieGoal(state);
-    final remainingCalories = targetCalories - foodCalories + cardioCalories + strengthCalories;
+    final remainingCalories = targetCalories - foodCalories + cardioCalories + strengthCalories + stepsCalories;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -491,14 +572,15 @@ class DiaryViewState extends State<DiaryView> {
           child: LinearPercentIndicator(
             lineHeight: 15.0,
             barRadius: const Radius.elliptical(5, 10),
-            percent: (remainingCalories / targetCalories),
+            percent: (1 - (remainingCalories / targetCalories)),
             center: Text(
-                ((1 - (remainingCalories / targetCalories)) * 100).toStringAsFixed(1),
+                "${((1 - (remainingCalories / targetCalories)) * 100).toStringAsFixed(1)}%",
               style: const TextStyle(
-                color: Colors.white
+                color: Colors.white,
+                fontSize: 12
               ),
             ),
-            backgroundColor: Colors.grey,
+            backgroundColor: Colors.grey.shade400,
             progressColor: Colors.teal,
           ),
         )
@@ -520,47 +602,126 @@ class DiaryViewState extends State<DiaryView> {
   }
 
   _dateHeader() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Expanded(
-          flex: 2,
-          child: IconButton(
-            icon: const Icon(
-              Icons.chevron_left,
-              color: Colors.teal,
-            ),
-            onPressed: () {
-              _pageController.animateToPage(currentSelectedPageBuilderPage - 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
-            },
-          ),
-        ),
-        Expanded(
-            flex: 6,
-            child: Center(
-              child: Text(
-                DateFormat('yyyy-MM-dd').format(currentSelectedDate),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold
+    return Column(
+      children: WidgetUtils.skipNulls([
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              flex: 2,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.chevron_left,
+                  color: Colors.teal,
                 ),
+                onPressed: () {
+                  _pageController.animateToPage(currentSelectedPageBuilderPage - 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                },
               ),
-            )
-        ),
-        Expanded(
-          flex: 2,
-          child: IconButton(
-            icon: const Icon(
-              Icons.chevron_right,
-              color: Colors.teal,
             ),
-            onPressed: () {
-              _pageController.animateToPage(currentSelectedPageBuilderPage + 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
-            },
-          ),
+            Expanded(
+                flex: 6,
+                child: InkWell(
+                  onTap: () async {
+                    // We show a datepicker here for easy jumping
+                    final selectedDate = await showDatePicker(
+                      builder: (BuildContext context, Widget? child) {
+                        return Theme(
+                            data: ThemeData(primarySwatch: Colors.teal),
+                            child: child!
+                        );
+                      },
+                      context: context,
+                      initialEntryMode: DatePickerEntryMode.calendarOnly,
+                      initialDate: currentSelectedDate,
+                      firstDate: DateTime(ConstantUtils.EARLIEST_YEAR),
+                      lastDate: DateTime(ConstantUtils.LATEST_YEAR),
+                    );
+                    if (selectedDate != null) {
+                      setState(() {
+                        currentSelectedPageBuilderPage = currentSelectedPageBuilderPage +
+                            selectedDate.difference(currentSelectedDate.subtract(Duration(
+                              hours: currentSelectedDate.hour,
+                              minutes: currentSelectedDate.minute,
+                              seconds: currentSelectedDate.second,
+                              milliseconds: currentSelectedDate.millisecond,
+                            ))).inDays;
+                        currentSelectedDate = selectedDate;
+                      });
+                      _pageController.animateToPage(currentSelectedPageBuilderPage , duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                    }
+                  },
+                  child: Center(
+                    child: Text(
+                      DateFormat('yyyy-MM-dd').format(currentSelectedDate),
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                )
+            ),
+            Expanded(
+              flex: 2,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.chevron_right,
+                  color: Colors.teal,
+                ),
+                onPressed: () {
+                  _pageController.animateToPage(currentSelectedPageBuilderPage + 1, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+                },
+              ),
+            ),
+          ],
         ),
-      ],
+        _showJumpToTodaysDateTextIfNeeded(),
+      ]),
     );
+  }
+
+  bool currentSelectedDaySameAsCurrentDay() {
+    if (currentSelectedDate.subtract(Duration(
+      hours: currentSelectedDate.hour,
+      minutes: currentSelectedDate.minute,
+      seconds: currentSelectedDate.second,
+      milliseconds: currentSelectedDate.millisecond,
+    )).difference(initialSelectedDate.subtract(Duration(
+      hours: initialSelectedDate.hour,
+      minutes: initialSelectedDate.minute,
+      seconds: initialSelectedDate.second,
+      milliseconds: initialSelectedDate.millisecond,
+    ))).inDays == 0) {
+      return true;
+    }
+    return false;
+  }
+
+  _showJumpToTodaysDateTextIfNeeded() {
+    if (!currentSelectedDaySameAsCurrentDay()) {
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            currentSelectedDate = initialSelectedDate;
+          });
+          _pageController.animateToPage(MAX_PAGES ~/ 2, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            WidgetUtils.spacer(1.5),
+            const Text(
+              "Jump to today's date",
+              style: TextStyle(
+                color: Colors.teal
+              ),
+              textAlign: TextAlign.center,
+            )
+          ],
+        ),
+      );
+    }
   }
 
   Widget _mainBody(DiaryDataFetched state) {
@@ -572,12 +733,78 @@ class DiaryViewState extends State<DiaryView> {
           _dateHeader(),
           WidgetUtils.spacer(2.5),
           _caloriesHeader(state),
+          WidgetUtils.spacer(2.5),
+          _renderStepInfo(state),
           WidgetUtils.spacer(5),
           Expanded(
             child: _diaryPageViews(state),
           ),
         ],
       ),
+    );
+  }
+
+  _renderStepInfo(DiaryDataFetched state) {
+    final double stepGoalPercentage;
+    final String stepCountString;
+    if (currentSelectedDaySameAsCurrentDay()) {
+      stepGoalPercentage = ((pedometerStepCount / (state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal)) * 100);
+      stepCountString = pedometerStepCount.toString();
+    }
+    else {
+      stepGoalPercentage = (((state.userStepsData?.steps ?? 0) / (state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal)) * 100);
+      stepCountString = state.userStepsData?.steps.toString() ?? "0";
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          flex: 2,
+          child: CircleAvatar(
+            radius: 25,
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                    image: AssetImage("assets/icons/boot_icon.png")
+                ),
+              ),
+            ),
+          )
+        ),
+        Expanded(
+          flex: 8,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              LinearPercentIndicator(
+                lineHeight: 15.0,
+                barRadius: const Radius.elliptical(5, 10),
+                percent: stepGoalPercentage / 100,
+                center: Text(
+                  "${stepGoalPercentage.toStringAsFixed(1)}%",
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12
+                  ),
+                ),
+                backgroundColor: Colors.grey.shade400,
+                progressColor: Colors.teal,
+              ),
+              WidgetUtils.spacer(2.5),
+              Text(
+                "$stepCountString steps",
+                style: const TextStyle(
+                    color: Colors.teal,
+                ),
+              )
+            ],
+          )
+        )
+      ],
     );
   }
 
@@ -599,74 +826,56 @@ class DiaryViewState extends State<DiaryView> {
         _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
       },
       itemBuilder: (BuildContext context, int index) {
-        return RefreshIndicator(
-          onRefresh: () async {
-            _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
-          },
-          child: ListView.builder(
-            shrinkWrap: true,
-            controller: _scrollController,
-            itemCount: listItemIndexToTitleMap.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Container(
-                margin: const EdgeInsets.symmetric(vertical: 2.5),
-                padding: const EdgeInsets.all(5),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minHeight: 125,
+        return ListView.builder(
+          shrinkWrap: true,
+          controller: _scrollController,
+          itemCount: listItemIndexToTitleMap.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 2.5),
+              padding: const EdgeInsets.all(5),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: 125,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.teal)
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.teal)
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        // Heading
-                        // Container(
-                        //   alignment: Alignment.centerLeft,
-                        //   padding: const EdgeInsets.all(5),
-                        //   child: Text(
-                        //       listItemIndexToTitleMap[index]!,
-                        //     style: const TextStyle(
-                        //       fontWeight: FontWeight.bold,
-                        //       fontSize: 20
-                        //     ),
-                        //   ),
-                        // ),
-                        // WidgetUtils.spacer(1.5),
-                        _renderDiaryEntries(listItemIndexToTitleMap[index]!, state),
-                        WidgetUtils.spacer(5),
-                        // Add food/Add exercise button
-                        InkWell(
-                          onTap: () {
-                            if (index == 4) {
-                              _goToExerciseSearchView();
-                            }
-                            else {
-                              _goToFoodSearchView(listItemIndexToTitleMap[index]!);
-                            }
-                          },
-                          child: Container(
-                            alignment: Alignment.bottomRight,
-                            padding: const EdgeInsets.all(1.0),
-                            child: Text(
-                              index != 4 ? "ADD FOOD" : "ADD EXERCISE",
-                              style: const TextStyle(
-                                  color: Colors.teal,
-                                  fontSize: 15
-                              ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      _renderDiaryEntries(listItemIndexToTitleMap[index]!, state),
+                      WidgetUtils.spacer(5),
+                      // Add food/Add exercise button
+                      InkWell(
+                        onTap: () {
+                          if (index == 4) {
+                            _goToExerciseSearchView();
+                          }
+                          else {
+                            _goToFoodSearchView(listItemIndexToTitleMap[index]!);
+                          }
+                        },
+                        child: Container(
+                          alignment: Alignment.bottomRight,
+                          padding: const EdgeInsets.all(1.0),
+                          child: Text(
+                            index != 4 ? "ADD FOOD" : "ADD EXERCISE",
+                            style: const TextStyle(
+                                color: Colors.teal,
+                                fontSize: 15
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -1068,6 +1277,121 @@ class DiaryViewState extends State<DiaryView> {
     );
   }
 
+  _renderStepsData(DiaryDataFetched state) {
+    final String stepsToShow;
+    if (currentSelectedDaySameAsCurrentDay()) {
+      stepsToShow = pedometerStepCount.toString();
+    }
+    else {
+      stepsToShow = (state.userStepsData?.steps ?? 0).toString();
+    }
+    return ExpansionPanelList(
+      expansionCallback: (index, isExpanded) {
+        setState(() {
+          isStepsPanelExpanded = !isExpanded;
+        });
+      },
+      children: [
+        ExpansionPanel(
+          headerBuilder: (BuildContext context, bool isExpanded) {
+            return const ListTile(
+              title: Text(
+                "Steps",
+                style:  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.grey
+                ),
+              ),
+            );
+          },
+          body: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Row(
+                children: [
+                  Expanded(
+                      flex: 12,
+                      child: Container(
+                          padding: const EdgeInsets.all(5),
+                          child: Text("$stepsToShow steps")
+                      )
+                  ),
+                  Expanded(
+                      flex: 4,
+                      child: Text(
+                        "${(state.userStepsData?.caloriesBurned ?? 0).toInt()} calories",
+                        style: const TextStyle(
+                            color: Colors.teal
+                        ),
+                      )
+                  )
+                ],
+              ),
+            ),
+          ),
+          isExpanded: isStepsPanelExpanded,
+        )
+      ],
+    );
+  }
+
+  _renderStrengthEntries(DiaryDataFetched state) {
+    return ExpansionPanelList(
+      expansionCallback: (index, isExpanded) {
+        setState(() {
+          isStrengthPanelExpanded = !isExpanded;
+        });
+      },
+      children: [
+        ExpansionPanel(
+          headerBuilder: (BuildContext context, bool isExpanded) {
+            return const ListTile(
+              title: Text(
+                "Strength",
+                style:  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.grey
+                ),
+              ),
+            );
+          },
+          body: _renderStrengthDiaryEntries(state),
+          isExpanded: isStrengthPanelExpanded,
+        )
+      ],
+    );
+  }
+
+  _renderCardioEntries(DiaryDataFetched state) {
+    return ExpansionPanelList(
+      expansionCallback: (index, isExpanded) {
+        setState(() {
+          isCardioPanelExpanded = !isExpanded;
+        });
+      },
+      children: [
+        ExpansionPanel(
+          headerBuilder: (BuildContext context, bool isExpanded) {
+            return const ListTile(
+              title: Text(
+                "Cardio",
+                style:  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.grey
+                ),
+              ),
+            );
+          },
+          body: _renderCardioDiaryEntries(state),
+          isExpanded: isCardioPanelExpanded,
+        )
+      ],
+    );
+  }
+
   _renderExerciseDiaryEntries(DiaryDataFetched state) {
     return Container(
       padding: const EdgeInsets.all(5),
@@ -1076,86 +1400,11 @@ class DiaryViewState extends State<DiaryView> {
       ),
       child: Column(
         children: [
-          // Container(
-          //   alignment: Alignment.centerLeft,
-          //   padding: const EdgeInsets.all(5),
-          //   child: const Text(
-          //     "Cardio",
-          //     style: TextStyle(
-          //         fontWeight: FontWeight.bold,
-          //         fontSize: 16
-          //     ),
-          //   ),
-          // ),
-          // WidgetUtils.spacer(1),
-          // _renderCardioDiaryEntries(state),
-          ExpansionPanelList(
-            expansionCallback: (index, isExpanded) {
-              setState(() {
-                isCardioPanelExpanded = !isExpanded;
-              });
-            },
-            children: [
-              ExpansionPanel(
-                headerBuilder: (BuildContext context, bool isExpanded) {
-                  return const ListTile(
-                    title: Text(
-                      "Cardio",
-                      style:  TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Colors.grey
-                      ),
-                    ),
-                  );
-                },
-                body: _renderCardioDiaryEntries(state),
-                isExpanded: isCardioPanelExpanded,
-              )
-            ],
-          ),
-
-
+          _renderCardioEntries(state),
           WidgetUtils.spacer(5),
-          // Container(
-          //   alignment: Alignment.centerLeft,
-          //   padding: const EdgeInsets.all(5),
-          //   child: const Text(
-          //     "Strength",
-          //     style: TextStyle(
-          //         fontWeight: FontWeight.bold,
-          //         fontSize: 16
-          //     ),
-          //   ),
-          // ),
-          // WidgetUtils.spacer(1),
-          // _renderStrengthDiaryEntries(state),
-
-          ExpansionPanelList(
-            expansionCallback: (index, isExpanded) {
-              setState(() {
-                isStrengthPanelExpanded = !isExpanded;
-              });
-            },
-            children: [
-              ExpansionPanel(
-                headerBuilder: (BuildContext context, bool isExpanded) {
-                  return const ListTile(
-                    title: Text(
-                      "Strength",
-                      style:  TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Colors.grey
-                      ),
-                    ),
-                  );
-                },
-                body: _renderStrengthDiaryEntries(state),
-                isExpanded: isStrengthPanelExpanded,
-              )
-            ],
-          )
+          _renderStrengthEntries(state),
+          WidgetUtils.spacer(5),
+          _renderStepsData(state),
         ],
       ),
     );

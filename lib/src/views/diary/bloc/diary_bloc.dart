@@ -39,7 +39,8 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
           cardioDiaryEntries: currentState.cardioDiaryEntries,
           foodDiaryEntriesRaw: currentState.foodDiaryEntriesRaw,
           foodDiaryEntries: currentState.foodDiaryEntries,
-          fitnessUserProfile: event.fitnessUserProfile
+          fitnessUserProfile: event.fitnessUserProfile,
+          userStepsData: currentState.userStepsData,
       ));
     }
   }
@@ -91,13 +92,16 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
     // );
     final foodEntries = await Future.wait(entries.foodEntries.map((e) => diaryRepository.getFoodById(e.foodId.toString(), accessToken)));
 
+    final stepsData = await diaryRepository.getUserStepsData(event.userId, DateFormat('yyyy-MM-dd').format(event.diaryDate), accessToken);
+
     if (currentState is DiaryDataFetched) {
       emit(DiaryDataFetched(
           strengthDiaryEntries: entries.strengthWorkouts,
           cardioDiaryEntries: entries.cardioWorkouts,
           foodDiaryEntriesRaw: entries.foodEntries,
           foodDiaryEntries: foodEntries,
-          fitnessUserProfile: currentState.fitnessUserProfile
+          fitnessUserProfile: currentState.fitnessUserProfile,
+          userStepsData: stepsData,
       ));
     }
     else {
@@ -107,7 +111,8 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
           cardioDiaryEntries: entries.cardioWorkouts,
           foodDiaryEntriesRaw: entries.foodEntries,
           foodDiaryEntries: foodEntries,
-          fitnessUserProfile: fitnessUserProfile
+          fitnessUserProfile: fitnessUserProfile,
+          userStepsData: stepsData,
       ));
     }
 
