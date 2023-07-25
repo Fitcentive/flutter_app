@@ -11,11 +11,19 @@ class UpsertUserFitnessProfile extends UserFitnessProfileEvent {
   final String userId;
   final double heightInCm;
   final double weightInLbs;
+  final String goal;
+  final String activityLevel;
+  final int? stepGoalPerDay;
+  final double? goalWeightInLbs;
 
   const UpsertUserFitnessProfile({
     required this.userId,
     required this.heightInCm,
     required this.weightInLbs,
+    required this.goal,
+    required this.activityLevel,
+    required this.stepGoalPerDay,
+    required this.goalWeightInLbs,
   });
 
   @override
@@ -23,5 +31,9 @@ class UpsertUserFitnessProfile extends UserFitnessProfileEvent {
     userId,
     heightInCm,
     weightInLbs,
+    goal,
+    activityLevel,
+    stepGoalPerDay,
+    goalWeightInLbs,
   ];
 }

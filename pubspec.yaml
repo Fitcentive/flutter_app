@@ -88,6 +88,8 @@ dependencies:
   cached_network_image: ^3.2.3
   tutorial_coach_mark: ^1.2.8
   pie_chart: ^5.3.2
+  age_calculator: ^1.0.0
+  percent_indicator: ^4.2.3
 
 dev_dependencies:
   flutter_test:

@@ -17,6 +17,10 @@ FitnessUserProfile _$FitnessUserProfileFromJson(Map<String, dynamic> json) {
     (json['weightInLbs'] as num).toDouble(),
     DateTime.parse(json['createdAt'] as String),
     DateTime.parse(json['updatedAt'] as String),
+    json['goal'] as String,
+    json['activityLevel'] as String,
+    json['stepGoalPerDay'] as int?,
+    json['goalWeightInLbs'] as double?,
   );
 }
 
@@ -27,4 +31,8 @@ Map<String, dynamic> _$FitnessUserProfileToJson(FitnessUserProfile instance) =>
       'weightInLbs': instance.weightInLbs,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
+      'goal': instance.goal,
+      'activityLevel': instance.activityLevel,
+      'stepGoalPerDay': instance.stepGoalPerDay,
+      'goalWeightInLbs': instance.goalWeightInLbs,
     };

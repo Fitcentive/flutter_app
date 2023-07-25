@@ -25,7 +25,14 @@ class UserFitnessProfileBloc extends Bloc<UserFitnessProfileEvent, UserFitnessPr
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final userFitnessProfile = await diaryRepository.upsertFitnessUserProfile(
         event.userId,
-        FitnessUserProfileUpdate(heightInCm: event.heightInCm, weightInLbs: event.weightInLbs),
+        FitnessUserProfileUpdate(
+            heightInCm: event.heightInCm,
+            weightInLbs: event.weightInLbs,
+            goal: event.goal,
+            activityLevel: event.activityLevel,
+            stepGoalPerDay: event.stepGoalPerDay,
+            goalWeightInLbs: event.goalWeightInLbs,
+        ),
         accessToken!
     );
     userRepository.trackUserEvent(UpdateFitnessUserProfile(), accessToken);

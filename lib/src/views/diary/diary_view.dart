@@ -1,3 +1,4 @@
+import 'package:age_calculator/age_calculator.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +12,9 @@ import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/utils/exercise_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/detailed_exercise/detailed_exercise_view.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_bloc.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_state.dart';
@@ -28,6 +30,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 
 GlobalKey<DiaryViewState> diaryViewStateGlobalKey = GlobalKey();
 
@@ -36,10 +39,21 @@ class DiaryView extends StatefulWidget {
 
   final DateTime? preSelectedDateTime;
   final PublicUserProfile currentUserProfile;
+  final UserProfile rawUserProfile;
 
-  const DiaryView({Key? key, required this.currentUserProfile, this.preSelectedDateTime}): super(key: key);
+  const DiaryView({
+    Key? key,
+    required this.currentUserProfile,
+    required this.rawUserProfile,
+    this.preSelectedDateTime
+  }): super(key: key);
 
-  static Widget withBloc(Key? key, PublicUserProfile currentUserProfile, DateTime? preSelectedDateTime) => MultiBlocProvider(
+  static Widget withBloc(
+      Key? key,
+      PublicUserProfile currentUserProfile,
+      UserProfile rawUserProfile,
+      DateTime? preSelectedDateTime
+  ) => MultiBlocProvider(
     providers: [
       BlocProvider<DiaryBloc>(
           create: (context) => DiaryBloc(
@@ -49,7 +63,12 @@ class DiaryView extends StatefulWidget {
           )
       ),
     ],
-    child: DiaryView(key: key, currentUserProfile: currentUserProfile, preSelectedDateTime: preSelectedDateTime),
+    child: DiaryView(
+        key: key,
+        currentUserProfile: currentUserProfile,
+        rawUserProfile: rawUserProfile,
+        preSelectedDateTime: preSelectedDateTime
+    ),
   );
 
 
@@ -371,97 +390,133 @@ class DiaryViewState extends State<DiaryView> {
     }).reduce((value, element) => value + element);
     final cardioCalories = cardioEntries.isEmpty ? 0 : cardioEntries.map((e) => e.caloriesBurned).reduce((value, element) => value + element);
     final strengthCalories = strengthEntries.isEmpty ? 0 : strengthEntries.map((e) => e.caloriesBurned).reduce((value, element) => value + element);
-    final remainingCalories = defaultCaloriesTargetPerDay - foodCalories + cardioCalories + strengthCalories;
 
-    return Row(
+    final targetCalories = _generateCalorieGoal(state);
+    final remainingCalories = targetCalories - foodCalories + cardioCalories + strengthCalories;
+
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          flex: 3,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "$defaultCaloriesTargetPerDay",
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.headlineMedium?.color
-                ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    targetCalories.toStringAsFixed(0),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.headlineMedium?.color
+                    ),
+                  ),
+                  WidgetUtils.spacer(2),
+                  const Text("Goal", style: TextStyle(fontSize: 12),)
+                ],
+              )
+            ),
+            const Expanded(
+                flex: 1,
+                child: Text("-")
+            ),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      foodCalories.toStringAsFixed(0),
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red
+                      ),
+                    ),
+                    WidgetUtils.spacer(2),
+                    const Text("Food", style: TextStyle(fontSize: 12),)
+                  ],
+                )
+            ),
+            const Expanded(
+                flex: 1,
+                child: Text("+")
+            ),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      (cardioCalories + strengthCalories).toStringAsFixed(0),
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal
+                      ),
+                    ),
+                    WidgetUtils.spacer(2),
+                    const Text("Exercise", style: TextStyle(fontSize: 12),)
+                  ],
+                )
+            ),
+            const Expanded(
+                flex: 1,
+                child: Text("=")
+            ),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      remainingCalories.toStringAsFixed(0),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: remainingCalories == 0 ? Theme.of(context).textTheme.headlineMedium?.color : (remainingCalories > 0 ? Colors.teal : Colors.red)
+                      ),
+                    ),
+                    WidgetUtils.spacer(2),
+                    const Text("Remaining", style: TextStyle(fontSize: 12),)
+                  ],
+                )
+            ),
+          ],
+        ),
+        WidgetUtils.spacer(2.5),
+        Center(
+          child: LinearPercentIndicator(
+            lineHeight: 15.0,
+            barRadius: const Radius.elliptical(5, 10),
+            percent: (remainingCalories / targetCalories),
+            center: Text(
+                ((1 - (remainingCalories / targetCalories)) * 100).toStringAsFixed(1),
+              style: const TextStyle(
+                color: Colors.white
               ),
-              WidgetUtils.spacer(2),
-              const Text("Goal", style: TextStyle(fontSize: 12),)
-            ],
-          )
-        ),
-        const Expanded(
-            flex: 1,
-            child: Text("-")
-        ),
-        Expanded(
-            flex: 3,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  foodCalories.toStringAsFixed(0),
-                  style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red
-                  ),
-                ),
-                WidgetUtils.spacer(2),
-                const Text("Food", style: TextStyle(fontSize: 12),)
-              ],
-            )
-        ),
-        const Expanded(
-            flex: 1,
-            child: Text("+")
-        ),
-        Expanded(
-            flex: 3,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  (cardioCalories + strengthCalories).toStringAsFixed(0),
-                  style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal
-                  ),
-                ),
-                WidgetUtils.spacer(2),
-                const Text("Exercise", style: TextStyle(fontSize: 12),)
-              ],
-            )
-        ),
-        const Expanded(
-            flex: 1,
-            child: Text("=")
-        ),
-        Expanded(
-            flex: 3,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  remainingCalories.toStringAsFixed(0),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: remainingCalories == 0 ? Theme.of(context).textTheme.headlineMedium?.color : (remainingCalories > 0 ? Colors.teal : Colors.red)
-                  ),
-                ),
-                WidgetUtils.spacer(2),
-                const Text("Remaining", style: TextStyle(fontSize: 12),)
-              ],
-            )
-        ),
+            ),
+            backgroundColor: Colors.grey,
+            progressColor: Colors.teal,
+          ),
+        )
       ],
     );
+  }
+
+  double _generateCalorieGoal(DiaryDataFetched state) {
+    if (state.fitnessUserProfile != null) {
+      return ExerciseUtils.calculateCalorieGoalPerDayForUserToAttainGoal(
+          state.fitnessUserProfile!,
+          AgeCalculator.age(DateTime.parse(widget.rawUserProfile.dateOfBirth!)).years,
+          widget.currentUserProfile.gender,
+      );
+    }
+    else {
+      return defaultCaloriesTargetPerDay.toDouble();
+    }
   }
 
   _dateHeader() {

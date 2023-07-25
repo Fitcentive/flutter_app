@@ -1542,6 +1542,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
           return DiaryView.withBloc(
               diaryViewStateGlobalKey,
               publicUserProfile,
+              authState.authenticatedUser.userProfile!,
               preSelectedDiaryDateString != null ? DateTime.parse(preSelectedDiaryDateString!) : null
           );
         default:

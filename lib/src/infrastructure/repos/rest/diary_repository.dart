@@ -9,6 +9,7 @@ import 'package:flutter_app/src/models/diary/cardio_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/diary/food_diary_entry.dart';
 import 'package:flutter_app/src/models/diary/strength_diary_entry.dart';
+import 'package:flutter_app/src/models/diary/user_steps_data.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
@@ -26,6 +27,45 @@ class DiaryRepository {
   static const int DEFAULT_SEARCH_FOOD_RESULTS_PAGE = 0;
 
   final logger = Logger("DiaryRepository");
+
+  Future<UserStepsData> upsertUserStepsData(String userId, UserStepsDataUpsert upsert, String accessToken) async {
+    final response = await http.put(
+      Uri.parse("$BASE_URL/user/$userId/steps"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: jsonEncode({
+        "stepsTaken": upsert.stepsTaken,
+        "dateString": upsert.dateString,
+      })
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return UserStepsData.fromJson(jsonResponse);
+    }
+    else {
+      throw Exception(
+          "upsertUserStepsData: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
+  Future<UserStepsData?> getUserStepsData(String userId, String dateString, String accessToken) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/user/$userId/steps?dateString=$dateString"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final jsonResponse = jsonDecode(response.body);
+      return UserStepsData.fromJson(jsonResponse);
+    }
+    else if (response.statusCode == HttpStatus.notFound) {
+      return null;
+    }
+    else {
+      throw Exception(
+          "getUserStepsData: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 
   Future<void> addUserMostRecentlyViewedFoods(String userId, int foodId, String accessToken) async {
     final response = await http.post(
@@ -692,6 +732,9 @@ class DiaryRepository {
       body: jsonEncode({
         "heightInCm": update.heightInCm,
         "weightInLbs": update.weightInLbs,
+        "goal": update.goal,
+        "stepGoalPerDay": update.stepGoalPerDay,
+        "activityLevel": update.activityLevel,
       })
     );
 
