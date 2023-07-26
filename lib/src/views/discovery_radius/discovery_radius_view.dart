@@ -85,15 +85,31 @@ class DiscoveryRadiusViewState extends State<DiscoveryRadiusView> {
       body: BlocListener<DiscoveryRadiusBloc, DiscoveryRadiusState>(
         listener: (context, state) {
           if (state is LocationInfoUpdated) {
-            SnackbarUtils.showSnackBar(context, "Discovery radius updated successfully!");
+            SnackbarUtils.showSnackBarMedium(context, "Discovery radius updated successfully!");
             Navigator.pop(context);
           }
+          if (state is LocationBeingUpdated) {
+            SnackbarUtils.showSnackBarShort(context, "Please wait... saving preferences...");
+          }
         },
-        child: ProvideLocationView(
-            latitude: widget.latitude,
-            longitude: widget.longitude,
-            radius: widget.radius,
-            updateBlocState: _updateBlocState
+        child: BlocBuilder<DiscoveryRadiusBloc, DiscoveryRadiusState>(
+          builder: (context, state) {
+            if (state is LocationBeingUpdated) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.teal,
+                ),
+              );
+            }
+            else {
+              return ProvideLocationView(
+                  latitude: widget.latitude,
+                  longitude: widget.longitude,
+                  radius: widget.radius,
+                  updateBlocState: _updateBlocState
+              );
+            }
+          },
         ),
       ),
     );

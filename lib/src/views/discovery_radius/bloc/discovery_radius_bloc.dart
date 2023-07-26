@@ -28,6 +28,7 @@ class DiscoveryRadiusBloc extends Bloc<DiscoveryRadiusEvent, DiscoveryRadiusStat
   }
 
   void _locationInfoSubmitted(LocationInfoSubmitted event, Emitter<DiscoveryRadiusState> emit) async {
+    emit(const LocationBeingUpdated());
     final updateUserProfile = UpdateUserProfile(
         locationCenter: Coordinates(event.coordinates.latitude, event.coordinates.longitude),
         locationRadius: event.radius

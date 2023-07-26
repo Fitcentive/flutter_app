@@ -18,6 +18,14 @@ class InitialState extends DiscoveryRadiusState {
 
 }
 
+class LocationBeingUpdated extends DiscoveryRadiusState {
+  const LocationBeingUpdated();
+
+  @override
+  List<Object> get props => [];
+
+}
+
 class LocationInfoModified extends DiscoveryRadiusState {
   final AuthenticatedUser user;
   final LatLng selectedCoordinates;
