@@ -14,6 +14,9 @@ PaymentSubscription _$PaymentSubscriptionFromJson(Map<String, dynamic> json) =>
       json['customer_id'] as String,
       DateTime.parse(json['started_at'] as String),
       DateTime.parse(json['valid_until'] as String),
+      json['trial_end'] == null
+          ? null
+          : DateTime.parse(json['trial_end'] as String),
       DateTime.parse(json['created_at'] as String),
       DateTime.parse(json['updated_at'] as String),
     );
@@ -27,6 +30,7 @@ Map<String, dynamic> _$PaymentSubscriptionToJson(
       'customer_id': instance.customerId,
       'started_at': instance.startedAt.toIso8601String(),
       'valid_until': instance.validUntil.toIso8601String(),
+      'trial_end': instance.trialEnd?.toIso8601String(),
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
     };

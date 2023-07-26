@@ -11,6 +11,7 @@ class PaymentSubscription extends Equatable {
   final String customerId;
   final DateTime startedAt;
   final DateTime validUntil;
+  final DateTime? trialEnd;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -21,6 +22,7 @@ class PaymentSubscription extends Equatable {
       this.customerId,
       this.startedAt,
       this.validUntil,
+      this.trialEnd,
       this.createdAt,
       this.updatedAt
   );

@@ -213,6 +213,25 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
     );
   }
 
+  _showTrialPeriodIfRequired(SubscriptionInfoLoaded state) {
+    if ((state.subscription.trialEnd?.difference(DateTime.now()).inDays ?? 0) > 0) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "You are currently on your free trial until ${DateFormat('yyyy-MM-dd').format(state.subscription.trialEnd!.toLocal())}",
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
+              color: Colors.teal
+            ),
+          ),
+          WidgetUtils.spacer(15),
+        ],
+      );
+    }
+  }
+
   mainContent(SubscriptionInfoLoaded state) {
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -229,6 +248,7 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
           ),
         ),
         WidgetUtils.spacer(15),
+        _showTrialPeriodIfRequired(state),
         const Text(
           "Your billing period",
           style: TextStyle(

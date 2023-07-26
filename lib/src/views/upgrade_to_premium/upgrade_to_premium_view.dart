@@ -199,11 +199,38 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                           shrinkWrap: true,
                         )
                     ),
-                    WidgetUtils.spacer(25),
+                    WidgetUtils.spacer(15),
+                    const Text(
+                      "Activate now and get a free 30 day trial!",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.teal
+                      ),
+                    ),
+                    WidgetUtils.spacer(5),
+                    const Text(
+                      "Please note that trial can only be used once",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        // color: Colors.teal
+                      ),
+                    ),
+                    WidgetUtils.spacer(15),
                     const Text(
                       "Enter your credit card details to get started",
                       style: TextStyle(
                         fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.teal
+                      ),
+                    ),
+                    WidgetUtils.spacer(5),
+                    const Text(
+                      "You won't be charged until your trial ends, and you can cancel anytime!",
+                      style: TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.normal,
                         // color: Colors.teal
                       ),
@@ -268,7 +295,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
               SnackbarUtils.showSnackBarShort(context, "Please fill out all required card details!");
             }
           },
-          child: const Text("Pay now", style: TextStyle(fontSize: 15, color: Colors.white)),
+          child: const Text("Activate Fitcentive+", style: TextStyle(fontSize: 15, color: Colors.white)),
         ),
     );
   }
@@ -303,7 +330,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
             color: Colors.teal,
           ),
         ),
-        content: const Text("You are about to subscribe to Fitcentive+ for \$2.99. This is a monthly subscription that auto-renews every month."),
+        content: const Text("You are about to subscribe to Fitcentive+ for \$2.99.\n\nThis is a monthly subscription that auto-renews every month after the trial period, if not already availed."),
         actions: [
           cancelButton,
           susbcribeButton,

@@ -20,7 +20,7 @@ FitnessUserProfile _$FitnessUserProfileFromJson(Map<String, dynamic> json) {
     json['goal'] as String,
     json['activityLevel'] as String,
     json['stepGoalPerDay'] as int?,
-    json['goalWeightInLbs'] as double?,
+    (json['goalWeightInLbs'] as num?)?.toDouble(),
   );
 }
 
