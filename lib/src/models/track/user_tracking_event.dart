@@ -158,6 +158,10 @@ class AttemptToDiscoverUsers extends UserTrackingEvent {
   @override
   String eventName() => "AttemptToDiscoverUsers";
 }
+class ViewNewDiscoveredUser extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewNewDiscoveredUser";
+}
 class AcceptNewDiscoveredUser extends UserTrackingEvent {
   @override
   String eventName() => "AcceptNewDiscoveredUser";

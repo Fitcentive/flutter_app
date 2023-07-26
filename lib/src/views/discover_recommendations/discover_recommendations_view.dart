@@ -6,12 +6,15 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/discover/discover_recommendation.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discover_recommendations/bloc/discover_recommendations_bloc.dart';
 import 'package:flutter_app/src/views/discover_recommendations/bloc/discover_recommendations_event.dart';
 import 'package:flutter_app/src/views/discover_recommendations/bloc/discover_recommendations_state.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/shared_components/location_card.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -56,12 +59,15 @@ class DiscoverRecommendationsView extends StatefulWidget {
 
 class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView> {
   bool isPremiumEnabled = false;
+  bool hasUserMaxedOutFreeDiscoverQuota = false;
   late final DiscoverRecommendationsBloc _discoverRecommendationsBloc;
   List<DiscoverRecommendation> fetchedRecommendations = List.empty(growable: true);
 
   int currentSelectedRecommendationIndex = 0;
   CarouselController buttonCarouselController = CarouselController();
 
+  List<String> alreadyViewedUserIds = [];
+  int discoveredUsersViewedForMonthCountStateValue = 0;
 
   @override
   void initState() {
@@ -92,7 +98,11 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
   _generateFloatingActionButtons() {
     return BlocBuilder<DiscoverRecommendationsBloc, DiscoverRecommendationsState>(
         builder: (context, state) {
-          if (state is DiscoverRecommendationsReady && state.recommendations.isNotEmpty) {
+          if (state is DiscoverRecommendationsReady &&
+              state.recommendations.isNotEmpty &&
+              !_shouldUpgradeToPremium(state) &&
+              !hasUserMaxedOutFreeDiscoverQuota
+          ) {
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -163,23 +173,112 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     // track
   }
 
+  _dispatchTrackViewNewDiscoveredUserEventIfNeeded(String newViewedUserId) {
+    if (!alreadyViewedUserIds.contains(newViewedUserId)) {
+      _discoverRecommendationsBloc.add(const TrackViewNewDiscoveredUserEvent());
+      alreadyViewedUserIds.add(newViewedUserId);
+    }
+  }
+
+
+  _showUpgradeToPremiumView() {
+    return Center(
+      child: IntrinsicHeight(
+        child: Card(
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Scrollbar(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Upgrade to premium to discover more users!",
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      WidgetUtils.spacer(15),
+                      const Text(
+                        "As part of your plan, you can discover 5 new people every month",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 15,
+                        ),
+                      ),
+                      WidgetUtils.spacer(5),
+                      const Text(
+                        "Come back next month for more!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 15,
+                        ),
+                      ),
+                      WidgetUtils.spacer(15),
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          _goToAccountDetailsView();
+                        },
+                        child: const Text(
+                            "Upgrade",
+                            style: TextStyle(fontSize: 15, color: Colors.white)
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            )
+        ),
+      ),
+    );
+  }
+
+  //_goToAccountDetailsView
+
+  _shouldUpgradeToPremium(DiscoverRecommendationsReady state) {
+    return !isPremiumEnabled && state.discoveredUsersViewedForMonthCount >= ConstantUtils.MAX_DISCOVERABLE_USERS_PER_MONTH_FREE;
+  }
+
   _generateBody() {
-    return BlocBuilder<DiscoverRecommendationsBloc, DiscoverRecommendationsState>(builder: (context, state) {
-      if (state is DiscoverRecommendationsReady) {
-        fetchedRecommendations = state.recommendations;
-        if (fetchedRecommendations.isNotEmpty) {
-          return _carouselSlider(state.currentUserProfile, fetchedRecommendations);
-        }
-        else {
-          return _noResultsView();
-        }
-      }
-      else {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      }
-    });
+    return BlocListener<DiscoverRecommendationsBloc, DiscoverRecommendationsState>(
+        listener: (context, state) {
+          if (state is DiscoverRecommendationsReady &&
+              state.recommendations.isNotEmpty &&
+              !_shouldUpgradeToPremium(state)
+          ) {
+            _dispatchTrackViewNewDiscoveredUserEventIfNeeded(state.recommendations.first.user.userId);
+          }
+        },
+        child: BlocBuilder<DiscoverRecommendationsBloc, DiscoverRecommendationsState>(builder: (context, state) {
+          if (state is DiscoverRecommendationsReady) {
+            if (hasUserMaxedOutFreeDiscoverQuota || _shouldUpgradeToPremium(state)) {
+              return _showUpgradeToPremiumView();
+            }
+            else {
+              discoveredUsersViewedForMonthCountStateValue = state.discoveredUsersViewedForMonthCount;
+              fetchedRecommendations = state.recommendations;
+              if (fetchedRecommendations.isNotEmpty) {
+                return _carouselSlider(state.currentUserProfile, fetchedRecommendations);
+              }
+              else {
+                return _noResultsView();
+              }
+            }
+          }
+          else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        }),
+    );
   }
 
   _noResultsView() {
@@ -237,9 +336,32 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
           enlargeCenterPage: true,
           onPageChanged: (page, reason) {
               currentSelectedRecommendationIndex = page;
+              _forcePlebUserToStopViewingUsersOrDispatchTrackingEvent(recommendations[page].user.userId);
           },
           scrollDirection: Axis.horizontal,
         )
+    );
+  }
+
+  _forcePlebUserToStopViewingUsersOrDispatchTrackingEvent(String newUserId) {
+    if (!isPremiumEnabled &&
+        (discoveredUsersViewedForMonthCountStateValue + alreadyViewedUserIds.length) >= ConstantUtils.MAX_DISCOVERABLE_USERS_PER_MONTH_FREE
+    ) {
+      setState(() {
+        hasUserMaxedOutFreeDiscoverQuota = true;
+      });
+      WidgetUtils.showUpgradeToPremiumDialog(context, _goToAccountDetailsView);
+      SnackbarUtils.showSnackBarShort(context, "Upgrade to premium to view more discovered users!");
+    }
+    else {
+      _dispatchTrackViewNewDiscoveredUserEventIfNeeded(newUserId);
+    }
+  }
+
+  _goToAccountDetailsView() {
+    Navigator.pushReplacement(
+      context,
+      HomePage.route(defaultSelectedTab: HomePageState.accountDetails),
     );
   }
 

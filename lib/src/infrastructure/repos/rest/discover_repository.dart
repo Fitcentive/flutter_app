@@ -71,13 +71,10 @@ class DiscoverRepository {
 
   Future<List<DiscoverRecommendation>> getUserDiscoverRecommendations(
       String userId,
-      int? discoverLimit,
       String accessToken
   ) async {
     final response = await http.get(
-        discoverLimit == null ?
-          Uri.parse("$BASE_URL/user/$userId/recommendations") :
-          Uri.parse("$BASE_URL/user/$userId/recommendations?discoverLimit=$discoverLimit"),
+        Uri.parse("$BASE_URL/user/$userId/recommendations"),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken'

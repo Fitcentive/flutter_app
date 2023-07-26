@@ -76,8 +76,10 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       add(AuthenticatedUserDataUpdated(user: newUser));
     });
 
-    _stepCountStream = Pedometer.stepCountStream;
-    _stepCountStream.listen(onStepCount);
+    if (DeviceUtils.isMobileDevice()) {
+      _stepCountStream = Pedometer.stepCountStream;
+      _stepCountStream.listen(onStepCount);
+    }
   }
 
   void onStepCount(StepCount event) {

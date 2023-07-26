@@ -22,9 +22,14 @@ class DiscoverRecommendationsLoading extends DiscoverRecommendationsState {
 class DiscoverRecommendationsReady extends DiscoverRecommendationsState {
   final PublicUserProfile currentUserProfile;
   final List<DiscoverRecommendation> recommendations;
+  final int discoveredUsersViewedForMonthCount;
 
-  const DiscoverRecommendationsReady({required this.currentUserProfile, required this.recommendations});
+  const DiscoverRecommendationsReady({
+    required this.currentUserProfile,
+    required this.recommendations,
+    required this.discoveredUsersViewedForMonthCount,
+  });
 
   @override
-  List<Object?> get props => [currentUserProfile, recommendations];
+  List<Object?> get props => [currentUserProfile, recommendations, discoveredUsersViewedForMonthCount];
 }

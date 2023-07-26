@@ -35,3 +35,11 @@ class TrackRejectNewDiscoveredUserEvent extends DiscoverRecommendationsEvent {
   @override
   List<Object?> get props => [];
 }
+
+class TrackViewNewDiscoveredUserEvent extends DiscoverRecommendationsEvent {
+
+  const TrackViewNewDiscoveredUserEvent();
+
+  @override
+  List<Object?> get props => [];
+}

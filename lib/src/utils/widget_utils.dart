@@ -11,6 +11,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gauges/gauges.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class WidgetUtils {
@@ -425,8 +426,10 @@ class WidgetUtils {
     }
 
     showDialog(context: context, builder: (context) {
-      return Dialog(
-        child: _dialogContentCard(),
+      return PointerInterceptor(
+        child: Dialog(
+          child: _dialogContentCard(),
+        ),
       );
     });
 

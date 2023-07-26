@@ -124,6 +124,7 @@ class ConstantUtils {
   static const int MAX_OTHER_CHAT_PARTICIPANTS_FREE = 1;
 
   static const int MAX_FREE_USER_MEETUPS_PER_MONTH_LIMIT = 4;
+
   static const int MAX_DISCOVERABLE_USERS_PER_MONTH_FREE = 5;
 
   static const String baseCardNumbers = "4242 4242 4242 ";

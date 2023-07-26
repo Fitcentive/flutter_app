@@ -451,4 +451,25 @@ class UserRepository {
           "trackUserEvent: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
+
+  Future<int> getUserNumberOfDiscoveredUsersViewedForMonth(
+      String dateString,
+      int timeZoneOffsetInMinutes,
+      String accessToken
+  ) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/event/discover-interactions?dateString=$dateString&offsetInMinutes=$timeZoneOffsetInMinutes"),
+        headers: {
+            'Content-type': 'application/json',
+            "Authorization": "Bearer $accessToken"
+        },
+    );
+
+    if (response.statusCode == HttpStatus.ok  ) {
+      return int.parse(response.body);
+    } else {
+      throw Exception(
+          "getUserNumberOfDiscoveredUsersViewedForMonth: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 }
