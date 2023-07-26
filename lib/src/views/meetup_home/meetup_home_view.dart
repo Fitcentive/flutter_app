@@ -291,7 +291,7 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
                     _filterItem("filterBy", "Created"),
                     _filterItem("filterBy", "Joined"),
                     _filterItem("filterBy", "Active"),
-                    _filterItem("filterBy", "Complete"),
+                    _filterItem("filterBy", "Inactive"),
                     // Gap()
                   ]
               )
