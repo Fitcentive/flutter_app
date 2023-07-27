@@ -20,7 +20,7 @@ import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabi
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_bloc.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
-import 'package:flutter_app/src/views/shared_components/diary_card/diary_card_view.dart';
+import 'package:flutter_app/src/views/shared_components/diary_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/meetup_comments_list.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';

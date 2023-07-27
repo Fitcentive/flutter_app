@@ -22,7 +22,7 @@ import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart'
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
-import 'package:flutter_app/src/views/shared_components/diary_card/diary_card_view.dart';
+import 'package:flutter_app/src/views/shared_components/diary_card_view.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_card/meetup_card_view.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_app/theme.dart';

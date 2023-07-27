@@ -13,9 +13,11 @@ import 'package:flutter_app/src/models/fatsecret/food_get_result.dart';
 import 'package:flutter_app/src/models/fatsecret/food_get_result_single_serving.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile.dart';
+import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/exercise_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_bloc.dart';
 import 'package:flutter_app/src/views/diary/bloc/diary_event.dart';
@@ -27,6 +29,7 @@ import 'package:flutter_app/src/views/food_search/food_search_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
+import 'package:flutter_app/src/views/shared_components/daily_summary_card.dart';
 import 'package:flutter_app/src/views/user_fitness_profile/user_fitness_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
@@ -142,12 +145,12 @@ class DiaryViewState extends State<DiaryView> {
   }
 
   _setupPedometer() async {
-    _stepCountStream = Pedometer.stepCountStream;
-    if(await Permission.activityRecognition.request().isGranted) {
-      _stepCountStream.listen(onStepCount).onError(onStepCountError);
-    }
-    else {
-      if (DeviceUtils.isMobileDevice()) {
+    if (DeviceUtils.isMobileDevice()) {
+      _stepCountStream = Pedometer.stepCountStream;
+      if(await Permission.activityRecognition.request().isGranted) {
+        _stepCountStream.listen(onStepCount).onError(onStepCountError);
+      }
+      else {
         Map<Permission, PermissionStatus> statuses = await [
           Permission.activityRecognition,
         ].request();
@@ -215,6 +218,13 @@ class DiaryViewState extends State<DiaryView> {
     return Scaffold(
       floatingActionButtonLocation: ExpandableFab.location,
       floatingActionButton: _animatedButton(),
+      bottomNavigationBar: IntrinsicHeight(
+        child: BottomAppBar(
+          color: Colors.transparent,
+          child: _showDailySummaryButton(),
+          elevation: 0,
+        ),
+      ),
       body: BlocListener<DiaryBloc, DiaryState>(
         listener: (context, state) {
           if (state is DiaryDataFetched) {
@@ -243,9 +253,9 @@ class DiaryViewState extends State<DiaryView> {
                 isStrengthPanelExpanded = true;
               }
               if (!currentSelectedDaySameAsCurrentDay() && state.userStepsData == null) {
-                isCardioPanelExpanded = false;
+                isStepsPanelExpanded = false;
               } else {
-                isCardioPanelExpanded = true;
+                isStepsPanelExpanded = true;
               }
 
               if (breakfastEntries.isEmpty) {
@@ -1438,5 +1448,49 @@ class DiaryViewState extends State<DiaryView> {
             mealOfDay
         )
     ).then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
+  }
+
+  _showDailySummaryButton() {
+    return BlocBuilder<DiaryBloc, DiaryState>(
+        builder: (context, state) {
+          return Visibility(
+            visible: state is DiaryDataFetched,
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(ColorUtils.BUTTON_AVAILABLE),
+                ),
+                onPressed: () async {
+                  final state = _diaryBloc.state;
+                  if (state is DiaryDataFetched) {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Center(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight: ScreenUtils.getScreenHeight(context) * 0.75,
+                              ),
+                              child: DailySummaryCardView(
+                                strengthDiaryEntries: state.strengthDiaryEntries,
+                                cardioDiaryEntries: state.cardioDiaryEntries,
+                                foodDiaryEntriesRaw: state.foodDiaryEntriesRaw,
+                                foodDiaryEntries: state.foodDiaryEntries,
+                                userStepsData: state.userStepsData,
+                                selectedDate: currentSelectedDate,
+                              ),
+                            ),
+                          );
+                        }
+                    );
+                  }
+                },
+                child: const Text("View daily summary", style: TextStyle(fontSize: 15, color: Colors.white)),
+              ),
+            ),
+          );
+        }
+    );
   }
 }
