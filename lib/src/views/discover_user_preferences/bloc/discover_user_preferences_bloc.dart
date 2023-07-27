@@ -151,6 +151,19 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
 
     final currentState = state;
     if (currentState is UserDiscoverPreferencesModified) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final userDiscoverPreferences = UserDiscoveryPreferencesPost(
+          userId: currentState.userProfile.userId,
+          preferredTransportMode: currentState.preferredTransportMode!,
+          locationCenter: Coordinates(currentState.locationCenter!.latitude, currentState.locationCenter!.longitude),
+          locationRadius: currentState.locationRadius!
+      );
+      discoverRepository.upsertUserDiscoveryPreferences(
+          currentState.userProfile.userId,
+          userDiscoverPreferences,
+          accessToken!
+      );
+
       emit(UserDiscoverPreferencesModified(
           userProfile: currentState.userProfile,
           locationCenter: event.locationCenter,
@@ -185,7 +198,7 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           locationCenter: Coordinates(currentState.locationCenter!.latitude, currentState.locationCenter!.longitude),
           locationRadius: currentState.locationRadius!
       );
-      final response = await discoverRepository.upsertUserDiscoveryPreferences(
+      await discoverRepository.upsertUserDiscoveryPreferences(
           currentState.userProfile.userId,
           userDiscoverPreferences,
           accessToken!
@@ -218,6 +231,19 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
 
     final currentState = state;
     if (currentState is UserDiscoverPreferencesModified) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final prefs = UserFitnessPreferencesPost(
+          userId: currentState.userProfile.userId,
+          activitiesInterestedIn: currentState.activitiesInterestedIn!,
+          fitnessGoals: currentState.fitnessGoals!,
+          desiredBodyTypes: currentState.desiredBodyTypes!
+      );
+      discoverRepository.upsertUserFitnessPreferences(
+          currentState.userProfile.userId,
+          prefs,
+          accessToken!
+      );
+
       emit(UserDiscoverPreferencesModified(
           userProfile: currentState.userProfile,
           locationCenter: currentState.locationCenter,
@@ -245,6 +271,19 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
 
     final currentState = state;
     if (currentState is UserDiscoverPreferencesModified) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final prefs = UserFitnessPreferencesPost(
+          userId: currentState.userProfile.userId,
+          activitiesInterestedIn: currentState.activitiesInterestedIn!,
+          fitnessGoals: currentState.fitnessGoals!,
+          desiredBodyTypes: currentState.desiredBodyTypes!
+      );
+      discoverRepository.upsertUserFitnessPreferences(
+          currentState.userProfile.userId,
+          prefs,
+          accessToken!
+      );
+
       emit(UserDiscoverPreferencesModified(
           userProfile: currentState.userProfile,
           locationCenter: currentState.locationCenter,
@@ -312,6 +351,21 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
 
     final currentState = state;
     if (currentState is UserDiscoverPreferencesModified) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      final prefs = UserPersonalPreferencesPost(
+        userId: currentState.userProfile.userId,
+        gendersInterestedIn: currentState.gendersInterestedIn!,
+        preferredDays: currentState.preferredDays!,
+        hoursPerWeek: currentState.hoursPerWeek!,
+        minimumAge: currentState.minimumAge!,
+        maximumAge: currentState.maximumAge!,
+      );
+      discoverRepository.upsertUserPersonalPreferences(
+          currentState.userProfile.userId,
+          prefs,
+          accessToken!
+      );
+
       emit(UserDiscoverPreferencesModified(
           userProfile: currentState.userProfile,
           locationCenter: currentState.locationCenter,
@@ -348,7 +402,7 @@ class DiscoverUserPreferencesBloc extends Bloc<DiscoverUserPreferencesEvent, Dis
           minimumAge: currentState.minimumAge!,
           maximumAge: currentState.maximumAge!,
       );
-      final response = await discoverRepository.upsertUserPersonalPreferences(
+      discoverRepository.upsertUserPersonalPreferences(
           currentState.userProfile.userId,
           prefs,
           accessToken!
