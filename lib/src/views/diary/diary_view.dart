@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:age_calculator/age_calculator.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:either_dart/either.dart';
@@ -585,7 +587,7 @@ class DiaryViewState extends State<DiaryView> {
           child: LinearPercentIndicator(
             lineHeight: 15.0,
             barRadius: const Radius.elliptical(5, 10),
-            percent: (1 - (remainingCalories / targetCalories)),
+            percent: min((1 - (remainingCalories / targetCalories)), 1),
             center: Text(
                 "${((1 - (remainingCalories / targetCalories)) * 100).toStringAsFixed(1)}%",
               style: const TextStyle(
@@ -796,7 +798,7 @@ class DiaryViewState extends State<DiaryView> {
               LinearPercentIndicator(
                 lineHeight: 15.0,
                 barRadius: const Radius.elliptical(5, 10),
-                percent: stepGoalPercentage / 100,
+                percent: min(stepGoalPercentage / 100, 1),
                 center: Text(
                   "${stepGoalPercentage.toStringAsFixed(1)}%",
                   style: const TextStyle(
@@ -1407,10 +1409,6 @@ class DiaryViewState extends State<DiaryView> {
 
   _renderExerciseDiaryEntries(DiaryDataFetched state) {
     return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-          border: Border.all(color: Colors.teal)
-      ),
       child: Column(
         children: [
           _renderCardioEntries(state),
@@ -1463,7 +1461,7 @@ class DiaryViewState extends State<DiaryView> {
                 ),
                 onPressed: () async {
                   final state = _diaryBloc.state;
-                  if (state is DiaryDataFetched) {
+                  if (state is DiaryDataFetched && state.fitnessUserProfile != null) {
                     showDialog(
                         context: context,
                         builder: (context) {
@@ -1479,6 +1477,9 @@ class DiaryViewState extends State<DiaryView> {
                                 foodDiaryEntries: state.foodDiaryEntries,
                                 userStepsData: state.userStepsData,
                                 selectedDate: currentSelectedDate,
+                                fitnessUserProfile: state.fitnessUserProfile!,
+                                age: AgeCalculator.age(DateTime.parse(widget.rawUserProfile.dateOfBirth!)).years,
+                                gender: widget.currentUserProfile.gender,
                               ),
                             ),
                           );

@@ -253,9 +253,12 @@ class CalendarViewState extends State<CalendarView> {
               heightPerMinute: 1, // height occupied by 1 minute time span.
               eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
               onEventTap: (events, date) {
-                final eitherEvent = events.first as Either<Meetup, AllDiaryEntries>;
-                if (eitherEvent.isLeft) {
-                  _showMeetupCardDialog(state, eitherEvent.left);
+                final eitherEvent = events.first as CalendarEventData<Either<Meetup, AllDiaryEntries>>;
+                if (eitherEvent.event?.isLeft ?? false) {
+                  _showMeetupCardDialog(state, eitherEvent.event!.left);
+                }
+                else {
+                  _showDiaryEntriesCardDialog(state, eitherEvent.event!.right, date);
                 }
               },
               onDateLongPress: (date) {
@@ -313,9 +316,12 @@ class CalendarViewState extends State<CalendarView> {
               heightPerMinute: 1, // height occupied by 1 minute time span.
               eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
               onEventTap: (events, date) {
-                final eitherEvent = events.first as Either<Meetup, AllDiaryEntries>;
-                if (eitherEvent.isLeft) {
-                  _showMeetupCardDialog(state, eitherEvent.left);
+                final eitherEvent = events as CalendarEventData<Either<Meetup, AllDiaryEntries>>;
+                if (eitherEvent.event?.isLeft ?? false) {
+                  _showMeetupCardDialog(state, eitherEvent.event!.left);
+                }
+                else {
+                  _showDiaryEntriesCardDialog(state, eitherEvent.event!.right, date);
                 }
               },
               onDateLongPress: (date) => print(date),
