@@ -10,12 +10,12 @@ abstract class DiscoverRecommendationsEvent extends Equatable {
 
 class FetchUserDiscoverRecommendations extends DiscoverRecommendationsEvent {
   final PublicUserProfile currentUserProfile;
-  final bool isPremiumEnabled;
+  final bool shouldIncreaseRadius;
 
-  const FetchUserDiscoverRecommendations(this.currentUserProfile, this.isPremiumEnabled);
+  const FetchUserDiscoverRecommendations(this.currentUserProfile, this.shouldIncreaseRadius);
 
   @override
-  List<Object?> get props => [currentUserProfile, isPremiumEnabled];
+  List<Object?> get props => [currentUserProfile, shouldIncreaseRadius];
 }
 
 class UpsertNewlyDiscoveredUser extends DiscoverRecommendationsEvent {

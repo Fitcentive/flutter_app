@@ -32,7 +32,7 @@ class LocationCard extends StatelessWidget {
   final Set<Marker> markers = <Marker>{};
   final Map<CircleId, Circle> circles = <CircleId, Circle>{};
 
-  late BitmapDescriptor customUserLocationMarker;
+  BitmapDescriptor? customUserLocationMarker;
 
   void _generateBoundaryCircle(
       String userId,
@@ -86,13 +86,15 @@ class LocationCard extends StatelessWidget {
     _generateBoundaryCircle(currentUser.userId, currentUserProfileLocationCenter, currentUserLocationRadius, Colors.teal, Colors.tealAccent, context);
 
     markers.clear();
-    markers.add(
-      Marker(
-        markerId: markerId,
-        position: currentUserProfileLocationCenter,
-        icon: customUserLocationMarker
-      ),
-    );
+    if (customUserLocationMarker != null) {
+      markers.add(
+        Marker(
+            markerId: markerId,
+            position: currentUserProfileLocationCenter,
+            icon: customUserLocationMarker!
+        ),
+      );
+    }
   }
 
   @override

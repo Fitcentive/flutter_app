@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/user_profile_with_location.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_bloc.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_event.dart';
 import 'package:flutter_app/src/views/discover_user_preferences/bloc/discover_user_preferences_state.dart';
@@ -51,6 +52,7 @@ class GymLocationsViewState extends State<GymLocationsView> {
 
   @override
   Widget build(BuildContext context) {
+    KeyboardUtils.hideKeyboard(context);
     return SearchLocationsView.withBloc(
       userProfilesWithLocations: [UserProfileWithLocation(
           widget.currentUserProfile,

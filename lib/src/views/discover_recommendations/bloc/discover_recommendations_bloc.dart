@@ -51,6 +51,7 @@ class DiscoverRecommendationsBloc extends Bloc<DiscoverRecommendationsEvent, Dis
     );
     final recommendations = await discoverRepository.getUserDiscoverRecommendations(
         event.currentUserProfile.userId,
+        event.shouldIncreaseRadius,
         accessToken
     );
     userRepository.trackUserEvent(AttemptToDiscoverUsers(), accessToken);

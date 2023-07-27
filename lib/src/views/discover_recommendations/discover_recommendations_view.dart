@@ -69,13 +69,16 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
   List<String> alreadyViewedUserIds = [];
   int discoveredUsersViewedForMonthCountStateValue = 0;
 
+  // Provide user with opportunity to discover outside of selected radius if user wants
+  bool shouldIncreaseRadius = false;
+
   @override
   void initState() {
     super.initState();
     isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
 
     _discoverRecommendationsBloc = BlocProvider.of<DiscoverRecommendationsBloc>(context);
-    _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile, isPremiumEnabled));
+    _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile, shouldIncreaseRadius));
   }
 
   @override
@@ -264,12 +267,12 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
             else {
               discoveredUsersViewedForMonthCountStateValue = state.discoveredUsersViewedForMonthCount;
               fetchedRecommendations = state.recommendations;
-              if (fetchedRecommendations.isNotEmpty) {
-                return _carouselSlider(state.currentUserProfile, fetchedRecommendations);
-              }
-              else {
-                return _noResultsView();
-              }
+              return Column(
+                children: WidgetUtils.skipNulls([
+                  _showExtendedRadiusDiscoverTextIfNeeded(),
+                  Expanded(child: _renderPagesOrEmptyScreen(state)),
+                ]),
+              );
             }
           }
           else {
@@ -279,6 +282,52 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
           }
         }),
     );
+  }
+
+  _showExtendedRadiusDiscoverTextIfNeeded() {
+    if (shouldIncreaseRadius) {
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            shouldIncreaseRadius = false;
+          });
+          buttonCarouselController = CarouselController(); // This is done to reset "readiness" of controller
+          _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile, shouldIncreaseRadius));
+        },
+        child: Column(
+          children: [
+            const Text(
+              "You are discovering users beyond your chosen radius",
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.teal,
+              ),
+            ),
+            WidgetUtils.spacer(2.5),
+            const Text(
+              "Tap here to disable this.",
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.teal,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  _renderPagesOrEmptyScreen(DiscoverRecommendationsReady state) {
+    if (fetchedRecommendations.isNotEmpty) {
+      return _carouselSlider(state.currentUserProfile, fetchedRecommendations);
+    }
+    else {
+      return _noResultsView();
+    }
   }
 
   _noResultsView() {
@@ -298,6 +347,26 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
               "Update your preferences for most accurate results",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                shouldIncreaseRadius = true;
+              });
+              buttonCarouselController = CarouselController(); // This is done to reset "readiness" of controller
+              _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile, shouldIncreaseRadius));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: const Text(
+                "Alternatively, click here to discover users outside your search radius",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.teal,
+                ),
               ),
             ),
           ),
@@ -327,7 +396,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
         items: items,
         carouselController: buttonCarouselController,
         options: CarouselOptions(
-          height: ScreenUtils.getScreenHeight(context) * 0.75,
+          height: ScreenUtils.getScreenHeight(context) * 0.8,
           aspectRatio: 16/9,
           viewportFraction: 0.825,
           initialPage: currentSelectedRecommendationIndex,

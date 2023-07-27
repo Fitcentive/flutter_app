@@ -71,10 +71,13 @@ class DiscoverRepository {
 
   Future<List<DiscoverRecommendation>> getUserDiscoverRecommendations(
       String userId,
+      bool shouldIncreaseRadius,
       String accessToken
   ) async {
     final response = await http.get(
-        Uri.parse("$BASE_URL/user/$userId/recommendations"),
+        shouldIncreaseRadius ?
+          Uri.parse("$BASE_URL/user/$userId/recommendations?shouldIncreaseRadius=$shouldIncreaseRadius") :
+          Uri.parse("$BASE_URL/user/$userId/recommendations"),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken'
