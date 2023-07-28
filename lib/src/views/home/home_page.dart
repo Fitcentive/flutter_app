@@ -158,18 +158,21 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         break;
     }
 
-
   }
 
   @override
   void dispose() {
     _menuNavigationBloc.dispose();
+    // WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+
+    // Do we need this? Lifecycle events don't get triggered otherwise? Check diary view for example
+    // WidgetsBinding.instance.addObserver(this);
 
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);

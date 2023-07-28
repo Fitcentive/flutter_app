@@ -16,6 +16,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/authenticated_user_stream_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_stream_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/step_count_stream_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/views/complete_profile/complete_profile_page.dart';
@@ -108,6 +109,7 @@ class App extends StatelessWidget {
         RepositoryProvider<NotificationRepository>(create: (context) => NotificationRepository()),
         RepositoryProvider<FlutterSecureStorage>(create: (context) => const FlutterSecureStorage()),
         RepositoryProvider<AuthenticatedUserStreamRepository>(create: (context) => AuthenticatedUserStreamRepository()),
+        RepositoryProvider<StepCountStreamRepository>(create: (context) => StepCountStreamRepository()),
         RepositoryProvider<ChatRoomUpdatedStreamRepository>(create: (context) => ChatRoomUpdatedStreamRepository()),
         RepositoryProvider<MeetupRepository>(create: (context) => MeetupRepository()),
         RepositoryProvider<DiaryRepository>(create: (context) => DiaryRepository()),
@@ -123,6 +125,8 @@ class App extends StatelessWidget {
                     diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
                     secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
                     authUserStreamRepository: RepositoryProvider.of<AuthenticatedUserStreamRepository>(context),
+                    stepCountStreamRepository: RepositoryProvider.of<StepCountStreamRepository>(context),
+                    context: context
                   )),
           BlocProvider<CreateAccountBloc>(
               create: (context) => CreateAccountBloc(userRepository: RepositoryProvider.of<UserRepository>(context))

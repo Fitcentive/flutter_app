@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/stream/step_count_stream_repository.dart';
 import 'package:flutter_app/src/models/auth/auth_tokens.dart';
 import 'package:flutter_app/src/models/auth/oidc_provider_info.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
@@ -27,6 +29,7 @@ import 'package:formz/formz.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 import 'package:pedometer/pedometer.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'authentication_event.dart';
 
@@ -46,10 +49,14 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   late final StreamSubscription<AuthenticatedUser>_authenticatedUserSubscription;
   late final Stream<StepCount> _stepCountStream;
 
+  final StepCountStreamRepository stepCountStreamRepository;
+
   final logger = Logger("AuthenticationBloc");
 
   bool isFirstTimeSync = true;
   int pedometerStepCount = 0;
+
+  final BuildContext context;
 
   AuthenticationBloc({
     required this.authenticationRepository,
@@ -58,7 +65,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     required this.chatRepository,
     required this.diaryRepository,
     required this.secureStorage,
-    required this.authUserStreamRepository
+    required this.authUserStreamRepository,
+    required this.stepCountStreamRepository,
+    required this.context,
   }) : super(AuthInitialState()) {
     on<SignInWithEmailEvent>(_signInWithEmail);
     on<LoginEmailChanged>(_onUsernameChanged);
@@ -71,6 +80,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     on<RestoreAuthSuccessState>(_restoreAuthSuccessState);
     on<AccountDeletionRequested>(_accountDeletionRequested);
     on<SyncStepsDataRequested>(_syncStepsDataRequested);
+    on<SetupPedometerAgain>(_setupPedometerAgain);
 
     _authenticatedUserSubscription = authUserStreamRepository.authenticatedUser.listen((newUser) {
       add(AuthenticatedUserDataUpdated(user: newUser));
@@ -78,28 +88,56 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
     if (DeviceUtils.isMobileDevice()) {
       _stepCountStream = Pedometer.stepCountStream;
-      _stepCountStream.listen(onStepCount);
+    }
+    _setupPedometer();
+  }
+
+  void _setupPedometer() async {
+    if (DeviceUtils.isMobileDevice()) {
+      // _stepCountStream = Pedometer.stepCountStream;
+      if(await Permission.activityRecognition.request().isGranted) {
+        _stepCountStream.listen(onStepCount);
+      }
+      else {
+        Map<Permission, PermissionStatus> statuses = await [
+          Permission.activityRecognition,
+        ].request();
+
+        if (statuses[Permission.activityRecognition] == PermissionStatus.granted) {
+          _stepCountStream.listen(onStepCount);
+        }
+      }
     }
   }
 
+
   void onStepCount(StepCount event) {
     pedometerStepCount = event.steps;
+    stepCountStreamRepository.newStepCount(event.steps);
   }
+
+  void _setupPedometerAgain(SetupPedometerAgain event, Emitter<AuthenticationState> emit) async {
+    _setupPedometer();
+  }
+
 
   void _syncStepsDataRequested(SyncStepsDataRequested event, Emitter<AuthenticationState> emit) async {
     if (DeviceUtils.isMobileDevice()) {
-      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-      final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.user.user.id, accessToken!);
-      if (fitnessUserProfile != null) {
-        diaryRepository.upsertUserStepsData(
-            event.user.user.id,
-            UserStepsDataUpsert(
-                stepsTaken: pedometerStepCount,
-                dateString: DateFormat('yyyy-MM-dd').format(DateTime.now())
-            ),
-            accessToken
-        );
-        _setUpSyncStepsDataRequestedTrigger(event.user);
+      if (await Permission.activityRecognition.request().isGranted) {
+        _stepCountStream.listen(onStepCount); // If permissions were granted in background, this will catch it
+        final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+        final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.user.user.id, accessToken!);
+        if (fitnessUserProfile != null) {
+          diaryRepository.upsertUserStepsData(
+              event.user.user.id,
+              UserStepsDataUpsert(
+                  stepsTaken: pedometerStepCount,
+                  dateString: DateFormat('yyyy-MM-dd').format(DateTime.now())
+              ),
+              accessToken
+          );
+          _setUpSyncStepsDataRequestedTrigger(event.user);
+        }
       }
     }
   }

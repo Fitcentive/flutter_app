@@ -118,3 +118,11 @@ class SyncStepsDataRequested extends AuthenticationEvent {
   @override
   List<Object> get props => [user];
 }
+
+class SetupPedometerAgain extends AuthenticationEvent {
+
+  const SetupPedometerAgain();
+
+  @override
+  List<Object> get props => [];
+}

@@ -175,6 +175,9 @@ class NotificationsViewState extends State<NotificationsView> {
       case "MeetupLocationChanged":
         return _generateMeetupLocationChangedNotification(notification, userProfileMap);
 
+      case "UserAttainedNewAchievementMilestone":
+        return _generateUserAttainedNewAchievementMilestoneNotification(notification, userProfileMap);
+
       default:
         return const Text("Unknown notification type");
     }
@@ -382,6 +385,47 @@ class NotificationsViewState extends State<NotificationsView> {
       ),
       title: Text(
         _getParticipantAddedToMeetupNotificationText(meetupOwnerProfile ?? staticDeletedUserProfile!, meetupName),
+        style: const TextStyle(fontSize: 14),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Text(
+          timeago.format(notification.updatedAt.toLocal()),
+          style: const TextStyle(fontSize: 10),
+        ),
+      ),
+    );
+  }
+
+  Widget _generateUserAttainedNewAchievementMilestoneNotification(
+      AppNotification notification,
+      Map<String, PublicUserProfile> userProfileMap
+      ) {
+
+    final String milestoneName = notification.data['milestoneName'];
+    final String milestoneCategory = notification.data['milestoneCategory'];
+    final int attainedAtInMillis = notification.data['attainedAtInMillis'];
+
+    return ListTile(
+      onTap: () async {
+        // _goToDetailedMeetup(meetupId);
+      },
+      tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
+      leading: GestureDetector(
+        onTap: () async {
+          _goToUserProfile(widget.currentUserProfile);
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 100, 100),
+          ),
+        ),
+      ),
+      title: Text(
+        "You have achieved a milestone in the $milestoneCategory category! Congrats on reaching $milestoneName!",
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Padding(

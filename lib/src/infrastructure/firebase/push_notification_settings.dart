@@ -224,6 +224,10 @@ class PushNotificationSettings {
           _openMeetupView(context, secureStorage, userRepository, payload);
           break;
 
+        case "user_attained_new_achievement_milestone":
+          _openNotificationsView(context);
+          break;
+
         default:
           break;
       }
@@ -464,6 +468,10 @@ class PushNotificationSettings {
 
         case "meetup_reminder":
           _openMeetupView(context, secureStorage, userRepository, jsonEncode(message.data));
+          break;
+
+        case "user_attained_new_achievement_milestone":
+          _openNotificationsView(context);
           break;
 
         default:

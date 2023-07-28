@@ -97,7 +97,7 @@ class ExerciseUtils {
   static const int defaultStepGoal = 10000;
   static const int maxStepGoal = 25000;
 
-  static const Duration backgroundStepCountSyncDuration = Duration(minutes: 1);
+  static const Duration backgroundStepCountSyncDuration = Duration(minutes: 2);
 
   static double _getMetValueForActivity(String activityName) =>
       activityMETMap[activityName.toLowerCase()] ?? defaultActivityMETValue;

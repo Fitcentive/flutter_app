@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:age_calculator/age_calculator.dart';
@@ -31,13 +32,15 @@ import 'package:flutter_app/src/views/food_search/food_search_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_state.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
+import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/daily_summary_card.dart';
 import 'package:flutter_app/src/views/user_fitness_profile/user_fitness_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:pedometer/pedometer.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -87,7 +90,7 @@ class DiaryView extends StatefulWidget {
   }
 }
 
-class DiaryViewState extends State<DiaryView> {
+class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
   static const int MAX_PAGES = 500;
   static const int INITIAL_PAGE = MAX_PAGES ~/ 2;
 
@@ -103,6 +106,7 @@ class DiaryViewState extends State<DiaryView> {
 
   late DiaryBloc _diaryBloc;
   late MenuNavigationBloc _menuNavigationBloc;
+  late AuthenticationBloc _authenticationBloc;
 
   bool _isFloatingButtonVisible = true;
 
@@ -133,8 +137,10 @@ class DiaryViewState extends State<DiaryView> {
   List<CardioDiaryEntry> cardioEntries = [];
   List<StrengthDiaryEntry> strengthEntries = [];
 
-  late Stream<StepCount> _stepCountStream;
-  int pedometerStepCount = 0;
+  late final StreamSubscription<int> _pedometerStepsUpdatedSubscription;
+  int stepCountForTheDay = 0;
+
+  bool isAppPausedAndGoingIntoBackground = false;
 
   /// int currentSelectedPageBuilderPage = MAX_PAGES ~/ 2 sets page as mid for current date
   /// If currentSelectedDate is diff, we need to offset accordimngly
@@ -146,59 +152,72 @@ class DiaryViewState extends State<DiaryView> {
     }
   }
 
-  _setupPedometer() async {
-    if (DeviceUtils.isMobileDevice()) {
-      _stepCountStream = Pedometer.stepCountStream;
-      if(await Permission.activityRecognition.request().isGranted) {
-        _stepCountStream.listen(onStepCount).onError(onStepCountError);
-      }
-      else {
-        Map<Permission, PermissionStatus> statuses = await [
-          Permission.activityRecognition,
-        ].request();
-        if (statuses[Permission.activityRecognition] == PermissionStatus.denied) {
-          if (await Permission.speech.isPermanentlyDenied) {
-            openAppSettings();
-          }
-        }
-        else {
-          _setupPedometer();
-        }
-      }
+  _subscribeToPedometer() async {
+    _pedometerStepsUpdatedSubscription = _authenticationBloc.stepCountStreamRepository.updatedStepCount.listen((newStepCountValue) {
+      setState(() {
+        stepCountForTheDay = newStepCountValue;
+      });
+    });
+  }
+
+  _reInitStepSync() {
+    final currentState = _authenticationBloc.state;
+    if (currentState is AuthSuccessUserUpdateState) {
+      _authenticationBloc.add(SyncStepsDataRequested(user: currentState.authenticatedUser));
     }
+    else if (currentState is AuthSuccessState) {
+      _authenticationBloc.add(SyncStepsDataRequested(user: currentState.authenticatedUser));
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch(state) {
+      case AppLifecycleState.resumed:
+        if (isAppPausedAndGoingIntoBackground) {
+          isAppPausedAndGoingIntoBackground = false;
+          _reInitStepSync();
+        }
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        isAppPausedAndGoingIntoBackground = true;
+        break;
+      default:
+        break;
+    }
+
   }
 
   @override
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
+
     currentSelectedDate = widget.preSelectedDateTime ?? currentSelectedDate;
     setCurrentSelectedPageBuilderPageValue();
 
+    _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
     _diaryBloc = BlocProvider.of<DiaryBloc>(context);
     _diaryBloc.add(const TrackViewDiaryHomeEvent());
     _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate));
     _scrollController.addListener(_onScroll);
 
-    _setupPedometer();
+    _subscribeToPedometer();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _scrollController.dispose();
+    _pedometerStepsUpdatedSubscription.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  void onStepCountError(error) {
-    print('onStepCountError: $error');
-  }
-
-  void onStepCount(StepCount event) {
-    setState(() {
-      pedometerStepCount = event.steps;
-    });
   }
 
   goToUserFitnessProfileView() {
@@ -242,6 +261,8 @@ class DiaryViewState extends State<DiaryView> {
 
               strengthEntries = state.strengthDiaryEntries;
               cardioEntries = state.cardioDiaryEntries;
+
+              stepCountForTheDay = state.userStepsData?.steps ?? stepCountForTheDay;
 
               if (state.cardioDiaryEntries.isEmpty) {
                 isCardioPanelExpanded = false;
@@ -587,9 +608,9 @@ class DiaryViewState extends State<DiaryView> {
           child: LinearPercentIndicator(
             lineHeight: 15.0,
             barRadius: const Radius.elliptical(5, 10),
-            percent: min((1 - (remainingCalories / targetCalories)), 1),
+            percent: min(max(0, (1 - (remainingCalories / targetCalories))), 1), // between 0-1
             center: Text(
-                "${((1 - (remainingCalories / targetCalories)) * 100).toStringAsFixed(1)}%",
+                "${(max(0, (1 - (remainingCalories / targetCalories))) * 100).toStringAsFixed(1)}%",
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12
@@ -763,8 +784,8 @@ class DiaryViewState extends State<DiaryView> {
     final double stepGoalPercentage;
     final String stepCountString;
     if (currentSelectedDaySameAsCurrentDay() && DeviceUtils.isMobileDevice()) {
-      stepGoalPercentage = ((pedometerStepCount / (state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal)) * 100);
-      stepCountString = pedometerStepCount.toString();
+      stepGoalPercentage = ((stepCountForTheDay / (state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal)) * 100);
+      stepCountString = stepCountForTheDay.toString();
     }
     else {
       stepGoalPercentage = (((state.userStepsData?.steps ?? 0) / (state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal)) * 100);
@@ -810,16 +831,101 @@ class DiaryViewState extends State<DiaryView> {
                 progressColor: Colors.teal,
               ),
               WidgetUtils.spacer(2.5),
-              Text(
-                "$stepCountString steps",
-                style: const TextStyle(
-                    color: Colors.teal,
-                ),
-              )
+              _showPermissionsTextIfNeededOrShowStepCount(stepCountString),
+              WidgetUtils.spacer(2.5),
+
             ],
           )
         )
       ],
+    );
+  }
+
+  Future<bool> _checkIfPermissionGrantedForActivityTracking() async {
+    if (await Permission.activityRecognition.isGranted) {
+      return true;
+    }
+    return false;
+  }
+
+  _showDialogToWarnUserThatTheyNeedToManuallyProvidePermission() {
+    showDialog(context: context, builder: (context) {
+      Widget cancelButton = TextButton(
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed:  () {
+          Navigator.pop(context);
+        },
+        child: const Text("Cancel"),
+      );
+      Widget continueButton = TextButton(
+        onPressed:  () {
+          Navigator.pop(context);
+          openAppSettings();
+        },
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+        ),
+        child: const Text("Go to settings"),
+      );
+
+      return AlertDialog(
+        title: const Text("Permissions required"),
+        content: const Text("You have to provide permissions to allow for step tracking. Do you want to continue?"),
+        actions: [
+          cancelButton,
+          continueButton,
+        ],
+      );
+    });
+  }
+
+  _requestPermissionsAndMoveAlong() async {
+    Map<Permission, PermissionStatus> statuses = await [Permission.activityRecognition].request();
+    if (statuses[Permission.activityRecognition] == PermissionStatus.permanentlyDenied) {
+      _showDialogToWarnUserThatTheyNeedToManuallyProvidePermission();
+    }
+    else {
+      _authenticationBloc.add(const SetupPedometerAgain());
+    }
+  }
+
+
+  Widget _showPermissionsTextIfNeededOrShowStepCount(String stepCountString) {
+    return FutureBuilder<bool>(
+        future: _checkIfPermissionGrantedForActivityTracking(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data!) {
+              return Text(
+                "$stepCountString steps",
+                style: const TextStyle(
+                  color: Colors.teal,
+                ),
+              );
+            }
+            else {
+              return GestureDetector(
+                onTap: () {
+                  _requestPermissionsAndMoveAlong();
+                },
+                child: const Text(
+                  "Your activity tracking permissions are disabled. Click here to enable step tracking",
+                  maxLines: 2,
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                  ),
+                ),
+              );
+            }
+          }
+          else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        }
     );
   }
 
@@ -1295,7 +1401,7 @@ class DiaryViewState extends State<DiaryView> {
   _renderStepsData(DiaryDataFetched state) {
     final String stepsToShow;
     if (currentSelectedDaySameAsCurrentDay() && DeviceUtils.isMobileDevice()) {
-      stepsToShow = pedometerStepCount.toString();
+      stepsToShow = stepCountForTheDay.toString();
     }
     else {
       stepsToShow = (state.userStepsData?.steps ?? 0).toString();
