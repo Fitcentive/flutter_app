@@ -138,7 +138,7 @@ class ExerciseUtils {
       return 0;
     }
     else {
-      return ((reps * 4) * sets) + (max((sets - 1), 1) * 30);
+      return ((((reps * 4) * sets) + (max((sets - 1), 1) * 30)) ~/ 60);
     }
   }
 }
