@@ -1,5 +1,6 @@
+import 'dart:math';
+
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
-import 'package:flutter_app/src/models/public_user_profile.dart';
 
 class ExerciseUtils {
 
@@ -127,5 +128,17 @@ class ExerciseUtils {
   static double calculateCalorieGoalPerDayForUserToAttainGoal(FitnessUserProfile user, int userAge, String? userGender) {
     final regularGoalPerDay = calculateCalorieGoalPerDayForUserToMaintainWeight(user, userAge, userGender);
     return regularGoalPerDay + goalsToCaloricDifferencePerDayMap[user.goal]!;
+  }
+
+  /// Calculation is as follows
+  /// 4 seconds per rep
+  /// 30 seconds between reps
+  static int getMinutesFromSetsAndReps(int sets, int reps) {
+    if (sets == 0 || reps == 0) {
+      return 0;
+    }
+    else {
+      return ((reps * 4) * sets) + (max((sets - 1), 1) * 30);
+    }
   }
 }

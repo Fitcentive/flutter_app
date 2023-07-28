@@ -780,7 +780,7 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
     totalStepsTaken = widget.userStepsData?.steps ?? totalStepsTaken;
     caloriesBurned = _getCaloriesBurned().toInt();
     caloriesConsumed = _getCaloriesConsumed(widget.foodDiaryEntriesRaw, widget.foodDiaryEntries).toInt();
-    minutesOfActivity = _getMinutesOfActivity(widget.cardioDiaryEntries);
+    minutesOfActivity = _getMinutesOfCardioActivity() + _getMinutesOfStrengthActivity(); // Guesstimate strength minutes for user
 
   }
 
@@ -861,11 +861,22 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
     }).reduce((value, element) => value + element);
   }
 
-  int _getMinutesOfActivity(List<CardioDiaryEntry> cardioDiaryEntries) {
-    if (cardioDiaryEntries.isNotEmpty) {
-      return cardioDiaryEntries
+  int _getMinutesOfCardioActivity() {
+    if (widget.cardioDiaryEntries.isNotEmpty) {
+      return widget.cardioDiaryEntries
           .map((e) => e.durationInMinutes)
           .reduce((value, element) => value + element);
+    }
+    else {
+      return 0;
+    }
+  }
+
+  int _getMinutesOfStrengthActivity() {
+    if (widget.strengthDiaryEntries.isNotEmpty) {
+      final totalReps = widget.strengthDiaryEntries.map((e) => e.reps).reduce((value, element) => value + element);
+      final totalSets = widget.strengthDiaryEntries.map((e) => e.sets).reduce((value, element) => value + element);
+      return ExerciseUtils.getMinutesFromSetsAndReps(totalSets, totalReps);
     }
     else {
       return 0;
