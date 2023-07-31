@@ -134,7 +134,15 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
   void _syncStepsDataRequested(SyncStepsDataRequested event, Emitter<AuthenticationState> emit) async {
     if (DeviceUtils.isMobileDevice()) {
-      if (await Permission.activityRecognition.request().isGranted) {
+      final bool isReadyToSync;
+      if (DeviceUtils.isAndroid()) {
+        isReadyToSync = await Permission.activityRecognition.request().isGranted;
+      }
+      else {
+        isReadyToSync = await Permission.sensors.request().isGranted;
+      }
+
+      if (isReadyToSync) {
         _stepCountStream.listen(onStepCount); // If permissions were granted in background, this will catch it
         final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
         final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.user.user.id, accessToken!);

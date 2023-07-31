@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/notification_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/award_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
@@ -404,7 +405,6 @@ class NotificationsViewState extends State<NotificationsView> {
 
     final String milestoneName = notification.data['milestoneName'];
     final String milestoneCategory = notification.data['milestoneCategory'];
-    final int attainedAtInMillis = notification.data['attainedAtInMillis'];
 
     return ListTile(
       onTap: () async {
@@ -425,7 +425,8 @@ class NotificationsViewState extends State<NotificationsView> {
         ),
       ),
       title: Text(
-        "You have achieved a milestone in the $milestoneCategory category! Congrats on reaching $milestoneName!",
+        "You have achieved a new milestone pertaining to ${AwardUtils.milestoneCategoryToDisplayNames[milestoneCategory]}!"
+            " Congrats on reaching ${AwardUtils.allMilestoneNameToDisplayNames[milestoneName]}!",
         style: const TextStyle(fontSize: 14),
       ),
       subtitle: Padding(

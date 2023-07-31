@@ -19,6 +19,7 @@ import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/achievements/achievements_home_view.dart';
 import 'package:flutter_app/src/views/calendar/calendar_view.dart';
 import 'package:flutter_app/src/views/chat_home/chat_home_view.dart';
 import 'package:flutter_app/src/views/diary/diary_view.dart';
@@ -56,6 +57,7 @@ GlobalKey accountDetailsKey = GlobalKey();
 GlobalKey searchKey = GlobalKey();
 GlobalKey friendsKey = GlobalKey();
 GlobalKey calendarKey = GlobalKey();
+GlobalKey achievementsKey = GlobalKey();
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.defaultSelectedTab = HomePageState.newsFeed}) : super(key: key);
@@ -103,6 +105,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   static const String chat = 'Chat';
   static const String logout = 'Logout';
   static const String diary = 'Diary';
+  static const String achievements = 'Achievements';
 
   static const bottomBarToAppDrawerItemMap = {
     0: newsFeed,
@@ -1493,6 +1496,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         _generateListTile(friends, friendsKey),
         // _generateListTile(chat),
         _generateListTile(calendar, calendarKey),
+        _generateListTile(achievements, achievementsKey),
         // _generateListTile(newsFeed),
       ],
     );
@@ -1540,6 +1544,8 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
           return MeetupHomeView.withBloc(publicUserProfile);
         case "Calendar":
           return CalendarView.withBloc(publicUserProfile);
+        case "Achievements":
+          return AchievementsHomeView.withBloc(publicUserProfile);
         case "Diary":
           return DiaryView.withBloc(
               diaryViewStateGlobalKey,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/firebase/firebase_options.dart';
 import 'package:flutter_app/src/infrastructure/proxies/custom_proxy.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/authentication_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/awards_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
@@ -113,6 +114,7 @@ class App extends StatelessWidget {
         RepositoryProvider<ChatRoomUpdatedStreamRepository>(create: (context) => ChatRoomUpdatedStreamRepository()),
         RepositoryProvider<MeetupRepository>(create: (context) => MeetupRepository()),
         RepositoryProvider<DiaryRepository>(create: (context) => DiaryRepository()),
+        RepositoryProvider<AwardsRepository>(create: (context) => AwardsRepository()),
       ],
       child: MultiBlocProvider(
         providers: [
