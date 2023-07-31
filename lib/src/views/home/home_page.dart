@@ -189,7 +189,6 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     PushNotificationSettings.setupFirebasePushNotifications(context, FirebaseMessaging.instance);
     _initializeAdsIfNeeded();
-
     _showBasicTutorialIfNeeded();
   }
 

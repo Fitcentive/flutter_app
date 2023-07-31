@@ -28,6 +28,20 @@ class DeviceUtils {
     return false;
   }
 
+  static bool isIOS() {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      return true;
+    }
+    return false;
+  }
+
+  static bool isAndroid() {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return true;
+    }
+    return false;
+  }
+
   // NOTE: https://github.com/flutter/flutter/issues/87917
   // Because of this, mobile-(web) app has only default markers
   static bool isAppRunningOnMobileBrowser() {

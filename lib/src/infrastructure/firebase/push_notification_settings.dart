@@ -254,7 +254,7 @@ class PushNotificationSettings {
         ?.createNotificationChannel(channel);
   }
 
-  static Future<NotificationSettings> _requestPermissionsIfNeeded(FirebaseMessaging messaging) async {
+  static Future<NotificationSettings> requestPermissionsIfNeeded(FirebaseMessaging messaging) async {
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       badge: true,
@@ -409,6 +409,12 @@ class PushNotificationSettings {
           }
           break;
 
+        case "user_attained_new_achievement_milestone":
+          if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
+            _handleShowingNotificationWithoutImage(notification, jsonPayload);
+          }
+          break;
+
         default:
           break;
       }
@@ -486,9 +492,9 @@ class PushNotificationSettings {
     reactToNotification(initialMessage);
   }
 
-  static setupFirebasePushNotifications(BuildContext context, FirebaseMessaging messaging) async {
+  static Future<void> setupFirebasePushNotifications(BuildContext context, FirebaseMessaging messaging) async {
+    final NotificationSettings settings = await requestPermissionsIfNeeded(messaging);
     await _setUpFlutterLocalNotifications(context);
-    final NotificationSettings settings = await _requestPermissionsIfNeeded(messaging);
     await _subscribeToNotificationsIfAllowed(settings);
     await _handleNotificationsReceivedWhenAppInBackground(context);
     await _checkForInitialMessage();

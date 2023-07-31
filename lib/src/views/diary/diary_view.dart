@@ -842,10 +842,17 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
   }
 
   Future<bool> _checkIfPermissionGrantedForActivityTracking() async {
-    if (await Permission.activityRecognition.isGranted) {
+    if (DeviceUtils.isMobileDevice()) {
+      if (DeviceUtils.isAndroid()) {
+        return await Permission.activityRecognition.isGranted;
+      }
+      else {
+        return await Permission.sensors.isGranted;
+      }
+    }
+    else {
       return true;
     }
-    return false;
   }
 
   _showDialogToWarnUserThatTheyNeedToManuallyProvidePermission() {

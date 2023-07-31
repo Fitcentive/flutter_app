@@ -95,15 +95,26 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   void _setupPedometer() async {
     if (DeviceUtils.isMobileDevice()) {
       // _stepCountStream = Pedometer.stepCountStream;
-      if(await Permission.activityRecognition.request().isGranted) {
-        _stepCountStream.listen(onStepCount);
+      if (DeviceUtils.isAndroid()) {
+        if(await Permission.activityRecognition.request().isGranted) {
+          _stepCountStream.listen(onStepCount);
+        }
+        else {
+          Map<Permission, PermissionStatus> statuses = await [
+            Permission.activityRecognition,
+          ].request();
+
+          if (statuses[Permission.activityRecognition] == PermissionStatus.granted) {
+            _stepCountStream.listen(onStepCount);
+          }
+        }
       }
       else {
         Map<Permission, PermissionStatus> statuses = await [
-          Permission.activityRecognition,
+          Permission.sensors,
         ].request();
 
-        if (statuses[Permission.activityRecognition] == PermissionStatus.granted) {
+        if (statuses[Permission.sensors] == PermissionStatus.granted) {
           _stepCountStream.listen(onStepCount);
         }
       }
