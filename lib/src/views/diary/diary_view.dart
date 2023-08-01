@@ -785,11 +785,11 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
     final String stepCountString;
     if (currentSelectedDaySameAsCurrentDay() && DeviceUtils.isMobileDevice()) {
       stepGoalPercentage = ((stepCountForTheDay / (state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal)) * 100);
-      stepCountString = stepCountForTheDay.toString();
+      stepCountString = "${stepCountForTheDay.toString()} / ${state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal}";
     }
     else {
       stepGoalPercentage = (((state.userStepsData?.steps ?? 0) / (state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal)) * 100);
-      stepCountString = state.userStepsData?.steps.toString() ?? "0";
+      stepCountString = "${state.userStepsData?.steps.toString() ?? "0"} / ${state.fitnessUserProfile?.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal}";
     }
 
     return Row(
