@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 
 abstract class AchievementsHomeEvent extends Equatable {
   const AchievementsHomeEvent();
@@ -18,4 +19,15 @@ class FetchAllUserAchievements extends AchievementsHomeEvent {
   List<Object> get props => [
     userId
   ];
+}
+
+class TrackViewDetailedAchievement extends AchievementsHomeEvent {
+  final UserTrackingEvent event;
+
+
+  const TrackViewDetailedAchievement(this.event);
+
+  @override
+  List<Object> get props => [event];
+
 }

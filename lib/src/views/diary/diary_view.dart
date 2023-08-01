@@ -1575,6 +1575,7 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
                 onPressed: () async {
                   final state = _diaryBloc.state;
                   if (state is DiaryDataFetched && state.fitnessUserProfile != null) {
+                    _diaryBloc.add(const TrackViewDiaryDailySummaryEvent());
                     showDialog(
                         context: context,
                         builder: (context) {

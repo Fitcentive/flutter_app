@@ -58,6 +58,10 @@ class EditDiaryEntry extends UserTrackingEvent {
   @override
   String eventName() => "EditDiaryEntry";
 }
+class ViewDiaryDailySummary extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDiaryDailySummary";
+}
 class UpdateFitnessUserProfile extends UserTrackingEvent {
   @override
   String eventName() => "UpdateFitnessUserProfile";
@@ -193,4 +197,20 @@ class ViewFriends extends UserTrackingEvent {
 class CancelPremium extends UserTrackingEvent {
   @override
   String eventName() => "CancelPremium";
+}
+class ViewAchievements extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewAchievements";
+}
+class ViewDetailedStepAchievements extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDetailedStepAchievements";
+}
+class ViewDetailedDiaryAchievements extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDetailedDiaryAchievements";
+}
+class ViewDetailedActivityAchievements extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDetailedActivityAchievements";
 }

@@ -19,11 +19,17 @@ class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
     required this.secureStorage,
   }) : super(const DiaryStateInitial()) {
     on<TrackViewDiaryHomeEvent>(trackViewDiaryHomeEvent);
+    on<TrackViewDiaryDailySummaryEvent>(trackViewDiaryDailySummaryEvent);
     on<FetchDiaryInfo>(_fetchDiaryInfo);
     on<RemoveFoodDiaryEntryFromDiary>(_removeFoodDiaryEntryFromDiary);
     on<RemoveCardioDiaryEntryFromDiary>(_removeCardioDiaryEntryFromDiary);
     on<RemoveStrengthDiaryEntryFromDiary>(_removeStrengthDiaryEntryFromDiary);
     on<UserFitnessProfileUpdated>(_userFitnessProfileUpdated);
+  }
+
+  void trackViewDiaryDailySummaryEvent(TrackViewDiaryDailySummaryEvent event, Emitter<DiaryState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    userRepository.trackUserEvent(ViewDiaryDailySummary(), accessToken!);
   }
 
   void trackViewDiaryHomeEvent(TrackViewDiaryHomeEvent event, Emitter<DiaryState> emit) async {

@@ -5,6 +5,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/awards/award_categories.dart';
 import 'package:flutter_app/src/models/awards/user_milestone.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/award_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/achievements/bloc/achievements_home_bloc.dart';
@@ -254,6 +255,16 @@ class AchievementsHomeViewState extends State<AchievementsHomeView> {
   }
 
   _goToDetailedAchievementsView(AwardCategory currentCategory, List<UserMilestone> milestonesAttained) {
+    if (currentCategory.name() == StepData().name()) {
+      _achievementsHomeBloc.add(TrackViewDetailedAchievement(ViewDetailedStepAchievements()));
+    }
+    else if (currentCategory.name() == DiaryEntryData().name()) {
+      _achievementsHomeBloc.add(TrackViewDetailedAchievement(ViewDetailedDiaryAchievements()));
+    }
+    else {
+      _achievementsHomeBloc.add(TrackViewDetailedAchievement(ViewDetailedActivityAchievements()));
+    }
+
     Navigator.push(
         context,
         DetailedAchievementView.route(widget.currentUserProfile, currentCategory, milestonesAttained)

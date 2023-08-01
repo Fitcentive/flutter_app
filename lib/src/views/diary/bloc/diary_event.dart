@@ -93,3 +93,12 @@ class TrackViewDiaryHomeEvent extends DiaryEvent {
   List<Object?> get props => [];
 
 }
+
+class TrackViewDiaryDailySummaryEvent extends DiaryEvent {
+
+  const TrackViewDiaryDailySummaryEvent();
+
+  @override
+  List<Object?> get props => [];
+
+}
