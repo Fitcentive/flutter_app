@@ -10,6 +10,7 @@ import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_bloc.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_event.dart';
@@ -159,6 +160,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
 
   @override
   Widget build(BuildContext context) {
+    KeyboardUtils.hideKeyboard(context);
     return Scaffold(
       floatingActionButton: _animatedButton(),
       body: BlocBuilder<ChatHomeBloc, ChatHomeState>(

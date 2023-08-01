@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -546,6 +547,9 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
           Expanded(
               flex: 8,
               child: TextFormField(
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                ],
                 controller: _mintuesPerformedTextController,
                 onChanged: (text) {
                   final minutes = int.parse(text);

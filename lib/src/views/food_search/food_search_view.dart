@@ -12,6 +12,7 @@ import 'package:flutter_app/src/models/fatsecret/food_search_result.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_food/detailed_food_view.dart';
 import 'package:flutter_app/src/views/food_search/bloc/food_search_bloc.dart';
@@ -126,6 +127,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
 
   @override
   Widget build(BuildContext context) {
+    KeyboardUtils.hideKeyboard(context);
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
