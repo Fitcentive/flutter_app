@@ -15,6 +15,12 @@ class AwardUtils {
     ActivityData(),
   ];
 
+  static List<AwardCategory> allProgressCategories = [
+    StepData(),
+    DiaryEntryData(),
+    ActivityData(),
+  ];
+
   static final List<MilestoneType> _allAchievementMilestonesForSteps = [
     TenThousandSteps(),
     FiftyThousandSteps(),

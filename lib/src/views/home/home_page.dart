@@ -35,6 +35,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/notifications_view.dart';
+import 'package:flutter_app/src/views/progress/progress_home_view.dart';
 import 'package:flutter_app/src/views/search/search_view.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_bloc.dart';
 import 'package:flutter_app/src/views/shared_components/ads/bloc/ad_event.dart';
@@ -58,6 +59,7 @@ GlobalKey searchKey = GlobalKey();
 GlobalKey friendsKey = GlobalKey();
 GlobalKey calendarKey = GlobalKey();
 GlobalKey achievementsKey = GlobalKey();
+GlobalKey progressKey = GlobalKey();
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.defaultSelectedTab = HomePageState.newsFeed}) : super(key: key);
@@ -106,6 +108,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   static const String logout = 'Logout';
   static const String diary = 'Diary';
   static const String achievements = 'Achievements';
+  static const String progress = 'Progress';
 
   static const bottomBarToAppDrawerItemMap = {
     0: newsFeed,
@@ -1549,6 +1552,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         // _generateListTile(chat),
         _generateListTile(calendar, calendarKey),
         _generateListTile(achievements, achievementsKey),
+        _generateListTile(progress, progressKey),
         // _generateListTile(newsFeed),
       ],
     );
@@ -1598,6 +1602,8 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
           return CalendarView.withBloc(publicUserProfile);
         case "Achievements":
           return AchievementsHomeView.withBloc(publicUserProfile);
+        case "Progress":
+          return ProgressHomeView.withBloc(publicUserProfile);
         case "Diary":
           return DiaryView.withBloc(
               diaryViewStateGlobalKey,
