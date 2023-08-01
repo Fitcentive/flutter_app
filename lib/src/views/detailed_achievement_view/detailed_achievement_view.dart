@@ -1,15 +1,18 @@
 import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/awards/award_categories.dart';
+import 'package:flutter_app/src/models/awards/milestone_types.dart';
 import 'package:flutter_app/src/models/awards/user_milestone.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/award_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+
+import 'package:timeago/timeago.dart' as timeago;
 
 class DetailedAchievementView extends StatelessWidget {
   static const String routeName = "view-achievement";
@@ -88,7 +91,19 @@ class DetailedAchievementView extends StatelessWidget {
         final isCurrentMilestoneAttained = milestonesForCurrentCategory.map((e) => e.name).contains(currentMilestone.name());
         return GestureDetector(
           onTap: () {
-            // Show dialog with some deets
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: ScreenUtils.getScreenHeight(context) * 0.65,
+                      ),
+                      child: _renderAchievementSummary(currentMilestone, context),
+                    ),
+                  );
+                }
+            );
           },
           child: IntrinsicHeight(
             child: Card(
@@ -218,4 +233,89 @@ class DetailedAchievementView extends StatelessWidget {
       ),
     );
   }
+
+  _renderAchievementSummary(MilestoneType currentMilestone, BuildContext context) {
+    final isCurrentMilestoneAttained = milestonesForCurrentCategory.map((e) => e.name).contains(currentMilestone.name());
+    return Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+            side: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 1
+            )
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 25),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: WidgetUtils.skipNulls([
+                    Center(
+                      child: CircleAvatar(
+                        backgroundColor: isCurrentMilestoneAttained ? Colors.teal : Colors.grey.shade300,
+                        radius: 40,
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                                image: AssetImage(AwardUtils.awardCategoryToIconAssetPathMap[awardCategory.name()]!)
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(5),
+                    AutoSizeText(
+                      AwardUtils.allMilestoneNameToDisplayNames[currentMilestone.name()]!,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: isCurrentMilestoneAttained ? Colors.teal : Colors.grey,
+                        fontSize: 18,
+                        // fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    WidgetUtils.spacer(5),
+                    _renderMilestoneAttainedAtTextIfNeeded(isCurrentMilestoneAttained, currentMilestone),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+        )
+    );
+  }
+
+  _renderMilestoneAttainedAtTextIfNeeded(bool isCurrentMilestoneAttained, MilestoneType currentMilestone) {
+    if (!isCurrentMilestoneAttained) {
+      return const AutoSizeText(
+        "You are yet to achieve this milestone",
+        maxLines: 1,
+        style: TextStyle(
+          color: Colors.grey,
+          fontSize: 15,
+          // fontWeight: FontWeight.bold
+        ),
+      );
+    }
+    else {
+      final attainedMilestone = milestonesForCurrentCategory.where((element) => element.name == currentMilestone.name()).first;
+      return AutoSizeText(
+        "You attained this milestone ${timeago.format(attainedMilestone.createdAt)}",
+        maxLines: 1,
+        style: TextStyle(
+          color: isCurrentMilestoneAttained ? Colors.teal : Colors.grey,
+          fontSize: 15,
+          // fontWeight: FontWeight.bold
+        ),
+      );
+    }
+  }
+
 }
