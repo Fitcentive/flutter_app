@@ -49,8 +49,6 @@ class DetailedAchievementView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("CURRENTLY AT: ${awardCategory.name()}");
-    print(milestoneCategoryToDisplayNamesMap);
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
