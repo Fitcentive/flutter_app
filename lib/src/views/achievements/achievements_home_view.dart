@@ -10,6 +10,7 @@ import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/achievements/bloc/achievements_home_bloc.dart';
 import 'package:flutter_app/src/views/achievements/bloc/achievements_home_event.dart';
 import 'package:flutter_app/src/views/achievements/bloc/achievements_home_state.dart';
+import 'package:flutter_app/src/views/detailed_achievement_view/detailed_achievement_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -38,12 +39,6 @@ class AchievementsHomeView extends StatefulWidget {
 }
 
 class AchievementsHomeViewState extends State<AchievementsHomeView> {
-
-  static Map<String, String> awardCategoryToIconAssetPathMap = {
-    StepData().name(): "assets/icons/boot_icon.png",
-    DiaryEntryData().name(): "assets/icons/diary_icon.png",
-    ActivityData().name(): "assets/icons/activity_icon.png",
-  };
 
   static Map<String, String> awardCategoryToDisplayNameMap = {
     StepData().name(): "Steps",
@@ -197,7 +192,7 @@ class AchievementsHomeViewState extends State<AchievementsHomeView> {
         final allMilestonesAvailableForCurrentCategory = AwardUtils.achievementCategoryToAllMilestonesMap[currentCategory.name()]!;
         return GestureDetector(
           onTap: () {
-            _goToDetailedAchievementsView(currentCategory);
+            _goToDetailedAchievementsView(currentCategory, milestonesAttainedForCurrentCategory.toList());
           },
           child: IntrinsicHeight(
             child: Card(
@@ -223,7 +218,7 @@ class AchievementsHomeViewState extends State<AchievementsHomeView> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               image: DecorationImage(
-                                  image: AssetImage(awardCategoryToIconAssetPathMap[currentCategory.name()]!)
+                                  image: AssetImage(AwardUtils.awardCategoryToIconAssetPathMap[currentCategory.name()]!)
                               ),
                             ),
                           ),
@@ -258,8 +253,11 @@ class AchievementsHomeViewState extends State<AchievementsHomeView> {
     );
   }
 
-  _goToDetailedAchievementsView(AwardCategory currentCategory) {
-    // yet to do
+  _goToDetailedAchievementsView(AwardCategory currentCategory, List<UserMilestone> milestonesAttained) {
+    Navigator.push(
+        context,
+        DetailedAchievementView.route(widget.currentUserProfile, currentCategory, milestonesAttained)
+    );
   }
 
 }

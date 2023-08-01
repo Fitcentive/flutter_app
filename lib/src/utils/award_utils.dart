@@ -3,6 +3,12 @@ import 'package:flutter_app/src/models/awards/milestone_types.dart';
 
 class AwardUtils {
 
+  static Map<String, String> awardCategoryToIconAssetPathMap = {
+    StepData().name(): "assets/icons/boot_icon.png",
+    DiaryEntryData().name(): "assets/icons/diary_icon.png",
+    ActivityData().name(): "assets/icons/activity_icon.png",
+  };
+
   static List<AwardCategory> allAchievementCategories = [
     StepData(),
     DiaryEntryData(),
@@ -36,15 +42,15 @@ class AwardUtils {
   ];
 
   static final Map<String, String> _stepMilestoneNameToDisplayNames = {
-    TenThousandSteps().name(): "10,000",
-    FiftyThousandSteps().name(): "50,000",
-    HundredThousandSteps().name(): "100,000",
-    TwoFiftyThousandSteps().name(): "250,000",
-    FiveHundredThousandSteps().name(): "500,000",
-    OneMillionStepsSteps().name(): "1 million",
-    TwoMillionStepsSteps().name():  "2 million",
-    FiveMillionStepsSteps().name(): "5 million",
-    TenMillionStepsSteps().name(): "10 million",
+    TenThousandSteps().name(): "10,000 steps",
+    FiftyThousandSteps().name(): "50,000 steps",
+    HundredThousandSteps().name(): "100,000 steps",
+    TwoFiftyThousandSteps().name(): "250,000 steps",
+    FiveHundredThousandSteps().name(): "500,000 steps",
+    OneMillionStepsSteps().name(): "1 million steps",
+    TwoMillionStepsSteps().name():  "2 million steps",
+    FiveMillionStepsSteps().name(): "5 million steps",
+    TenMillionStepsSteps().name(): "10 million steps",
   };
 
   static Map<String, String> milestoneCategoryToDisplayNames = {

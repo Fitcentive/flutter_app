@@ -456,6 +456,58 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
           ],
         ),
       );
+
+      // Achievements
+      appDrawerTargets.add(
+        TargetFocus(
+          identify: "achievementsKey",
+          keyTarget: achievementsKey,
+          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+          color: Colors.teal,
+          shape: ShapeLightFocus.RRect,
+          enableOverlayTab: true,
+          enableTargetTab: true,
+          paddingFocus: 10,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: Text(
+                        "These are your achievements",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(10),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: AutoSizeText(
+                        "Attain milestones over time and view them here!",
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      );
     }
 
     appDrawerTutorialCoachMark ??= TutorialCoachMark(

@@ -9,6 +9,9 @@ import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
+import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
+import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/notifications/bloc/notifications_bloc.dart';
@@ -52,11 +55,13 @@ class NotificationsViewState extends State<NotificationsView> {
 
   late final NotificationsBloc _notificationsBloc;
   late final AuthenticationBloc _authenticationBloc;
+  late final MenuNavigationBloc _menuNavigationBloc;
 
   @override
   void initState() {
     super.initState();
     _notificationsBloc = BlocProvider.of<NotificationsBloc>(context);
+    _menuNavigationBloc = BlocProvider.of<MenuNavigationBloc>(context);
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
 
     final currentAuthState = _authenticationBloc.state;
@@ -211,6 +216,15 @@ class NotificationsViewState extends State<NotificationsView> {
         context,
         DetailedMeetupView.route(meetupId: meetupId, currentUserProfile: widget.currentUserProfile),
             (route) => true
+    );
+  }
+
+  _goToAchievementsPage() {
+    _menuNavigationBloc.add(
+        MenuItemChosen(
+          selectedMenuItem: HomePageState.achievements,
+          currentUserId: widget.currentUserProfile.userId,
+        )
     );
   }
 
@@ -408,7 +422,7 @@ class NotificationsViewState extends State<NotificationsView> {
 
     return ListTile(
       onTap: () async {
-        // _goToDetailedMeetup(meetupId);
+        _goToAchievementsPage();
       },
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
