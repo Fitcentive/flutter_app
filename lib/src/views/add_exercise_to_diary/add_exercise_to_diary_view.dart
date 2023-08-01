@@ -310,6 +310,9 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
               flex: 8,
               child: TextFormField(
                 controller: _repsTextController,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                ],
                 onChanged: (text) {
                   if (text.isNotEmpty) {
                     final sets = _setsTextController.value.text.isEmpty ? 1 : int.parse(_setsTextController.value.text);
@@ -363,6 +366,9 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
               flex: 8,
               child: TextFormField(
                 controller: _setsTextController,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                ],
                 onChanged: (text) {
                   if (text.isNotEmpty) {
                     final sets = int.parse(text);
