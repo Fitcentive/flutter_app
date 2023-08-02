@@ -14,6 +14,8 @@ class ProgressHomeBloc extends Bloc<ProgressHomeEvent, ProgressHomeState> {
   final UserRepository userRepository;
   final DiaryRepository diaryRepository;
 
+  bool isFirstTime = true;
+
   ProgressHomeBloc({
     required this.awardsRepository,
     required this.userRepository,
@@ -25,9 +27,17 @@ class ProgressHomeBloc extends Bloc<ProgressHomeEvent, ProgressHomeState> {
 
   void _fetchProgressInsights(FetchProgressInsights event, Emitter<ProgressHomeState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    userRepository.trackUserEvent(ViewProgress(), accessToken!);
-    final insights = await awardsRepository.getUserProgressInsights(accessToken, DateTime.now().timeZoneOffset.inMinutes);
-    final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.userId, accessToken);
+    if (isFirstTime) {
+      userRepository.trackUserEvent(ViewProgress(), accessToken!);
+      isFirstTime = false;
+    }
+
+    final insightsFut = awardsRepository.getUserProgressInsights(accessToken!, DateTime.now().timeZoneOffset.inMinutes);
+    final fitnessUserProfileFut = diaryRepository.getFitnessUserProfile(event.userId, accessToken!);
+
+    final insights = await insightsFut;
+    final fitnessUserProfile = await fitnessUserProfileFut;
+
     emit(
         ProgressLoaded(
             insights: insights,
