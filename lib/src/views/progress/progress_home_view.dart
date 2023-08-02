@@ -1,35 +1,43 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/awards_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/awards/award_categories.dart';
-import 'package:flutter_app/src/models/awards/user_milestone.dart';
+import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/award_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/detailed_progress_view/detailed_progress_view.dart';
 import 'package:flutter_app/src/views/progress/bloc/progress_home_bloc.dart';
 import 'package:flutter_app/src/views/progress/bloc/progress_home_event.dart';
 import 'package:flutter_app/src/views/progress/bloc/progress_home_state.dart';
+import 'package:flutter_app/src/views/user_fitness_profile/user_fitness_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+GlobalKey<ProgressHomeViewState> progressViewStateGlobalKey = GlobalKey();
 
 class ProgressHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
 
   const ProgressHomeView({Key? key, required this.currentUserProfile}): super(key: key);
 
-  static Widget withBloc(PublicUserProfile currentUserProfile) => MultiBlocProvider(
+  static Widget withBloc(Key? key, PublicUserProfile currentUserProfile) => MultiBlocProvider(
     providers: [
       BlocProvider<ProgressHomeBloc>(
           create: (context) => ProgressHomeBloc(
             userRepository: RepositoryProvider.of<UserRepository>(context),
             awardsRepository: RepositoryProvider.of<AwardsRepository>(context),
+            diaryRepository: RepositoryProvider.of<DiaryRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
-    child: ProgressHomeView(currentUserProfile: currentUserProfile),
+    child: ProgressHomeView(
+      key: key,
+      currentUserProfile: currentUserProfile
+    ),
   );
 
   @override
@@ -100,6 +108,16 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
         ),
       ),
     );
+  }
+
+  goToUserFitnessProfileView() {
+    final currentState = _progressHomeBloc.state;
+    if (currentState is ProgressLoaded) {
+      Navigator.push<FitnessUserProfile>(
+          context,
+          UserFitnessProfileView.route(widget.currentUserProfile, currentState.fitnessUserProfile)
+      );
+    }
   }
 
   Widget _userProfileImageView() {
@@ -173,6 +191,14 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
     );
   }
 
+  _goToDetailedProgressView(AwardCategory category, FitnessUserProfile? fitnessUserProfile) {
+    Navigator
+    .push(
+        context,
+        DetailedProgressView.route(widget.currentUserProfile, category, fitnessUserProfile)
+    );
+  }
+
   _renderProgressTileList(ProgressLoaded state) {
     return GridView.count(
       shrinkWrap: true,
@@ -182,7 +208,7 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
         final currentCategory = AwardUtils.allProgressCategories[index];
         return GestureDetector(
           onTap: () {
-            // Go to detailed progress view
+            _goToDetailedProgressView(currentCategory, state.fitnessUserProfile);
           },
           child: IntrinsicHeight(
             child: Card(

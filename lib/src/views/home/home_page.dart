@@ -1308,7 +1308,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
         title: Text(selectedMenuItem, style: const TextStyle(color: Colors.teal),),
         iconTheme: const IconThemeData(color: Colors.teal),
-        actions: state.selectedMenuItem == diary ? [
+        actions: state.selectedMenuItem == diary || state.selectedMenuItem == progress ? [
           IconButton(
             icon: const Icon(
               Icons.person,
@@ -1334,7 +1334,13 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   _diaryScreenAppBarButtonPressed() {
-    diaryViewStateGlobalKey.currentState?.goToUserFitnessProfileView();
+    final currentMenuState = _menuNavigationBloc.state;
+    if (currentMenuState is MenuItemSelected && currentMenuState.selectedMenuItem == diary) {
+      diaryViewStateGlobalKey.currentState?.goToUserFitnessProfileView();
+    }
+    else if (currentMenuState is MenuItemSelected && currentMenuState.selectedMenuItem == progress) {
+      progressViewStateGlobalKey.currentState?.goToUserFitnessProfileView();
+    }
   }
 
   Widget _bottomAlignedButtons() {
@@ -1603,7 +1609,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         case "Achievements":
           return AchievementsHomeView.withBloc(publicUserProfile);
         case "Progress":
-          return ProgressHomeView.withBloc(publicUserProfile);
+          return ProgressHomeView.withBloc(progressViewStateGlobalKey, publicUserProfile);
         case "Diary":
           return DiaryView.withBloc(
               diaryViewStateGlobalKey,

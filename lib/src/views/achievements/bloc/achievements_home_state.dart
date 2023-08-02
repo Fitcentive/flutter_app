@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_app/src/models/awards/award_categories.dart';
 import 'package:flutter_app/src/models/awards/user_milestone.dart';
 
 abstract class AchievementsHomeState extends Equatable {

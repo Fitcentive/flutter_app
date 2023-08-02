@@ -19,7 +19,7 @@ class AwardsRepository {
 
   Future<List<UserStepMetrics>> getUserStepProgressData(String from, String to, String accessToken) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/progress/steps"),
+      Uri.parse("$BASE_URL/progress/steps?from=$from&to=$to"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
@@ -38,7 +38,7 @@ class AwardsRepository {
 
   Future<List<DiaryEntriesPerDay>> getUserDiaryEntryProgressData(String from, String to, String accessToken) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/progress/diary"),
+      Uri.parse("$BASE_URL/progress/diary?from=$from&to=$to"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
@@ -57,7 +57,7 @@ class AwardsRepository {
 
   Future<List<ActivityMinutesPerDay>> getUserActivityProgressData(String from, String to, String accessToken) async {
     final response = await http.get(
-      Uri.parse("$BASE_URL/progress/activity"),
+      Uri.parse("$BASE_URL/progress/activity?from=$from&to=$to"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
