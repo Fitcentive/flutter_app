@@ -17,3 +17,8 @@ class ActivityData extends AwardCategory {
   String name() => "ActivityData";
 }
 
+class WeightData extends AwardCategory {
+  @override
+  String name() => "WeightData";
+}
+

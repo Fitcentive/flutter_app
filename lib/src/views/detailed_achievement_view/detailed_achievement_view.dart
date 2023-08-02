@@ -21,6 +21,7 @@ class DetailedAchievementView extends StatelessWidget {
     StepData().name(): "Step",
     DiaryEntryData().name(): "Diary",
     ActivityData().name(): "Activity",
+    WeightData().name(): "Weight",
   };
 
   final PublicUserProfile userProfile;
@@ -71,12 +72,43 @@ class DetailedAchievementView extends StatelessWidget {
             children: [
               _renderHeader(),
               WidgetUtils.spacer(5),
+              _renderAchievementExplanation(),
+              WidgetUtils.spacer(5),
               _renderMilestonesTileList(context),
             ],
           ),
         ),
       ),
     );
+  }
+
+  _renderAchievementExplanation() {
+    return Padding(
+      padding: const EdgeInsets.all(5),
+      child: AutoSizeText(
+        _getExplanationBasedOnCategory(),
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.teal,
+        ),
+      ),
+    );
+  }
+
+  _getExplanationBasedOnCategory() {
+    switch (awardCategory.name()) {
+      case "StepData":
+        return "Achieve more milestones by simply walking more";
+      case "DiaryEntryData":
+        return "Achieve more milestones by logging your activities and nutrition";
+      case "ActivityData":
+        return "Achieve more milestones by logging activities";
+      case "WeightData":
+        return "Achieve more milestones by consistently logging your weight";
+    }
   }
 
   _renderMilestonesTileList(BuildContext context) {

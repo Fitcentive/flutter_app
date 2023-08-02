@@ -5,6 +5,10 @@ abstract class MilestoneType {
   String name();
 }
 
+///-------------------------------------------------
+/// Milestone types
+///-------------------------------------------------
+
 abstract class StepMilestone extends MilestoneType{
   @override
   AwardCategory category() => StepData();
@@ -19,6 +23,15 @@ abstract class ActivityMilestone extends MilestoneType{
   @override
   AwardCategory category() => ActivityData();
 }
+
+abstract class WeightMilestone extends MilestoneType{
+  @override
+  AwardCategory category() => WeightData();
+}
+
+///-------------------------------------------------
+/// Step milestones
+///-------------------------------------------------
 
 class TenThousandSteps extends StepMilestone {
   @override
@@ -57,7 +70,9 @@ class TenMillionStepsSteps extends StepMilestone {
   String name() => "TenMillionStepsSteps";
 }
 
-// Diary entry milestones
+///-------------------------------------------------
+/// Diary entry milestones
+///-------------------------------------------------
 class TenEntries extends DiaryEntryMilestone {
   @override
   String name() => "TenEntries";
@@ -99,7 +114,9 @@ class TwentyFiveThousandEntries extends DiaryEntryMilestone {
   String name() => "TwentyFiveThousandEntries";
 }
 
-// Activity Milestones
+///-------------------------------------------------
+/// Activity milestones
+///-------------------------------------------------
 class OneHour extends ActivityMilestone {
   @override
   String name() => "OneHour";
@@ -139,4 +156,48 @@ class FiveHundredHours extends ActivityMilestone {
 class ThousandHours extends ActivityMilestone {
   @override
   String name() => "ThousandHours";
+}
+
+///-------------------------------------------------
+/// Weight milestones
+///-------------------------------------------------
+class ThreeDayStreak extends WeightMilestone {
+  @override
+  String name() => "ThreeDayStreak";
+}
+class OneWeekStreak extends WeightMilestone {
+  @override
+  String name() => "OneWeekStreak";
+}
+class TenDayStreak extends WeightMilestone {
+  @override
+  String name() => "TenDayStreak";
+}
+class TwoWeekStreak extends WeightMilestone {
+  @override
+  String name() => "TwoWeekStreak";
+}
+class ThreeWeekStreak extends WeightMilestone {
+  @override
+  String name() => "ThreeWeekStreak";
+}
+class OneMonthStreak extends WeightMilestone {
+  @override
+  String name() => "OneMonthStreak";
+}
+class TwoMonthStreak extends WeightMilestone {
+  @override
+  String name() => "TwoMonthStreak";
+}
+class ThreeMonthStreak extends WeightMilestone {
+  @override
+  String name() => "ThreeMonthStreak";
+}
+class SixMonthStreak extends WeightMilestone {
+  @override
+  String name() => "SixMonthStreak";
+}
+class OneYearStreak extends WeightMilestone {
+  @override
+  String name() => "OneYearStreak";
 }

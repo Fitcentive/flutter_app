@@ -7,18 +7,21 @@ class AwardUtils {
     StepData().name(): "assets/icons/boot_icon.png",
     DiaryEntryData().name(): "assets/icons/diary_icon.png",
     ActivityData().name(): "assets/icons/activity_icon.png",
+    WeightData().name(): "assets/icons/scale_icon.png",
   };
 
   static List<AwardCategory> allAchievementCategories = [
     StepData(),
     DiaryEntryData(),
     ActivityData(),
+    WeightData(),
   ];
 
   static List<AwardCategory> allProgressCategories = [
     StepData(),
     DiaryEntryData(),
     ActivityData(),
+    WeightData(),
   ];
 
   static final List<MilestoneType> _allAchievementMilestonesForSteps = [
@@ -59,22 +62,38 @@ class AwardUtils {
     ThousandHours(),
   ];
 
+  static final List<MilestoneType> _allAchievementMilestonesForUserWeightData = [
+    ThreeDayStreak(),
+    OneWeekStreak(),
+    TenDayStreak(),
+    TwoWeekStreak(),
+    ThreeWeekStreak(),
+    OneMonthStreak(),
+    TwoMonthStreak(),
+    ThreeMonthStreak(),
+    SixMonthStreak(),
+    OneYearStreak(),
+  ];
+
   static final Map<String, List<MilestoneType>> achievementCategoryToAllMilestonesMap = {
     StepData().name(): _allAchievementMilestonesForSteps,
     DiaryEntryData().name(): _allAchievementMilestonesForDiaryEntries,
     ActivityData().name(): _allAchievementMilestonesForActivityMinutes,
+    WeightData().name(): _allAchievementMilestonesForUserWeightData,
   };
 
   static Map<String, String> allMilestoneNameToDisplayNames = {
     ..._stepMilestoneNameToDisplayNames,
     ..._diaryEntryMilestoneNameToDisplayNames,
     ..._activityMilestoneNameToDisplayNames,
+    ..._weightMilestoneNameToDisplayNames,
   };
 
   static List<MilestoneType> allAchievementMilestones = [
     ..._allAchievementMilestonesForSteps,
     ..._allAchievementMilestonesForDiaryEntries,
     ..._allAchievementMilestonesForActivityMinutes,
+    ..._allAchievementMilestonesForUserWeightData,
   ];
 
   static final Map<String, String> _stepMilestoneNameToDisplayNames = {
@@ -115,10 +134,24 @@ class AwardUtils {
     ThousandHours().name(): "1000 active hours",
   };
 
+  static final Map<String, String> _weightMilestoneNameToDisplayNames = {
+    ThreeDayStreak().name(): "a 3 day streak",
+    OneWeekStreak().name(): "a 1 week streak",
+    TenDayStreak().name(): "a 10 day streak",
+    TwoWeekStreak().name(): "a 2 week streak",
+    ThreeWeekStreak().name(): "a 3 week streak",
+    OneMonthStreak().name(): "a 1 month streak",
+    TwoMonthStreak().name():  "a 2 month streak",
+    ThreeMonthStreak().name(): "a 3 month streak",
+    SixMonthStreak().name(): "a 6 month streak",
+    OneYearStreak().name(): "a 1 year streak",
+  };
+
   static Map<String, String> milestoneCategoryToDisplayNames = {
     StepData().name(): "steps",
     DiaryEntryData().name(): "diary entries",
     ActivityData().name(): "active hours",
+    WeightData().name(): "logging your weight",
   };
 
 

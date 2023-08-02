@@ -145,6 +145,7 @@ flutter:
     - assets/icons/activity_icon.png
     - assets/icons/goal_icon.png
     - assets/icons/diary_icon.png
+    - assets/icons/scale_icon.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

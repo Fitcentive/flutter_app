@@ -52,6 +52,7 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
     StepData().name(): "Steps",
     DiaryEntryData().name(): "Diary",
     ActivityData().name(): "Activity",
+    WeightData().name(): "Weight",
   };
 
   late ProgressHomeBloc _progressHomeBloc;

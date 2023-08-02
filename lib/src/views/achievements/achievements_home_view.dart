@@ -45,6 +45,7 @@ class AchievementsHomeViewState extends State<AchievementsHomeView> {
     StepData().name(): "Steps",
     DiaryEntryData().name(): "Diary",
     ActivityData().name(): "Activity",
+    WeightData().name(): "Weight",
   };
 
   final Map<AwardCategory, List<UserMilestone>> userAchievementsMap = {};

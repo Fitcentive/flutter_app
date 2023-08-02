@@ -78,6 +78,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
     StepData().name(): "Steps",
     DiaryEntryData().name(): "Diary",
     ActivityData().name(): "Activity",
+    WeightData().name(): "Weight",
   };
 
   static const String oneWeekDisplayString = "1 week";
