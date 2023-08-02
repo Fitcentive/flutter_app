@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/meetup_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
@@ -13,10 +14,12 @@ import 'package:flutter_app/src/models/push/meetup_reminder_push_notification_me
 import 'package:flutter_app/src/models/push/participant_added_availability_to_meetup_push_notification_metadata.dart';
 import 'package:flutter_app/src/models/push/participant_added_to_meetup_push_notification_metadata.dart';
 import 'package:flutter_app/src/models/push/user_friend_request_push_notification_metadata.dart';
+import 'package:flutter_app/src/models/push/weight_log_reminder_push_notification_metadata.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
+import 'package:flutter_app/src/views/user_fitness_profile/user_fitness_profile.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -145,6 +148,24 @@ class PushNotificationSettings {
     );
   }
 
+  static _openFitnessUserProfileView(
+      BuildContext context,
+      FlutterSecureStorage secureStorage,
+      UserRepository userRepository,
+      DiaryRepository diaryRepository,
+      String payload
+      ) async {
+    final notificationMetadata = WeightLogReminderPushNotificationMetadata.fromJson(jsonDecode(payload));
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final userProfile = await userRepository.getPublicUserProfiles([notificationMetadata.targetUser], accessToken!);
+    final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(notificationMetadata.targetUser, accessToken);
+
+    Navigator.push(
+        context,
+        UserFitnessProfileView.route(userProfile.first, fitnessUserProfile)
+    );
+  }
+  
   static _openUserChatView(
       BuildContext context,
       FlutterSecureStorage secureStorage,
@@ -199,6 +220,7 @@ class PushNotificationSettings {
       BuildContext context,
       FlutterSecureStorage secureStorage,
       UserRepository userRepository,
+      DiaryRepository diaryRepository,
       String? payload
   ) {
     if (payload != null) {
@@ -224,6 +246,10 @@ class PushNotificationSettings {
           _openMeetupView(context, secureStorage, userRepository, payload);
           break;
 
+        case "weight_log_reminder":
+          _openFitnessUserProfileView(context, secureStorage, userRepository, diaryRepository, payload);
+          break;
+
         case "user_attained_new_achievement_milestone":
           _openNotificationsView(context);
           break;
@@ -236,6 +262,7 @@ class PushNotificationSettings {
 
   static Future<void> _setUpFlutterLocalNotifications(BuildContext context) async {
     final userRepository = RepositoryProvider.of<UserRepository>(context);
+    final diaryRepository = RepositoryProvider.of<DiaryRepository>(context);
     final secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
 
     final initializationSettings = _getSettings(context);
@@ -247,7 +274,7 @@ class PushNotificationSettings {
           // _handlePayload(context, secureStorage, userRepository, details.payload);
         // },
         onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
-          _handlePayload(context, secureStorage, userRepository, notificationResponse.payload);
+          _handlePayload(context, secureStorage, userRepository, diaryRepository, notificationResponse.payload);
         });
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -409,6 +436,12 @@ class PushNotificationSettings {
           }
           break;
 
+        case "weight_log_reminder":
+          if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
+            _handleShowingNotificationWithoutImage(notification, jsonPayload);
+          }
+          break;
+
         case "user_attained_new_achievement_milestone":
           if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
             _handleShowingNotificationWithoutImage(notification, jsonPayload);
@@ -447,6 +480,7 @@ class PushNotificationSettings {
   // When auto delivered push notification is selected, this callback is invoked
   static _handleNotificationsReceivedWhenAppInBackground(BuildContext context) {
     final userRepository = RepositoryProvider.of<UserRepository>(context);
+    final diaryRepository = RepositoryProvider.of<DiaryRepository>(context);
     final meetupRepository = RepositoryProvider.of<MeetupRepository>(context);
     final secureStorage = RepositoryProvider.of<FlutterSecureStorage>(context);
 
@@ -474,6 +508,10 @@ class PushNotificationSettings {
 
         case "meetup_reminder":
           _openMeetupView(context, secureStorage, userRepository, jsonEncode(message.data));
+          break;
+
+        case "weight_log_reminder":
+          _openFitnessUserProfileView(context, secureStorage, userRepository, diaryRepository, jsonEncode(message.data));
           break;
 
         case "user_attained_new_achievement_milestone":
