@@ -202,7 +202,7 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
     .push(
         context,
         DetailedProgressView.route(widget.currentUserProfile, category, currentFitnessUserProfile)
-    );
+    ).then((value) => _progressHomeBloc.add(FetchProgressInsights(userId: widget.currentUserProfile.userId)));
   }
 
   _renderProgressTileList(ProgressLoaded state) {

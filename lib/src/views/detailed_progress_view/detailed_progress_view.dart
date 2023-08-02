@@ -98,7 +98,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
 
   FitnessUserProfile? currentFitnessUserProfile;
 
-  Map<String, int> dateStringToMetricMap = {};
+  Map<String, double> dateStringToMetricMap = {};
 
   List<String> relevantDateStringsForChosenFilter = [];
   List<FlSpot> dataPoints = [];
@@ -165,26 +165,36 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
         listener: (context, state) {
           if (state is StepProgressMetricsLoaded) {
             for (var element in state.userStepMetrics) {
-              dateStringToMetricMap[element.metricDate] = element.stepsTaken;
+              dateStringToMetricMap[element.metricDate] = element.stepsTaken.toDouble();
             }
           }
 
           else if (state is DiaryEntriesProgressMetricsLoaded) {
             for (var element in state.userDiaryEntryMetrics) {
-              dateStringToMetricMap[element.metricDate] = element.entryCount;
+              dateStringToMetricMap[element.metricDate] = element.entryCount.toDouble();
             }
           }
 
           else if (state is ActivityProgressMetricsLoaded) {
             for (var element in state.userActivityMetrics) {
-              dateStringToMetricMap[element.metricDate] = element.activityMinutes;
+              dateStringToMetricMap[element.metricDate] = element.activityMinutes.toDouble();
+            }
+          }
+
+          else if (state is WeightProgressMetricsLoaded) {
+            for (var element in state.userWeightMetrics) {
+              dateStringToMetricMap[element.metricDate] = element.weightInLbs;
             }
           }
 
         },
         child: BlocBuilder<DetailedProgressBloc, DetailedProgressState>(
           builder: (context, state) {
-            if (state is StepProgressMetricsLoaded || state is ActivityProgressMetricsLoaded || state is DiaryEntriesProgressMetricsLoaded) {
+            if (state is StepProgressMetricsLoaded ||
+                state is ActivityProgressMetricsLoaded ||
+                state is DiaryEntriesProgressMetricsLoaded ||
+                state is WeightProgressMetricsLoaded
+            ) {
               return _renderBody();
             }
             else {
@@ -200,21 +210,76 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
     );
   }
 
-  _renderBody() {
+  _calculateDataPoints() {
     relevantDateStringsForChosenFilter = _getRelevantDateStringsForChosenFilter();
-    dataPoints = relevantDateStringsForChosenFilter
-        .asMap()
-        .map((index, e) {
-          if (widget.awardCategory.name() == StepData().name()) {
-            return MapEntry(index, FlSpot(index.toDouble(), (dateStringToMetricMap[e] ?? 0).toDouble() / 100));
+    final userCurrentWeight = currentFitnessUserProfile?.weightInLbs ?? 0;
+    if (widget.awardCategory.name() == WeightData().name()) {
+      final size = relevantDateStringsForChosenFilter.length;
+      List<FlSpot> rawPoints = [];
+      dataPoints = relevantDateStringsForChosenFilter
+          .toList()
+          .asMap()
+          .map((index, dateString) {
+        final opt = dateStringToMetricMap[dateString];
+        if (opt == null) {
+          // We want to assume the value of the entry before this, if it exists
+          // If this is the first entry, then we want that to assume the next available one, or current
+          // DP optimization for better performance needed
+          if (index == 0) {
+            // We have to look forward if we are at the beginning
+            double? nextNonNullUserWeight;
+            var i = index + 1;
+            while (i < size) {
+              if (dateStringToMetricMap[relevantDateStringsForChosenFilter[i]] != null) {
+                nextNonNullUserWeight = dateStringToMetricMap[relevantDateStringsForChosenFilter[i]]!;
+                break;
+              }
+              else {
+                i += 1;
+              }
+            }
+            if (nextNonNullUserWeight == null) {
+              rawPoints.add(FlSpot(index.toDouble(), userCurrentWeight));
+              return MapEntry(index, FlSpot(index.toDouble(), userCurrentWeight));
+            }
+            else {
+              rawPoints.add(FlSpot(index.toDouble(), nextNonNullUserWeight));
+              return MapEntry(index, FlSpot(index.toDouble(), nextNonNullUserWeight));
+            }
           }
           else {
-            return MapEntry(index, FlSpot(index.toDouble(), (dateStringToMetricMap[e] ?? 0).toDouble()));
+            // We look backward otherwise
+            rawPoints.add(FlSpot(index.toDouble(), rawPoints[index - 1].y));
+            return MapEntry(index, FlSpot(index.toDouble(), rawPoints[index - 1].y));
           }
-        })
-        .values
-        .toList();
+        }
+        else {
+          rawPoints.add(FlSpot(index.toDouble(), opt));
+          return MapEntry(index, FlSpot(index.toDouble(), opt));
+        }
+      })
+          .values
+          .toList();
 
+    }
+    else {
+      dataPoints = relevantDateStringsForChosenFilter
+          .asMap()
+          .map((index, e) {
+        if (widget.awardCategory.name() == StepData().name()) {
+          return MapEntry(index, FlSpot(index.toDouble(), (dateStringToMetricMap[e] ?? 0) / 100));
+        }
+        else {
+          return MapEntry(index, FlSpot(index.toDouble(), (dateStringToMetricMap[e] ?? 0)));
+        }
+      })
+          .values
+          .toList();
+    }
+  }
+
+  _renderBody() {
+    _calculateDataPoints();
     return Center(
       child: SingleChildScrollView(
         child: Center(
@@ -234,7 +299,6 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
 
   _renderInteractiveChart() {
 
-
     LineChartBarData lineChartBarData1_1 = LineChartBarData(
       isCurved: true,
       color: Colors.teal,
@@ -245,7 +309,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
       spots: dataPoints,
     );
 
-    // Only used as trendline to benchmark step goals against and user weight goal
+    // Only used as trendline to benchmark step goals against
     LineChartBarData lineChartBarData1_2 = LineChartBarData(
       isCurved: true,
       color: Colors.redAccent,
@@ -263,9 +327,51 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
           .toList(),
     );
 
+    // Only used as trendline to benchmark user weight goal against
+    LineChartBarData lineChartBarData1_3 = LineChartBarData(
+      isCurved: true,
+      color: Colors.redAccent,
+      barWidth: 2.5,
+      isStrokeCapRound: true,
+      dotData: FlDotData(show: false),
+      belowBarData: BarAreaData(
+        show: false,
+        color: Colors.pink.withOpacity(0),
+      ),
+      spots: dataPoints
+          .asMap()
+          .map((key, value) => MapEntry(
+              key,
+              FlSpot(key.toDouble(), currentFitnessUserProfile?.goalWeightInLbs ?? 0)))
+          .values
+          .toList(),
+    );
+
+    // Only used as trendline to benchmark user activity minutes against
+    LineChartBarData lineChartBarData1_4 = LineChartBarData(
+      isCurved: true,
+      color: Colors.orange,
+      barWidth: 2.5,
+      isStrokeCapRound: true,
+      dotData: FlDotData(show: false),
+      belowBarData: BarAreaData(
+        show: false,
+        color: Colors.pink.withOpacity(0),
+      ),
+      spots: dataPoints
+          .asMap()
+          .map((key, value) => MapEntry(
+          key,
+          FlSpot(key.toDouble(), ExerciseUtils.minimumRecommendedMinutesOfActivityPerDay)))
+          .values
+          .toList(),
+    );
+
     List<LineChartBarData> lineBarsData1 = WidgetUtils.skipNulls([
       lineChartBarData1_1,
       widget.awardCategory.name() == StepData().name() ?  lineChartBarData1_2 : null,
+      widget.awardCategory.name() == WeightData().name() ?  lineChartBarData1_3 : null,
+      widget.awardCategory.name() == ActivityData().name() ?  lineChartBarData1_4 : null,
     ]);
 
     return Column(
@@ -316,7 +422,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
             child: LineChart(
               LineChartData(
                 lineTouchData: LineTouchData(
-                  handleBuiltInTouches: false,
+                  handleBuiltInTouches: true,
                   touchTooltipData: LineTouchTooltipData(
                     tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
                   ),
@@ -612,6 +718,50 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
       }
     }
 
+    else if (widget.awardCategory.name() == WeightData().name()) {
+      switch (value.toInt()) {
+        case 25:
+          text = '25';
+          break;
+        case 50:
+          text = '50';
+          break;
+        case 75:
+          text = '75';
+          break;
+        case 100:
+          text = '100';
+          break;
+        case 125:
+          text = '125';
+          break;
+        case 150:
+          text = '150';
+          break;
+        case 175:
+          text = '175';
+          break;
+        case 200:
+          text = '200';
+          break;
+        case 225:
+          text = '225';
+          break;
+        case 250:
+          text = '250';
+          break;
+        case 275:
+          text = '275';
+          break;
+        case 300:
+          text = '300';
+          break;
+        default:
+          return Container();
+      }
+    }
+
+
 
     return Text(text, style: style, textAlign: TextAlign.center);
   }
@@ -624,6 +774,8 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
         return "Entries";
       case "ActivityData":
         return "Minutes";
+      case "WeightData":
+        return "Weight in lbs";
       default:
         return "Steps";
     }
@@ -637,6 +789,8 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
         return 50;
       case "ActivityData":
         return 200;
+      case "WeightData":
+        return 300;
       default:
         return 250;
     }
@@ -701,6 +855,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
 
 
   /// Gets the relevant date strings pertaining to fetched progress data for selected filter
+  /// Returns in ascending order
   List<String> _getRelevantDateStringsForChosenFilter() {
     final int maxDays;
     switch (selectedFilterDisplayName) {
@@ -760,87 +915,176 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
   }
 
   _renderBestStats() {
-    // This should be based on selected days
-    final entriesForCurrentPeriod = dateStringToMetricMap
-        .entries
-        .where((element) => relevantDateStringsForChosenFilter.contains(element.key));
+    if (widget.awardCategory.name() == WeightData().name()) {
+      final entriesForCurrentPeriod = dateStringToMetricMap
+          .entries
+          .where((element) => relevantDateStringsForChosenFilter.contains(element.key));
 
 
-    final MapEntry<String, int> bestDay;
-    if (entriesForCurrentPeriod.isNotEmpty) {
-      bestDay = entriesForCurrentPeriod.reduce((value, element) => value.value > element.value ? value : element);
+      MapEntry<String, double>? maxDay;
+      if (entriesForCurrentPeriod.isNotEmpty) {
+        maxDay = entriesForCurrentPeriod.reduce((value, element) => value.value > element.value ? value : element);
+      }
+      else {
+        if (dateStringToMetricMap.entries.isNotEmpty) {
+          maxDay = dateStringToMetricMap.entries.first;
+        }
+      }
+
+      final total   = dateStringToMetricMap.entries.map((e) => e.value).reduce((a, b) => a + b);
+      final average = total / dataPoints.length;
+
+      return Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                Text(
+                  maxDay != null ? "Max (${DateFormat("MMM dd").format(DateTime.parse(maxDay.key))})"
+                    : "Max (${DateFormat("MMM dd").format(DateTime.now())})",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                WidgetUtils.spacer(2.5),
+                Text(
+                  maxDay?.value.toStringAsFixed(0) ?? "0",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                const Text(
+                  "Current",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                WidgetUtils.spacer(2.5),
+                Text(
+                  currentFitnessUserProfile?.weightInLbs.toStringAsFixed(1) ?? "0",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                const Text(
+                  "Goal",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                WidgetUtils.spacer(2.5),
+                Text(
+                  currentFitnessUserProfile?.goalWeightInLbs?.toStringAsFixed(1) ?? "0",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
     }
     else {
-      bestDay = dateStringToMetricMap.entries.first;
+      final entriesForCurrentPeriod = dateStringToMetricMap
+          .entries
+          .where((element) => relevantDateStringsForChosenFilter.contains(element.key));
+
+
+      MapEntry<String, double>? bestDay;
+      if (entriesForCurrentPeriod.isNotEmpty) {
+        bestDay = entriesForCurrentPeriod.reduce((value, element) => value.value > element.value ? value : element);
+      }
+      else {
+        if (dateStringToMetricMap.entries.isNotEmpty) {
+          bestDay = dateStringToMetricMap.entries.first;
+        }
+      }
+
+      final total   = dateStringToMetricMap.entries.map((e) => e.value).reduce((a, b) => a + b);
+      final average = total / dataPoints.length;
+
+      return Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                Text(
+                    bestDay != null ? "Best (${DateFormat("MMM dd").format(DateTime.parse(bestDay!.key))})"
+                        : "Best (${DateFormat("MMM dd").format(DateTime.now())})",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                WidgetUtils.spacer(2.5),
+                Text(
+                  bestDay?.value.toStringAsFixed(0) ?? "0",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                const Text(
+                  "Average",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                WidgetUtils.spacer(2.5),
+                Text(
+                  average.toStringAsFixed(0),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                const Text(
+                  "Total",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                WidgetUtils.spacer(2.5),
+                Text(
+                  total.toStringAsFixed(0),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
     }
-
-    final total   = dateStringToMetricMap.entries.map((e) => e.value).reduce((a, b) => a + b);
-    final average = total / dataPoints.length;
-
-    return Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: Column(
-            children: [
-              Text(
-                "Best (${DateFormat("MMM dd").format(DateTime.parse(bestDay.key))})",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold
-                ),
-              ),
-              WidgetUtils.spacer(2.5),
-              Text(
-                bestDay.value.toString(),
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: Column(
-            children: [
-              const Text(
-                "Average",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold
-                ),
-              ),
-              WidgetUtils.spacer(2.5),
-              Text(
-                average.toStringAsFixed(0),
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: Column(
-            children: [
-              const Text(
-                "Total",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold
-                ),
-              ),
-              WidgetUtils.spacer(2.5),
-              Text(
-                total.toString(),
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
   }
 
   _goToUserFitnessProfileView() {

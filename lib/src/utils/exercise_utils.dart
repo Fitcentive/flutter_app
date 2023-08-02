@@ -42,6 +42,8 @@ class ExerciseUtils {
   static const String active = "Active";
   static const String veryActive = "Very active";
 
+  static const double minimumRecommendedMinutesOfActivityPerDay = 60;
+
   static const List<String> allActivityLevels = [
     notVeryActive,
     lightlyActive,

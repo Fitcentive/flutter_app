@@ -8,6 +8,7 @@ import 'package:flutter_app/src/models/progress/activity_minutes_per_day.dart';
 import 'package:flutter_app/src/models/progress/diary_entries_per_day.dart';
 import 'package:flutter_app/src/models/progress/progress_insights.dart';
 import 'package:flutter_app/src/models/progress/user_step_metrics.dart';
+import 'package:flutter_app/src/models/progress/user_weight_metrics.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +17,25 @@ class AwardsRepository {
   static const String BASE_URL = "${ConstantUtils.API_HOST_URL}/api/awards";
 
   final logger = Logger("AwardsRepository");
+
+  Future<List<UserWeightMetrics>> getUserWeightProgressData(String from, String to, String accessToken) async {
+    final response = await http.get(
+      Uri.parse("$BASE_URL/progress/weight?from=$from&to=$to"),
+      headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      final List<UserWeightMetrics> results = jsonResponse.map((e) {
+        return UserWeightMetrics.fromJson(e);
+      }).toList();
+      return results;
+    }
+    else {
+      throw Exception(
+          "getUserWeightProgressData: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 
   Future<List<UserStepMetrics>> getUserStepProgressData(String from, String to, String accessToken) async {
     final response = await http.get(

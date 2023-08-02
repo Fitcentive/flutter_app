@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
@@ -472,6 +473,7 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: WidgetUtils.skipNulls([
+                  _renderUpdateWeightDisclaimer(),
                   WidgetUtils.spacer(5),
                   _renderText(),
                   WidgetUtils.spacer(5),
@@ -600,6 +602,26 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
         ],
       ),
     );
+  }
+
+  _renderUpdateWeightDisclaimer() {
+    if (widget.currentFitnessUserProfile != null) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(5, 0, 0, 5),
+          child: AutoSizeText(
+            "If you are logging your weight for the day, press save even if your weight hasn't changed",
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: TextStyle(
+              color: Colors.teal,
+              fontSize: 14,
+              // fontWeight: FontWeight.bold
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   _renderText() {

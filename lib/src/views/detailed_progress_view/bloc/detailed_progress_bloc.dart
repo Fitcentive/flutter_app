@@ -36,6 +36,10 @@ class DetailedProgressBloc extends Bloc<DetailedProgressEvent, DetailedProgressS
       final metrics = await awardsRepository.getUserActivityProgressData(event.from, event.to, accessToken!);
       emit(ActivityProgressMetricsLoaded(userActivityMetrics: metrics));
     }
+    else if (event.category.name() == WeightData().name()) {
+      final metrics = await awardsRepository.getUserWeightProgressData(event.from, event.to, accessToken!);
+      emit(WeightProgressMetricsLoaded(userWeightMetrics: metrics));
+    }
 
   }
 

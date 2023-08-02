@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_app/src/models/progress/activity_minutes_per_day.dart';
 import 'package:flutter_app/src/models/progress/diary_entries_per_day.dart';
 import 'package:flutter_app/src/models/progress/user_step_metrics.dart';
+import 'package:flutter_app/src/models/progress/user_weight_metrics.dart';
 
 abstract class DetailedProgressState extends Equatable {
   const DetailedProgressState();
@@ -62,5 +63,18 @@ class ActivityProgressMetricsLoaded extends DetailedProgressState {
   @override
   List<Object?> get props => [
     userActivityMetrics,
+  ];
+}
+
+class WeightProgressMetricsLoaded extends DetailedProgressState {
+  final List<UserWeightMetrics> userWeightMetrics;
+
+  const WeightProgressMetricsLoaded({
+    required this.userWeightMetrics,
+  });
+
+  @override
+  List<Object?> get props => [
+    userWeightMetrics,
   ];
 }

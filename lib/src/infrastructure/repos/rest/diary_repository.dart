@@ -735,6 +735,7 @@ class DiaryRepository {
         "goal": update.goal,
         "stepGoalPerDay": update.stepGoalPerDay,
         "activityLevel": update.activityLevel,
+        "goalWeightInLbs": update.goalWeightInLbs,
       })
     );
 
