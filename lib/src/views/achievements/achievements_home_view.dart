@@ -262,6 +262,9 @@ class AchievementsHomeViewState extends State<AchievementsHomeView> {
     else if (currentCategory.name() == DiaryEntryData().name()) {
       _achievementsHomeBloc.add(TrackViewDetailedAchievement(ViewDetailedDiaryAchievements()));
     }
+    else if (currentCategory.name() == WeightData().name()) {
+      _achievementsHomeBloc.add(TrackViewDetailedAchievement(ViewDetailedWeightAchievements()));
+    }
     else {
       _achievementsHomeBloc.add(TrackViewDetailedAchievement(ViewDetailedActivityAchievements()));
     }

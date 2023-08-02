@@ -2,6 +2,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/awards_repository.dart
 import 'package:flutter_app/src/infrastructure/repos/rest/diary_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
+import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/views/progress/bloc/progress_home_event.dart';
 import 'package:flutter_app/src/views/progress/bloc/progress_home_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,8 +25,8 @@ class ProgressHomeBloc extends Bloc<ProgressHomeEvent, ProgressHomeState> {
 
   void _fetchProgressInsights(FetchProgressInsights event, Emitter<ProgressHomeState> emit) async {
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-    // userRepository.trackUserEvent(event.event, accessToken!); // Track event here
-    final insights = await awardsRepository.getUserProgressInsights(accessToken!, DateTime.now().timeZoneOffset.inMinutes);
+    userRepository.trackUserEvent(ViewProgress(), accessToken!);
+    final insights = await awardsRepository.getUserProgressInsights(accessToken, DateTime.now().timeZoneOffset.inMinutes);
     final fitnessUserProfile = await diaryRepository.getFitnessUserProfile(event.userId, accessToken);
     emit(
         ProgressLoaded(

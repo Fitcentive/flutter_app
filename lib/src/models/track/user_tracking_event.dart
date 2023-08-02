@@ -214,3 +214,27 @@ class ViewDetailedActivityAchievements extends UserTrackingEvent {
   @override
   String eventName() => "ViewDetailedActivityAchievements";
 }
+class ViewDetailedWeightAchievements extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDetailedWeightAchievements";
+}
+class ViewProgress extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewProgress";
+}
+class ViewDetailedStepProgress extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDetailedStepProgress";
+}
+class ViewDetailedDiaryProgress extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDetailedDiaryProgress";
+}
+class ViewDetailedActivityProgress extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDetailedActivityProgress";
+}
+class ViewDetailedWeightProgress extends UserTrackingEvent {
+  @override
+  String eventName() => "ViewDetailedWeightProgress";
+}
