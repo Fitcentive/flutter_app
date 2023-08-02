@@ -441,6 +441,7 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
       SnackbarUtils.showSnackBar(context, "Your weight cannot be left blank!");
     }
     else {
+      SnackbarUtils.showSnackBarShort(context, "Hang on while we save your info...");
       _createUserFitnessProfileBloc.add(
           UpsertUserFitnessProfile(
             userId: widget.currentUserProfile.userId,
@@ -463,31 +464,44 @@ class UserFitnessProfileViewState extends State<UserFitnessProfileView> {
           Navigator.pop(context, state.fitnessUserProfile);
         }
       },
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: WidgetUtils.skipNulls([
-            WidgetUtils.spacer(5),
-            _renderText(),
-            WidgetUtils.spacer(5),
-            _renderUserImage(),
-            WidgetUtils.spacer(5),
-            _renderUserName(),
-            WidgetUtils.spacer(10),
-            _renderUserWeight(),
-            WidgetUtils.spacer(5),
-            _renderUserHeight(),
-            WidgetUtils.spacer(5),
-            _renderUserGoalInput(),
-            WidgetUtils.spacer(5),
-            _renderUserActivityLevels(),
-            WidgetUtils.spacer(5),
-            _renderOptionalGoalWeightInput(),
-            WidgetUtils.spacer(5),
-            _renderOptionalStepGoalsInput(),
-          ]),
-        ),
+      child: BlocBuilder<UserFitnessProfileBloc, UserFitnessProfileState>(
+        builder: (context, state) {
+          if (state is UserFitnessProfileStateInitial) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: WidgetUtils.skipNulls([
+                  WidgetUtils.spacer(5),
+                  _renderText(),
+                  WidgetUtils.spacer(5),
+                  _renderUserImage(),
+                  WidgetUtils.spacer(5),
+                  _renderUserName(),
+                  WidgetUtils.spacer(10),
+                  _renderUserWeight(),
+                  WidgetUtils.spacer(5),
+                  _renderUserHeight(),
+                  WidgetUtils.spacer(5),
+                  _renderUserGoalInput(),
+                  WidgetUtils.spacer(5),
+                  _renderUserActivityLevels(),
+                  WidgetUtils.spacer(5),
+                  _renderOptionalGoalWeightInput(),
+                  WidgetUtils.spacer(5),
+                  _renderOptionalStepGoalsInput(),
+                ]),
+              ),
+            );
+          }
+          else {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.teal,
+              ),
+            );
+          }
+        },
       )
     );
   }

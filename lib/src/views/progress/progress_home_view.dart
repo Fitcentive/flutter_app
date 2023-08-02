@@ -56,6 +56,8 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
 
   late ProgressHomeBloc _progressHomeBloc;
 
+  FitnessUserProfile? currentFitnessUserProfile;
+
   @override
   void initState() {
     super.initState();
@@ -75,7 +77,7 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
       body: BlocListener<ProgressHomeBloc, ProgressHomeState>(
         listener: (context, state) {
           if (state is ProgressLoaded) {
-
+            currentFitnessUserProfile = state.fitnessUserProfile;
           }
         },
         child: BlocBuilder<ProgressHomeBloc, ProgressHomeState>(
@@ -111,13 +113,16 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
   }
 
   goToUserFitnessProfileView() {
-    final currentState = _progressHomeBloc.state;
-    if (currentState is ProgressLoaded) {
-      Navigator.push<FitnessUserProfile>(
-          context,
-          UserFitnessProfileView.route(widget.currentUserProfile, currentState.fitnessUserProfile)
-      );
-    }
+    Navigator.push<FitnessUserProfile>(
+        context,
+        UserFitnessProfileView.route(widget.currentUserProfile, currentFitnessUserProfile)
+    ).then((value) {
+      if (value != null) {
+        setState(() {
+          currentFitnessUserProfile = value;
+        });
+      }
+    });
   }
 
   Widget _userProfileImageView() {
@@ -191,11 +196,11 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
     );
   }
 
-  _goToDetailedProgressView(AwardCategory category, FitnessUserProfile? fitnessUserProfile) {
+  _goToDetailedProgressView(AwardCategory category) {
     Navigator
     .push(
         context,
-        DetailedProgressView.route(widget.currentUserProfile, category, fitnessUserProfile)
+        DetailedProgressView.route(widget.currentUserProfile, category, currentFitnessUserProfile)
     );
   }
 
@@ -208,7 +213,7 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
         final currentCategory = AwardUtils.allProgressCategories[index];
         return GestureDetector(
           onTap: () {
-            _goToDetailedProgressView(currentCategory, state.fitnessUserProfile);
+            _goToDetailedProgressView(currentCategory);
           },
           child: IntrinsicHeight(
             child: Card(

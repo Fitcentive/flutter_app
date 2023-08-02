@@ -214,16 +214,18 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
         .values
         .toList();
 
-    return SingleChildScrollView(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _renderHeader(),
-            WidgetUtils.spacer(5),
-            _renderInteractiveChart(),
-            WidgetUtils.spacer(15),
-          ],
+    return Center(
+      child: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _renderHeader(),
+              WidgetUtils.spacer(5),
+              _renderInteractiveChart(),
+              WidgetUtils.spacer(15),
+            ],
+          ),
         ),
       ),
     );
@@ -740,7 +742,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
     return Column(
       children: [
         CircleAvatar(
-          radius: 50,
+          radius: 62.5,
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -845,7 +847,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
         context,
         UserFitnessProfileView.route(widget.userProfile, currentFitnessUserProfile)
     ).then((value) {
-      if (value != null) { // This means user did not update profile accordingly, we pop back to previous screen before coming here
+      if (value != null) {
         setState(() {
           currentFitnessUserProfile = value;
         });

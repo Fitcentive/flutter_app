@@ -22,6 +22,7 @@ class UserFitnessProfileBloc extends Bloc<UserFitnessProfileEvent, UserFitnessPr
   }
 
   void _upsertUserFitnessProfile(UpsertUserFitnessProfile event, Emitter<UserFitnessProfileState> emit) async {
+    emit(const UserFitnessProfileBeingSaved());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final userFitnessProfile = await diaryRepository.upsertFitnessUserProfile(
         event.userId,

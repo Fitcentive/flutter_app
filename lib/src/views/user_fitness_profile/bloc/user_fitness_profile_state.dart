@@ -24,4 +24,7 @@ class UserFitnessProfileUpserted extends UserFitnessProfileState {
   List<Object?> get props => [fitnessUserProfile];
 }
 
+class UserFitnessProfileBeingSaved extends UserFitnessProfileState {
 
+  const UserFitnessProfileBeingSaved();
+}
