@@ -45,6 +45,7 @@ class ColorUtils {
 
   static const MaterialColor BUTTON_AVAILABLE = Colors.teal;
   static const MaterialColor BUTTON_DISABLED = Colors.grey;
-  static const MaterialColor BUTTON_DANGER = Colors.red
-  ;
+  static const MaterialColor BUTTON_DANGER = Colors.red;
+
+  static const Color SPLASH_SCREEN_ICON_BACKGROUND_COLOR = Color(0xffE9FCE4);
 }

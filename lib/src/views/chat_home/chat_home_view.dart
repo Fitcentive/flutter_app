@@ -53,6 +53,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
   late final ChatHomeBloc _chatBloc;
 
   bool isDataBeingRequested = false;
+  bool shouldHideKeyboardManually = true;
 
   bool _isFloatingButtonVisible = true;
   final _scrollController = ScrollController();
@@ -160,7 +161,9 @@ class ChatHomeViewState extends State<ChatHomeView> {
 
   @override
   Widget build(BuildContext context) {
-    KeyboardUtils.hideKeyboard(context);
+    if (shouldHideKeyboardManually) {
+      KeyboardUtils.hideKeyboard(context);
+    }
     return Scaffold(
       floatingActionButton: _animatedButton(),
       body: BlocBuilder<ChatHomeBloc, ChatHomeState>(
@@ -197,8 +200,12 @@ class ChatHomeViewState extends State<ChatHomeView> {
           textFieldConfiguration: TextFieldConfiguration(
               onSubmitted: (value) {},
               autocorrect: false,
-              onTap: () => _suggestionsController.toggle(),
+              onTap: () {
+                _suggestionsController.toggle();
+                shouldHideKeyboardManually = false;
+              },
               onChanged: (text) {
+                shouldHideKeyboardManually = false;
                 if (_debounce?.isActive ?? false) _debounce?.cancel();
                 _debounce = Timer(const Duration(milliseconds: 300), () {
                   _chatBloc.add(FilterSearchQueryChanged(query: text));
@@ -312,8 +319,12 @@ class ChatHomeViewState extends State<ChatHomeView> {
     }
     else {
       return const Center(
-        child: Text(
-            "No chats found... refine search query or get started by creating one!"
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Text(
+              "No chats found... refine search query or get started by creating one!",
+            textAlign: TextAlign.center,
+          ),
         ),
       );
     }
@@ -387,10 +398,14 @@ class ChatHomeViewState extends State<ChatHomeView> {
             currentUserProfile: widget.currentUserProfile,
             otherUserProfiles: otherUserProfiles
         ),
-    ).then((value) => _fetchDefaultChatRooms());
+    ).then((value) {
+      shouldHideKeyboardManually = true;
+      _fetchDefaultChatRooms();
+    });
   }
 
   Future<void> _pullRefresh() async {
+    shouldHideKeyboardManually = true;
     _fetchDefaultChatRooms();
   }
 

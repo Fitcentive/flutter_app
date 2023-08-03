@@ -1,16 +1,22 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/discover_repository.dart';
+import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/discover/user_fitness_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_gym_preferences.dart';
 import 'package:flutter_app/src/models/discover/user_personal_preferences.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:flutter_app/src/models/user_friend_status.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/discovered_user/bloc/discovered_user_bloc.dart';
 import 'package:flutter_app/src/views/discovered_user/bloc/discovered_user_event.dart';
 import 'package:flutter_app/src/views/discovered_user/bloc/discovered_user_state.dart';
 import 'package:flutter_app/src/views/shared_components/location_card.dart';
+import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -44,7 +50,9 @@ class DiscoveredUserView extends StatefulWidget {
       BlocProvider<DiscoveredUserBloc>(
           create: (context) => DiscoveredUserBloc(
             userRepository: RepositoryProvider.of<UserRepository>(context),
+            chatRepository: RepositoryProvider.of<ChatRepository>(context),
             discoverRepository: RepositoryProvider.of<DiscoverRepository>(context),
+            socialMediaRepository: RepositoryProvider.of<SocialMediaRepository>(context),
             secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
           )),
     ],
@@ -79,17 +87,34 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<DiscoveredUserBloc, DiscoveredUserState>(
-          builder: (context, state) {
-            if (state is DiscoveredUserPreferencesFetched) {
-              return _generateUserCard(state);
-            }
-            else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+      body: BlocListener<DiscoveredUserBloc, DiscoveredUserState>(
+        listener: (context, state) {
+          if (state is GoToUserChatView) {
+            Navigator.push(
+                context,
+                UserChatView.route(
+                    currentRoomId: state.roomId,
+                    currentUserProfile: widget.currentUserProfile,
+                    otherUserProfiles: [state.otherUserProfile]
+                )
+            );
           }
+          else if (state is TargetUserChatNotEnabled) {
+            SnackbarUtils.showSnackBarMedium(context, "This user has not enabled chat yet!");
+          }
+        },
+        child: BlocBuilder<DiscoveredUserBloc, DiscoveredUserState>(
+            builder: (context, state) {
+              if (state is DiscoveredUserPreferencesFetched) {
+                return _generateUserCard(state);
+              }
+              else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            }
+        ),
       ),
     );
   }
@@ -97,7 +122,7 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
   _generateUserCard(DiscoveredUserPreferencesFetched state) {
     return Container(
       decoration: BoxDecoration(
-          border: Border.all(color: Colors.teal)
+          border: Border.all(color: Colors.teal, width: 5)
       ),
       padding: const EdgeInsets.all(10),
       child: Column(
@@ -134,12 +159,110 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
     );
   }
 
+  _getChatRoom(PublicUserProfile otherUserProfile) {
+    _discoveredUserBloc.add(GetChatRoom(otherUserProfile: otherUserProfile));
+  }
+
+  _userInteractionButtons(PublicUserProfile otherUserProfile, UserFriendStatus userFriendStatus) {
+    if (userFriendStatus.isCurrentUserFriendsWithOtherUser) {
+      return Row(
+        children: [
+          const Expanded(
+              flex: 2,
+              child: Text("")
+          ),
+          Expanded(
+            flex: 16,
+            child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              ),
+              onPressed: () async {
+                _getChatRoom(otherUserProfile);
+              },
+              child: const AutoSizeText(
+                  "Message",
+                  minFontSize: 8,
+                  maxLines: 1,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white
+                  )
+              ),
+            )
+          ),
+          const Expanded(
+              flex: 2,
+              child: Text("")
+          ),
+        ],
+      );
+    }
+    else {
+      return Row(
+        children: [
+          Expanded(
+            flex: 19,
+            child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              ),
+              onPressed: () async {
+                _getChatRoom(otherUserProfile);
+              },
+              child: const AutoSizeText(
+                  "Message",
+                  minFontSize: 8,
+                  maxLines: 1,
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white
+                  )
+              ),
+            ),
+          ),
+          const Expanded(
+              flex: 2,
+              child: Text("")
+          ),
+          Expanded(
+            flex: 19,
+            child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              ),
+              onPressed: () async {
+                _goToUserProfilePage(otherUserProfile);
+              },
+              child: const AutoSizeText(
+                  "Friend",
+                  minFontSize: 8,
+                  maxLines: 1,
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white
+                  )
+              ),
+            ),
+          )
+        ],
+      );
+
+    }
+  }
+
   _generateUserHeader(DiscoveredUserPreferencesFetched state) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Expanded(
-            child: _userAvatar(state.otherUserProfile)
+            child: Column(
+              children: [
+                _userAvatar(state.otherUserProfile),
+                WidgetUtils.spacer(5),
+                _userInteractionButtons(state.otherUserProfile, state.userFriendStatus),
+              ],
+            )
         ),
         Expanded(
           child: Column(
@@ -189,14 +312,14 @@ class DiscoveredUserViewState extends State<DiscoveredUserView> {
         _goToUserProfilePage(userProfile);
       },
       child: CircleAvatar(
-        radius: 50,
+        radius: 40,
         child: Center(
           child: Container(
-            width: 200,
-            height: 200,
+            width: 160,
+            height: 160,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              image: ImageUtils.getUserProfileImage(userProfile, 200, 200),
+              image: ImageUtils.getUserProfileImage(userProfile, 160, 160),
             ),
           ),
         ),

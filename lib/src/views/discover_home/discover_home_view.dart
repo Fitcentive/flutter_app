@@ -132,7 +132,7 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
       width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
       controller: _panelController,
       minHeight: 0,
-      maxHeight: ScreenUtils.getScreenHeight(context) * 0.75,
+      maxHeight: ScreenUtils.getScreenHeight(context) * 0.7,
       panel: _generateSlidingPanel(state),
       body: Column(
         mainAxisSize: MainAxisSize.min,

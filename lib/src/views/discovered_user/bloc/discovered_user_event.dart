@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_app/src/models/public_user_profile.dart';
 
 abstract class DiscoveredUserEvent extends Equatable {
   const DiscoveredUserEvent();
@@ -16,4 +17,13 @@ class FetchDiscoveredUserPreferences extends DiscoveredUserEvent {
 
   @override
   List<Object?> get props => [otherUserId, currentUserId];
+}
+
+class GetChatRoom extends DiscoveredUserEvent {
+  final PublicUserProfile otherUserProfile;
+
+  const GetChatRoom({required this.otherUserProfile});
+
+  @override
+  List<Object> get props => [otherUserProfile];
 }

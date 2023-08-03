@@ -215,12 +215,26 @@ class UserProfileViewState extends State<UserProfileView> {
     if (state.userPosts == null) {
       return const SizedBox(
         height: 200,
-        child: Center(child: Text("Friend a user to view their posts")),
+        child: Center(
+            child: Text(
+              "Friend a user to view their posts",
+              style: TextStyle(
+                fontWeight: FontWeight.bold
+              ),
+            )
+        ),
       );
     } else if (state.userPosts?.isEmpty ?? true) {
       return const SizedBox(
         height: 200,
-        child: Center(child: Text("Awfully quiet here....")),
+        child: Center(
+            child: Text(
+              "Awfully quiet here....",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold
+              ),
+            )
+        ),
       );
     } else {
       postsState = state.userPosts;

@@ -99,6 +99,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
   bool showOnlyRecent = true;
 
   bool shouldShow = false;
+  bool shouldHideKeyboardManually = true;
 
   @override
   void dispose() {
@@ -127,7 +128,9 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
 
   @override
   Widget build(BuildContext context) {
-    KeyboardUtils.hideKeyboard(context);
+    if (shouldHideKeyboardManually) {
+      KeyboardUtils.hideKeyboard(context);
+    }
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
@@ -320,8 +323,12 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                 }
               },
               autocorrect: false,
-              onTap: () => _suggestionsController.toggle(),
+              onTap: () {
+                  shouldHideKeyboardManually = false;
+                  _suggestionsController.toggle();
+                },
               onChanged: (text) {
+                shouldHideKeyboardManually = false;
                 shouldShow = true;
               },
               autofocus: true,
@@ -464,7 +471,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                 widget.mealOfDay,
                 widget.selectedDayInQuestion
             )
-        );
+        ).then((value) => shouldHideKeyboardManually = false);
       },
     );
   }
@@ -488,7 +495,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                   widget.mealOfDay,
                   widget.selectedDayInQuestion
               )
-          );
+          ).then((value) => shouldHideKeyboardManually = false);
         },
       );
     }
@@ -509,7 +516,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
                   widget.mealOfDay,
                   widget.selectedDayInQuestion
               )
-          );
+          ).then((value) => shouldHideKeyboardManually = false);
         },
       );
     }

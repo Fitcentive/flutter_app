@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/authenticated_user.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/authentication_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
+import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/jwt_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_event.dart';
@@ -48,14 +49,17 @@ class SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-            image: AssetImage("assets/launcher/icon.png"),
-            fit: BoxFit.contain
-        ),
+        body: SizedBox.expand(
+          child: Container(
+            decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/launcher/splash_icon.png"),
+              fit: BoxFit.contain
+            ),
+            color: ColorUtils.SPLASH_SCREEN_ICON_BACKGROUND_COLOR
       ),
-    ));
+    ),
+        ));
   }
 
   void startTimer() {

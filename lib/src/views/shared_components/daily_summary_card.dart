@@ -199,10 +199,10 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
     }
 
     _renderLegend() {
-      return Column(
+      return const Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const <Widget>[
+        children: <Widget>[
           LegendIndicator(
             color: Colors.teal,
             text: 'Breakfast',
@@ -365,11 +365,87 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
         });
       }
 
+    _renderMacrosTable() {
+      final headerStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 12);
+      final dataStyle = TextStyle(color: Colors.teal, fontSize: 12);
+      return Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+            side: const BorderSide(
+                color: Colors.teal,
+                width: 1
+            )
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: Column(
+                children: [
+                  WidgetUtils.spacer(5),
+                  Center(child: Text("Calories", style: headerStyle)),
+                  WidgetUtils.spacer(5),
+                  Center(child: Text("Carbs", style: headerStyle)),
+                  WidgetUtils.spacer(5),
+                  Center(child: Text("Proteins", style: headerStyle)),
+                  WidgetUtils.spacer(5),
+                  Center(child: Text("Fats", style: headerStyle)),
+                  WidgetUtils.spacer(5),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: Column(
+                children: [
+                  WidgetUtils.spacer(5),
+                  Center(child: Text(caloriesConsumed.toStringAsFixed(0), style: dataStyle)),
+                  WidgetUtils.spacer(5),
+                  Center(child: Text(carbsConsumed.toStringAsFixed(0), style: dataStyle)),
+                  WidgetUtils.spacer(5),
+                  Center(child: Text(proteinsConsumed.toStringAsFixed(0), style: dataStyle)),
+                  WidgetUtils.spacer(5),
+                  Center(child: Text(fatsConsumed.toStringAsFixed(0), style: dataStyle)),
+                  WidgetUtils.spacer(5),
+                ],
+              ),
+            ),
+          ],
+        )
+        // child: GridView.count(
+        //     shrinkWrap: true,
+        //     physics: const NeverScrollableScrollPhysics(),
+        //     crossAxisCount: 4,
+        //     children: List.generate(8, (index) {
+        //       if (index < 4) {
+        //         switch (index) {
+        //           case 0: return Center(child: Text("Calories", style: headerStyle));
+        //           case 1: return Center(child: Text("Carbs", style: headerStyle));
+        //           case 2: return Center(child: Text("Proteins", style: headerStyle));
+        //           case 3: return Center(child: Text("Fats", style: headerStyle));
+        //           default: return Center(child: Text("Fats", style: headerStyle));
+        //         }
+        //       }
+        //       else {
+        //         switch (index) {
+        //           case 4: return Center(child: Text(caloriesConsumed.toStringAsFixed(0), style: dataStyle));
+        //           case 5: return Center(child: Text(carbsConsumed.toStringAsFixed(0), style: dataStyle));
+        //           case 6: return Center(child: Text(proteinsConsumed.toStringAsFixed(0), style: dataStyle));
+        //           case 7: return Center(child: Text(fatsConsumed.toStringAsFixed(0), style: dataStyle));
+        //           default: return Center(child: Text(fatsConsumed.toStringAsFixed(0), style: dataStyle));
+        //         }
+        //       }
+        //     })
+        // ),
+      );
+    }
+
     _renderLegend() {
-      return Column(
+      return const Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const <Widget>[
+        children: <Widget>[
           LegendIndicator(
             color: Colors.teal,
             text: 'Proteins',
@@ -442,7 +518,13 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
                 ),
                 Expanded(
                   flex: 3,
-                  child: _renderLegend()
+                  child: Column(
+                    children: [
+                      _renderLegend(),
+                      WidgetUtils.spacer(10),
+                      _renderMacrosTable(),
+                    ],
+                  )
                 )
               ],
             ),

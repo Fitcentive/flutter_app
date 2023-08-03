@@ -135,6 +135,7 @@ flutter:
   assets:
     - .env
     - assets/launcher/icon.png
+    - assets/launcher/splash_icon.png
     - assets/images/lean_body_type.png
     - assets/images/hybrid_body_type.png
     - assets/images/bulky_body_type.png
