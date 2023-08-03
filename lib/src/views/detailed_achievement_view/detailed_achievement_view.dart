@@ -8,8 +8,11 @@ import 'package:flutter_app/src/models/awards/user_milestone.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/award_utils.dart';
+import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
+import 'package:flutter_app/src/views/share_content/share_content_view.dart';
+import 'package:intl/intl.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
@@ -315,6 +318,8 @@ class DetailedAchievementView extends StatelessWidget {
                     ),
                     WidgetUtils.spacer(5),
                     _renderMilestoneAttainedAtTextIfNeeded(isCurrentMilestoneAttained, currentMilestone),
+                    WidgetUtils.spacer(5),
+                    _renderShareButtonIfAttained(isCurrentMilestoneAttained, currentMilestone, context),
                   ]),
                 ),
               ),
@@ -322,6 +327,128 @@ class DetailedAchievementView extends StatelessWidget {
           ),
         )
     );
+  }
+
+  _goToShareContentView(MilestoneType currentMilestone, BuildContext context) {
+    String text = "I just attained a milestone for reaching ${AwardUtils.allMilestoneNameToDisplayNames[currentMilestone.name()]!}."
+        " Join me as I try to get 'em all!";
+    final attainedMilestone = milestonesForCurrentCategory.where((element) => element.name == currentMilestone.name()).first;
+    final Widget widget = ConstrainedBox(
+        key: widgetToCaptureKey,
+        constraints: const BoxConstraints(maxHeight: 250),
+        child: Column(
+          children: [
+            Center(
+              child: SizedBox(
+                width: 120,
+                height: 120,
+                child: GestureDetector(
+                  onTap: () async {},
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: ImageUtils.getUserProfileImage(userProfile, 60, 60),
+                      color: Colors.teal,
+                    ),
+                    child: userProfile.photoUrl == null ? const Icon(
+                      Icons.account_circle_outlined,
+                      color: Colors.teal,
+                      size: 120,
+                    ) : null,
+                  ),
+                ),
+              ),
+            ),
+            WidgetUtils.spacer(15),
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                    child: Text("")
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: CircleAvatar(
+                      backgroundColor: Colors.teal,
+                      radius: 35,
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                              image: AssetImage(AwardUtils.awardCategoryToIconAssetPathMap[awardCategory.name()]!)
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      Center(
+                        child: Text(
+                          AwardUtils.allMilestoneNameToDisplayNames[currentMilestone.name()]!,
+                          maxLines: 1,
+                          style: const TextStyle(
+                            color: Colors.teal,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            // fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Text(
+                          DateFormat("MMM dd yyyy").format(attainedMilestone.createdAt),
+                          maxLines: 1,
+                          style: const TextStyle(
+                            color: Colors.teal,
+                            fontSize: 15,
+                            // fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ),
+                Expanded(
+                    flex: 1,
+                    child: Text("")
+                ),
+              ],
+            )
+          ],
+        ),
+    );
+    Navigator.push(
+        context,
+        ShareContentView.route(userProfile, text, widget)
+    ).then((value) => Navigator.pop(context));
+  }
+
+  _renderShareButtonIfAttained(bool isCurrentMilestoneAttained, MilestoneType currentMilestone, BuildContext context) {
+    if (isCurrentMilestoneAttained) {
+      return ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed: () async {
+          _goToShareContentView(currentMilestone, context);
+        },
+        child: const Text(
+            "Share milestone",
+            style: TextStyle(
+                fontSize: 15,
+                color: Colors.white
+            )),
+      );
+    }
   }
 
   _renderMilestoneAttainedAtTextIfNeeded(bool isCurrentMilestoneAttained, MilestoneType currentMilestone) {

@@ -93,6 +93,7 @@ dependencies:
   pedometer: ^4.0.1
   permission_handler: ^10.4.3
   fl_chart: ^0.62.0
+  screenshot: ^2.0.0
 
 dev_dependencies:
   flutter_test:
