@@ -37,6 +37,7 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
     if (currentState is NewsFeedDataReady) {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       await socialMediaRepository.deletePostForUser(event.postId, event.currentUserId, accessToken!);
+      userRepository.trackUserEvent(UserDeletedSocialPost(), accessToken);
 
       emit(NewsFeedDataReady(
         user: currentState.user,

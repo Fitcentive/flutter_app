@@ -47,6 +47,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     if (currentState is RequiredDataResolved) {
       final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       await socialMediaRepository.deletePostForUser(event.postId, event.currentUserId, accessToken!);
+      userRepository.trackUserEvent(UserDeletedSocialPost(), accessToken);
 
       emit(RequiredDataResolved(
         userFollowStatus: currentState.userFollowStatus,

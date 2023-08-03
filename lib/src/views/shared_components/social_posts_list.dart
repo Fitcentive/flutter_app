@@ -134,7 +134,7 @@ class SocialPostsListState extends State<SocialPostsList> {
                 ),
               ),
             ),
-            post.userId == widget.currentUserProfile.userId ? Positioned(
+            post.userId == widget.currentUserProfile.userId && !widget.isMockDataMode ? Positioned(
               top: 0,
               right: 0,
               child:  IconButton(

@@ -238,3 +238,15 @@ class ViewDetailedWeightProgress extends UserTrackingEvent {
   @override
   String eventName() => "ViewDetailedWeightProgress";
 }
+class UserAttemptedSharingMilestone extends UserTrackingEvent {
+  @override
+  String eventName() => "UserAttemptedSharingMilestone";
+}
+class UserSharedMilestone extends UserTrackingEvent {
+  @override
+  String eventName() => "UserSharedMilestone";
+}
+class UserDeletedSocialPost extends UserTrackingEvent {
+  @override
+  String eventName() => "UserDeletedSocialPost";
+}

@@ -136,7 +136,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
           color: Colors.teal,
         ),
         // bloc state needed
-        actions: currentSelectedPost?.userId == widget.currentUserProfile.userId ? <Widget>[
+        actions: currentSelectedPost?.userId == widget.currentUserProfile.userId && !widget.isMockDataMode ? <Widget>[
           IconButton(
             icon: const Icon(
               Icons.delete,

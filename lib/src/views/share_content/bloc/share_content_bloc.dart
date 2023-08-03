@@ -17,6 +17,8 @@ class ShareContentBloc extends Bloc<ShareContentEvent, ShareContentState> {
   final PublicGatewayRepository imageRepository;
   final FlutterSecureStorage secureStorage;
 
+  bool isFirstTime = true;
+
   ShareContentBloc({
     required this.socialMediaRepository,
     required this.userRepository,
@@ -28,6 +30,11 @@ class ShareContentBloc extends Bloc<ShareContentEvent, ShareContentState> {
   }
 
   void _postDetailsChanged(PostDetailsChanged event, Emitter<ShareContentState> emit) async {
+    if (isFirstTime) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      userRepository.trackUserEvent(UserAttemptedSharingMilestone(), accessToken!);
+      isFirstTime = false;
+    }
     final newPostText = NewPost.dirty(event.text);
     final currentState = state;
     if (currentState is PostDetailsModified) {
@@ -61,7 +68,7 @@ class ShareContentBloc extends Bloc<ShareContentEvent, ShareContentState> {
       }
       final newPost = SocialPostCreate(userId: event.userId, text: event.text, photoUrl: postPhotoUrl);
       await socialMediaRepository.createPostForUser(event.userId, newPost, accessToken!);
-      // userRepository.trackUserEvent(CreatePost(), accessToken); // track share post instead
+      userRepository.trackUserEvent(UserSharedMilestone(), accessToken);
       emit(const PostCreatedSuccess());
     } catch (e) {
       print("Error occurred: $e");

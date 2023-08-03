@@ -31,6 +31,7 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     emit(const SelectedPostBeingDeleted());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     await socialMediaRepository.deletePostForUser(event.postId, event.currentUserId, accessToken!);
+    userRepository.trackUserEvent(UserDeletedSocialPost(), accessToken);
     emit(const SelectedPostDeleted());
   }
 
