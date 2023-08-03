@@ -14,6 +14,7 @@ import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/social_posts_list.dart';
 import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_bloc.dart';
@@ -286,6 +287,25 @@ class UserProfileViewState extends State<UserProfileView> {
   }
 
   _newsfeedListView(RequiredDataResolved state) {
+    void goToDetailedSelectedPostView(SocialPost post) {
+      Navigator.push(
+        context,
+        SelectedPostView.route(
+            currentUserProfile: widget.currentUserProfile,
+            currentPostId: post.postId,
+            currentPost: post,
+            currentPostComments: state.postIdCommentsMap![post.postId],
+            likedUsersForCurrentPost: likedUsersForPosts!.firstWhere((element) => element.postId == post.postId),
+            userIdProfileMap: state.userIdProfileMap,
+            isMockDataMode: false
+        ),
+      ).then((value) {
+        if (value != null && value) {
+          _pullRefresh();
+        }
+      });
+    }
+
     if (postsState?.isNotEmpty ?? false) {
       return SocialPostsList(
           currentUserProfile: widget.currentUserProfile,
@@ -300,11 +320,17 @@ class UserProfileViewState extends State<UserProfileView> {
           doesNextPageExist: state.doesNextPageExist,
           fetchMoreResultsCallback: _fetchMoreResults,
           refreshCallback: _pullRefresh,
-          buttonInteractionCallback: _likeOrUnlikePost
+          buttonInteractionCallback: _likeOrUnlikePost,
+          goToDetailedPostViewCallback: goToDetailedSelectedPostView,
+          deleteSelectedPostCallback: _deleteSelectedPostCallback,
       );
     } else {
       return const Center(child: Text("Awfully quiet here...."));
     }
+  }
+
+  _deleteSelectedPostCallback(String userId, String postId) {
+    _userProfileBloc.add(DeleteSelectedUserProfilePost(currentUserId: userId, postId: postId));
   }
 
 

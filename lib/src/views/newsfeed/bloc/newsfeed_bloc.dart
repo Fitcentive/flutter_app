@@ -29,6 +29,24 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
     on<NewsFeedReFetchRequested>(_newsFeedReFetchRequested);
     on<LikePostForUser>(_likePostForUser);
     on<UnlikePostForUser>(_unlikePostForUser);
+    on<DeleteSelectedNewsfeedPost>(_deleteSelectedNewsfeedPost);
+  }
+
+  void _deleteSelectedNewsfeedPost(DeleteSelectedNewsfeedPost event, Emitter<NewsFeedState> emit) async {
+    final currentState = state;
+    if (currentState is NewsFeedDataReady) {
+      final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      await socialMediaRepository.deletePostForUser(event.postId, event.currentUserId, accessToken!);
+
+      emit(NewsFeedDataReady(
+        user: currentState.user,
+        posts: currentState.posts.whereNot((element) => element.postId == event.postId).toList(),
+        postsWithLikedUserIds: currentState.postsWithLikedUserIds,
+        userIdProfileMap: currentState.userIdProfileMap,
+        doesNextPageExist: currentState.doesNextPageExist,
+        postIdCommentsMap: currentState.postIdCommentsMap,
+      ));
+    }
   }
 
   void _trackViewNewsfeedHomeEvent(TrackViewNewsfeedHomeEvent event, Emitter<NewsFeedState> emit) async {

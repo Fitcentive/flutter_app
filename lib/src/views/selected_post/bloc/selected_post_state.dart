@@ -61,3 +61,19 @@ class SelectedPostLoaded extends SelectedPostState {
   @override
   List<Object> get props => [post, comments, postWithLikedUserIds, userProfileMap];
 }
+
+class SelectedPostBeingDeleted extends SelectedPostState {
+
+  const SelectedPostBeingDeleted();
+
+  @override
+  List<Object> get props => [];
+}
+
+class SelectedPostDeleted extends SelectedPostState {
+
+  const SelectedPostDeleted();
+
+  @override
+  List<Object> get props => [];
+}

@@ -98,3 +98,16 @@ class AddNewComment extends SelectedPostEvent {
   @override
   List<Object> get props => [comment, postId, comment, isMockDataMode];
 }
+
+class DeleteSelectedPost extends SelectedPostEvent {
+  final String currentUserId;
+  final String postId;
+
+  const DeleteSelectedPost({
+    required this.currentUserId,
+    required this.postId,
+  });
+
+  @override
+  List<Object> get props => [currentUserId, postId];
+}

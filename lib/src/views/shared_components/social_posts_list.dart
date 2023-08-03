@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/shared_components/liked_users/liked_users_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:auto_size_text/auto_size_text.dart';
@@ -12,11 +13,12 @@ import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 
 typedef ButtonInteractionCallback = void Function(SocialPost post, PostsWithLikedUserIds likedUserIds);
+typedef GoToDetailedPostViewCallback = void Function(SocialPost post);
+typedef DeleteSelectedPostCallback = void Function(String userId, String postId);
 
 class SocialPostsList extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -30,6 +32,9 @@ class SocialPostsList extends StatefulWidget {
   final FetchMoreResultsCallback refreshCallback;
   final ButtonInteractionCallback buttonInteractionCallback;
 
+  final GoToDetailedPostViewCallback goToDetailedPostViewCallback;
+  final DeleteSelectedPostCallback deleteSelectedPostCallback;
+
   // If isMocKDataMode is true, photoURLs are served raw instead of adding public gateway base host to URL
   final bool isMockDataMode;
 
@@ -41,6 +46,8 @@ class SocialPostsList extends StatefulWidget {
     required this.likedUserIds,
     required this.doesNextPageExist,
     required this.fetchMoreResultsCallback,
+    required this.goToDetailedPostViewCallback,
+    required this.deleteSelectedPostCallback,
     required this.refreshCallback,
     required this.buttonInteractionCallback,
     required this.postIdCommentsPreviewMap,
@@ -101,32 +108,87 @@ class SocialPostsListState extends State<SocialPostsList> {
         onTap: () {
           _goToSelectedPostView(post);
         },
-        child: Card(
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: WidgetUtils.skipNulls(
-                  [
-                    _userHeader(postCreatorPublicUser),
-                    WidgetUtils.spacer(10),
-                    _userPostText(post),
-                    WidgetUtils.spacer(15),
-                    WidgetUtils.generatePostImageIfExists(post.photoUrl, widget.isMockDataMode),
-                    WidgetUtils.spacer(15),
-                    _getLikesAndComments(post, likedUserIds),
-                    WidgetUtils.spacer(10),
-                    _getPostActionButtons(post, likedUserIds),
-                    WidgetUtils.spacer(5),
-                    _renderPostCreationTime(post),
-                    _renderCommentsPreview(post),
-                  ]
+        child: Stack(
+          children: WidgetUtils.skipNulls([
+            Card(
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: WidgetUtils.skipNulls(
+                      [
+                        _userHeader(postCreatorPublicUser),
+                        WidgetUtils.spacer(10),
+                        _userPostText(post),
+                        WidgetUtils.spacer(15),
+                        WidgetUtils.generatePostImageIfExists(post.photoUrl, widget.isMockDataMode),
+                        WidgetUtils.spacer(15),
+                        _getLikesAndComments(post, likedUserIds),
+                        WidgetUtils.spacer(10),
+                        _getPostActionButtons(post, likedUserIds),
+                        WidgetUtils.spacer(5),
+                        _renderPostCreationTime(post),
+                        _renderCommentsPreview(post),
+                      ]
+                  ),
+                ),
               ),
             ),
-          ),
+            post.userId == widget.currentUserProfile.userId ? Positioned(
+              top: 0,
+              right: 0,
+              child:  IconButton(
+                icon: const Icon(
+                  Icons.delete,
+                  color: Colors.teal,
+                ),
+                onPressed: () {
+                  _showDeletionConfirmationDialog(post);
+                },
+              ),
+            ) : null,
+          ]) ,
         ),
       ),
     );
+  }
+
+  _showDeletionConfirmationDialog(SocialPost post) {
+    showDialog(context: context, builder: (context) {
+      Widget cancelButton = TextButton(
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed:  () {
+          Navigator.pop(context);
+        },
+        child: const Text("Cancel"),
+      );
+      Widget continueButton = TextButton(
+        onPressed:  () {
+          Navigator.pop(context);
+          SnackbarUtils.showSnackBarShort(context, "Hang on while we delete your post...");
+          _performPostDeletion(post);
+        },
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+        ),
+        child: const Text("Confirm"),
+      );
+
+      return AlertDialog(
+        title: const Text("Delete Post Confirmation"),
+        content: const Text("Are you sure you want to delete this post? This action is irreversible!"),
+        actions: [
+          cancelButton,
+          continueButton,
+        ],
+      );
+    });
+  }
+
+  _performPostDeletion(SocialPost post) {
+    widget.deleteSelectedPostCallback(widget.currentUserProfile.userId, post.postId);
   }
 
   _renderCommentsPreview(SocialPost post) {
@@ -335,18 +397,7 @@ class SocialPostsListState extends State<SocialPostsList> {
   }
 
   _goToSelectedPostView(SocialPost post) {
-    Navigator.pushAndRemoveUntil(
-        context,
-        SelectedPostView.route(
-            currentUserProfile: widget.currentUserProfile,
-            currentPostId: post.postId,
-            currentPost: post,
-            currentPostComments: widget.postIdCommentsPreviewMap[post.postId],
-            likedUsersForCurrentPost: widget.likedUserIds.firstWhere((element) => element.postId == post.postId),
-            userIdProfileMap: widget.userIdProfileMap,
-            isMockDataMode: widget.isMockDataMode
-        ), (route) => true
-    );
+    widget.goToDetailedPostViewCallback(post);
   }
 
   void _onScroll() {

@@ -317,4 +317,17 @@ class SocialMediaRepository {
           "createPostForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
     }
   }
+
+  Future<void> deletePostForUser(String postId, String userId, String accessToken) async {
+    final response = await http.delete(Uri.parse("$BASE_URL/user/$userId/post/$postId"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == HttpStatus.noContent) {
+      return;
+    } else {
+      throw Exception(
+          "deletePostForUser: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
 }

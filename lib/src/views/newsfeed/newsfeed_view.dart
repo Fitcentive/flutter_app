@@ -16,6 +16,7 @@ import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_event.dart';
 import 'package:flutter_app/src/views/newsfeed/bloc/newsfeed_state.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_bloc.dart';
 import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
+import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/shared_components/social_posts_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -174,6 +175,25 @@ class NewsFeedViewState extends State<NewsFeedView> {
   }
 
   _newsFeedList(NewsFeedDataReady state) {
+    void goToDetailedSelectedPostView(SocialPost post) {
+      Navigator.push(
+        context,
+        SelectedPostView.route(
+            currentUserProfile: widget.currentUserProfile,
+            currentPostId: post.postId,
+            currentPost: post,
+            currentPostComments: state.postIdCommentsMap[post.postId],
+            likedUsersForCurrentPost: likedUsersForPosts.firstWhere((element) => element.postId == post.postId),
+            userIdProfileMap: state.userIdProfileMap,
+            isMockDataMode: false
+        ),
+      ).then((value) {
+        if (value != null && value) {
+          _pullRefresh();
+        }
+      });
+    }
+
     return SocialPostsList(
         currentUserProfile: widget.currentUserProfile,
         posts: postsState,
@@ -183,8 +203,15 @@ class NewsFeedViewState extends State<NewsFeedView> {
         postIdCommentsPreviewMap: state.postIdCommentsMap,
         fetchMoreResultsCallback: _fetchMoreResults,
         refreshCallback: _pullRefresh,
-        buttonInteractionCallback: _likeOrUnlikePost
+        buttonInteractionCallback: _likeOrUnlikePost,
+        goToDetailedPostViewCallback: goToDetailedSelectedPostView,
+        deleteSelectedPostCallback: _deleteSelectedPostCallback,
+
     );
+  }
+
+  _deleteSelectedPostCallback(String userId, String postId) {
+    _newsFeedBloc.add(DeleteSelectedNewsfeedPost(currentUserId: userId, postId: postId));
   }
 
   void _onScroll() {
@@ -263,6 +290,21 @@ class NewsFeedViewState extends State<NewsFeedView> {
   }
 
   _showNoResultsPlaceholder() {
+    void goToDetailedSelectedPostView(SocialPost post) {
+      Navigator.push(
+        context,
+        SelectedPostView.route(
+            currentUserProfile: widget.currentUserProfile,
+            currentPostId: post.postId,
+            currentPost: post,
+            currentPostComments: [],
+            likedUsersForCurrentPost: likedUsersForPosts.firstWhere((element) => element.postId == post.postId),
+            userIdProfileMap: {widget.currentUserProfile.userId: widget.currentUserProfile},
+            isMockDataMode: true
+        ),
+      );
+    }
+
     const uuid = Uuid();
     final List<SocialPost> samplePosts = [];
     // Hacky fix because Neo4J stores timestamps in UTC but agnostically
@@ -314,6 +356,8 @@ class NewsFeedViewState extends State<NewsFeedView> {
         refreshCallback: _pullRefresh,
         buttonInteractionCallback: (post, ids) {},
         isMockDataMode: true,
+        goToDetailedPostViewCallback: goToDetailedSelectedPostView,
+        deleteSelectedPostCallback: (userId, postId) {  /*Do nothing*/ },
     );
   }
 

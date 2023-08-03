@@ -166,3 +166,17 @@ class GetChatRoom extends UserProfileEvent {
   @override
   List<Object> get props => [targetUserId];
 }
+
+
+class DeleteSelectedUserProfilePost extends UserProfileEvent {
+  final String currentUserId;
+  final String postId;
+
+  const DeleteSelectedUserProfilePost({
+    required this.currentUserId,
+    required this.postId,
+  });
+
+  @override
+  List<Object> get props => [currentUserId, postId];
+}

@@ -39,6 +39,28 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     on<LikePostForUser>(_likePostForUser);
     on<ApplyUserDecisionToFriendRequest>(_applyUserDecisionToFriendRequest);
     on<GetChatRoom>(_getChatRoom);
+    on<DeleteSelectedUserProfilePost>(_deleteSelectedUserProfilePost);
+  }
+
+  void _deleteSelectedUserProfilePost(DeleteSelectedUserProfilePost event, Emitter<UserProfileState> emit) async {
+    final currentState = state;
+    if (currentState is RequiredDataResolved) {
+      final accessToken = await flutterSecureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+      await socialMediaRepository.deletePostForUser(event.postId, event.currentUserId, accessToken!);
+
+      emit(RequiredDataResolved(
+        userFollowStatus: currentState.userFollowStatus,
+        currentUser: currentState.currentUser,
+        userPosts: currentState.userPosts?.whereNot((element) => element.postId == event.postId).toList(),
+        usersWhoLikedPosts: currentState.usersWhoLikedPosts,
+        postIdCommentsMap: currentState.postIdCommentsMap,
+        userIdProfileMap: currentState.userIdProfileMap,
+        selectedPostId: null,
+        chatRoomId: null,
+        doesNextPageExist: currentState.doesNextPageExist,
+      ));
+    }
+
   }
 
   void _getChatRoom(GetChatRoom event, Emitter<UserProfileState> emit) async {

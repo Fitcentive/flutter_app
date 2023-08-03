@@ -24,6 +24,14 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     on<UnlikePostForUser>(_unlikePostForUser);
     on<LikePostForUser>(_likePostForUser);
     on<AddNewComment>(_addNewComment);
+    on<DeleteSelectedPost>(_deleteSelectedPost);
+  }
+
+  void _deleteSelectedPost(DeleteSelectedPost event, Emitter<SelectedPostState> emit) async {
+    emit(const SelectedPostBeingDeleted());
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    await socialMediaRepository.deletePostForUser(event.postId, event.currentUserId, accessToken!);
+    emit(const SelectedPostDeleted());
   }
 
   void _addNewComment(AddNewComment event, Emitter<SelectedPostState> emit) async {

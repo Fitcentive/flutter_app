@@ -62,3 +62,16 @@ class TrackViewNewsfeedHomeEvent extends NewsFeedEvent {
   @override
   List<Object> get props => [];
 }
+
+class DeleteSelectedNewsfeedPost extends NewsFeedEvent {
+  final String currentUserId;
+  final String postId;
+
+  const DeleteSelectedNewsfeedPost({
+    required this.currentUserId,
+    required this.postId,
+  });
+
+  @override
+  List<Object> get props => [currentUserId, postId];
+}

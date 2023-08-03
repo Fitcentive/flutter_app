@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/social/posts_with_liked_user_ids.dart';
 import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
+import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/views/shared_components/liked_users/liked_users_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_app/src/utils/image_utils.dart';
@@ -43,7 +44,7 @@ class SelectedPostView extends StatefulWidget {
     this.isMockDataMode = false,
   }): super(key: key);
 
-  static Route route({
+  static Route<bool> route({
     required PublicUserProfile currentUserProfile,
     required String currentPostId,
     SocialPost? currentPost,
@@ -90,6 +91,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
   final ScrollController _scrollController = ScrollController();
   PostsWithLikedUserIds likedUsersForPosts = PostsWithLikedUserIds("", List.empty());
   List<SocialPostComment> commentsForPost = List.empty(growable: true);
+  SocialPost? currentSelectedPost;
   String? newUserComment;
 
   @override
@@ -100,6 +102,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
 
     if (widget.currentPost != null && widget.currentPostComments != null &&
         widget.likedUsersForCurrentPost != null && widget.userIdProfileMap != null) {
+      currentSelectedPost = widget.currentPost;
       _selectedPostBloc.add(
           PostAlreadyProvidedByParent(
             currentUserId: widget.currentUserProfile.userId,
@@ -132,20 +135,41 @@ class SelectedPostViewState extends State<SelectedPostView> {
         iconTheme: const IconThemeData(
           color: Colors.teal,
         ),
+        // bloc state needed
+        actions: currentSelectedPost?.userId == widget.currentUserProfile.userId ? <Widget>[
+          IconButton(
+            icon: const Icon(
+              Icons.delete,
+              color: Colors.teal,
+            ),
+            onPressed: () {
+              _showDeletionConfirmationDialog();
+            },
+          )
+        ] : null,
       ),
-      body: BlocBuilder<SelectedPostBloc, SelectedPostState>(
-        builder: (context, state) {
-          if (state is SelectedPostLoaded) {
-            likedUsersForPosts = state.postWithLikedUserIds;
-            commentsForPost = state.comments;
-            return _generatePostView(state);
-          }
-          else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+      body: BlocListener<SelectedPostBloc, SelectedPostState>(
+        listener: (BuildContext context, state) {
+          if (state is SelectedPostDeleted) {
+            SnackbarUtils.showSnackBarShort(context, "Post deleted successfully");
+            Navigator.pop(context, true);
           }
         },
+        child: BlocBuilder<SelectedPostBloc, SelectedPostState>(
+          builder: (context, state) {
+            if (state is SelectedPostLoaded) {
+              likedUsersForPosts = state.postWithLikedUserIds;
+              commentsForPost = state.comments;
+              currentSelectedPost = state.post;
+              return _generatePostView(state);
+            }
+            else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
       ),
       bottomNavigationBar: WidgetUtils.wrapAdWidgetWithUpgradeToMobileTextIfNeeded(adWidget, maxHeight),
     );
@@ -156,6 +180,49 @@ class SelectedPostViewState extends State<SelectedPostView> {
     _textEditingController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  _showDeletionConfirmationDialog() {
+    showDialog(context: context, builder: (context) {
+      Widget cancelButton = TextButton(
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed:  () {
+          Navigator.pop(context);
+        },
+        child: const Text("Cancel"),
+      );
+      Widget continueButton = TextButton(
+        onPressed:  () {
+          Navigator.pop(context);
+          SnackbarUtils.showSnackBarShort(context, "Hang on while we delete your post...");
+          _performPostDeletion();
+        },
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+        ),
+        child: const Text("Confirm"),
+      );
+
+      return AlertDialog(
+        title: const Text("Delete Post Confirmation"),
+        content: const Text("Are you sure you want to delete this post? This action is irreversible!"),
+        actions: [
+          cancelButton,
+          continueButton,
+        ],
+      );
+    });
+  }
+
+  _performPostDeletion() {
+    _selectedPostBloc.add(
+        DeleteSelectedPost(
+            currentUserId: widget.currentUserProfile.userId,
+            postId: currentSelectedPost?.postId ?? ""
+        )
+    );
   }
 
   _generatePostView(SelectedPostLoaded state) {
