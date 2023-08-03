@@ -304,162 +304,6 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
       );
 
-      // Search
-      appDrawerTargets.add(
-        TargetFocus(
-          identify: "searchKey",
-          keyTarget: searchKey,
-          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
-          color: Colors.teal,
-          shape: ShapeLightFocus.RRect,
-          enableOverlayTab: true,
-          enableTargetTab: true,
-          paddingFocus: 10,
-          contents: [
-            TargetContent(
-              align: ContentAlign.bottom,
-              builder: (context, controller) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                      child: Text(
-                        "Search for users and activities",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                    ),
-                    WidgetUtils.spacer(10),
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                      child: AutoSizeText(
-                        "Make new friends and discover activities to log!",
-                        maxLines: 2,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
-      );
-
-      // Friends
-      appDrawerTargets.add(
-        TargetFocus(
-          identify: "friendsKey",
-          keyTarget: friendsKey,
-          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
-          color: Colors.teal,
-          shape: ShapeLightFocus.RRect,
-          enableOverlayTab: true,
-          enableTargetTab: true,
-          paddingFocus: 10,
-          contents: [
-            TargetContent(
-              align: ContentAlign.bottom,
-              builder: (context, controller) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                      child: Text(
-                        "These are your friends",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                    ),
-                    WidgetUtils.spacer(10),
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                      child: AutoSizeText(
-                        "View and manage your friends here!",
-                        maxLines: 2,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
-      );
-
-      // Calendar
-      appDrawerTargets.add(
-        TargetFocus(
-          identify: "calendarKey",
-          keyTarget: calendarKey,
-          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
-          color: Colors.teal,
-          shape: ShapeLightFocus.RRect,
-          enableOverlayTab: true,
-          enableTargetTab: true,
-          paddingFocus: 10,
-          contents: [
-            TargetContent(
-              align: ContentAlign.bottom,
-              builder: (context, controller) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                      child: Text(
-                        "This is your calendar",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                    ),
-                    WidgetUtils.spacer(10),
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                      child: AutoSizeText(
-                        "View scheduled meetups and never miss an event!",
-                        maxLines: 2,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
-      );
-
       // Achievements
       appDrawerTargets.add(
         TargetFocus(
@@ -496,6 +340,58 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                       child: AutoSizeText(
                         "Attain milestones over time and view them here!",
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      );
+
+      // Progress
+      appDrawerTargets.add(
+        TargetFocus(
+          identify: "progressKey",
+          keyTarget: progressKey,
+          alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
+          color: Colors.teal,
+          shape: ShapeLightFocus.RRect,
+          enableOverlayTab: true,
+          enableTargetTab: true,
+          paddingFocus: 10,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: Text(
+                        "Track your progress here",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(10),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: AutoSizeText(
+                        "View metrics and observe trends over time",
                         maxLines: 2,
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -625,58 +521,6 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    // Newsfeed target
-    basicTargets.add(
-      TargetFocus(
-        identify: "newsFeedButtonKey",
-        keyTarget: newsFeedButtonKey,
-        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
-        color: Colors.teal,
-        shape: ShapeLightFocus.Circle,
-        enableOverlayTab: true,
-        enableTargetTab: true,
-        paddingFocus: 10,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                    child: Text(
-                      "This is your social feed",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold
-                      ),
-                    ),
-                  ),
-                  WidgetUtils.spacer(10),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                    child: AutoSizeText(
-                      "Explore what's happening in your community over here!",
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -828,110 +672,6 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: AutoSizeText(
                       "Log your nutrition and track your daily activities!",
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    // Chat target
-    basicTargets.add(
-      TargetFocus(
-        identify: "chatButtonKey",
-        keyTarget: chatButtonKey,
-        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
-        color: Colors.teal,
-        shape: ShapeLightFocus.Circle,
-        enableOverlayTab: true,
-        enableTargetTab: true,
-        paddingFocus: 10,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                    child: Text(
-                      "These are your conversations",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold
-                      ),
-                    ),
-                  ),
-                  WidgetUtils.spacer(10),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                    child: AutoSizeText(
-                      "Chat with discovered users!",
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    // Notification target
-    basicTargets.add(
-      TargetFocus(
-        identify: "notificationsButtonKey",
-        keyTarget: notificationsButtonKey,
-        alignSkip: Alignment.lerp(Alignment.bottomRight, Alignment.centerRight, 0.5),
-        color: Colors.teal,
-        shape: ShapeLightFocus.Circle,
-        enableOverlayTab: true,
-        enableTargetTab: true,
-        paddingFocus: 10,
-        contents: [
-          TargetContent(
-            align: ContentAlign.top,
-            builder: (context, controller) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                    child: Text(
-                      "These are your notifications",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold
-                      ),
-                    ),
-                  ),
-                  WidgetUtils.spacer(10),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
-                    child: AutoSizeText(
-                      "Be notified of your interactions with others!",
                       maxLines: 1,
                       textAlign: TextAlign.center,
                       style: TextStyle(
