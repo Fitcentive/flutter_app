@@ -172,7 +172,7 @@ class DetailedAchievementView extends StatelessWidget {
                         ),
                         WidgetUtils.spacer(5),
                         AutoSizeText(
-                          AwardUtils.allMilestoneNameToDisplayNames[currentMilestone.name()]!,
+                          _getAchievementMilestoneName(currentMilestone),
                           maxLines: 1,
                           style: TextStyle(
                               color: isCurrentMilestoneAttained ? Colors.teal : Colors.grey,
@@ -189,6 +189,15 @@ class DetailedAchievementView extends StatelessWidget {
         );
       }),
     );
+  }
+
+  _getAchievementMilestoneName(MilestoneType milestone) {
+    if (milestone.category().name() == WeightData().name()) {
+      return AwardUtils.allMilestoneNameToDisplayNames[milestone.name()]!.substring(2);
+    }
+    else {
+      return AwardUtils.allMilestoneNameToDisplayNames[milestone.name()]!;
+    }
   }
 
   _renderHeader() {
@@ -308,7 +317,7 @@ class DetailedAchievementView extends StatelessWidget {
                     ),
                     WidgetUtils.spacer(5),
                     AutoSizeText(
-                      AwardUtils.allMilestoneNameToDisplayNames[currentMilestone.name()]!,
+                      _getAchievementMilestoneName(currentMilestone),
                       maxLines: 1,
                       style: TextStyle(
                         color: isCurrentMilestoneAttained ? Colors.teal : Colors.grey,
@@ -364,7 +373,7 @@ class DetailedAchievementView extends StatelessWidget {
             WidgetUtils.spacer(15),
             Row(
               children: [
-                Expanded(
+                const Expanded(
                   flex: 1,
                     child: Text("")
                 ),
@@ -393,7 +402,7 @@ class DetailedAchievementView extends StatelessWidget {
                     children: [
                       Center(
                         child: Text(
-                          AwardUtils.allMilestoneNameToDisplayNames[currentMilestone.name()]!,
+                          _getAchievementMilestoneName(currentMilestone),
                           maxLines: 1,
                           style: const TextStyle(
                             color: Colors.teal,
@@ -417,7 +426,7 @@ class DetailedAchievementView extends StatelessWidget {
                     ],
                   )
                 ),
-                Expanded(
+                const Expanded(
                     flex: 1,
                     child: Text("")
                 ),

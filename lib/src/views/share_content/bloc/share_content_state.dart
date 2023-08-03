@@ -49,6 +49,16 @@ class PostDetailsModified extends ShareContentState {
   List<Object?> get props => [userId, text, selectedImage, selectedImageName];
 }
 
+class PostBeingCreated extends ShareContentState {
+
+  const PostBeingCreated();
+
+  @override
+  List<Object?> get props => [];
+
+}
+
+
 class PostCreatedSuccess extends ShareContentState {
 
   const PostCreatedSuccess();

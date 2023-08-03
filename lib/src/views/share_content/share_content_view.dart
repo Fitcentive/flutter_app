@@ -66,45 +66,43 @@ class ShareContentViewState extends State<ShareContentView> {
 
   ScreenshotController screenshotController = ScreenshotController();
 
-  late Widget widgetToCapture;
-
   @override
   void initState() {
     super.initState();
 
     _shareContentBloc = BlocProvider.of<ShareContentBloc>(context);
-    widgetToCapture = Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-          side: const BorderSide(
-              color: Colors.teal,
-              width: 1
-          )
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: widget.widgetImage,
-      ),
+    _shareContentBloc.add(
+        PostDetailsChanged(
+            userId: widget.userProfile.userId,
+            text: widget.initialText,
+            selectedImage: null,
+            selectedImageName: null,
+        )
     );
   }
 
   _captureWidgetAndUpdateBloc() async {
-    const uuid = Uuid();
-    screenshotController
-        .captureFromWidget(widgetToCapture, pixelRatio: MediaQuery.of(context).devicePixelRatio)
-        .then((Uint8List? image) {
-          _shareContentBloc.add(
-              PostDetailsChanged(
-                  userId: widget.userProfile.userId,
-                  text: widget.initialText,
-                  selectedImage: image,
-                  selectedImageName: "share-content-${uuid.v4()}.jpg"
-              )
-          );
-        }).catchError((onError) {
-          print(onError);
-        });
+    final currentState = _shareContentBloc.state;
+    if (currentState is ShareContentStateInitial ||
+            (currentState is PostDetailsModified && currentState.selectedImage == null)) {
+      screenshotController
+          .capture(pixelRatio: MediaQuery.of(context).devicePixelRatio)
+          .then((Uint8List? image) {
+            if (image != null) {
+              const uuid = Uuid();
+              _shareContentBloc.add(
+                  PostDetailsChanged(
+                    userId: widget.userProfile.userId,
+                    text: widget.initialText,
+                    selectedImage: image,
+                    selectedImageName: "share-content-${uuid.v4()}.jpg"
+                  )
+              );
+            }
+      }).catchError((onError) {
+        print(onError);
+      });
+    }
   }
 
   @override
@@ -112,7 +110,6 @@ class ShareContentViewState extends State<ShareContentView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _captureWidgetAndUpdateBloc();
     });
-
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return BlocListener<ShareContentBloc, ShareContentState>(
@@ -251,7 +248,7 @@ class ShareContentViewState extends State<ShareContentView> {
                       backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
                     ),
                     onPressed: () async {
-                      SnackbarUtils.showSnackBarMedium(context, "Hang on while we upload your post...");
+                      SnackbarUtils.showSnackBarShort(context, "Hang on while we upload your post...");
                       _submitPost();
                     },
                     child: const Text(
@@ -274,7 +271,23 @@ class ShareContentViewState extends State<ShareContentView> {
     return Row(
       children: [
         Expanded(
-            child: widgetToCapture
+            child: Screenshot(
+              controller: screenshotController,
+              child:  Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                    side: const BorderSide(
+                        color: Colors.teal,
+                        width: 1
+                    )
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: widget.widgetImage,
+                ),
+              )
+            )
         ),
       ],
     );

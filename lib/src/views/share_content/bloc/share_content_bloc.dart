@@ -52,6 +52,7 @@ class ShareContentBloc extends Bloc<ShareContentEvent, ShareContentState> {
 
   void _createNewPostWithSharedContent(CreateNewPostWithSharedContent event, Emitter<ShareContentState> emit) async {
     try {
+      emit(const PostBeingCreated());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       String? postPhotoUrl;
       if (event.selectedImage != null) {
