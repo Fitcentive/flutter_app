@@ -1137,7 +1137,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(builder: (context, state) {
       return SizedBox(
         key: accountDetailsKey,
-        height: 200,
+        height: 300,
         child: DrawerHeader(
           decoration: const BoxDecoration(
             color: Colors.teal,
@@ -1212,9 +1212,15 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
     return Expanded(
         flex: 1,
-        child: Text(
+        child: AutoSizeText(
           "$firstName $lastName",
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          maxLines: 2,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+            color: Colors.white
+          ),
         ));
   }
 
@@ -1230,8 +1236,8 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
               }
             },
             child: Container(
-              width: 100,
-              height: 100,
+              width: 150,
+              height: 150,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: _getDecorationImage(state),
@@ -1244,7 +1250,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   _getDecorationImage(AuthenticationState state) {
     if (state is AuthSuccessUserUpdateState) {
-      return ImageUtils.getImage(state.authenticatedUser.userProfile?.photoUrl, 100, 100);
+      return ImageUtils.getImage(state.authenticatedUser.userProfile?.photoUrl, 150, 150);
     } else {
       return null;
     }
