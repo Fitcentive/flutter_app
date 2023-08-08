@@ -586,7 +586,6 @@ class UserChatViewState extends State<UserChatView> {
       types.TextMessage message,
       types.PreviewData previewData,
       ) {
-    print("PREVIEW DATA FETFCHED SON");
     // final index = _messages.indexWhere((element) => element.id == message.id);
     // final updatedMessage = (_messages[index] as types.TextMessage).copyWith(
     //   previewData: previewData,
