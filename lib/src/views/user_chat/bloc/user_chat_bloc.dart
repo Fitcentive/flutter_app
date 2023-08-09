@@ -52,7 +52,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
   }
 
   _setUpHeartbeats(String roomId, String currentUserId) {
-    _heartbeatTimer = Timer(const Duration(seconds: 30), () {
+    _heartbeatTimer = Timer(const Duration(seconds: 5), () {
       _chatRoomChannel?.sink.add(jsonEncode({
         "topic": "chat_room:$roomId",
         "event": "ping",
@@ -144,7 +144,7 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
           .map((chatMessage) => chatMessage.copyWithLocalTime())
           .toList();
       final doesNextPageExist = chatMessages.length == ConstantUtils.DEFAULT_CHAT_MESSAGES_LIMIT ? true : false;
-      final completeMessages = [...chatMessages, ...currentState.messages];
+      final completeMessages = [...currentState.messages, ...chatMessages];
 
       // We use this instead of chatRoom userIds as previously existing users in chatRoom may have also sent messages
       final distinctChatMessageSenderIds = (chatMessages.map((e) => e.senderId).toSet()
@@ -258,6 +258,10 @@ class UserChatBloc extends Bloc<UserChatEvent, UserChatState> {
       "join_ref": joinRef,
       "ref": const Uuid().v4()
     }));
+    final currentState = state;
+    if (currentState is HistoricalChatsFetched) {
+      emit(currentState.copyWith(newMessage: event.text, senderId: event.userId));
+    }
   }
 
   void _updateIncomingMessageIntoChatRoom(UpdateIncomingMessageIntoChatRoom event, Emitter<UserChatState> emit) async {

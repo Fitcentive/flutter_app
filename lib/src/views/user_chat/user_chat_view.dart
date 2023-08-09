@@ -75,7 +75,9 @@ class UserChatView extends StatefulWidget {
 class UserChatViewState extends State<UserChatView> {
   static const int scrollThreshold = 600;
 
-  final ScrollController _scrollController = ScrollController();
+  // Scrollcontroller throws an issue which seems to affect websocket connection
+  // It seems to be more stable when the controller is not involved
+  // final ScrollController _scrollController = ScrollController();
 
   types.User? _currentUser;
   List<types.User>? _otherUsers;
@@ -87,7 +89,6 @@ class UserChatViewState extends State<UserChatView> {
 
   String lastReadMessageId = "";
   List<types.Message> _previousMessages = [];
-  List<types.Message> _newMessages = [];
 
   late final UserChatBloc _userChatBloc;
 
@@ -96,7 +97,7 @@ class UserChatViewState extends State<UserChatView> {
   @override
   void dispose() {
     _userChatBloc.dispose();
-    _scrollController.dispose();
+    // _scrollController.dispose();
     super.dispose();
   }
 
@@ -349,20 +350,13 @@ class UserChatViewState extends State<UserChatView> {
             builder: (context, state) {
               if (state is HistoricalChatsFetched) {
                 isRequestingMoreData = false;
-                _previousMessages = List<types.Message>.from(state.messages.map((msg) => types.TextMessage(
-                  author: _getChatMessageAuthor(msg.senderId, state),
-                  createdAt: msg.createdAt.millisecondsSinceEpoch,
-                  id: msg.id,
-                  text: msg.text,
-                )));
-
-                // Cannot simply add after, need to sort
-                for (var msg in _newMessages.reversed) {
-                  _previousMessages.insert(0, msg);
-                }
-
-                // todo -  this could be a problem at scale
-                _previousMessages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+                _previousMessages = List<types.Message>
+                    .from(state.messages.map((msg) => types.TextMessage(
+                      author: _getChatMessageAuthor(msg.senderId, state),
+                      createdAt: msg.createdAt.millisecondsSinceEpoch,
+                      id: msg.id,
+                      text: msg.text,
+                    )));
 
                 if (state.userLastSeen != null) {
                   final templastReadMessageId = _previousMessages
@@ -370,13 +364,13 @@ class UserChatViewState extends State<UserChatView> {
                           (element) => DateTime
                               .fromMillisecondsSinceEpoch(element.createdAt!)
                               .compareTo(state.userLastSeen!.lastSeen) >= 0 && element.author.id != _currentUser!.id,
-                  orElse: () {
+                        orElse: () {
                             return types.TextMessage(
                               author: _currentUser!,
                               id: "random_unused_id",
                               text: "msg.text",
                             );
-                  })
+                       })
                       .id;
 
                   if (templastReadMessageId != "random_unused_id") {
@@ -399,7 +393,7 @@ class UserChatViewState extends State<UserChatView> {
                     _renderMeetupMiniCard(state),
                     Expanded(
                       child: Scrollbar(
-                        controller: _scrollController,
+                        // controller: _scrollController,
                         child: _renderChatView(),
                       ),
                     )
@@ -666,9 +660,6 @@ class UserChatViewState extends State<UserChatView> {
   }
 
   void _addMessage(types.Message message, String textMessage) {
-    setState(() {
-      _newMessages.insert(0, message);
-    });
     _userChatBloc.add(
         AddMessageToChatRoom(
             roomId: widget.currentRoomId,

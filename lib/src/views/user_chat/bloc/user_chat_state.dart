@@ -5,6 +5,7 @@ import 'package:flutter_app/src/models/chats/detailed_chat_room.dart';
 import 'package:flutter_app/src/models/chats/user_last_seen.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
+import 'package:uuid/uuid.dart';
 
 abstract class UserChatState extends Equatable {
   const UserChatState();
@@ -58,6 +59,25 @@ class HistoricalChatsFetched extends UserChatState {
     required this.userLastSeen,
     required this.roomAdmins,
   });
+
+  HistoricalChatsFetched copyWith({
+    required String newMessage,
+    required String senderId,
+  }) {
+    final now = DateTime.now();
+    const uuid = Uuid();
+    return HistoricalChatsFetched(
+        roomId: roomId,
+        messages: List.from(messages)..insert(0, ChatMessage(uuid.v4(), senderId, roomId, newMessage, null, now, now)),
+        doesNextPageExist: doesNextPageExist,
+        currentChatRoom: currentChatRoom,
+        chatRoomUserProfiles: chatRoomUserProfiles,
+        allMessagingUserProfiles: allMessagingUserProfiles,
+        associatedMeetup: associatedMeetup,
+        userLastSeen: userLastSeen,
+        roomAdmins: roomAdmins,
+    );
+  }
 
   @override
   List<Object?> get props => [
