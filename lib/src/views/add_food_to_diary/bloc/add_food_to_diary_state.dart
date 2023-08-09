@@ -12,6 +12,11 @@ class AddToFoodDiaryStateInitial extends AddFoodToDiaryState {
   const AddToFoodDiaryStateInitial();
 }
 
+class FoodDiaryEntryBeingAdded extends AddFoodToDiaryState {
+
+  const FoodDiaryEntryBeingAdded();
+}
+
 class FoodDiaryEntryAdded extends AddFoodToDiaryState {
 
   const FoodDiaryEntryAdded();

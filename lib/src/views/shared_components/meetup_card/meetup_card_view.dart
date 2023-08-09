@@ -277,7 +277,7 @@ class MeetupCardViewState extends State<MeetupCardView> {
   }
 
   _renderTop(Meetup meetup) {
-    final meetupDate = meetup.time == null ? "Date unset" : "${DateFormat('EEEE').format(meetup.time!.toLocal())}, ${DateFormat("yyyy-MM-dd").format(meetup.time!.toLocal())}";
+    final meetupDate = meetup.time == null ? "Date unset" : "${DateFormat('EEEE').format(meetup.time!.toLocal())}, ${DateFormat("MMM dd, yyyy").format(meetup.time!.toLocal())}";
     final meetupTime = meetup.time == null ? "Time unset" : DateFormat("hh:mm a").format(meetup.time!.toLocal());
     return Row(
       children: [

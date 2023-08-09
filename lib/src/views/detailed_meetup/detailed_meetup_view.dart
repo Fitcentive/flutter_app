@@ -1091,7 +1091,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         }
       },
       child: Text(
-          selectedMeetupDate == null ? "Date unset" : DateFormat('yyyy-MM-dd').format(selectedMeetupDate!),
+          selectedMeetupDate == null ? "Date unset" : DateFormat('MMM dd, yyyy').format(selectedMeetupDate!),
           style: const TextStyle(
               fontSize: 16,
               color: Colors.white

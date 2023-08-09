@@ -145,7 +145,20 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
             Navigator.pop(context);
           }
         },
-        child: _displayMainBody(),
+        child: BlocBuilder<AddExerciseToDiaryBloc, AddExerciseToDiaryState>(
+          builder: (context, state) {
+            if (state is ExerciseDiaryEntryBeingAdded) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.teal,
+                ),
+              );
+            }
+            else {
+              return _displayMainBody();
+            }
+          },
+        ),
       ),
     );
   }

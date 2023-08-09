@@ -153,7 +153,20 @@ class AddFoodToDiaryViewState extends State<AddFoodToDiaryView> {
             Navigator.popUntil(context, (route) => count++ == 3);
           }
         },
-        child: _displayMainBody(),
+        child: BlocBuilder<AddFoodToDiaryBloc, AddFoodToDiaryState>(
+          builder: (context, state) {
+            if (state is FoodDiaryEntryBeingAdded) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.teal,
+                ),
+              );
+            }
+            else {
+              return _displayMainBody();
+            }
+          },
+        ),
       ),
     );
   }

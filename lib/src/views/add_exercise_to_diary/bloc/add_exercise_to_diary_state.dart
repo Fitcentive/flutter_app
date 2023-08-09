@@ -12,6 +12,11 @@ class AddExerciseToDiaryStateInitial extends AddExerciseToDiaryState {
   const AddExerciseToDiaryStateInitial();
 }
 
+class ExerciseDiaryEntryBeingAdded extends AddExerciseToDiaryState {
+
+  const ExerciseDiaryEntryBeingAdded();
+}
+
 class ExerciseDiaryEntryAdded extends AddExerciseToDiaryState {
 
   const ExerciseDiaryEntryAdded();

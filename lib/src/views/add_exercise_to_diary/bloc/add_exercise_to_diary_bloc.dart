@@ -26,6 +26,7 @@ class AddExerciseToDiaryBloc extends Bloc<AddExerciseToDiaryEvent, AddExerciseTo
 
 
   void _addStrengthEntryToDiary(AddStrengthEntryToDiary event, Emitter<AddExerciseToDiaryState> emit) async {
+    emit(const ExerciseDiaryEntryBeingAdded());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final entry = await diaryRepository.addStrengthEntryToUserDiary(event.userId, event.newEntry, accessToken!);
 
@@ -37,6 +38,7 @@ class AddExerciseToDiaryBloc extends Bloc<AddExerciseToDiaryEvent, AddExerciseTo
   }
 
   void _addCardioEntryToDiary(AddCardioEntryToDiary event, Emitter<AddExerciseToDiaryState> emit) async {
+    emit(const ExerciseDiaryEntryBeingAdded());
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
     final entry = await diaryRepository.addCardioEntryToUserDiary(event.userId, event.newEntry, accessToken!);
 
