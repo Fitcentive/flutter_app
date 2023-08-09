@@ -13,6 +13,8 @@ class DetailedProgressBloc extends Bloc<DetailedProgressEvent, DetailedProgressS
   final AwardsRepository awardsRepository;
   final UserRepository userRepository;
 
+  bool isFirstLoad = true;
+
   DetailedProgressBloc({
     required this.awardsRepository,
     required this.userRepository,
@@ -22,7 +24,10 @@ class DetailedProgressBloc extends Bloc<DetailedProgressEvent, DetailedProgressS
   }
 
   void _fetchDataForMetricCategory(FetchDataForMetricCategory event, Emitter<DetailedProgressState> emit) async {
-    emit(const DetailedProgressLoading());
+    if (isFirstLoad) {
+      emit(const DetailedProgressLoading());
+      isFirstLoad = false;
+    }
     final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
 
     if (event.category.name() == StepData().name()) {

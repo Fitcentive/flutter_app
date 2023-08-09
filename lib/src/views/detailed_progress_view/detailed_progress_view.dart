@@ -406,6 +406,13 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
                        selectedFilterDisplayName = newValue ?? selectedFilterDisplayName;
                        _determineNewFilterStartDate();
                      });
+                     // Fetch new info from bloc
+                     _detailedProgressBloc.add(FetchDataForMetricCategory(
+                       userId: widget.userProfile.userId,
+                       category: widget.awardCategory,
+                       from: filterStartDate,
+                       to: filterEndDate,
+                     ));
                    }
                ),
              ),
@@ -931,7 +938,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
         }
       }
 
-      final total   = dateStringToMetricMap.entries.map((e) => e.value).reduce((a, b) => a + b);
+      final total   = dateStringToMetricMap.entries.isEmpty ? 0 : dateStringToMetricMap.entries.map((e) => e.value).reduce((a, b) => a + b);
       final average = total / dataPoints.length;
 
       return Row(
