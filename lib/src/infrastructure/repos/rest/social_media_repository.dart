@@ -202,6 +202,27 @@ class SocialMediaRepository {
     }
   }
 
+  Future<List<SocialPostComment>> getCommentChunkForPost(
+      String postId,
+      String accessToken,
+      int skip,
+      int limit,
+      ) async {
+    final response = await http.get(
+        Uri.parse("$BASE_URL/post/$postId/comment-chunk?limit=$limit&skip=$skip"),
+        headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'}
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      final List<dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      final comments = jsonResponse.map((e) => SocialPostComment.fromJson(e)).toList();
+      return comments;
+    } else {
+      throw Exception(
+          "getCommentChunkForPost: Received bad response with status: ${response.statusCode} and body ${response.body}");
+    }
+  }
+
   Future<SocialPostComment> addCommentToPost(String postId, String userId, String text, String accessToken) async {
     final response = await http.post(Uri.parse("$BASE_URL/user/$userId/post/$postId/comment"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},

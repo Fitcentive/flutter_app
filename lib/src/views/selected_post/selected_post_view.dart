@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -94,6 +95,12 @@ class SelectedPostViewState extends State<SelectedPostView> {
   SocialPost? currentSelectedPost;
   String? newUserComment;
 
+  bool canLoadMoreComments = true;
+  bool shouldShowLoaderInsteadOfText = false;
+
+  bool isArrowPointingDown = true;
+  bool _isFloatingButtonVisible = true;
+
   @override
   void initState() {
     super.initState();
@@ -123,6 +130,8 @@ class SelectedPostViewState extends State<SelectedPostView> {
           )
       );
     }
+
+    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -130,6 +139,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
+      floatingActionButton: _animatedButton(),
       appBar: AppBar(
         title: const Text("View Post", style: TextStyle(color: Colors.teal),),
         iconTheme: const IconThemeData(
@@ -153,6 +163,13 @@ class SelectedPostViewState extends State<SelectedPostView> {
           if (state is SelectedPostDeleted) {
             SnackbarUtils.showSnackBarShort(context, "Post deleted successfully");
             Navigator.pop(context, true);
+          }
+
+          if (state is SelectedPostLoaded) {
+            setState(() {
+              shouldShowLoaderInsteadOfText = false;
+              canLoadMoreComments = state.doMoreCommentsExist;
+            });
           }
         },
         child: BlocBuilder<SelectedPostBloc, SelectedPostState>(
@@ -180,6 +197,68 @@ class SelectedPostViewState extends State<SelectedPostView> {
     _textEditingController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if(_scrollController.hasClients) {
+      // Handle floating action button visibility
+      if(_scrollController.position.userScrollDirection == ScrollDirection.reverse){
+        if(_isFloatingButtonVisible == true) {
+          setState((){
+            _isFloatingButtonVisible = false;
+          });
+        }
+      } else {
+        if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+          if (_isFloatingButtonVisible == false) {
+            setState(() {
+              _isFloatingButtonVisible = true;
+            });
+          }
+        }
+      }
+    }
+  }
+
+  _scrollAsNeeded() {
+    if (isArrowPointingDown) {
+      _goToBottom();
+      setState(() {
+        isArrowPointingDown = false;
+      });
+    }
+    else {
+      _scrollController.animateTo(
+        0,
+        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 250),
+      );
+      setState(() {
+        isArrowPointingDown = true;
+      });
+    }
+  }
+
+  _animatedButton() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: AnimatedOpacity(
+        opacity: _isFloatingButtonVisible ? 0.66 : 0.0,
+        duration: const Duration(milliseconds: 200),
+        child: Visibility(
+          visible: _isFloatingButtonVisible,
+          child: FloatingActionButton(
+            heroTag: "NewsfeedViewAnimatedButton",
+            onPressed: () {
+              _scrollAsNeeded();
+            },
+            tooltip: isArrowPointingDown ? "Scroll down" : 'Scroll up',
+            backgroundColor: Colors.teal,
+            child: Icon(isArrowPointingDown ? Icons.arrow_downward : Icons.arrow_upward, color: Colors.white),
+          ),
+        ),
+      ),
+    );
   }
 
   _showDeletionConfirmationDialog() {
@@ -257,6 +336,8 @@ class SelectedPostViewState extends State<SelectedPostView> {
                   _getPostActionButtons(post, likedUsersForPosts),
                   WidgetUtils.spacer(5),
                   _renderPostCreationTime(post),
+                  WidgetUtils.spacer(5),
+                  _renderMoreCommentsTextIfNeeded(),
                   WidgetUtils.spacer(5),
                   _renderCommentsList(userIdProfileMap),
                   WidgetUtils.spacer(5),
@@ -618,6 +699,56 @@ class SelectedPostViewState extends State<SelectedPostView> {
         )
       ],
     );
+  }
+
+  _attemptToLoadMoreCommentsForPost() {
+    final currentState = _selectedPostBloc.state;
+    if (currentState is SelectedPostLoaded) {
+      _selectedPostBloc.add(
+          FetchMoreCommentsForPost(
+            postId: widget.currentPostId,
+            currentUserId: widget.currentUserProfile.userId,
+            skip: currentState.comments.length,
+          )
+      );
+    }
+  }
+
+  _renderMoreCommentsTextIfNeeded() {
+    if (canLoadMoreComments) {
+      if (shouldShowLoaderInsteadOfText) {
+        return const Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: EdgeInsets.all(2.5),
+            child: Text(
+              "Loading...",
+              style: TextStyle(fontSize: 14, color: Colors.teal),
+            ),
+          ),
+        );
+      }
+      else {
+        return InkWell(
+          onTap: () {
+            setState(() {
+              shouldShowLoaderInsteadOfText = true;
+            });
+            _attemptToLoadMoreCommentsForPost();
+          },
+          child: const Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.all(2.5),
+              child: Text(
+                "Load more comments",
+                style: TextStyle(fontSize: 14, color: Colors.teal),
+              ),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   _renderPostCreationTime(SocialPost post) {

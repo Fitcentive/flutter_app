@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/social/social_post_comment.dart';
 import 'package:flutter_app/src/models/track/user_tracking_event.dart';
+import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/views/selected_post/bloc/selected_post_event.dart';
 import 'package:flutter_app/src/views/selected_post/bloc/selected_post_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +26,33 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     on<LikePostForUser>(_likePostForUser);
     on<AddNewComment>(_addNewComment);
     on<DeleteSelectedPost>(_deleteSelectedPost);
+    on<FetchMoreCommentsForPost>(_fetchMoreCommentsForPost);
+  }
+
+  void _fetchMoreCommentsForPost(FetchMoreCommentsForPost event, Emitter<SelectedPostState> emit) async {
+    final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
+    final currentState = state;
+    if (currentState is SelectedPostLoaded) {
+      final additionalComments = await socialMediaRepository.getCommentChunkForPost(
+        event.postId,
+        accessToken!,
+        event.skip,
+        ConstantUtils.DEFAULT_SELECTED_POST_COMMENTS_FETCHED_LIMIT,
+      );
+      final doMoreCommentsExist = additionalComments.length == ConstantUtils.DEFAULT_SELECTED_POST_COMMENTS_FETCHED_LIMIT ? true : false;
+      final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(additionalComments, event.currentUserId, event.currentUserId);
+      final List<PublicUserProfile> userProfileDetails =
+      await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
+      final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
+
+      emit(SelectedPostLoaded(
+        post: currentState.post,
+        comments: [...List.from(additionalComments.reversed), ...currentState.comments],
+        postWithLikedUserIds: currentState.postWithLikedUserIds,
+        userProfileMap: {...currentState.userProfileMap, ...userIdProfileMap},
+        doMoreCommentsExist: doMoreCommentsExist,
+      ));
+    }
   }
 
   void _deleteSelectedPost(DeleteSelectedPost event, Emitter<SelectedPostState> emit) async {
@@ -67,12 +95,19 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
         post: event.currentPost,
         comments: event.currentPostComments,
         postWithLikedUserIds: event.likedUsersForCurrentPost,
-        userProfileMap: event.userIdProfileMap
+        userProfileMap: event.userIdProfileMap,
+        doMoreCommentsExist: true
     ));
 
     if (!event.isMockDataMode) {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
-      final postComments = await socialMediaRepository.getCommentsForPost(event.currentPost.postId, accessToken!);
+      final postComments = await socialMediaRepository.getCommentChunkForPost(
+          event.currentPost.postId,
+          accessToken!,
+          0,
+          ConstantUtils.DEFAULT_SELECTED_POST_COMMENTS_FETCHED_LIMIT,
+      );
+      final doMoreCommentsExist = postComments.length == ConstantUtils.DEFAULT_SELECTED_POST_COMMENTS_FETCHED_LIMIT ? true : false;
       final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.currentPost.postId], accessToken);
       final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId, event.currentPost.userId);
       final List<PublicUserProfile> userProfileDetails =
@@ -80,9 +115,10 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
       emit(SelectedPostLoaded(
           post: event.currentPost,
-          comments: postComments,
+          comments: List.from(postComments.reversed),
           postWithLikedUserIds: likedUsersForPostIds.first,
-          userProfileMap: userIdProfileMap
+          userProfileMap: userIdProfileMap,
+          doMoreCommentsExist: doMoreCommentsExist,
       ));
     }
   }
@@ -93,7 +129,12 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
     if (!event.isMockDataMode) {
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final fetchedPost = await socialMediaRepository.getPostById(event.postId, accessToken!);
-      final postComments = await socialMediaRepository.getCommentsForPost(event.postId, accessToken);
+      final postComments = await socialMediaRepository.getCommentChunkForPost(
+        event.postId,
+        accessToken,
+        0,
+        ConstantUtils.DEFAULT_SELECTED_POST_COMMENTS_FETCHED_LIMIT,
+      );
       final likedUsersForPostIds = await socialMediaRepository.getPostsWithLikedUserIds([event.postId], accessToken);
 
       final distinctUserIdsFromPosts = _getRelevantUserIdsFromComments(postComments, event.currentUserId, fetchedPost.userId);
@@ -101,11 +142,14 @@ class SelectedPostBloc extends Bloc<SelectedPostEvent, SelectedPostState> {
       await userRepository.getPublicUserProfiles(distinctUserIdsFromPosts, accessToken);
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in userProfileDetails) (e).userId : e };
 
+      final doMoreCommentsExist = postComments.length == ConstantUtils.DEFAULT_SELECTED_POST_COMMENTS_FETCHED_LIMIT ? true : false;
+
       emit(SelectedPostLoaded(
           post: fetchedPost,
-          comments: postComments,
+          comments: List.from(postComments.reversed),
           postWithLikedUserIds: likedUsersForPostIds.first, // should only be of size 1
-          userProfileMap: userIdProfileMap
+          userProfileMap: userIdProfileMap,
+          doMoreCommentsExist: doMoreCommentsExist
       ));
     }
 

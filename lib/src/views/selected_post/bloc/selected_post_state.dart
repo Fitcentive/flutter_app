@@ -38,11 +38,14 @@ class SelectedPostLoaded extends SelectedPostState {
   final PostsWithLikedUserIds postWithLikedUserIds;
   final Map<String, PublicUserProfile> userProfileMap;
 
+  final bool doMoreCommentsExist;
+
   const SelectedPostLoaded({
     required this.post,
     required this.comments,
     required this.postWithLikedUserIds,
     required this.userProfileMap,
+    required this.doMoreCommentsExist,
   });
 
   SelectedPostLoaded copyWithNewCommentAdded({
@@ -54,12 +57,13 @@ class SelectedPostLoaded extends SelectedPostState {
         post: post,
         userProfileMap: userProfileMap,
         postWithLikedUserIds: postWithLikedUserIds,
-        comments: [...comments, SocialPostComment(post.postId, uuid.v4(), userId, newComment, now, now)]
+        comments: [...comments, SocialPostComment(post.postId, uuid.v4(), userId, newComment, now, now)],
+        doMoreCommentsExist: doMoreCommentsExist,
     );
   }
 
   @override
-  List<Object> get props => [post, comments, postWithLikedUserIds, userProfileMap];
+  List<Object> get props => [post, comments, postWithLikedUserIds, userProfileMap, doMoreCommentsExist];
 }
 
 class SelectedPostBeingDeleted extends SelectedPostState {

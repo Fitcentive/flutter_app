@@ -111,3 +111,18 @@ class DeleteSelectedPost extends SelectedPostEvent {
   @override
   List<Object> get props => [currentUserId, postId];
 }
+
+class FetchMoreCommentsForPost extends SelectedPostEvent {
+  final String currentUserId;
+  final String postId;
+  final int skip;
+
+  const FetchMoreCommentsForPost({
+    required this.currentUserId,
+    required this.postId,
+    required this.skip,
+  });
+
+  @override
+  List<Object> get props => [currentUserId, postId, skip];
+}

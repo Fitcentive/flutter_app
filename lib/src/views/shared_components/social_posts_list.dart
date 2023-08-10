@@ -200,7 +200,7 @@ class SocialPostsListState extends State<SocialPostsList> {
           WidgetUtils.spacer(2.5),
           _renderCommentsPreviewList(
             post,
-            previewComments.reversed.toList().sublist(0, min(3, previewComments.length)).reversed.toList(),
+            List.from(List.from(previewComments.reversed)..sublist(0, min(3, previewComments.length)).reversed),
           ),
           WidgetUtils.spacer(5),
         ],
