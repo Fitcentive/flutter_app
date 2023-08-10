@@ -56,7 +56,10 @@ class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> 
             WidgetUtils.spacer(2.5),
             _generateDotsIfNeeded(widget.location.photos),
             _autoSizingText(Text(widget.location.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-            _autoSizingText(Text(_generateFullAddress(widget.location.location))),
+            _autoSizingText(Text(
+                _generateFullAddress(widget.location.location),
+                style: const TextStyle(fontSize: 16)
+            )),
             WidgetUtils.spacer(2.5),
             Expanded(child: Text(widget.location.tel ?? "Phone number unknown")),
             WidgetUtils.spacer(2.5),
@@ -109,7 +112,7 @@ class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> 
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
           child: FittedBox(
-              fit: BoxFit.contain,
+              fit: BoxFit.scaleDown,
               child: textWidget,
               )
           ),
@@ -125,7 +128,7 @@ class FoursquareLocationCardViewState extends State<FoursquareLocationCardView> 
           // aspectRatio: 3.0,
           viewportFraction: 0.825,
           initialPage: 0,
-          enableInfiniteScroll: true,
+          enableInfiniteScroll: false,
           reverse: false,
           enlargeCenterPage: true,
           enlargeStrategy: CenterPageEnlargeStrategy.height,

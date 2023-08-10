@@ -64,6 +64,8 @@ class MeetupTabs extends StatefulWidget {
   final SearchLocationViewUpdateBlocCallback searchLocationViewUpdateBlocCallback;
   final VoidCallback searchLocationViewUpdateMeetupLocationViaBlocCallback;
 
+  final VoidCallback scrollToTopCallback;
+
   const MeetupTabs({
     super.key,
     required this.currentUserProfile,
@@ -94,6 +96,8 @@ class MeetupTabs extends StatefulWidget {
 
     required this.searchLocationViewUpdateBlocCallback,
     required this.searchLocationViewUpdateMeetupLocationViaBlocCallback,
+
+    required this.scrollToTopCallback,
   });
 
   @override
@@ -216,19 +220,64 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   }
 
   _animatedButton() {
+    if (selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor == widget.currentUserProfile.userId
+        && _tabController.index == DetailedMeetupViewState.ACTIVITIES_MEETUP_VIEW_TAB) {
+      return  Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: FloatingActionButton(
+          heroTag: "MeetupTabsViewAnimatedButton",
+          onPressed: () {
+            _showDiaryEntrySelectDialog();
+          },
+          tooltip: 'Associate diary entries to meetup!',
+          backgroundColor: Colors.teal,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+      );
+    }
+    else if (_tabController.index == DetailedMeetupViewState.CONVERSATION_MEETUP_VIEW_TAB) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Opacity(
+            opacity: 0.66,
+            child: FloatingActionButton(
+              heroTag: "MeetupTabsConversationViewAnimatedButton",
+              onPressed: () {
+                _jumpToTopOfMeetupTabConversationView();
+              },
+              tooltip: 'Jump to top',
+              backgroundColor: Colors.teal,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
+        ),
+      );
+    }
+    else {
+      return const Visibility(visible: false, child: CircularProgressIndicator(color: Colors.teal,));
+    }
     return Visibility(
       visible: selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor == widget.currentUserProfile.userId
           && _tabController.index == DetailedMeetupViewState.ACTIVITIES_MEETUP_VIEW_TAB,
-      child: FloatingActionButton(
-        heroTag: "MeetupTabsViewAnimatedButton",
-        onPressed: () {
-          _showDiaryEntrySelectDialog();
-        },
-        tooltip: 'Associate diary entries to meetup!',
-        backgroundColor: Colors.teal,
-        child: const Icon(Icons.add, color: Colors.white),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: FloatingActionButton(
+          heroTag: "MeetupTabsViewAnimatedButton",
+          onPressed: () {
+            _showDiaryEntrySelectDialog();
+          },
+          tooltip: 'Associate diary entries to meetup!',
+          backgroundColor: Colors.teal,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
+  }
+
+  _jumpToTopOfMeetupTabConversationView() {
+    widget.scrollToTopCallback();
   }
 
   _showDiaryEntrySelectDialog() {
@@ -379,30 +428,37 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   }
 
   Widget renderMeetupCommentsView() {
-    return _renderMeetupComments();
+    return ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: 100,
+          maxHeight: 400,
+        ),
+        child: MeetupCommentsListView.withBloc(
+            currentUserId: widget.currentUserProfile.userId,
+            meetupId: widget.currentMeetup.id
+        )
+    );
   }
 
   Widget renderMeetupActivitiesView() {
     final diaryEntriesForSelectedUser = participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
-    return Scrollbar(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 25),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _showFilterByDropDown(),
-              WidgetUtils.spacer(2.5),
-              DiaryCardView(
-                  currentUserProfile: widget.currentUserProfile,
-                  foodDiaryEntries: rawFoodEntriesState,
-                  allDiaryEntries: diaryEntriesForSelectedUser,
-                  onCardTapped: () {},
-                  selectedDate: null,
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 25),
+      child: Column(
+        // physics: const NeverScrollableScrollPhysics(),
+        children: [
+          _showFilterByDropDown(),
+          WidgetUtils.spacer(2.5),
+          Expanded(
+            child: DiaryCardView(
+                currentUserProfile: widget.currentUserProfile,
+                foodDiaryEntries: rawFoodEntriesState,
+                allDiaryEntries: diaryEntriesForSelectedUser,
+                onCardTapped: () {},
+                selectedDate: null,
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -477,30 +533,16 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     );
   }
 
-  _renderMeetupComments() {
-    return ConstrainedBox(
-        constraints: const BoxConstraints(
-          minHeight: 100,
-          maxHeight: 400,
-        ),
-        child: MeetupCommentsListView.withBloc(
-            currentUserId: widget.currentUserProfile.userId,
-            meetupId: widget.currentMeetup.id
-        )
-    );
-  }
-
   Widget renderMeetupLocationView() {
-    return Scrollbar(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            _renderMeetupLocation(),
-            WidgetUtils.spacer(2.5),
-            _renderMeetupFsqLocationCardIfNeeded(),
-          ],
-        ),
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          _renderMeetupLocation(),
+          WidgetUtils.spacer(2.5),
+          _renderMeetupFsqLocationCardIfNeeded(),
+        ],
       ),
     );
   }
@@ -563,7 +605,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     }
     else {
       return SizedBox(
-        height: 270,
+        height: 300,
         child: Center(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -579,6 +621,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   Widget renderAvailabilitiesView() {
     return ListView(
+      physics: const NeverScrollableScrollPhysics(),
       children: WidgetUtils.skipNulls([
         WidgetUtils.spacer(2.5),
         _renderEditAvailabilitiesButton(),

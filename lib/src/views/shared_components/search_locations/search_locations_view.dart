@@ -118,7 +118,7 @@ class SearchLocationsView extends StatefulWidget {
   }
 }
 
-class SearchLocationsViewState extends State<SearchLocationsView> {
+class SearchLocationsViewState extends State<SearchLocationsView> with WidgetsBindingObserver {
   static const int defaultLocationSearchQuerySearchRadiusInMetres = 10000;  // todo - avoid hardcoding radius
 
   bool isPremiumEnabled = false;
@@ -192,6 +192,10 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
         );
       }
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _slidingUpPanelController.open;
+    });
 
   }
 
@@ -317,7 +321,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                               state.coordinates.latitude != currentCentrePosition.latitude &&
                               state.coordinates.longitude != currentCentrePosition.longitude) {
                             shouldCameraSnapToMarkers = true;
-                            // todo - change this behaviour to be more consistent?
                             _initiateLocationSearchAroundCoordinates(
                               currentCentrePosition.latitude,
                               currentCentrePosition.longitude,
@@ -396,7 +399,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
               isInitialSetupOfMap = true;
             }
           }
-
         }
       });
       gymsCarouselController.onReady.then((value) {
@@ -404,7 +406,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
           gymsCarouselController.jumpToPage(currentSelectedGymIndex);
         }
       });
-      _slidingUpPanelController.open();
+      // _slidingUpPanelController.open();
     }
 
   }
@@ -508,9 +510,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
 
   _slideUpPanelGymOptions(SearchLocationsState state) {
     if (state is FetchLocationsAroundCoordinatesLoaded) {
-      if (_slidingUpPanelController.isAttached) {
-        _slidingUpPanelController.show();
-      }
       return PointerInterceptor(
         child: CarouselSlider(
             items: state.locationResults.map((e) =>
@@ -544,10 +543,16 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
       );
     }
     else {
-      if (_slidingUpPanelController.isAttached) {
-        _slidingUpPanelController.hide();
-      }
-      return const Scaffold(body: Center(child: Text("Nothing here yet....")));
+      return const Visibility(
+          visible: false,
+          child: Scaffold(
+              body: Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.teal,
+                  )
+              )
+          )
+      );
     }
   }
 
@@ -617,7 +622,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
               color: Colors.transparent,
               controller: _slidingUpPanelController,
               minHeight: ScreenUtils.getScreenHeight(context) * 0.33,
-              maxHeight: ScreenUtils.getScreenHeight(context) * 0.5,
+              maxHeight: ScreenUtils.getScreenHeight(context) * 0.45,
               panel: _slideUpPanelGymOptions(state),
             )
         ]),
@@ -642,7 +647,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
         onCameraMove: _onCameraMove,
         onCameraIdle: () {
           if (isCameraUpdateHappening){
-            _slidingUpPanelController.open();
             isCameraUpdateHappening = false;
           }
         },

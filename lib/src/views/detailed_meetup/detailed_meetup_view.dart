@@ -172,6 +172,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   int currentSelectedTab = 0;
   late StreamSubscription<bool> keyboardSubscription;
 
+  final ScrollController _detailedMeetupViewScrollController = ScrollController();
+
   Timer? debounce;
 
   _setUpTimeSegmentDateTimeMap(DateTime baseTime) {
@@ -253,6 +255,39 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     return (currentMeetup.meetupStatus == "Expired" || currentMeetup.meetupStatus == "Complete");
   }
 
+  _deleteMeetupConfirmation() {
+    showDialog(context: context, builder: (context) {
+      Widget cancelButton = TextButton(
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+        ),
+        onPressed:  () {
+          Navigator.pop(context);
+        },
+        child: const Text("Cancel"),
+      );
+      Widget continueButton = TextButton(
+        onPressed:  () {
+          Navigator.pop(context);
+          _performMeetupDeletion();
+        },
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+        ),
+        child: const Text("Confirm"),
+      );
+
+      return AlertDialog(
+        title: const Text("Delete Meetup Confirmation"),
+        content: const Text("Are you sure you want to delete this meetup? This action is irreversible!"),
+        actions: [
+          cancelButton,
+          continueButton,
+        ],
+      );
+    });
+  }
+
   _onAddParticipantsButtonPressed() {
     if (!shouldMeetupBeReadOnly()) {
       if (isParticipantSelectHappening) {
@@ -288,7 +323,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             return AppBar(
               title: const Text("View Meetup", style: TextStyle(color: Colors.teal)),
               iconTheme: const IconThemeData(color: Colors.teal),
-              actions: widget.currentUserProfile.userId != currentMeetup?.ownerId ? [
+              actions: widget.currentUserProfile.userId != currentMeetup.ownerId ? [
                 IconButton(
                   icon: const Icon(
                     Icons.chat,
@@ -297,6 +332,13 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                   onPressed: _goToChatRoom,
                 ),
               ] : <Widget>[
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete,
+                    color: Colors.teal,
+                  ),
+                  onPressed: _deleteMeetupConfirmation,
+                ),
                 IconButton(
                   icon: const Icon(
                     Icons.chat,
@@ -328,6 +370,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   @override
   void dispose() {
     keyboardSubscription.cancel();
+    _detailedMeetupViewScrollController.dispose();
     super.dispose();
   }
 
@@ -428,55 +471,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
             meetupId: widget.meetupId
         )
     );
-  }
-
-  _showDeleteMeetupButtonIfNeeded() {
-    if (widget.currentUserProfile.userId == currentMeetup.ownerId) {
-      return Column(
-        children: [
-          WidgetUtils.spacer(5),
-          ElevatedButton(
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-            ),
-            onPressed: () async {
-              showDialog(context: context, builder: (context) {
-                Widget cancelButton = TextButton(
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-                  ),
-                  onPressed:  () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Cancel"),
-                );
-                Widget continueButton = TextButton(
-                  onPressed:  () {
-                    Navigator.pop(context);
-                    _performMeetupDeletion();
-                  },
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
-                  ),
-                  child: const Text("Confirm"),
-                );
-
-                return AlertDialog(
-                  title: const Text("Delete Meetup Confirmation"),
-                  content: const Text("Are you sure you want to delete this meetup? This action is irreversible!"),
-                  actions: [
-                    cancelButton,
-                    continueButton,
-                  ],
-                );
-              });
-            },
-            child: const Text("Delete Meetup", style: TextStyle(fontSize: 15, color: Colors.white)),
-          ),
-        ],
-      );
-    }
-    return null;
   }
 
   _addSelectedUserIdToParticipantsCallback(PublicUserProfile userProfile) {
@@ -680,6 +674,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   _detailedMeetupView() {
     return Expanded(
       child: SingleChildScrollView(
+        controller: _detailedMeetupViewScrollController,
         child: Center(
           child: Container(
             padding: _getPaddingForTabBarViews(currentSelectedTab),
@@ -694,8 +689,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                   _renderMeetupDateTime(),
                   WidgetUtils.spacer(2.5),
                   _renderTabs(),
-                  WidgetUtils.spacer(2.5),
-                  _showDeleteMeetupButtonIfNeeded(),
                 ]),
               ),
             ),
@@ -725,8 +718,17 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         saveAvailabilitiesButtonCallback: _saveAvailabilityButtonOnPressed,
         searchLocationViewUpdateBlocCallback: _searchLocationViewUpdateBlocCallback,
         currentSelectedTabCallback: _currentSelectedTabCallback,
-        searchLocationViewUpdateMeetupLocationViaBlocCallback: _searchLocationViewUpdateMeetupLocationViaBlocCallback
+        searchLocationViewUpdateMeetupLocationViaBlocCallback: _searchLocationViewUpdateMeetupLocationViaBlocCallback,
+        scrollToTopCallback: _scrollToTopCallback,
       ),
+    );
+  }
+
+  _scrollToTopCallback() {
+    _detailedMeetupViewScrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeIn
     );
   }
 

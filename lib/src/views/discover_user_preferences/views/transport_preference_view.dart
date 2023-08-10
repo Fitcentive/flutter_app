@@ -24,7 +24,7 @@ class TransportPreferenceView extends StatefulWidget {
   }
 }
 
-class TransportPreferenceViewState extends State<TransportPreferenceView> {
+class TransportPreferenceViewState extends State<TransportPreferenceView> with WidgetsBindingObserver {
   late final DiscoverUserPreferencesBloc _discoverUserPreferencesBloc;
 
   String selectedTransportMode = ConstantUtils.defaultTransport;
