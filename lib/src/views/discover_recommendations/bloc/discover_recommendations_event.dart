@@ -11,11 +11,36 @@ abstract class DiscoverRecommendationsEvent extends Equatable {
 class FetchUserDiscoverRecommendations extends DiscoverRecommendationsEvent {
   final PublicUserProfile currentUserProfile;
   final bool shouldIncreaseRadius;
+  final int limit;
+  final int skip;
 
-  const FetchUserDiscoverRecommendations(this.currentUserProfile, this.shouldIncreaseRadius);
+  const FetchUserDiscoverRecommendations({
+    required this.currentUserProfile,
+    required this.shouldIncreaseRadius,
+    required this.limit,
+    required this.skip
+  });
 
   @override
-  List<Object?> get props => [currentUserProfile, shouldIncreaseRadius];
+  List<Object?> get props => [currentUserProfile, shouldIncreaseRadius, limit, skip];
+}
+
+
+class FetchAdditionalUserDiscoverRecommendations extends DiscoverRecommendationsEvent {
+  final PublicUserProfile currentUserProfile;
+  final bool shouldIncreaseRadius;
+  final int limit;
+  final int skip;
+
+  const FetchAdditionalUserDiscoverRecommendations({
+    required this.currentUserProfile,
+    required this.shouldIncreaseRadius,
+    required this.limit,
+    required this.skip,
+  });
+
+  @override
+  List<Object?> get props => [currentUserProfile, limit, skip, shouldIncreaseRadius];
 }
 
 class UpsertNewlyDiscoveredUser extends DiscoverRecommendationsEvent {

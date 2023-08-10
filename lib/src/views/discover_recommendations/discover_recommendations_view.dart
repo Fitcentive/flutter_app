@@ -78,7 +78,13 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     isPremiumEnabled = WidgetUtils.isPremiumEnabledForUser(context);
 
     _discoverRecommendationsBloc = BlocProvider.of<DiscoverRecommendationsBloc>(context);
-    _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile, shouldIncreaseRadius));
+    _discoverRecommendationsBloc.add(
+        FetchUserDiscoverRecommendations(
+          currentUserProfile: widget.currentUserProfile,
+          shouldIncreaseRadius: shouldIncreaseRadius,
+          limit: ConstantUtils.DEFAULT_DISCOVER_RECOMMENDATIONS_LIMIT,
+          skip: 0,
+        ));
   }
 
   @override
@@ -292,7 +298,12 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
             shouldIncreaseRadius = false;
           });
           buttonCarouselController = CarouselController(); // This is done to reset "readiness" of controller
-          _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile, shouldIncreaseRadius));
+          _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(
+            currentUserProfile: widget.currentUserProfile,
+            shouldIncreaseRadius: shouldIncreaseRadius,
+            limit: ConstantUtils.DEFAULT_DISCOVER_RECOMMENDATIONS_LIMIT,
+            skip: 0,
+          ));
         },
         child: Column(
           children: [
@@ -323,7 +334,7 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
 
   _renderPagesOrEmptyScreen(DiscoverRecommendationsReady state) {
     if (fetchedRecommendations.isNotEmpty) {
-      return _carouselSlider(state.currentUserProfile, fetchedRecommendations);
+      return _carouselSlider(state.currentUserProfile, fetchedRecommendations, state.doesNextPageExist);
     }
     else {
       return _noResultsView();
@@ -356,7 +367,14 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
                 shouldIncreaseRadius = true;
               });
               buttonCarouselController = CarouselController(); // This is done to reset "readiness" of controller
-              _discoverRecommendationsBloc.add(FetchUserDiscoverRecommendations(widget.currentUserProfile, shouldIncreaseRadius));
+              _discoverRecommendationsBloc.add(
+                  FetchUserDiscoverRecommendations(
+                    currentUserProfile: widget.currentUserProfile,
+                    shouldIncreaseRadius: shouldIncreaseRadius,
+                    limit: ConstantUtils.DEFAULT_DISCOVER_RECOMMENDATIONS_LIMIT,
+                    skip: 0,
+                  )
+              );
             },
             child: Container(
               padding: const EdgeInsets.all(20),
@@ -375,7 +393,11 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     );
   }
 
-  _carouselSlider(PublicUserProfile currentUserProfile, List<DiscoverRecommendation> recommendations) {
+  _carouselSlider(
+      PublicUserProfile currentUserProfile,
+      List<DiscoverRecommendation> recommendations,
+      bool doesNextPageExist
+      ) {
     final items = recommendations.map((recommendation) {
       return Builder(
         builder: (BuildContext context) {
@@ -389,6 +411,25 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
         },
       );
     }).toList();
+
+    if (doesNextPageExist) {
+      items.add(Builder(
+        builder: (BuildContext context) {
+          return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 5.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.teal)
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.teal,
+                ),
+              )
+          );
+        },
+      ));
+    }
+
     if (buttonCarouselController.ready) {
       buttonCarouselController.jumpToPage(currentSelectedRecommendationIndex);
     }
@@ -404,8 +445,22 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
           reverse: false,
           enlargeCenterPage: true,
           onPageChanged: (page, reason) {
+              if (page == recommendations.length - 2) { // Second last element of recommendations list
+                if (doesNextPageExist) {
+                  _discoverRecommendationsBloc.add(
+                      FetchAdditionalUserDiscoverRecommendations(
+                        currentUserProfile: widget.currentUserProfile,
+                        shouldIncreaseRadius: shouldIncreaseRadius,
+                        limit: ConstantUtils.DEFAULT_DISCOVER_RECOMMENDATIONS_LIMIT,
+                        skip: recommendations.length,
+                      )
+                  );
+                }
+              }
               currentSelectedRecommendationIndex = page;
-              _forcePlebUserToStopViewingUsersOrDispatchTrackingEvent(recommendations[page].user.userId);
+              if (page < recommendations.length) {
+                _forcePlebUserToStopViewingUsersOrDispatchTrackingEvent(recommendations[page].user.userId);
+              }
           },
           scrollDirection: Axis.horizontal,
         )

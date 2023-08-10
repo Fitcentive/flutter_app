@@ -23,13 +23,20 @@ class DiscoverRecommendationsReady extends DiscoverRecommendationsState {
   final PublicUserProfile currentUserProfile;
   final List<DiscoverRecommendation> recommendations;
   final int discoveredUsersViewedForMonthCount;
+  final bool doesNextPageExist;
 
   const DiscoverRecommendationsReady({
     required this.currentUserProfile,
     required this.recommendations,
     required this.discoveredUsersViewedForMonthCount,
+    required this.doesNextPageExist,
   });
 
   @override
-  List<Object?> get props => [currentUserProfile, recommendations, discoveredUsersViewedForMonthCount];
+  List<Object?> get props => [
+    currentUserProfile,
+    recommendations,
+    discoveredUsersViewedForMonthCount,
+    doesNextPageExist
+  ];
 }
