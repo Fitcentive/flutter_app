@@ -26,7 +26,7 @@ WORKDIR /app/
 
 RUN flutter clean && flutter pub get
 # Run as non-root user from here onwards maybe?
-RUN flutter build web
+RUN flutter build web --web-renderer canvaskit
 
 # Stage 2 - Create the run-time image
 FROM nginx:1.21.1-alpine

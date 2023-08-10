@@ -1137,7 +1137,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return BlocBuilder<AuthenticationBloc, AuthenticationState>(builder: (context, state) {
       return SizedBox(
         key: accountDetailsKey,
-        height: 300,
+        height: 250,
         child: DrawerHeader(
           decoration: const BoxDecoration(
             color: Colors.teal,

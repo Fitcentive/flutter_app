@@ -239,18 +239,18 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   _setupMap(List<PublicUserProfile> users) async {
     markers.clear();
     circles.clear();
-    if (DeviceUtils.isAppRunningOnMobileBrowser()) {
-      users.asMap().forEach((index, user) async {
-        final BitmapDescriptor theCustomMarkerToUse = userIdToMapMarkerIcon[user.userId] ?? ColorUtils.markerList[index];
-        _generateCircleAndMarkerForUserProfile(user, theCustomMarkerToUse);
-      });
-    }
-    else {
+    // if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+    //   users.asMap().forEach((index, user) async {
+    //     final BitmapDescriptor theCustomMarkerToUse = userIdToMapMarkerIcon[user.userId] ?? ColorUtils.markerList[index];
+    //     _generateCircleAndMarkerForUserProfile(user, theCustomMarkerToUse);
+    //   });
+    // }
+    // else {
       users.forEach((user) async {
         final BitmapDescriptor theCustomMarkerToUse = userIdToMapMarkerIcon[user.userId] ?? await  _generateCustomMarkerForUser(user);
         _generateCircleAndMarkerForUserProfile(user, theCustomMarkerToUse);
       });
-    }
+    // }
 
     currentCentrePosition =
         LocationUtils.computeCentroid(widget.userProfilesWithLocations.map((e) => LatLng(e.latitude, e.longitude)));
