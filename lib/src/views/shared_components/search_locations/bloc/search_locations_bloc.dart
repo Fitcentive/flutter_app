@@ -66,7 +66,7 @@ class SearchLocationsBloc extends Bloc<SearchLocationsEvent, SearchLocationsStat
       emit(
           FetchLocationsAroundCoordinatesLoaded(
               query: event.query,
-              locationResults: [...event.previousLocationResults, ...results],
+              locationResults: results,
               coordinates: event.coordinates,
               radiusInMetres: event.radiusInMetres
           )

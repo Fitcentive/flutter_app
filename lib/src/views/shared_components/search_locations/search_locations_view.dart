@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/device_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
 import 'package:flutter_app/src/views/shared_components/custom_sliding_up_panel.dart';
@@ -118,7 +119,6 @@ class SearchLocationsView extends StatefulWidget {
 }
 
 class SearchLocationsViewState extends State<SearchLocationsView> {
-  static const String currentLocationMarkerId = "camera_centre_marker_id";
   static const int defaultLocationSearchQuerySearchRadiusInMetres = 10000;  // todo - avoid hardcoding radius
 
   bool isPremiumEnabled = false;
@@ -133,7 +133,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   late final CameraPosition initialCameraPosition;
 
   bool shouldCameraSnapToMarkers = true;
-  bool shouldCurrentPositionBeUpdatedWithCameraPosition = false;
   int currentSelectedGymIndex = 0;
 
   bool isInitialSetupOfMap = true;
@@ -277,6 +276,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   Widget build(BuildContext context) {
     return BlocListener<SearchLocationsBloc, SearchLocationsState>(
       listener: (context, state) {
+        KeyboardUtils.hideKeyboard(context);
         _selectInitialLocation();
       },
       child: BlocBuilder<SearchLocationsBloc, SearchLocationsState>(
@@ -296,7 +296,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                       children: WidgetUtils.skipNulls([
                         _renderSearchTextBar(),
                         WidgetUtils.spacer(2.5),
-                        _renderHelpText(),
                         WidgetUtils.spacer(2.5),
                         Stack(
                             children: [
@@ -304,16 +303,13 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                               _recenterButton(),
                             ]
                         )
-                        // Expanded(
-                        //     child: _renderMap(state)
-                        // ),
                       ]),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
                     child: Align(
-                      alignment: Alignment.bottomCenter,
+                      alignment: Alignment.bottomRight,
                       child: FloatingActionButton(
                         heroTag: "SearchLocationsViewFab",
                         onPressed: () {
@@ -321,7 +317,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                               state.coordinates.latitude != currentCentrePosition.latitude &&
                               state.coordinates.longitude != currentCentrePosition.longitude) {
                             shouldCameraSnapToMarkers = true;
-                            shouldCurrentPositionBeUpdatedWithCameraPosition = false;
                             // todo - change this behaviour to be more consistent?
                             _initiateLocationSearchAroundCoordinates(
                               currentCentrePosition.latitude,
@@ -333,20 +328,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                         },
                         backgroundColor: Theme.of(context).primaryColor,
                         child: const Icon(Icons.search, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  !widget.isRoute ? null : Padding( // Only render tick button button if it is a route and not a component
-                    padding: const EdgeInsets.fromLTRB(0, 0, 5, 5),
-                    child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: FloatingActionButton(
-                        heroTag: "SearchLocationsViewSelectFab",
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        backgroundColor: Theme.of(context).primaryColor,
-                        child: const Icon(Icons.check, color: Colors.white),
                       ),
                     ),
                   ),
@@ -418,7 +399,11 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
 
         }
       });
-      gymsCarouselController.onReady.then((value) => gymsCarouselController.jumpToPage(currentSelectedGymIndex));
+      gymsCarouselController.onReady.then((value) {
+        if (currentSelectedGymIndex < currentState.locationResults.length) {
+          gymsCarouselController.jumpToPage(currentSelectedGymIndex);
+        }
+      });
       _slidingUpPanelController.open();
     }
 
@@ -444,7 +429,10 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
               suggestionsBoxController: _suggestionsController,
               debounceDuration: const Duration(milliseconds: 300),
               textFieldConfiguration: TextFieldConfiguration(
-                  onSubmitted: (value) {},
+                  onSubmitted: (value) {
+                    _suggestionsController.close();
+                    _initiateSearchBasedOnText();
+                  },
                   autocorrect: false,
                   onTap: () => _suggestionsController.toggle(),
                   onChanged: (text) {},
@@ -468,19 +456,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
                     suffixIcon: IconButton(
                       onPressed: () {
                         _suggestionsController.close();
-                        // Make the search happen now
-                        final currentState = _searchLocationsBloc.state;
-                        if (currentState is FetchLocationsAroundCoordinatesLoaded) {
-                          shouldCameraSnapToMarkers = true;
-                          shouldCurrentPositionBeUpdatedWithCameraPosition = false;
-                          _searchLocationsBloc.add(FetchLocationsAroundCoordinatesRequested(
-                            query: _searchTextController.value.text,
-                            coordinates: Coordinates(currentCameraCentrePosition.latitude, currentCameraCentrePosition.longitude),
-                            radiusInMetres: defaultLocationSearchQuerySearchRadiusInMetres,
-                            previousLocationResults: currentState.locationResults,
-                          )
-                          );
-                        }
+                        _initiateSearchBasedOnText();
                       },
                       icon: const Icon(Icons.search),
                     ),
@@ -516,29 +492,18 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
     );
   }
 
-  _renderHelpText() {
-    if (shouldCurrentPositionBeUpdatedWithCameraPosition) {
-      return Column(
-        children: [
-          const Text(
-            "Long press on map to unlock viewing radius. Long press again to lock",
-            style: TextStyle(fontSize: 11),
-          ),
-          WidgetUtils.spacer(2.5),
-          const Text(
-            "Viewing radius unlocked",
-            style: TextStyle(fontSize: 11, color: Colors.teal, fontWeight: FontWeight.bold),
-          ),
-        ],
+  _initiateSearchBasedOnText() {
+    final currentState = _searchLocationsBloc.state;
+    if (currentState is FetchLocationsAroundCoordinatesLoaded) {
+      shouldCameraSnapToMarkers = true;
+      _searchLocationsBloc.add(FetchLocationsAroundCoordinatesRequested(
+        query: _searchTextController.value.text,
+        coordinates: Coordinates(currentCameraCentrePosition.latitude, currentCameraCentrePosition.longitude),
+        radiusInMetres: defaultLocationSearchQuerySearchRadiusInMetres,
+        previousLocationResults: currentState.locationResults,
+      )
       );
     }
-    else {
-      return const Text(
-        "Long press on map to unlock viewing radius. Long press again to lock",
-        style: TextStyle(fontSize: 11),
-      );
-    }
-
   }
 
   _slideUpPanelGymOptions(SearchLocationsState state) {
@@ -607,7 +572,13 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
   _renderMap(SearchLocationsState state) {
     if (state is FetchLocationsAroundCoordinatesLoaded) {
       // Remove all previously created nonUserLocationMarkers
-      markers.removeWhere((element) => state.locationResults.map((e) => e.location.fsqId).contains(element.markerId.value));
+      markers
+          .removeWhere((element) => !widget
+            .userProfilesWithLocations
+            .map((e) => e.currentUserProfile.userId)
+            .contains(element.markerId.value)
+      );
+
       state.locationResults.asMap().forEach((index, location) {
         markers.add(
           Marker(
@@ -675,11 +646,6 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
             isCameraUpdateHappening = false;
           }
         },
-        onLongPress: (latlng) {
-          setState(() {
-            shouldCurrentPositionBeUpdatedWithCameraPosition = !shouldCurrentPositionBeUpdatedWithCameraPosition;
-          });
-        },
         gestureRecognizers: {
           Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer())
         },
@@ -715,18 +681,8 @@ class SearchLocationsViewState extends State<SearchLocationsView> {
       shouldCameraSnapToMarkers = false;
 
       currentCameraCentrePosition = cameraPosition.target;
-      // this should only happen on certain occasions
-      if (shouldCurrentPositionBeUpdatedWithCameraPosition) {
-        currentCentrePosition = cameraPosition.target;
-      }
+      currentCentrePosition = cameraPosition.target;
 
-      markers.removeWhere((element) => element.markerId.value == currentLocationMarkerId);
-      markers.add(Marker(
-        alpha: shouldCurrentPositionBeUpdatedWithCameraPosition ? 1.0 : 0.0,
-        markerId: const MarkerId(currentLocationMarkerId),
-        position: currentCentrePosition,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-      ));
     });
   }
 
