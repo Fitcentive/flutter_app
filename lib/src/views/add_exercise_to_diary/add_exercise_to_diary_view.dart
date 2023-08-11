@@ -15,6 +15,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/exercise_utils.dart';
+import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -142,7 +143,8 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
       body: BlocListener<AddExerciseToDiaryBloc, AddExerciseToDiaryState>(
         listener: (context, state) {
           if (state is ExerciseDiaryEntryAdded) {
-            Navigator.pop(context);
+            var count = 0;
+            Navigator.popUntil(context, (route) => count++ == 3);
           }
         },
         child: BlocBuilder<AddExerciseToDiaryBloc, AddExerciseToDiaryState>(
@@ -691,7 +693,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
           SizedBox(
               height: MediaQuery.of(context).size.height * 0.8,
               width: MediaQuery.of(context).size.width * 0.65,
-              child: Image.network(e.image, fit: BoxFit.contain)
+              child: ImageUtils.getImageFromURL(e.image)
           )
       ).toList();
     }

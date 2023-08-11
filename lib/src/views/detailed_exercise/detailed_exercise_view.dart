@@ -6,13 +6,13 @@ import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/add_exercise_to_diary/add_exercise_to_diary_view.dart';
 import 'package:flutter_app/src/views/detailed_exercise/bloc/detailed_exercise_bloc.dart';
 import 'package:flutter_app/src/views/detailed_exercise/bloc/detailed_exercise_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_svg/svg.dart';
 
 class DetailedExerciseView extends StatefulWidget {
 
@@ -192,7 +192,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                   widget.isCurrentExerciseDefinitionCardio,
                   widget.selectedDayInQuestion
               ),
-          ).then((value) => Navigator.pop(context));
+          );
         },
         child: const Text("Add to diary", style: TextStyle(fontSize: 15, color: Colors.white)),
       ),
@@ -419,23 +419,12 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
             SizedBox(
                 height: MediaQuery.of(context).size.height * 0.8,
                 width: MediaQuery.of(context).size.width * 0.65,
-                child: SvgPicture.network(
-                  "${ConstantUtils.WGER_API_HOST}${e.image_url_main}",
-                  fit: BoxFit.scaleDown,
-                  placeholderBuilder: (BuildContext context) => Container(
-                      padding: const EdgeInsets.all(30.0),
-                      child: const CircularProgressIndicator(color: Colors.yellow,)),
-                )
+                child: ImageUtils.getImageFromURL("${ConstantUtils.WGER_API_HOST}${e.image_url_main}")
             ),
             SizedBox(
                 height: MediaQuery.of(context).size.height * 0.8,
                 width: MediaQuery.of(context).size.width * 0.65,
-                child: SvgPicture.network(
-                  "${ConstantUtils.WGER_API_HOST}${e.image_url_secondary}",
-                  fit: BoxFit.scaleDown,
-                  placeholderBuilder: (BuildContext context) => Container(
-                      child: const CircularProgressIndicator(color: Colors.teal,)),
-                )
+                child: ImageUtils.getImageFromURL("${ConstantUtils.WGER_API_HOST}${e.image_url_secondary}")
             )
           ]
       )
@@ -477,13 +466,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                   .width * 0.65,
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: 200, minWidth: 200),
-                child: SvgPicture.network(
-                  "${ConstantUtils.WGER_API_HOST}${e.image_url_main}",
-                  fit: BoxFit.scaleDown,
-                  placeholderBuilder: (BuildContext context) => Container(
-                      padding: const EdgeInsets.all(30.0),
-                      child: const CircularProgressIndicator(color: Colors.yellow,)),
-                ),
+                child: ImageUtils.getImageFromURL("${ConstantUtils.WGER_API_HOST}${e.image_url_main}")
               )
           ),
           SizedBox(
@@ -495,13 +478,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                   .of(context)
                   .size
                   .width * 0.65,
-              child: SvgPicture.network(
-                "${ConstantUtils.WGER_API_HOST}${e.image_url_secondary}",
-                fit: BoxFit.scaleDown,
-                placeholderBuilder: (BuildContext context) => Container(
-                    padding: const EdgeInsets.all(30.0),
-                    child: const CircularProgressIndicator(color: Colors.yellow,)),
-              )
+              child: ImageUtils.getImageFromURL("${ConstantUtils.WGER_API_HOST}${e.image_url_secondary}")
           )
         ];
       })
@@ -534,7 +511,7 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
           SizedBox(
               height: MediaQuery.of(context).size.height * 0.8,
               width: MediaQuery.of(context).size.width * 0.65,
-              child: Image.network(e.image, fit: BoxFit.contain)
+              child: ImageUtils.getImageFromURL(e.image)
           )
       ).toList();
     }

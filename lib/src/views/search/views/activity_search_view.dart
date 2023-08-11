@@ -165,13 +165,11 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
       subtitle: Text(exerciseDefinition.category.name),
       leading: CircleAvatar(
         radius: 30,
+        backgroundColor: Colors.transparent,
         child: Container(
           width: 60,
           height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: ImageUtils.getExerciseImage(exerciseDefinition.images),
-          ),
+          child: ImageUtils.getExerciseImage(exerciseDefinition.images),
         ),
       ),
       onTap: () {

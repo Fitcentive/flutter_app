@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_network/image_network.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/src/models/exercise/exercise_image.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
@@ -15,23 +14,65 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class ImageUtils {
   static const String imageBaseUrl = "${ConstantUtils.API_HOST_URL}/api/gateway/image";
 
-  static DecorationImage? getExerciseImage(List<ExerciseImage> exerciseImages) {
+  static Widget getImageFromURL(String url) {
+    return ImageNetwork(
+      image: url,
+      height: 60,
+      width: 60,
+      duration: 500,
+      curve: Curves.easeIn,
+      onPointer: true,
+      debugPrint: false,
+      fullScreen: false,
+      fitAndroidIos: BoxFit.fitHeight,
+      fitWeb: BoxFitWeb.fill,
+      onLoading: const CircularProgressIndicator(
+        color: Colors.teal,
+      ),
+      onError: const Icon(
+        Icons.error,
+        color: Colors.red,
+      ),
+      borderRadius: BorderRadius.circular(10),
+    );
+  }
+
+  static Widget getExerciseImage(List<ExerciseImage> exerciseImages) {
     if (exerciseImages.isNotEmpty) {
-      if (kIsWeb) {
-        return DecorationImage(
-            image: NetworkImage(exerciseImages.first.image),
-            fit: BoxFit.fitHeight
-        );
-      }
-      else {
-        return DecorationImage(
-            image: CachedNetworkImageProvider(exerciseImages.first.image),
-            fit: BoxFit.fitHeight
-        );
-      }
+      return ImageNetwork(
+        image: exerciseImages.first.image,
+        height: 60,
+        width: 60,
+        duration: 500,
+        curve: Curves.easeIn,
+        onPointer: true,
+        debugPrint: false,
+        fullScreen: false,
+        fitAndroidIos: BoxFit.fitHeight,
+        fitWeb: BoxFitWeb.fill,
+        onLoading: const CircularProgressIndicator(
+          color: Colors.teal,
+        ),
+        onError: const Icon(
+          Icons.error,
+          color: Colors.red,
+        ),
+        borderRadius: BorderRadius.circular(10),
+      );
     } else {
-      return const DecorationImage(
-          image: AssetImage("assets/images/deleted_user_avatar.png")
+      return CircleAvatar(
+        radius: 30,
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(
+                image: AssetImage("assets/images/no_exercise_image_available.png")
+            ),
+          ),
+        ),
       );
     }
   }

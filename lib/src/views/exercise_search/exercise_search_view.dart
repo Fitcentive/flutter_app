@@ -286,14 +286,12 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
       trailing: const Text(""),
       subtitle: Text(exerciseDefinition.category.name),
       leading: CircleAvatar(
+        backgroundColor: Colors.transparent,
         radius: 30,
         child: Container(
           width: 60,
           height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: ImageUtils.getExerciseImage(exerciseDefinition.images),
-          ),
+          child: ImageUtils.getExerciseImage(exerciseDefinition.images),
         ),
       ),
       onTap: () {
@@ -307,7 +305,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
                 exerciseDefinition.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION,
                 widget.selectedDayInQuestion
             ),
-        ).then((value) => Navigator.pop(context));
+        );
       },
     );
   }
