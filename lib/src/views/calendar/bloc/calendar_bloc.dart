@@ -76,8 +76,22 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       final Map<String, PublicUserProfile> userIdProfileMap = { for (var e in [...newUserProfileDetails, ...currentState.userIdProfileMap.values]) (e).userId : e };
 
       final diaryEntries = await diaryEntriesFut;
-      final distinctFoodIds = diaryEntries.entries.values.map((e) => e.foodEntries).expand((e) => e).map((e) => e.foodId).toSet().toList();
-      final foodEntriesTotal = await Future.wait(distinctFoodIds.map((e) => diaryRepository.getFoodById(e.toString(), accessToken)));
+      final distinctFoodIds = diaryEntries.entries.values
+          .map((e) => e.foodEntries).expand((e) => e).map((e) => e.foodId.toString()).toSet().toList();
+
+      final currentStateFoodIds = currentState.foodDiaryEntries.map((e) {
+        if (e.isLeft) {
+          return e.left.food.food_id.toString();
+        }
+        else {
+          return e.right.food.food_id.toString();
+        }
+      }).toList();
+      final remainingFoodIdsToFetchInfoFor = distinctFoodIds.toSet().difference(currentStateFoodIds.toSet()).toList();
+
+      final newFoodEntries = await Future.wait(
+          remainingFoodIdsToFetchInfoFor.map((e) => diaryRepository.getFoodById(e.toString(), accessToken))
+      );
 
       emit(CalendarMeetupUserDataFetched(
           meetups: meetups.map((e) => e.meetup).toList(),
@@ -85,7 +99,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
           meetupDecisions: meetupDecisions,
           meetupParticipants: meetupParticipants,
           userIdProfileMap: userIdProfileMap,
-          foodDiaryEntries: foodEntriesTotal,
+          foodDiaryEntries: {...newFoodEntries, ...currentState.foodDiaryEntries}.toList(),
           allDiaryEntries: diaryEntries,
       ));
     }
