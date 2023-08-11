@@ -82,6 +82,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
   };
 
   static const String oneWeekDisplayString = "1 week";
+  static const String twoWeekDisplayString = "2 weeks";
   static const String oneMonthDisplayString = "1 month";
   static const String twoMonthsDisplayString = "2 months";
   static const String threeMonthsDisplayString = "3 months";
@@ -106,6 +107,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
   String selectedFilterDisplayName = oneWeekDisplayString;
   List<String> allFilterDisplayNames = [
     oneWeekDisplayString,
+    twoWeekDisplayString,
     oneMonthDisplayString,
     twoMonthsDisplayString,
     threeMonthsDisplayString,
@@ -429,7 +431,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
             child: LineChart(
               LineChartData(
                 lineTouchData: LineTouchData(
-                  handleBuiltInTouches: false,
+                  handleBuiltInTouches: widget.awardCategory.name() != StepData().name(),
                   touchTooltipData: LineTouchTooltipData(
                     tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
                   ),
@@ -501,6 +503,13 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
 
     switch (selectedFilterDisplayName) {
       case oneWeekDisplayString: // We display each day individally
+        text = Text(
+          DateFormat("MM/dd").format(DateTime.parse(filterStartDate).add(Duration(days: value.toInt()))),
+          style: style,
+        );
+        break;
+
+      case twoWeekDisplayString: // We display each day individally
         text = Text(
           DateFormat("MM/dd").format(DateTime.parse(filterStartDate).add(Duration(days: value.toInt()))),
           style: style,
@@ -808,6 +817,9 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
       case oneWeekDisplayString:
         return 6;
 
+      case twoWeekDisplayString:
+        return 13;
+
       case oneMonthDisplayString:
         return 29;
 
@@ -832,6 +844,10 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
     switch (selectedFilterDisplayName) {
       case oneWeekDisplayString:
         filterStartDate = DateFormat("yyyy-MM-dd").format(now.subtract(const Duration(days: 6)));
+        break;
+
+      case twoWeekDisplayString:
+        filterStartDate = DateFormat("yyyy-MM-dd").format(now.subtract(const Duration(days: 13)));
         break;
 
       case oneMonthDisplayString:
@@ -868,6 +884,10 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
     switch (selectedFilterDisplayName) {
       case oneWeekDisplayString:
         maxDays = 7;
+        break;
+
+      case twoWeekDisplayString:
+        maxDays = 14;
         break;
 
       case oneMonthDisplayString:
