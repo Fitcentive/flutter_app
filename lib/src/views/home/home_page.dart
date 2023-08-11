@@ -275,7 +275,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                       child: Text(
                         "This is your profile",
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -289,10 +289,23 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       child: AutoSizeText(
                         "You can update your account details here!",
                         maxLines: 2,
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(10),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: AutoSizeText(
+                        "Tap anywhere to continue",
+                        maxLines: 2,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -327,7 +340,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                       child: Text(
                         "These are your achievements",
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -341,10 +354,23 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       child: AutoSizeText(
                         "Attain milestones over time and view them here!",
                         maxLines: 2,
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(10),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                      child: AutoSizeText(
+                        "Tap anywhere to continue",
+                        maxLines: 2,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -379,7 +405,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                       child: Text(
                         "Track your progress here",
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -393,7 +419,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       child: AutoSizeText(
                         "View metrics and observe trends over time",
                         maxLines: 2,
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -451,7 +477,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: Text(
                       "Let's get you started",
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -461,14 +487,27 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   ),
                   WidgetUtils.spacer(10),
                   const Padding(
-                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    padding: EdgeInsets.fromLTRB(25, 0, 35, 0),
                     child: AutoSizeText(
                       "This short tour will provide you with a brief introduction",
                       maxLines: 2,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Tap anywhere to continue",
+                      maxLines: 2,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -503,7 +542,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: Text(
                       "This is your quick access menu",
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -517,10 +556,23 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     child: AutoSizeText(
                       "Find your most frequently accessed pages here!",
                       maxLines: 1,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Tap anywhere to continue",
+                      maxLines: 2,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -555,7 +607,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: Text(
                       "This is your discover page",
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -568,11 +620,24 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: AutoSizeText(
                       "Discover users with similar goals and interests!",
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       maxLines: 1,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Tap anywhere to continue",
+                      maxLines: 2,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -607,7 +672,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: Text(
                       "This is your meetup page",
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -621,10 +686,23 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     child: AutoSizeText(
                       "Make plans with discovered users!",
                       maxLines: 1,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Tap anywhere to continue",
+                      maxLines: 2,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -659,7 +737,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: Text(
                       "This is your diary",
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -673,10 +751,23 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     child: AutoSizeText(
                       "Log your nutrition and track your daily activities!",
                       maxLines: 1,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  WidgetUtils.spacer(10),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                    child: AutoSizeText(
+                      "Tap anywhere to continue",
+                      maxLines: 2,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -711,7 +802,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: Text(
                       "Explore more pages over here",
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -724,7 +815,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                     child: AutoSizeText(
                       "Manage your account, view your calendar, and so much more!",
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                       maxLines: 2,
                       style: TextStyle(
                         color: Colors.white,
@@ -1215,7 +1306,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
         child: AutoSizeText(
           "$firstName $lastName",
           maxLines: 2,
-          textAlign: TextAlign.center,
+          textAlign: TextAlign.left,
           style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
@@ -1384,9 +1475,9 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
           children: [
             const CircularProgressIndicator(),
             WidgetUtils.spacer(10),
-            const Text("Please wait, your account is being deleted....", textAlign: TextAlign.center,),
+            const Text("Please wait, your account is being deleted....", textAlign: TextAlign.left,),
             WidgetUtils.spacer(5),
-            const Text("You will be logged out once this operation is completed", textAlign: TextAlign.center,),
+            const Text("You will be logged out once this operation is completed", textAlign: TextAlign.left,),
           ],
         ),
       ),
