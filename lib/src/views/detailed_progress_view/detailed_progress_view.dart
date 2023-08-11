@@ -429,7 +429,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
             child: LineChart(
               LineChartData(
                 lineTouchData: LineTouchData(
-                  handleBuiltInTouches: true,
+                  handleBuiltInTouches: false,
                   touchTooltipData: LineTouchTooltipData(
                     tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
                   ),
@@ -1023,7 +1023,7 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
         }
       }
 
-      final total   = dateStringToMetricMap.entries.map((e) => e.value).reduce((a, b) => a + b);
+      final total   = dateStringToMetricMap.entries.isEmpty ? 0 : dateStringToMetricMap.entries.map((e) => e.value).reduce((a, b) => a + b);
       final average = total / dataPoints.length;
 
       return Row(
