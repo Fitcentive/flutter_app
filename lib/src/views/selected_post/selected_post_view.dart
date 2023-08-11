@@ -240,7 +240,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
   }
 
   _animatedButton() {
-    return Align(
+    final button = Align(
       alignment: Alignment.bottomCenter,
       child: AnimatedOpacity(
         opacity: _isFloatingButtonVisible ? 0.66 : 0.0,
@@ -258,6 +258,16 @@ class SelectedPostViewState extends State<SelectedPostView> {
           ),
         ),
       ),
+    );
+    return BlocBuilder<SelectedPostBloc, SelectedPostState>(
+        builder: (context, state) {
+          if (state is SelectedPostLoaded) {
+            return button;
+          }
+          else {
+            return Visibility(visible: false, child: button);
+          }
+        }
     );
   }
 
@@ -401,6 +411,7 @@ class SelectedPostViewState extends State<SelectedPostView> {
                   textCapitalization: TextCapitalization.sentences,
                   onChanged: (text) {
                     setState(() {
+                      _isFloatingButtonVisible = false;
                       if (text.trim().isNotEmpty) {
                         newUserComment = text;
                       }

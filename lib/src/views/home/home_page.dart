@@ -123,7 +123,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final logger = Logger("HomePageState");
 
   late String selectedMenuItem;
-  late String? preSelectedDiaryDateString;
+  String? preSelectedDiaryDateString;
   late int unreadNotificationCount;
   late int unreadChatRoomCount;
 

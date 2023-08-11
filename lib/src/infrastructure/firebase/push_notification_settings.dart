@@ -141,10 +141,9 @@ class PushNotificationSettings {
         [notificationMetadata.targetUser],
         accessToken!
     );
-    Navigator.pushAndRemoveUntil(
+    Navigator.push(
         context,
         DetailedMeetupView.route(meetupId: notificationMetadata.meetupId, currentUserProfile: userProfiles.first),
-            (route) => true
     );
   }
 
@@ -182,22 +181,27 @@ class PushNotificationSettings {
     final currentUserProfile = userIdProfileMap[notificationMetadata.targetUserId];
     final otherUserProfile = userIdProfileMap[notificationMetadata.sendingUserId];
 
-    Navigator.pushAndRemoveUntil(
+    Navigator.push(
         context,
         UserChatView.route(
           currentRoomId: notificationMetadata.roomId,
           currentUserProfile: currentUserProfile!,
           otherUserProfiles: [otherUserProfile!],
         ),
-            (route) => true
+    );
+  }
+
+  static _openDiaryView(BuildContext context) {
+    Navigator.push(
+        context,
+        HomePage.route(defaultSelectedTab: HomePageState.diary),
     );
   }
 
   static _openNotificationsView(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
+    Navigator.push(
         context,
         HomePage.route(defaultSelectedTab: HomePageState.notifications),
-            (route) => false
     );
   }
 
@@ -248,6 +252,10 @@ class PushNotificationSettings {
 
         case "weight_log_reminder":
           _openFitnessUserProfileView(context, secureStorage, userRepository, diaryRepository, payload);
+          break;
+
+        case "diary_entry_log_reminder":
+          _openDiaryView(context);
           break;
 
         case "user_attained_new_achievement_milestone":
@@ -442,6 +450,12 @@ class PushNotificationSettings {
           }
           break;
 
+        case "diary_entry_log_reminder":
+          if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
+            _handleShowingNotificationWithoutImage(notification, jsonPayload);
+          }
+          break;
+
         case "user_attained_new_achievement_milestone":
           if (DeviceUtils.isMobileDevice() && Platform.isAndroid) {
             _handleShowingNotificationWithoutImage(notification, jsonPayload);
@@ -512,6 +526,10 @@ class PushNotificationSettings {
 
         case "weight_log_reminder":
           _openFitnessUserProfileView(context, secureStorage, userRepository, diaryRepository, jsonEncode(message.data));
+          break;
+
+        case "diary_entry_log_reminder":
+          _openDiaryView(context);
           break;
 
         case "user_attained_new_achievement_milestone":
