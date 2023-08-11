@@ -185,10 +185,11 @@ class DiaryRepository {
   Future<CardioDiaryEntry> addCardioEntryToUserDiary(
       String userId,
       CardioDiaryEntryCreate entry,
+      int offsetInMinutes,
       String accessToken
       ) async {
     final response = await http.post(
-        Uri.parse("$BASE_URL/user/$userId/cardio"),
+        Uri.parse("$BASE_URL/user/$userId/cardio?offsetInMinutes=$offsetInMinutes"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: jsonEncode({
           "workoutId": entry.workoutId,
@@ -278,10 +279,11 @@ class DiaryRepository {
   Future<StrengthDiaryEntry> addStrengthEntryToUserDiary(
       String userId,
       StrengthDiaryEntryCreate entry,
+      int offsetInMinutes,
       String accessToken
       ) async {
     final response = await http.post(
-        Uri.parse("$BASE_URL/user/$userId/strength"),
+        Uri.parse("$BASE_URL/user/$userId/strength?offsetInMinutes=$offsetInMinutes"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: jsonEncode({
           "workoutId": entry.workoutId,
@@ -586,10 +588,11 @@ class DiaryRepository {
   Future<FoodDiaryEntry> addFoodEntryToUserDiary(
       String userId,
       FoodDiaryEntryCreate entry,
+      int offsetInMinutes,
       String accessToken
       ) async {
     final response = await http.post(
-        Uri.parse("$BASE_URL/user/$userId/food"),
+        Uri.parse("$BASE_URL/user/$userId/food?offsetInMinutes=$offsetInMinutes"),
         headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: jsonEncode({
           "foodId": entry.foodId,
@@ -724,10 +727,11 @@ class DiaryRepository {
   Future<FitnessUserProfile> upsertFitnessUserProfile(
       String userId,
       FitnessUserProfileUpdate update,
+      int offsetInMinutes,
       String accessToken
   ) async {
     final response = await http.put(
-      Uri.parse("$BASE_URL/user/$userId/profile"),
+      Uri.parse("$BASE_URL/user/$userId/profile?offsetInMinutes=$offsetInMinutes"),
       headers: {'Content-type': 'application/json', 'Authorization': 'Bearer $accessToken'},
       body: jsonEncode({
         "heightInCm": update.heightInCm,

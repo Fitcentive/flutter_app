@@ -34,6 +34,7 @@ class UserFitnessProfileBloc extends Bloc<UserFitnessProfileEvent, UserFitnessPr
             stepGoalPerDay: event.stepGoalPerDay,
             goalWeightInLbs: event.goalWeightInLbs,
         ),
+        DateTime.now().timeZoneOffset.inMinutes,
         accessToken!
     );
     userRepository.trackUserEvent(UpdateFitnessUserProfile(), accessToken);
