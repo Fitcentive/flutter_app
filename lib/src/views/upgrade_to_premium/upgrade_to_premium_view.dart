@@ -201,7 +201,6 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                           shrinkWrap: true,
                         )
                     ),
-                    WidgetUtils.spacer(15),
                     InkWell(
                       onTap: () {
                         showDialog(
@@ -349,7 +348,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
     double fontSizeTableHeader = 18;
     double fontSizeTableLeading = 14;
     double fontSizeTableData = 12;
-    TextStyle tableDataStyle = TextStyle(fontWeight: FontWeight.w600, color: Colors.teal, fontSize: fontSizeTableLeading);
+    TextStyle tableDataStyle = TextStyle(fontWeight: FontWeight.w500, color: Colors.teal, fontSize: fontSizeTableLeading);
     TextStyle tableDataValueStyle = TextStyle(fontWeight: FontWeight.normal, color: Colors.teal, fontSize: fontSizeTableData);
 
     return Card(
