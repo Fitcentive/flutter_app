@@ -52,6 +52,8 @@ class DetailedMeetupView extends StatefulWidget {
   final List<MeetupDecision>? decisions;
   final List<PublicUserProfile>? userProfiles;
 
+  final int initialTab;
+
   const DetailedMeetupView({
     super.key,
     required this.currentUserProfile,
@@ -60,7 +62,8 @@ class DetailedMeetupView extends StatefulWidget {
     this.meetupLocation,
     this.participants,
     this.decisions,
-    this.userProfiles
+    this.userProfiles,
+    this.initialTab = 0,
   });
 
   static Route route({
@@ -71,6 +74,7 @@ class DetailedMeetupView extends StatefulWidget {
     List<MeetupParticipant>? participants,
     List<MeetupDecision>? decisions,
     List<PublicUserProfile>? userProfiles,
+    int initialTab = 0,
   }
   ) => MaterialPageRoute(
     settings: const RouteSettings(
@@ -84,6 +88,7 @@ class DetailedMeetupView extends StatefulWidget {
         participants: participants,
         decisions: decisions,
         userProfiles: userProfiles,
+        initialTab: initialTab,
     )
   );
 
@@ -95,6 +100,7 @@ class DetailedMeetupView extends StatefulWidget {
     List<MeetupParticipant>? participants,
     List<MeetupDecision>? decisions,
     List<PublicUserProfile>? userProfiles,
+    int initialTab = 0,
   }) => MultiBlocProvider(
     providers: [
       BlocProvider<DetailedMeetupBloc>(
@@ -114,6 +120,7 @@ class DetailedMeetupView extends StatefulWidget {
         userProfiles: userProfiles,
         meetupLocation: meetupLocation,
         currentUserProfile: currentUserProfile,
+        initialTab: initialTab,
     ),
   );
 
@@ -701,6 +708,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   _renderTabs() {
     return Expanded(
       child: MeetupTabs(
+        initialTab: widget.initialTab,
         currentUserProfile: widget.currentUserProfile,
         isAvailabilitySelectHappening: isAvailabilitySelectHappening,
         userMeetupAvailabilities: userMeetupAvailabilities,

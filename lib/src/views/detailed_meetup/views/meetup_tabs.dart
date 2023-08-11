@@ -66,6 +66,8 @@ class MeetupTabs extends StatefulWidget {
 
   final VoidCallback scrollToTopCallback;
 
+  final int initialTab;
+
   const MeetupTabs({
     super.key,
     required this.currentUserProfile,
@@ -98,6 +100,8 @@ class MeetupTabs extends StatefulWidget {
     required this.searchLocationViewUpdateMeetupLocationViaBlocCallback,
 
     required this.scrollToTopCallback,
+
+    this.initialTab = 0,
   });
 
   @override
@@ -107,7 +111,8 @@ class MeetupTabs extends StatefulWidget {
 
 }
 
-class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+class MeetupTabsState extends State<MeetupTabs> with
+    SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   static const int MAX_TABS = 4;
 
   late final TabController _tabController;
@@ -135,6 +140,10 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor = widget.currentUserProfile.userId;
     participantDiaryEntriesMapState = widget.participantDiaryEntriesMap;
     rawFoodEntriesState = widget.rawFoodEntries;
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _tabController.animateTo(widget.initialTab);
+    });
   }
 
   @override

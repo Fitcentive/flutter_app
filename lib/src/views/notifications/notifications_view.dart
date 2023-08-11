@@ -211,11 +211,14 @@ class NotificationsViewState extends State<NotificationsView> {
     );
   }
 
-  _goToDetailedMeetup(String meetupId) {
-    Navigator.pushAndRemoveUntil(
+  _goToDetailedMeetup(String meetupId, int initialTab) {
+    Navigator.push(
         context,
-        DetailedMeetupView.route(meetupId: meetupId, currentUserProfile: widget.currentUserProfile),
-            (route) => true
+        DetailedMeetupView.route(
+            meetupId: meetupId,
+            currentUserProfile: widget.currentUserProfile,
+            initialTab: initialTab
+        ),
     );
   }
 
@@ -339,7 +342,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
     return ListTile(
       onTap: () async {
-        _goToDetailedMeetup(meetupId);
+        _goToDetailedMeetup(meetupId, DetailedMeetupViewState.AVAILABILITY_MEETUP_VIEW_TAB);
       },
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
@@ -382,7 +385,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
     return ListTile(
       onTap: () async {
-        _goToDetailedMeetup(meetupId);
+        _goToDetailedMeetup(meetupId, DetailedMeetupViewState.LOCATION_MEETUP_VIEW_TAB);
       },
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
@@ -463,7 +466,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
     return ListTile(
       onTap: () async {
-        _goToDetailedMeetup(meetupId);
+        _goToDetailedMeetup(meetupId, DetailedMeetupViewState.LOCATION_MEETUP_VIEW_TAB);
       },
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(
@@ -503,7 +506,7 @@ class NotificationsViewState extends State<NotificationsView> {
     final PublicUserProfile? staticDeletedUserProfile = userProfileMap[ConstantUtils.staticDeletedUserId];
     return ListTile(
       onTap: () async {
-        _goToDetailedMeetup(meetupId);
+        _goToDetailedMeetup(meetupId, DetailedMeetupViewState.LOCATION_MEETUP_VIEW_TAB);
       },
       tileColor: notification.hasBeenViewed ? null : Theme.of(context).highlightColor,
       leading: GestureDetector(

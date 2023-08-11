@@ -342,10 +342,32 @@ class DetailedMeetupBloc extends Bloc<DetailedMeetupEvent, DetailedMeetupState> 
 
     // Delete all availabilities first, much easier than updating them
     await meetupRepository.deleteMeetupParticipantAvailabilities(event.meetupId, event.currentUserId, accessToken!);
-    await meetupRepository.upsertMeetupParticipantAvailabilities(event.meetupId, event.currentUserId, accessToken, event.availabilities);
+    final updatedAvailabilities =
+      await meetupRepository.upsertMeetupParticipantAvailabilities(event.meetupId, event.currentUserId, accessToken, event.availabilities);
 
     userRepository.trackUserEvent(AddAvailabilityToMeetup(), accessToken);
     // No change in emitted state, this is a background operation
+
+    final currentState = state;
+    if (currentState is DetailedMeetupDataFetched) {
+      emit(
+        DetailedMeetupDataFetched(
+            meetupId: currentState.meetupId,
+            userAvailabilities: {
+              ...currentState.userAvailabilities,
+              event.currentUserId: updatedAvailabilities
+            },
+            meetupLocation: currentState.meetupLocation,
+            meetup: currentState.meetup,
+            participants: currentState.participants,
+            decisions: currentState.decisions,
+            userProfiles: currentState.userProfiles,
+            participantDiaryEntriesMap: currentState.participantDiaryEntriesMap,
+            rawFoodEntries: currentState.rawFoodEntries,
+        )
+      );
+    }
+
   }
 
   void _fetchAdditionalMeetupData(FetchAdditionalMeetupData event, Emitter<DetailedMeetupState> emit) async {
