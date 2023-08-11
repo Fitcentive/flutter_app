@@ -222,6 +222,8 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         isKeyboardVisibleCurrently = visible;
       });
     });
+
+    currentSelectedTab = widget.initialTab;
   }
 
   _fetchAllRequiredDataFromScratch() {
@@ -673,6 +675,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         case 0: return const EdgeInsets.fromLTRB(0, 0, 0, 20);
         case 1: return const EdgeInsets.fromLTRB(0, 0, 0, 75); //FAB is 56 pixels by default
         case 2: return const EdgeInsets.fromLTRB(0, 0, 0, 75);
+        case 3: return const EdgeInsets.fromLTRB(0, 0, 0, 75);
       }
     }
     return null;
@@ -708,7 +711,7 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
   _renderTabs() {
     return Expanded(
       child: MeetupTabs(
-        initialTab: widget.initialTab,
+        currentSelectedTab: currentSelectedTab,
         currentUserProfile: widget.currentUserProfile,
         isAvailabilitySelectHappening: isAvailabilitySelectHappening,
         userMeetupAvailabilities: userMeetupAvailabilities,

@@ -66,7 +66,7 @@ class MeetupTabs extends StatefulWidget {
 
   final VoidCallback scrollToTopCallback;
 
-  final int initialTab;
+  final int currentSelectedTab;
 
   const MeetupTabs({
     super.key,
@@ -101,7 +101,7 @@ class MeetupTabs extends StatefulWidget {
 
     required this.scrollToTopCallback,
 
-    this.initialTab = 0,
+    required this.currentSelectedTab,
   });
 
   @override
@@ -111,8 +111,7 @@ class MeetupTabs extends StatefulWidget {
 
 }
 
-class MeetupTabsState extends State<MeetupTabs> with
-    SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   static const int MAX_TABS = 4;
 
   late final TabController _tabController;
@@ -132,7 +131,7 @@ class MeetupTabsState extends State<MeetupTabs> with
 
     _detailedMeetupBloc = BlocProvider.of<DetailedMeetupBloc>(context);
 
-    _tabController = TabController(vsync: this, length: MAX_TABS);
+    _tabController = TabController(vsync: this, length: MAX_TABS, initialIndex: widget.currentSelectedTab);
     _tabController.addListener(() {
       widget.currentSelectedTabCallback(_tabController.index);
     });
@@ -141,9 +140,6 @@ class MeetupTabsState extends State<MeetupTabs> with
     participantDiaryEntriesMapState = widget.participantDiaryEntriesMap;
     rawFoodEntriesState = widget.rawFoodEntries;
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _tabController.animateTo(widget.initialTab);
-    });
   }
 
   @override
@@ -248,7 +244,7 @@ class MeetupTabsState extends State<MeetupTabs> with
       return Padding(
         padding: const EdgeInsets.only(bottom: 5),
         child: Align(
-          alignment: Alignment.bottomCenter,
+          alignment: const Alignment(0.5, 1.0),
           child: Opacity(
             opacity: 0.66,
             child: FloatingActionButton(
@@ -267,22 +263,6 @@ class MeetupTabsState extends State<MeetupTabs> with
     else {
       return const Visibility(visible: false, child: CircularProgressIndicator(color: Colors.teal,));
     }
-    return Visibility(
-      visible: selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor == widget.currentUserProfile.userId
-          && _tabController.index == DetailedMeetupViewState.ACTIVITIES_MEETUP_VIEW_TAB,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 5),
-        child: FloatingActionButton(
-          heroTag: "MeetupTabsViewAnimatedButton",
-          onPressed: () {
-            _showDiaryEntrySelectDialog();
-          },
-          tooltip: 'Associate diary entries to meetup!',
-          backgroundColor: Colors.teal,
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
-      ),
-    );
   }
 
   _jumpToTopOfMeetupTabConversationView() {
