@@ -27,7 +27,9 @@ class ExerciseUtils {
   };
 
   static const double defaultActivityMETValue = 5.0;
-  static const double defaultTimePerSetInMins = 2;
+  static const double defaultTimePerRepInSeconds = 7;
+  static const double caloriesBurntPerMinPerPound = 0.033;
+  static const double defaultTimeBetweenSetsInSeconds = 30;
   static const double kilosToPoundsConversion = 2.20462;
 
   static const double sedentaryAMRConstant = 1.2;
@@ -109,8 +111,12 @@ class ExerciseUtils {
     return (durationInMins * _getMetValueForActivity(activityName) * (user.weightInLbs / kilosToPoundsConversion)) / 200;
   }
 
+  /// Strength training with free weights burns 0.039 calories per pound per minute.
+  /// Lighter weight lifting with moderate effort burns 0.028 calories per pound per minute.
+  /// http://www.livestrong.com/article/338469-how-to-calculate-calories-burned-weight-lifting/
   static double calculateCaloriesBurnedForNonCardioActivity(FitnessUserProfile user, String activityName, int sets, int reps) {
-    final durationInMins = sets * defaultTimePerSetInMins * reps;
+    final durationInMins = getMinutesFromSetsAndReps(sets, reps);
+    return durationInMins * caloriesBurntPerMinPerPound * user.weightInLbs;
     return (durationInMins * _getMetValueForActivity(activityName) * (user.weightInLbs / kilosToPoundsConversion)) / 200;
   }
 
@@ -133,14 +139,14 @@ class ExerciseUtils {
   }
 
   /// Calculation is as follows
-  /// 4 seconds per rep
+  /// 5 seconds per rep
   /// 30 seconds between reps
   static int getMinutesFromSetsAndReps(int sets, int reps) {
     if (sets == 0 || reps == 0) {
       return 0;
     }
     else {
-      return ((((reps * 4) * sets) + (max((sets - 1), 1) * 30)) ~/ 60);
+      return ((((reps * defaultTimePerRepInSeconds) * sets) + (max((sets - 1), 1) * defaultTimeBetweenSetsInSeconds)) ~/ 60);
     }
   }
 }
