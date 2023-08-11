@@ -8,6 +8,7 @@ import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/upgrade_to_premium/bloc/upgrade_to_premium_bloc.dart';
@@ -184,6 +185,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                     WidgetUtils.spacer(15),
                     const Text(
                       "For just \$2.99 a month, you get...",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -200,8 +202,36 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                         )
                     ),
                     WidgetUtils.spacer(15),
+                    InkWell(
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return Center(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: ScreenUtils.getScreenHeight(context) * 0.75,
+                                  ),
+                                  child: _renderComparisonFeatures(),
+                                ),
+                              );
+                            }
+                        );
+                      },
+                      child: const Text(
+                        "Tap here to learn more",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal
+                        ),
+                      ),
+                    ),
+                    WidgetUtils.spacer(15),
                     const Text(
                       "Activate now and get a free 30 day trial!",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
@@ -211,6 +241,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                     WidgetUtils.spacer(5),
                     const Text(
                       "Please note that trial can only be used once",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
@@ -220,6 +251,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                     WidgetUtils.spacer(15),
                     const Text(
                       "Enter your credit card details to get started",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
@@ -229,6 +261,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                     WidgetUtils.spacer(5),
                     const Text(
                       "You won't be charged until your trial ends, and you can cancel anytime!",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
@@ -246,6 +279,226 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
             ),
           )
       ),
+    );
+  }
+
+  DataCell _iconCheck() => DataCell(
+      CircleAvatar(
+        radius: 15,
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.teal,
+            image: DecorationImage(
+                image: AssetImage("assets/icons/icon_check.png")
+            ),
+          ),
+        ),
+      )
+  );
+
+  DataCell _iconCross() => DataCell(
+      CircleAvatar(
+        radius: 15,
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.redAccent,
+            image: DecorationImage(
+              image: AssetImage("assets/icons/icon_cross.png"),
+            ),
+          ),
+        ),
+      )
+  );
+
+  DataCell _iconCrossWithText(String text, TextStyle tableDataValueStyle) => DataCell(
+      Row(
+        children: [
+          CircleAvatar(
+            radius: 15,
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.redAccent,
+                image: DecorationImage(
+                    image: AssetImage("assets/icons/icon_cross.png")
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 3,
+              style: tableDataValueStyle,
+            ),
+          )
+        ],
+      )
+  );
+
+  _renderComparisonFeatures() {
+    double fontSizeTableHeader = 18;
+    double fontSizeTableLeading = 14;
+    double fontSizeTableData = 12;
+    TextStyle tableDataStyle = TextStyle(fontWeight: FontWeight.w600, color: Colors.teal, fontSize: fontSizeTableLeading);
+    TextStyle tableDataValueStyle = TextStyle(fontWeight: FontWeight.normal, color: Colors.teal, fontSize: fontSizeTableData);
+
+    return Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+            side: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 1
+            )
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          child: Scrollbar(
+            child: SingleChildScrollView(
+              child: DataTable(
+                columnSpacing: 5,
+                dataRowMinHeight: 45,
+                dataRowMaxHeight: 60,
+                columns: <DataColumn>[
+                  DataColumn(
+                    label: Expanded(
+                      child: Text(
+                        'Feature',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal, fontSize: fontSizeTableHeader),
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Expanded(
+                      child: Text(
+                        'Freemium',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal, fontSize: fontSizeTableHeader),
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Expanded(
+                      child: Text(
+                        'Fitcentive+',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal, fontSize: fontSizeTableHeader),
+                      ),
+                    ),
+                  ),
+                ],
+                rows: <DataRow>[
+                  DataRow(
+                    cells: <DataCell>[
+                      DataCell(Text('Unlimited social media posts', style: tableDataStyle,)),
+                      _iconCheck(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: <DataCell>[
+                      DataCell(Text('Unlimited nutrition tracking', style: tableDataStyle,)),
+                      _iconCheck(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                      cells: [
+                        DataCell(Text('Unlimited exercise tracking', style: tableDataStyle,)),
+                        _iconCheck(),
+                        _iconCheck(),
+                      ]
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Progress tracking', style: tableDataStyle,)),
+                      _iconCheck(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Achievements tracking', style: tableDataStyle,)),
+                      _iconCheck(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Direct messaging', style: tableDataStyle,)),
+                      _iconCheck(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Social feed', style: tableDataStyle,)),
+                      _iconCheck(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Ad-free experience', style: tableDataStyle,)),
+                      _iconCross(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Meetup reminders', style: tableDataStyle,)),
+                      _iconCross(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Weight log reminders', style: tableDataStyle,)),
+                      _iconCross(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Unlimited user discovery', style: tableDataStyle,)),
+                      _iconCrossWithText("Max 5 per month", tableDataValueStyle),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Unlimited meetups', style: tableDataStyle,)),
+                      _iconCrossWithText("Max 5 per month", tableDataValueStyle),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Multi person meetups', style: tableDataStyle,)),
+                      _iconCross(),
+                      _iconCheck(),
+                    ],
+                  ),
+                  DataRow(
+                    cells: [
+                      DataCell(Text('Group chats', style: tableDataStyle,)),
+                      _iconCross(),
+                      _iconCheck(),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        )
     );
   }
 

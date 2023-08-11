@@ -100,7 +100,6 @@ class ConstantUtils {
   - #### Multi user meetups
   - #### Group chats
   - #### Support the developer
-  - #### And so much more!
   """;
 
   static const String passwordRules = """
