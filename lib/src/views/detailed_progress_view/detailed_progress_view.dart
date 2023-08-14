@@ -502,18 +502,24 @@ class DetailedProgressViewState extends State<DetailedProgressView> {
     Widget text;
 
     switch (selectedFilterDisplayName) {
-      case oneWeekDisplayString: // We display each day individally
+      case oneWeekDisplayString: // We display each day individually
         text = Text(
           DateFormat("MM/dd").format(DateTime.parse(filterStartDate).add(Duration(days: value.toInt()))),
           style: style,
         );
         break;
 
-      case twoWeekDisplayString: // We display each day individally
-        text = Text(
-          DateFormat("MM/dd").format(DateTime.parse(filterStartDate).add(Duration(days: value.toInt()))),
-          style: style,
-        );
+      case twoWeekDisplayString: // We display every other day day individually
+        if (value % 2 == 0) {
+          text = Text(
+            DateFormat("MM/dd").format(DateTime.parse(filterStartDate).add(Duration(days: value.toInt()))),
+            style: style,
+          );
+        }
+        else {
+          text = Container();
+        }
+
         break;
 
       case oneMonthDisplayString: // We display start of each week
