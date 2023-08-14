@@ -46,7 +46,7 @@ class CompleteProfilePage extends StatefulWidget {
   }
 }
 
-class CompleteProfilePageState extends State<CompleteProfilePage> {
+class CompleteProfilePageState extends State<CompleteProfilePage> with WidgetsBindingObserver {
   late CompleteProfileBloc _completeProfileBloc;
   late AuthenticationBloc _authenticationBloc;
   final PageController _pageController = PageController();
@@ -93,7 +93,16 @@ class CompleteProfilePageState extends State<CompleteProfilePage> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Complete profile', style: TextStyle(color: Colors.teal),),
+            title: BlocBuilder<CompleteProfileBloc, CompleteProfileState>(
+              builder: (context, state) {
+                if (state is InitialState || state is ProfileInfoComplete) {
+                  return const Text('', style: TextStyle(color: Colors.teal));
+                }
+                else {
+                  return const Text('Complete profile', style: TextStyle(color: Colors.teal));
+                }
+              },
+            ),
             iconTheme: const IconThemeData(
               color: Colors.teal,
             ),
