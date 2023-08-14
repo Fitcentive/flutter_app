@@ -248,6 +248,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
           child: Opacity(
             opacity: 0.66,
             child: FloatingActionButton(
+              mini: true,
               heroTag: "MeetupTabsConversationViewAnimatedButton",
               onPressed: () {
                 _jumpToTopOfMeetupTabConversationView();
