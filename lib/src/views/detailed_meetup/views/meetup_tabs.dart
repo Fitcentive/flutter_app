@@ -700,7 +700,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
 
   _renderAvailabilitiesView() {
     return SizedBox(
-      height: ScreenUtils.getScreenHeight(context) * 0.75,
+      height: ScreenUtils.getScreenHeight(context) * 0.625,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 5),
         child: DiscreteAvailabilitiesView(

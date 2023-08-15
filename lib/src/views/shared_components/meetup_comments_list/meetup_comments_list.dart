@@ -297,9 +297,11 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
         onTap: () {
           KeyboardUtils.hideKeyboard(context);
         },
-        child: const Padding(
-          padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
-          child: Text("No activity yet... get started by adding a comment!"),
+        child: const SizedBox(
+          height: 200,
+          child: Center(
+            child: Text("No activity yet... get started by adding a comment!"),
+          ),
         ),
       );
     }

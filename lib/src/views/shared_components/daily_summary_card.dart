@@ -24,7 +24,9 @@ class DailySummaryCardView extends StatefulWidget {
   final List<CardioDiaryEntry> cardioDiaryEntries;
   final List<FoodDiaryEntry> foodDiaryEntriesRaw;
   final List<Either<FoodGetResult, FoodGetResultSingleServing>> foodDiaryEntries;
-  final UserStepsData? userStepsData;
+
+  final int stepsTaken;
+  final double stepsCaloriesBurned;
 
   final FitnessUserProfile fitnessUserProfile;
   final String? gender;
@@ -38,7 +40,8 @@ class DailySummaryCardView extends StatefulWidget {
     required this.cardioDiaryEntries,
     required this.foodDiaryEntriesRaw,
     required this.foodDiaryEntries,
-    required this.userStepsData,
+    required this.stepsTaken,
+    required this.stepsCaloriesBurned,
     required this.selectedDate,
     required this.fitnessUserProfile,
     required this.gender,
@@ -623,7 +626,7 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
   }
 
   _showStepsTaken() {
-    final stepGoalPercentage = ((widget.userStepsData?.steps ?? 0) / (widget.fitnessUserProfile.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal));
+    final stepGoalPercentage = (widget.stepsTaken / (widget.fitnessUserProfile.stepGoalPerDay ?? ExerciseUtils.defaultStepGoal));
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -664,7 +667,7 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
                 ),
                 WidgetUtils.spacer(2.5),
                 Text(
-                  "${widget.userStepsData?.steps ?? "0"} steps",
+                  "${widget.stepsTaken} steps",
                   style: const TextStyle(
                     color: Colors.teal,
                   ),
@@ -859,7 +862,7 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
   }
 
   _setupData() {
-    totalStepsTaken = widget.userStepsData?.steps ?? totalStepsTaken;
+    totalStepsTaken = widget.stepsTaken;
     caloriesBurned = _getCaloriesBurned().toInt();
     caloriesConsumed = _getCaloriesConsumed(widget.foodDiaryEntriesRaw, widget.foodDiaryEntries).toInt();
     minutesOfActivity = _getMinutesOfCardioActivity() + _getMinutesOfStrengthActivity(); // Guesstimate strength minutes for user
@@ -970,7 +973,7 @@ class DailySummaryCardViewState extends State<DailySummaryCardView> {
     return [
       ...widget.strengthDiaryEntries.map((e) => e.caloriesBurned),
       ...widget.cardioDiaryEntries.map((e) => e.caloriesBurned),
-      widget.userStepsData?.caloriesBurned ?? 0,
+      widget.stepsCaloriesBurned,
     ].reduce((value, element) => value + element);
   }
 }

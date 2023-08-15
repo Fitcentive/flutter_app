@@ -316,7 +316,7 @@ class CalendarViewState extends State<CalendarView> {
               heightPerMinute: 1, // height occupied by 1 minute time span.
               eventArranger: const SideEventArranger(), // To define how simultaneous events will be arranged.
               onEventTap: (events, date) {
-                final eitherEvent = events as CalendarEventData<Either<Meetup, AllDiaryEntries>>;
+                final eitherEvent = events.first as CalendarEventData<Either<Meetup, AllDiaryEntries>>;
                 if (eitherEvent.event?.isLeft ?? false) {
                   _showMeetupCardDialog(state, eitherEvent.event!.left);
                 }
