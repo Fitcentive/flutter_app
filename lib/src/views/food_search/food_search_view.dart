@@ -13,6 +13,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_food/detailed_food_view.dart';
 import 'package:flutter_app/src/views/food_search/bloc/food_search_bloc.dart';
@@ -21,6 +22,7 @@ import 'package:flutter_app/src/views/food_search/bloc/food_search_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class FoodSearchView extends StatefulWidget {
@@ -239,8 +241,40 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
     );
   }
 
+  _skeletonLoadingView() {
+    return [Expanded(
+      child: SingleChildScrollView(
+        child: SkeletonLoader(
+          period: const Duration(seconds: 2),
+          highlightColor: Colors.teal,
+          direction: SkeletonDirection.ltr,
+          builder: ListView.builder(
+            shrinkWrap: true,
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: 20,
+            itemBuilder: (BuildContext context, int index) {
+              return ListTile(
+                title: Container(
+                  width: 50,
+                  height: 10,
+                  color: Colors.white,
+                ),
+                trailing: Container(
+                  width: 20,
+                  height: 10,
+                  color: Colors.white,
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    )];
+  }
+
   List<Widget> _renderResultsOrProgressIndicator(FoodSearchState state) {
     if (state is FoodSearchStateInitial) {
+      return _skeletonLoadingView();
       return [
         const ListTile(
           title: Text("Total Foods", style: TextStyle(color: Colors.teal)),
@@ -287,16 +321,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
       }
     }
     else {
-      return const [
-        Center(
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: CircularProgressIndicator(
-              color: Colors.teal,
-            ),
-          ),
-        )
-      ];
+      return _skeletonLoadingView();
     }
   }
 

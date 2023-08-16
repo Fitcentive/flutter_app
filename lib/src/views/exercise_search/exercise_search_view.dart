@@ -8,6 +8,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_exercise/detailed_exercise_view.dart';
 import 'package:flutter_app/src/views/exercise_search/bloc/exercise_search_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_app/src/views/exercise_search/bloc/exercise_search_state
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ExerciseSearchView extends StatefulWidget {
@@ -82,6 +84,8 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
   final _searchTextController = TextEditingController();
   final _suggestionsController = SuggestionsBoxController();
 
+  bool shouldHideKeyboardManually = true;
+
   @override
   void dispose() {
     _searchTextController.dispose();
@@ -100,6 +104,9 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
 
   @override
   Widget build(BuildContext context) {
+    if (shouldHideKeyboardManually) {
+      KeyboardUtils.hideKeyboard(context);
+    }
     final maxHeight = AdUtils.defaultBannerAdHeight(context);
     final Widget? adWidget = WidgetUtils.showAdIfNeeded(context, maxHeight);
     return Scaffold(
@@ -118,12 +125,70 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
               return _mainBody(state);
             }
             else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return skeletonLoadingBody();
             }
           },
         ),
+      ),
+    );
+  }
+
+  Widget skeletonLoadingBody() {
+    return DefaultTabController(
+        length: MAX_TABS,
+        child: Scaffold(
+          appBar: AppBar(
+            iconTheme: const IconThemeData(
+              color: Colors.teal,
+            ),
+            toolbarHeight: 75,
+            title: const Text("View Exercises", style: TextStyle(color: Colors.teal)),
+            bottom: TabBar(
+              labelColor: Colors.teal,
+              controller: _tabController,
+              tabs: const [
+                Tab(icon: Icon(Icons.timelapse, color: Colors.teal,), text: "Recent"),
+                Tab(icon: Icon(Icons.run_circle_outlined, color: Colors.teal,), text: "Cardio"),
+                Tab(icon: Icon(Icons.fitness_center, color: Colors.teal,), text: "Strength"),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _showExerciseListStub(),
+              _showExerciseListStub(),
+              _showExerciseListStub(),
+            ],
+          ),
+        )
+    );
+  }
+
+  _showExerciseListStub() {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          WidgetUtils.spacer(5),
+          _renderWgerApiAttribution(),
+          WidgetUtils.spacer(5),
+          _exerciseSearchBar(),
+          WidgetUtils.spacer(2.5),
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: ListView.builder(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: 20,
+              itemBuilder: (BuildContext context, int index) {
+                return exerciseResultItemStub();
+              },
+            ),
+          )
+        ],
       ),
     );
   }
@@ -139,6 +204,11 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
             toolbarHeight: 75,
             title: const Text("View Exercises", style: TextStyle(color: Colors.teal)),
             bottom: TabBar(
+              onTap: (tabIndex) {
+                setState(() {
+                  shouldHideKeyboardManually = true;
+                });
+              },
               labelColor: Colors.teal,
               controller: _tabController,
               tabs: const [
@@ -213,8 +283,13 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
           textFieldConfiguration: TextFieldConfiguration(
               onSubmitted: (value) {},
               autocorrect: false,
-              onTap: () => _suggestionsController.toggle(),
-              onChanged: (text) {},
+              onTap: () {
+                _suggestionsController.toggle();
+                shouldHideKeyboardManually = false;
+              },
+              onChanged: (text) {
+                shouldHideKeyboardManually = false;
+              },
               autofocus: true,
               controller: _searchTextController,
               style: const TextStyle(fontSize: 15),
@@ -279,6 +354,32 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
     }
   }
 
+  Widget exerciseResultItemStub() {
+    return ListTile(
+      title: Container(
+        width: 50,
+        height: 10,
+        color: Colors.white,
+      ),
+      subtitle: Container(
+          width: 20,
+          height: 10,
+          color: Colors.white,
+      ),
+      leading: CircleAvatar(
+        radius: 30,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 500, 500),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget exerciseResultItem(ExerciseDefinition exerciseDefinition) {
     return ListTile(
       title: Text(exerciseDefinition.name,
@@ -305,7 +406,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
                 exerciseDefinition.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION,
                 widget.selectedDayInQuestion
             ),
-        );
+        ).then((value) => shouldHideKeyboardManually = false);
       },
     );
   }

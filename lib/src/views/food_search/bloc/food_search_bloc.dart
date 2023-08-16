@@ -76,6 +76,7 @@ class FoodSearchBloc extends Bloc<FoodSearchEvent, FoodSearchState> {
       ));
     }
     else if (currentState is FoodDataFetched) {
+      emit(const FoodDataLoading());
       final accessToken = await secureStorage.read(key: SecureAuthTokens.ACCESS_TOKEN_SECURE_STORAGE_KEY);
       final results = await diaryRepository.searchForFoods(event.query, accessToken!, pageNumber: event.pageNumber, maxResults: event.maxResults);
 
