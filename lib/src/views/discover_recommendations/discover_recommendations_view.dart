@@ -20,6 +20,7 @@ import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class DiscoverRecommendationsView extends StatefulWidget {
   static const String routeName = "discover-recommendations";
@@ -282,11 +283,23 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
             }
           }
           else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return _skeletonLoadingScreen();
           }
         }),
+    );
+  }
+
+  _skeletonLoadingScreen() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 30),
+        child: SkeletonLoader(
+          period: const Duration(seconds: 2),
+          highlightColor: Colors.teal,
+          direction: SkeletonDirection.ltr,
+          builder: _carouselSliderStub(),
+        ),
+      ),
     );
   }
 
@@ -393,6 +406,37 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     );
   }
 
+  _carouselSliderStub() {
+    final items = [1].map((recommendation) {
+      return Builder(
+        builder: (BuildContext context) {
+          return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 5.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.teal)
+              ),
+              child: _generateUserCardStub()
+          );
+        },
+      );
+    }).toList();
+
+    return CarouselSlider(
+        items: items,
+        carouselController: buttonCarouselController,
+        options: CarouselOptions(
+          height: ScreenUtils.getScreenHeight(context) * 0.8,
+          aspectRatio: 16/9,
+          viewportFraction: 0.825,
+          initialPage: currentSelectedRecommendationIndex,
+          enableInfiniteScroll: false,
+          reverse: false,
+          enlargeCenterPage: true,
+          scrollDirection: Axis.horizontal,
+        )
+    );
+  }
+
   _carouselSlider(
       PublicUserProfile currentUserProfile,
       List<DiscoverRecommendation> recommendations,
@@ -489,6 +533,21 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     );
   }
 
+  _generateUserCardStub() {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        children: [
+          _generateUserHeaderStub(),
+          WidgetUtils.spacer(5),
+          _generateUserMatchedAttributesStub(),
+          WidgetUtils.spacer(5),
+          _generateLocationCardStub(),
+        ],
+      ),
+    );
+  }
+
   _generateUserCard(DiscoverRecommendation recommendation) {
     return Container(
       padding: const EdgeInsets.all(10),
@@ -511,6 +570,10 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     );
   }
 
+  _generateLocationCardStub() {
+    return Container();
+  }
+
   _generateUserHeader(DiscoverRecommendation recommendation) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -529,6 +592,32 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
                 _generateOptionalGymText(recommendation)
               ]),
             ),
+        ),
+      ],
+    );
+  }
+
+  _generateUserHeaderStub() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+            child: _userAvatar(widget.currentUserProfile)
+        ),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: WidgetUtils.skipNulls([
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 10,
+                ),
+              ),
+              WidgetUtils.spacer(5),
+              _generateDiscoverUserScore(50),
+            ]),
+          ),
         ),
       ],
     );
@@ -630,6 +719,79 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
                 const VerticalDivider(color: Colors.teal,),
                 WidgetUtils.spacer(1),
                 Expanded(child: _generateItemsMatchedOn(recommendation.matchedAttributes.bodyTypes)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _generateUserMatchedAttributesStub() {
+    return Container(
+      // height: 250,
+      constraints: const BoxConstraints(
+          minHeight: 100,
+          minWidth: double.infinity,
+          maxHeight: 250
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Expanded(child: Text("Similar activities", style: TextStyle(fontWeight: FontWeight.bold),)),
+                WidgetUtils.spacer(1),
+                const VerticalDivider(color: Colors.teal,),
+                WidgetUtils.spacer(1),
+                const Expanded(child: Text("Similar goals", style: TextStyle(fontWeight: FontWeight.bold),)),
+              ],
+            ),
+          ),
+          WidgetUtils.spacer(1),
+          const Divider(color: Colors.teal,),
+          WidgetUtils.spacer(1),
+          IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(child: Container(width: 50, height: 10,)),
+                WidgetUtils.spacer(1),
+                const VerticalDivider(color: Colors.teal,),
+                WidgetUtils.spacer(1),
+                Expanded(child: Container(width: 50, height: 10,)),
+              ],
+            ),
+          ),
+          WidgetUtils.spacer(2.5),
+          const Divider(color: Colors.teal,),
+          WidgetUtils.spacer(2.5),
+          IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Expanded(child: Text("Preferred days", style: TextStyle(fontWeight: FontWeight.bold),)),
+                WidgetUtils.spacer(1),
+                const VerticalDivider(color: Colors.teal,),
+                WidgetUtils.spacer(1),
+                const Expanded(child: Text("Desired body type", style: TextStyle(fontWeight: FontWeight.bold),)),
+              ],
+            ),
+          ),
+          WidgetUtils.spacer(1),
+          const Divider(color: Colors.teal,),
+          WidgetUtils.spacer(1),
+          IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(child: Container(width: 50, height: 10,)),
+                WidgetUtils.spacer(1),
+                const VerticalDivider(color: Colors.teal,),
+                WidgetUtils.spacer(1),
+                Expanded(child: Container(width: 50, height: 10,)),
               ],
             ),
           ),
