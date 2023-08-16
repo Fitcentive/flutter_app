@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/chat_repository.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_chat/detailed_chat_view.dart';
@@ -19,6 +20,7 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 
@@ -401,9 +403,71 @@ class UserChatViewState extends State<UserChatView> {
                 );
               }
               else {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+                return SingleChildScrollView(
+                  child: SkeletonLoader(
+                    builder: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: SizedBox(
+                          height: ScreenUtils.getScreenHeight(context),
+                          child: Card(
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  side: BorderSide(
+                                      color: Theme.of(context).primaryColor,
+                                      width: 1
+                                  )
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                child: Column(
+                                  children: WidgetUtils.skipNulls(
+                                      [
+                                        Row(
+                                          children: [
+                                            // Name, date and time
+                                            Expanded(
+                                              flex: 3,
+                                              child: Column(
+                                                children: [
+                                                  const Text("Unnamed meetup", textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ) ,),
+                                                  WidgetUtils.spacer(5),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        WidgetUtils.spacer(10),
+                                        const Row(
+                                          children: [
+                                            // This part is supposed to be locations view
+                                            Expanded(
+                                              flex: 3,
+                                              child: SizedBox(
+                                                height: 50,
+                                              ),
+                                            ),
+                                            // This part is supposed to be participant list
+                                            Expanded(
+                                                flex: 2,
+                                                child: SizedBox(
+                                                  height: 50,
+                                                )
+                                            )
+                                          ],
+                                        ),
+                                        WidgetUtils.spacer(10),
+                                      ]
+                                  ),
+                                ),
+                              )
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );;
               }
             },
           ),
