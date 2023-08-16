@@ -21,6 +21,7 @@ import 'package:flutter_app/src/views/shared_components/social_posts_list.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:uuid/uuid.dart';
 
 class NewsFeedView extends StatefulWidget {
@@ -283,10 +284,32 @@ class NewsFeedViewState extends State<NewsFeedView> {
         );
       }
     } else {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return _renderSkeleton();
     }
+  }
+
+  _renderSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  _addNewPostView(),
+                  _separation(),
+                  _showNoResultsPlaceholder(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   _showNoResultsPlaceholder() {

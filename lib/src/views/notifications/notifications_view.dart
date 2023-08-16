@@ -7,6 +7,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/award_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
@@ -21,6 +22,7 @@ import 'package:flutter_app/src/views/selected_post/selected_post_view.dart';
 import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationsView extends StatefulWidget {
@@ -66,7 +68,9 @@ class NotificationsViewState extends State<NotificationsView> {
 
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
-      _notificationsBloc.add(FetchNotifications(user: currentAuthState.authenticatedUser));
+      Future.delayed(Duration(seconds: 4), () {
+        _notificationsBloc.add(FetchNotifications(user: currentAuthState.authenticatedUser));
+      });
     }
     _scrollController.addListener(_onScroll);
   }
@@ -126,11 +130,32 @@ class NotificationsViewState extends State<NotificationsView> {
               );
             }
           } else {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.teal),
-            );
+            return _renderSkeleton();
           }
         }),
+      ),
+    );
+  }
+
+  _renderSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: Padding(
+              padding: const EdgeInsets.all(10),
+              child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: 20,
+                  itemBuilder: (context, index) {
+                    return _generateNotificationListItemStub();
+                  }),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -157,6 +182,31 @@ class NotificationsViewState extends State<NotificationsView> {
       _notificationsBloc.add(ReFetchNotifications(user: currentAuthState.authenticatedUser));
     }
   }
+
+  Widget _generateNotificationListItemStub() {
+    return ListTile(
+      tileColor: null,
+      leading: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 100, 100),
+        ),
+      ),
+      title: Container(
+        width: ScreenUtils.getScreenWidth(context),
+        height: 10,
+        color: Colors.white,
+      ),
+      subtitle: Container(
+        width: ScreenUtils.getScreenWidth(context),
+        height: 10,
+        color: Colors.white,
+      ),
+    );
+  }
+
 
   Widget _generateNotificationListItem(AppNotification notification, Map<String, PublicUserProfile> userProfileMap) {
     switch (notification.notificationType) {
