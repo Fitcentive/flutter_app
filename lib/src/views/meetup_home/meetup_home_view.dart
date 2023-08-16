@@ -191,9 +191,6 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       child: Column(
         children: [
           SkeletonLoader(
-            period: const Duration(seconds: 2),
-            highlightColor: Colors.teal,
-            direction: SkeletonDirection.ltr,
             builder: ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),

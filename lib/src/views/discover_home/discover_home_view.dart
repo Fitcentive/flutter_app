@@ -124,43 +124,38 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          SkeletonLoader(
-            period: const Duration(seconds: 2),
-            highlightColor: Colors.teal,
-            direction: SkeletonDirection.ltr,
-            builder: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                        child: _actionButton("Update Preferences", () {}),
-                      ),
-                      WidgetUtils.spacer(5),
-                      Expanded(
-                        child: _actionButton("Discover Buddies", () {}),
-                      )
-                    ],
+          Container(
+            margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: SkeletonLoader(
+              highlightColor: Colors.teal,
+              builder: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: _actionButton("Update Preferences", () {}),
                   ),
-                ),
-                WidgetUtils.spacer(5),
-                const Center(
-                  child: Text(
-                    "",
-                    style: TextStyle(
-                      color: Colors.teal,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                WidgetUtils.spacer(5),
-                _userResultsListStub(),
-              ],
+                  WidgetUtils.spacer(5),
+                  Expanded(
+                    child: _actionButton("Discover Buddies", () {}),
+                  )
+                ],
+              ),
             ),
           ),
+          WidgetUtils.spacer(5),
+          const SkeletonLoader(
+            builder: Center(
+              child: Text(
+                "",
+                style: TextStyle(
+                  color: Colors.teal,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          WidgetUtils.spacer(5),
+          SkeletonLoader(builder: _userResultsListStub()),
         ],
       ),
     );

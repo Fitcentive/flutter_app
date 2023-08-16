@@ -125,9 +125,6 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
   _renderLoadingSkeleton() {
     return SingleChildScrollView(
       child: SkeletonLoader(
-        period: const Duration(seconds: 2),
-        highlightColor: Colors.teal,
-        direction: SkeletonDirection.ltr,
         builder: ListView.builder(
           shrinkWrap: true,
           physics: const AlwaysScrollableScrollPhysics(),

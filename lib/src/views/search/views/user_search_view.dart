@@ -202,9 +202,6 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
         child: Column(
           children: [
             SkeletonLoader(
-              period: const Duration(seconds: 2),
-              highlightColor: Colors.teal,
-              direction: SkeletonDirection.ltr,
               builder: ListView.builder(
                 shrinkWrap: true,
                 physics: const AlwaysScrollableScrollPhysics(),

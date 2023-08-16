@@ -9,6 +9,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/manage_premium/bloc/manage_premium_bloc.dart';
@@ -19,6 +20,7 @@ import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as fs;
 import 'package:intl/intl.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class ManagePremiumView extends StatefulWidget {
   static const String routeName = "manage-premium";
@@ -153,15 +155,30 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
                 );
               }
               else {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.teal,
-                  ),
+                return Center(
+                  child: _renderLoadingSkeleton(),
                 );
               }
             },
           ),
         ),
+      ),
+    );
+  }
+
+  _renderLoadingSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          WidgetUtils.spacer(5),
+          _userProfileImageView(),
+          WidgetUtils.spacer(10),
+          mainContentStub(),
+          WidgetUtils.spacer(25),
+          SkeletonLoader(builder: _cancelPremiumButton()),
+          WidgetUtils.spacer(10),
+        ],
       ),
     );
   }
@@ -230,6 +247,106 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
         ],
       );
     }
+  }
+
+  mainContentStub() {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      children: WidgetUtils.skipNulls([
+        const SkeletonLoader(
+          highlightColor: Colors.teal,
+          builder: Center(
+            child: Text(
+              "You are currently subscribed to Fitcentive+",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal
+              ),
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(15),
+        const SkeletonLoader(
+          builder: Center(
+            child: Text(
+              "Your billing period",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                // color: Colors.teal
+              ),
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(5),
+        const SkeletonLoader(
+          builder: Center(
+            child: SizedBox(
+              width: 50,
+              height: 10,
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(15),
+        const SkeletonLoader(
+          builder: Center(
+            child: Text(
+              "Your next payment date",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                // color: Colors.teal
+              ),
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(5),
+        const SkeletonLoader(
+          builder: Center(
+            child: SizedBox(
+              width: 50,
+              height: 10,
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(15),
+        const SkeletonLoader(
+          builder: Center(
+            child: Text(
+              "Your payment method",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                // color: Colors.teal
+              ),
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(15),
+        SkeletonLoader(builder: creditCardCarouselView()),
+        WidgetUtils.spacer(5),
+        const SkeletonLoader(
+          builder: Center(
+            child: SizedBox(
+              width: 50,
+              height: 10,
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(5),
+        SkeletonLoader(
+          builder: Center(
+            child: SizedBox(
+              width: ScreenUtils.getScreenWidth(context),
+              height: 10,
+            ),
+          ),
+        ),
+        WidgetUtils.spacer(5),
+      ]),
+    );
   }
 
   mainContent(SubscriptionInfoLoaded state) {

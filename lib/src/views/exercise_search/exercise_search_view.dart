@@ -176,9 +176,6 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
           _exerciseSearchBar(),
           WidgetUtils.spacer(2.5),
           SkeletonLoader(
-            period: const Duration(seconds: 2),
-            highlightColor: Colors.teal,
-            direction: SkeletonDirection.ltr,
             builder: ListView.builder(
               shrinkWrap: true,
               physics: const AlwaysScrollableScrollPhysics(),

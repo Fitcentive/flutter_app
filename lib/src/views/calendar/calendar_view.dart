@@ -532,9 +532,7 @@ class CalendarViewState extends State<CalendarView> {
     }
     else {
       return SkeletonLoader(
-        period: const Duration(seconds: 2),
         highlightColor: Colors.teal,
-        direction: SkeletonDirection.ltr,
         builder: Row(
           mainAxisSize: MainAxisSize.max,
           children: [

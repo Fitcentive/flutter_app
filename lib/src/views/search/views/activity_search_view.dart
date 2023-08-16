@@ -154,9 +154,6 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
 
   Widget _searchResultsStub() {
     return SkeletonLoader(
-        period: const Duration(seconds: 2),
-        highlightColor: Colors.teal,
-        direction: SkeletonDirection.ltr,
         builder: ListView.builder(
           shrinkWrap: true,
           physics: const AlwaysScrollableScrollPhysics(),

@@ -293,9 +293,6 @@ class NewsFeedViewState extends State<NewsFeedView> {
       child: Column(
         children: [
           SkeletonLoader(
-            period: const Duration(seconds: 2),
-            highlightColor: Colors.teal,
-            direction: SkeletonDirection.ltr,
             builder: Padding(
               padding: const EdgeInsets.all(10),
               child: Column(

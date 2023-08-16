@@ -350,23 +350,13 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
     return SingleChildScrollView(
       child: Column(
         children: [
-          SkeletonLoader(
-            period: const Duration(seconds: 2),
-            highlightColor: Colors.teal,
-            direction: SkeletonDirection.ltr,
-            builder: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _dateHeader(),
-                WidgetUtils.spacer(2.5),
-                _caloriesHeaderStub(),
-                WidgetUtils.spacer(2.5),
-                _renderStepInfoStub(),
-                WidgetUtils.spacer(5),
-                _diaryPageViewStub(),
-              ],
-            ),
-          ),
+          _dateHeaderStub(),
+          WidgetUtils.spacer(2.5),
+          _caloriesHeaderStub(),
+          WidgetUtils.spacer(2.5),
+          _renderStepInfoStub(),
+          WidgetUtils.spacer(5),
+          _diaryPageViewStub(),
         ],
       ),
     );
@@ -495,116 +485,119 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
   }
 
   _caloriesHeaderStub() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-                flex: 3,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "",
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.headlineMedium?.color
+    return SkeletonLoader(
+      highlightColor: Colors.teal,
+      builder: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                  flex: 3,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "",
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).textTheme.headlineMedium?.color
+                        ),
                       ),
-                    ),
-                    WidgetUtils.spacer(2),
-                    const Text("Goal", style: TextStyle(fontSize: 12),)
-                  ],
-                )
-            ),
-            const Expanded(
-                flex: 1,
-                child: Text("-")
-            ),
-            Expanded(
-                flex: 3,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "",
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red
-                      ),
-                    ),
-                    WidgetUtils.spacer(2),
-                    const Text("Food", style: TextStyle(fontSize: 12),)
-                  ],
-                )
-            ),
-            const Expanded(
-                flex: 1,
-                child: Text("+")
-            ),
-            Expanded(
-                flex: 3,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "",
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal
-                      ),
-                    ),
-                    WidgetUtils.spacer(2),
-                    const Text("Exercise", style: TextStyle(fontSize: 12),)
-                  ],
-                )
-            ),
-            const Expanded(
-                flex: 1,
-                child: Text("=")
-            ),
-            Expanded(
-                flex: 3,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "",
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal
-                      )
-                    ),
-                    WidgetUtils.spacer(2),
-                    const Text("Remaining", style: TextStyle(fontSize: 12),)
-                  ],
-                )
-            ),
-          ],
-        ),
-        WidgetUtils.spacer(2.5),
-        Center(
-          child: LinearPercentIndicator(
-            lineHeight: 15.0,
-            barRadius: const Radius.elliptical(5, 10),
-            percent: 0, // between 0-1
-            center: Text(
-              "",
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12
+                      WidgetUtils.spacer(2),
+                      const Text("Goal", style: TextStyle(fontSize: 12),)
+                    ],
+                  )
               ),
-            ),
-            backgroundColor: Colors.grey.shade400,
-            progressColor: Colors.teal,
+              const Expanded(
+                  flex: 1,
+                  child: Text("-")
+              ),
+              Expanded(
+                  flex: 3,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "",
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red
+                        ),
+                      ),
+                      WidgetUtils.spacer(2),
+                      const Text("Food", style: TextStyle(fontSize: 12),)
+                    ],
+                  )
+              ),
+              const Expanded(
+                  flex: 1,
+                  child: Text("+")
+              ),
+              Expanded(
+                  flex: 3,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "",
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal
+                        ),
+                      ),
+                      WidgetUtils.spacer(2),
+                      const Text("Exercise", style: TextStyle(fontSize: 12),)
+                    ],
+                  )
+              ),
+              const Expanded(
+                  flex: 1,
+                  child: Text("=")
+              ),
+              Expanded(
+                  flex: 3,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "",
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal
+                        )
+                      ),
+                      WidgetUtils.spacer(2),
+                      const Text("Remaining", style: TextStyle(fontSize: 12),)
+                    ],
+                  )
+              ),
+            ],
           ),
-        )
-      ],
+          WidgetUtils.spacer(2.5),
+          Center(
+            child: LinearPercentIndicator(
+              lineHeight: 15.0,
+              barRadius: const Radius.elliptical(5, 10),
+              percent: 0, // between 0-1
+              center: Text(
+                "",
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12
+                ),
+              ),
+              backgroundColor: Colors.grey.shade400,
+              progressColor: Colors.teal,
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -776,6 +769,52 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
     }
   }
 
+  _dateHeaderStub() {
+    return SkeletonLoader(
+      highlightColor: Colors.teal,
+      builder: Column(
+        children: WidgetUtils.skipNulls([
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                flex: 2,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.chevron_left,
+                    color: Colors.teal,
+                  ), onPressed: () {  },
+                ),
+              ),
+              Expanded(
+                  flex: 6,
+                  child: Center(
+                    child: Text(
+                      DateFormat('yyyy-MM-dd').format(currentSelectedDate),
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  )
+              ),
+              Expanded(
+                flex: 2,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.chevron_right,
+                    color: Colors.teal,
+                  ),
+                  onPressed: () {},
+                ),
+              ),
+            ],
+          ),
+        ]),
+      ),
+    );
+  }
+
   _dateHeader() {
     return Column(
       children: WidgetUtils.skipNulls([
@@ -920,56 +959,58 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
   }
 
   _renderStepInfoStub() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Expanded(
-            flex: 2,
-            child: CircleAvatar(
-              radius: 25,
-              child: Container(
-                width: 30,
-                height: 30,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                      image: AssetImage("assets/icons/boot_icon.png")
-                  ),
-                ),
-              ),
-            )
-        ),
-        Expanded(
-            flex: 8,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                LinearPercentIndicator(
-                  lineHeight: 15.0,
-                  barRadius: const Radius.elliptical(5, 10),
-                  percent: 0,
-                  center: Text(
-                    "",
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12
+    return SkeletonLoader(
+      builder: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+              flex: 2,
+              child: CircleAvatar(
+                radius: 25,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                        image: AssetImage("assets/icons/boot_icon.png")
                     ),
                   ),
-                  backgroundColor: Colors.grey.shade400,
-                  progressColor: Colors.teal,
                 ),
-                WidgetUtils.spacer(2.5),
-                Text(
-                  "",
-                  style: const TextStyle(
-                    color: Colors.teal,
+              )
+          ),
+          Expanded(
+              flex: 8,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  LinearPercentIndicator(
+                    lineHeight: 15.0,
+                    barRadius: const Radius.elliptical(5, 10),
+                    percent: 0,
+                    center: Text(
+                      "",
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12
+                      ),
+                    ),
+                    backgroundColor: Colors.grey.shade400,
+                    progressColor: Colors.teal,
                   ),
-                ),
-                WidgetUtils.spacer(2.5),
-              ],
-            )
-        )
-      ],
+                  WidgetUtils.spacer(2.5),
+                  Text(
+                    "",
+                    style: const TextStyle(
+                      color: Colors.teal,
+                    ),
+                  ),
+                  WidgetUtils.spacer(2.5),
+                ],
+              )
+          )
+        ],
+      ),
     );
   }
 
@@ -1130,32 +1171,34 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
   }
 
   _diaryPageViewStub() {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: listItemIndexToTitleMap.length,
-      itemBuilder: (BuildContext context, int index) {
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 2.5),
-          padding: const EdgeInsets.all(5),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: 125,
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.teal)
+    return SkeletonLoader(
+      builder: ListView.builder(
+        shrinkWrap: true,
+        itemCount: listItemIndexToTitleMap.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 2.5),
+            padding: const EdgeInsets.all(5),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: 125,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  _renderDiaryEntriesStub(listItemIndexToTitleMap[index]!),
-                ],
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.teal)
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    _renderDiaryEntriesStub(listItemIndexToTitleMap[index]!),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 

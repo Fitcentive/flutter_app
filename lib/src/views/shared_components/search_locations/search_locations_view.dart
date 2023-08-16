@@ -34,6 +34,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 typedef UpdateSelectedGymLocationBlocCallback = void Function(Location location);
 
@@ -543,15 +544,78 @@ class SearchLocationsViewState extends State<SearchLocationsView> with WidgetsBi
       );
     }
     else {
-      return const Visibility(
-          visible: false,
-          child: Scaffold(
-              body: Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.teal,
-                  )
-              )
-          )
+      return SkeletonLoader(
+          builder: Center(
+            child: CarouselSlider(
+                items: [1, 2, 3].map((e) =>
+                    IntrinsicHeight(
+                      child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                              side: BorderSide(
+                                  color: Theme.of(context).primaryColor,
+                                  width: 1
+                              )
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              children: WidgetUtils.skipNulls(
+                                  [
+                                    Row(
+                                      children: [
+                                        // Name, date and time
+                                        Expanded(
+                                          flex: 3,
+                                          child: Column(
+                                            children: [
+                                              const Text("Unnamed meetup", textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ) ,),
+                                              WidgetUtils.spacer(5),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    WidgetUtils.spacer(10),
+                                    const Row(
+                                      children: [
+                                        // This part is supposed to be locations view
+                                        Expanded(
+                                          flex: 3,
+                                          child: SizedBox(
+                                            height: 50,
+                                          ),
+                                        ),
+                                        // This part is supposed to be participant list
+                                        Expanded(
+                                            flex: 2,
+                                            child: SizedBox(
+                                              height: 50,
+                                            )
+                                        )
+                                      ],
+                                    ),
+                                    WidgetUtils.spacer(10),
+                                  ]
+                              ),
+                            ),
+                          )
+                      ),
+                    )
+                ).toList(),
+                options: CarouselOptions(
+                  height: 300,
+                  // aspectRatio: 16/9,
+                  viewportFraction: 0.825,
+                  initialPage: 0,
+                  enableInfiniteScroll: true,
+                  reverse: false,
+                  enlargeCenterPage: true,
+                  scrollDirection: Axis.horizontal,
+                )
+            ),
+          ),
       );
     }
   }

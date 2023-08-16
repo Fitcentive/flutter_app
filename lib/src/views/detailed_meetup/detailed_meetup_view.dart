@@ -810,9 +810,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _skeletonTab() {
     return SkeletonLoader(
-      period: const Duration(seconds: 2),
-      highlightColor: Colors.teal,
-      direction: SkeletonDirection.ltr,
       builder : SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
         child: IntrinsicHeight(
@@ -1065,9 +1062,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _renderParticipantsViewStub() {
     return SkeletonLoader(
-      period: const Duration(seconds: 2),
-      highlightColor: Colors.teal,
-      direction: SkeletonDirection.ltr,
       builder: Center(
         child: ParticipantsList(
           participantUserProfiles: [widget.currentUserProfile, widget.currentUserProfile],
@@ -1168,9 +1162,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _renderMeetupNameViewStub() {
     return SkeletonLoader(
-      period: const Duration(seconds: 2),
-      highlightColor: Colors.teal,
-      direction: SkeletonDirection.ltr,
       builder: Column(
         children: [
           Padding(
@@ -1233,9 +1224,6 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
 
   _renderMeetupDateTimeStub() {
     return SkeletonLoader(
-      period: const Duration(seconds: 2),
-      highlightColor: Colors.teal,
-      direction: SkeletonDirection.ltr,
       builder: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(

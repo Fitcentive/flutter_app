@@ -30,6 +30,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:tuple/tuple.dart';
 
 class AccountDetailsView extends StatefulWidget {
@@ -340,8 +341,26 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
       );
     }
     else {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return SkeletonLoader(
+        builder: Container(
+          margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+          height: 300,
+          child: GoogleMap(
+              mapType: MapType.hybrid,
+              myLocationButtonEnabled: true,
+              myLocationEnabled: true,
+              markers: markers,
+              circles: Set<Circle>.of(circles.values),
+              initialCameraPosition: CameraPosition(
+                  target: LocationUtils.defaultLocation,
+                  tilt: 0,
+                  zoom: LocationUtils.getZoomLevel(locationRadius.toDouble())
+              ),
+              onMapCreated: (GoogleMapController controller) {
+                _mapController.complete(controller);
+              }
+          ),
+        ),
       );
     }
   }
@@ -452,8 +471,23 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         child: _premiumStatusIconButton(currentState),
       );
     } else {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return SkeletonLoader(
+        highlightColor: Colors.teal,
+        builder: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 12, 0),
+          child: ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+            ),
+            onPressed: () async {},
+            child: const AutoSizeText(
+                "Manage Fitcentive+",
+                maxLines: 1,
+                maxFontSize: 15,
+                style: TextStyle(fontSize: 15, color: Colors.white)
+            ),
+          ),
+        ),
       );
     }
   }
@@ -552,8 +586,22 @@ class AccountDetailsViewState extends State<AccountDetailsView> {
         ],
       );
     } else {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return SkeletonLoader(
+        builder: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Gender', style: TextStyle(fontSize: 13),),
+            DropdownButton<String>(
+                isExpanded: true,
+                value: 'Other',
+                items: ConstantUtils.genderTypes.map((e) => DropdownMenuItem<String>(
+                  value: e,
+                  child: Text(e),
+                )).toList(),
+                onChanged: (newValue) {}
+            )
+          ],
+        ),
       );
     }
   }

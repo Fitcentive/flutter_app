@@ -196,9 +196,6 @@ class ChatHomeViewState extends State<ChatHomeView> {
       child: Column(
         children: [
           SkeletonLoader(
-            period: const Duration(seconds: 2),
-            highlightColor: Colors.teal,
-            direction: SkeletonDirection.ltr,
             builder: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

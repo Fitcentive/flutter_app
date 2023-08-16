@@ -22,6 +22,7 @@ import 'package:flutter_app/src/views/user_profile/bloc/user_profile_event.dart'
 import 'package:flutter_app/src/views/user_profile/bloc/user_profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:uuid/uuid.dart';
 
 class UserProfileView extends StatefulWidget {
@@ -149,11 +150,43 @@ class UserProfileViewState extends State<UserProfileView> {
             isRequestingMoreData = false;
             return _buildUserProfilePage(state);
           } else {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.teal),
-            );
+            return _renderLoadingSkeleton();
           }
         }),
+      ),
+    );
+  }
+
+  _renderLoadingSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: WidgetUtils.skipNulls([
+          _userFirstAndLastName(),
+          const Padding(padding: EdgeInsets.all(15)),
+          _userAvatar(),
+          const Padding(padding: EdgeInsets.all(10)),
+          _userUsername(widget.userProfile.username),
+          const Padding(padding: EdgeInsets.all(10)),
+          SkeletonLoader(
+              builder: Center(
+                child: _messageUserButtonStub(),
+              )
+          ),
+          SkeletonLoader(
+              builder: Center(
+                child: _messageUserButtonStub(),
+              )
+          ),
+          SkeletonLoader(
+              builder: Center(
+                child: _acceptFriendRequestButtonOpt(),
+              )
+          ),
+          SkeletonLoader(
+              builder: _showUserPostsStub(),
+          ),
+        ]),
       ),
     );
   }
@@ -210,6 +243,22 @@ class UserProfileViewState extends State<UserProfileView> {
     }
   }
 
+
+  Widget _showUserPostsStub() {
+    return const Card(
+      child:  SizedBox(
+        height: 200,
+        child: Center(
+            child: Text(
+              "",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold
+              ),
+            )
+        ),
+      ),
+    );
+  }
 
   Widget _showUserPostsIfRequired(RequiredDataResolved state) {
     if (state.userPosts == null) {
@@ -362,6 +411,24 @@ class UserProfileViewState extends State<UserProfileView> {
           onPressed: () async {
             _userProfileBloc.add(GetChatRoom(targetUserId: widget.userProfile.userId));
           },
+          label: const Text('Message user',
+              style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+        ),
+        WidgetUtils.spacer(5)
+      ],
+    );
+  }
+
+
+  Widget? _messageUserButtonStub() {
+    return Column(
+      children: [
+        ElevatedButton.icon(
+          icon: const Icon(Icons.message),
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+          ),
+          onPressed: () async {},
           label: const Text('Message user',
               style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
         ),

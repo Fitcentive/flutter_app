@@ -87,9 +87,6 @@ class FriendsViewState extends State<FriendsView> {
   _skeletonLoadingView() {
     return SingleChildScrollView(
       child: SkeletonLoader(
-        period: const Duration(seconds: 2),
-        highlightColor: Colors.teal,
-        direction: SkeletonDirection.ltr,
         builder: ListView.builder(
           shrinkWrap: true,
           physics: const AlwaysScrollableScrollPhysics(),
