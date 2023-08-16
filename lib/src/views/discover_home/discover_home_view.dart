@@ -18,6 +18,7 @@ import 'package:flutter_app/src/views/discovered_user/discovered_user_view.dart'
 import 'package:flutter_app/src/views/shared_components/custom_sliding_up_panel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class DiscoverHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -110,12 +111,94 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
                 }
             }
             else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return _renderSkeleton();
             }
           },
         ),
+      ),
+    );
+  }
+
+
+  _renderSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: _actionButton("Update Preferences", () {}),
+                      ),
+                      WidgetUtils.spacer(5),
+                      Expanded(
+                        child: _actionButton("Discover Buddies", () {}),
+                      )
+                    ],
+                  ),
+                ),
+                WidgetUtils.spacer(5),
+                const Center(
+                  child: Text(
+                    "",
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                WidgetUtils.spacer(5),
+                _userResultsListStub(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _userResultsListStub() {
+    return Scrollbar(
+      controller: _scrollController,
+      child: ListView.builder(
+          controller: _scrollController,
+          shrinkWrap: true,
+          itemCount: 20,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Container(
+                width: ScreenUtils.getScreenWidth(context),
+                height: 10,
+                color: Colors.white,
+              ),
+              trailing: const Text(""),
+              subtitle: Container(
+                width: 50,
+                height: 10,
+                color: Colors.white,
+              ),
+              leading: CircleAvatar(
+                radius: 30,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 100, 100),
+                  ),
+                ),
+              ),
+            );
+          }
       ),
     );
   }

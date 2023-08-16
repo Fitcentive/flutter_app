@@ -68,9 +68,7 @@ class NotificationsViewState extends State<NotificationsView> {
 
     final currentAuthState = _authenticationBloc.state;
     if (currentAuthState is AuthSuccessUserUpdateState) {
-      Future.delayed(Duration(seconds: 4), () {
-        _notificationsBloc.add(FetchNotifications(user: currentAuthState.authenticatedUser));
-      });
+      _notificationsBloc.add(FetchNotifications(user: currentAuthState.authenticatedUser));
     }
     _scrollController.addListener(_onScroll);
   }

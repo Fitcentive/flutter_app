@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/views/search/bloc/user_search/user_search_bloc.dart';
 import 'package:flutter_app/src/views/search/bloc/user_search/user_search_event.dart';
 import 'package:flutter_app/src/views/search/bloc/user_search/user_search_state.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class UserSearchView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -159,19 +161,16 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
   Widget _userSearchBody() {
     return BlocBuilder<UserSearchBloc, UserSearchState>(
       builder: (BuildContext context, UserSearchState state) {
-        if (state is UserSearchStateInitial || state is UserSearchQueryModified) {
-          return Expanded(
-              child: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: Container(
-              decoration: BoxDecoration(border: Border.all(color: Colors.transparent)),
-              child: const Center(child: Text('Search for user by name/username')),
-            ),
-          ));
-        }
-        if (state is UserSearchResultsLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        // if (state is UserSearchStateInitial || state is UserSearchQueryModified) {
+        //   return Expanded(
+        //       child: GestureDetector(
+        //     onTap: () => FocusScope.of(context).unfocus(),
+        //     child: Container(
+        //       decoration: BoxDecoration(border: Border.all(color: Colors.transparent)),
+        //       child: const Center(child: Text('Search for user by name/username')),
+        //     ),
+        //   ));
+        // }
         if (state is UserSearchResultsError) {
           return Expanded(child: Center(child: Text(state.error)));
         }
@@ -188,10 +187,60 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                     listHeadingText: "Total Users",
                 )
               );
-        } else {
-          return const Center(child: Text("Error: Something went wrong"));
+        }
+        else {
+          return Expanded(child: _skeletonLoadingView());
         }
       },
+    );
+  }
+
+  _skeletonLoadingView() {
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            SkeletonLoader(
+              period: const Duration(seconds: 2),
+              highlightColor: Colors.teal,
+              direction: SkeletonDirection.ltr,
+              builder: ListView.builder(
+                shrinkWrap: true,
+                physics: const AlwaysScrollableScrollPhysics(),
+                controller: _scrollController,
+                itemCount: 20,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    tileColor: Colors.transparent,
+                    title: Container(
+                      width: ScreenUtils.getScreenWidth(context),
+                      height: 10,
+                      color: Colors.white,
+                    ),
+                    subtitle:  Container(
+                      width: 25,
+                      height: 10,
+                      color: Colors.white,
+                    ),
+                    leading: CircleAvatar(
+                    radius: 30,
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 500, 500),
+                      ),
+                    ),
+                  ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

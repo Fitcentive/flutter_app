@@ -25,6 +25,7 @@ import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class MeetupHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -180,11 +181,128 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     else {
       return LimitedBox(
         maxHeight: ScreenUtils.getScreenHeight(context) * 0.7,
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: _renderLoadingSkeleton(),
       );
     }
+  }
+
+  _renderLoadingSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 5,
+              itemBuilder: (BuildContext context, int index) {
+                return IntrinsicHeight(
+                  child: Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                          side: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                              width: 1
+                          )
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: WidgetUtils.skipNulls(
+                                [
+                                  Row(
+                                    children: [
+                                      // Name, date and time
+                                      Expanded(
+                                        flex: 3,
+                                        child: Column(
+                                          children: [
+                                            const Text("Unnamed meetup", textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ) ,),
+                                            WidgetUtils.spacer(5),
+                                            const Text("Time unset", style: TextStyle(fontSize: 16),),
+                                            WidgetUtils.spacer(5),
+                                            const Text("Date unset", style: TextStyle(fontSize: 16),),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                          flex: 2,
+                                          child: Column(
+                                            children: WidgetUtils.skipNulls([
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Container(
+                                                    width: 7.5,
+                                                    height: 7.5,
+                                                    decoration: const BoxDecoration(
+                                                      color: Colors.teal,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                  WidgetUtils.spacer(5),
+                                                  Text("Unknown", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                ],
+                                              ),
+                                              WidgetUtils.spacer(5),
+                                            ]) ,
+                                          )
+                                      )
+                                    ],
+                                  ),
+                                  WidgetUtils.spacer(10),
+                                  const Row(
+                                    children: [
+                                      // This part is supposed to be locations view
+                                      Expanded(
+                                        flex: 3,
+                                        child: SizedBox(
+                                            height: 200,
+                                        ),
+                                      ),
+                                      // This part is supposed to be participant list
+                                      Expanded(
+                                          flex: 2,
+                                          child: SizedBox(
+                                            height: 200,
+                                          )
+                                      )
+                                    ],
+                                  ),
+                                  WidgetUtils.spacer(10),
+                                  Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: ElevatedButton.icon(
+                                      icon: const Icon(
+                                          Icons.chat
+                                      ),
+                                      style: ButtonStyle(
+                                        backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                                      ),
+                                      onPressed: () async {},
+                                      label: const Text("Chat", style: TextStyle(fontSize: 15, color: Colors.white)),
+                                    ),
+                                  ),
+                                ]
+                            ),
+                          ),
+                        ),
+                      )
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   _filterItem(String filterType, String text) {

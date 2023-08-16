@@ -3,6 +3,8 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/views/friends/bloc/friends_bloc.dart';
 import 'package:flutter_app/src/views/friends/bloc/friends_event.dart';
 import 'package:flutter_app/src/views/friends/bloc/friends_state.dart';
@@ -11,6 +13,7 @@ import 'package:flutter_app/src/views/login/bloc/authentication_state.dart';
 import 'package:flutter_app/src/views/shared_components/user_results_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class FriendsView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -75,11 +78,53 @@ class FriendsViewState extends State<FriendsView> {
               const Center(child: Text('No friends here... get started by adding one!'))
               : _generateUserResultsList(state);
         } else {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.teal),
-          );
+          return _skeletonLoadingView();
         }
       }),
+    );
+  }
+
+  _skeletonLoadingView() {
+    return SingleChildScrollView(
+      child: SkeletonLoader(
+        period: const Duration(seconds: 2),
+        highlightColor: Colors.teal,
+        direction: SkeletonDirection.ltr,
+        builder: ListView.builder(
+          shrinkWrap: true,
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: 20,
+          itemBuilder: (BuildContext context, int index) {
+            return _userSearchResultItemStub();
+          },
+        ),
+      ),
+    );
+  }
+
+  _userSearchResultItemStub() {
+    return ListTile(
+      title: Container(
+        width: ScreenUtils.getScreenWidth(context),
+        height: 10,
+        color: Colors.white,
+      ),
+      subtitle:  Container(
+        width: 25,
+        height: 10,
+        color: Colors.white,
+      ),
+      leading: CircleAvatar(
+        radius: 30,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 500, 500),
+          ),
+        ),
+      ),
     );
   }
 
@@ -92,7 +137,7 @@ class FriendsViewState extends State<FriendsView> {
             fetchMoreResultsCallback: _fetchMoreResultsCallback,
             doesNextPageExist: state.doesNextPageExist,
             swipeToDismissUserCallback: null,
-          listHeadingText: "Total Friends",
+            listHeadingText: "Total Friends",
         ),
     );
   }

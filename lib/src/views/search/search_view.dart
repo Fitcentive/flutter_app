@@ -80,72 +80,61 @@ class SearchViewState extends State<SearchView> with SingleTickerProviderStateMi
   Widget build(BuildContext context) {
     return BlocBuilder<SearchBloc, SearchState>(
         builder: (context, state) {
-          if (state is UserFitnessProfileFetched) {
+          if (state is UserFitnessProfileFetched && state.fitnessUserProfile != null) {
             // If user does not have a fitness profile, only show user search
             // This is because user weight is needed to calculate calories
-            if (state.fitnessUserProfile != null) {
-              return DefaultTabController(
-                  length: MAX_TABS,
-                  child: Scaffold(
-                    appBar: AppBar(
-                      iconTheme: const IconThemeData(
-                        color: Colors.teal,
-                      ),
-                      toolbarHeight: 75,
-                      title: TabBar(
-                        labelColor: Colors.teal,
-                        controller: _tabController,
-                        tabs: const [
-                          Tab(icon: Icon(Icons.search, color: Colors.teal,), text: "User Search"),
-                          Tab(icon: Icon(Icons.saved_search, color: Colors.teal,), text: "Activity Search"),
-                        ],
-                      ),
+            return DefaultTabController(
+                length: MAX_TABS,
+                child: Scaffold(
+                  appBar: AppBar(
+                    iconTheme: const IconThemeData(
+                      color: Colors.teal,
                     ),
-                    body: TabBarView(
+                    toolbarHeight: 75,
+                    title: TabBar(
+                      labelColor: Colors.teal,
                       controller: _tabController,
-                      children: [
-                        UserSearchView(currentUserProfile: widget.currentUserProfile),
-                        ActivitySearchView(
-                          currentUserProfile: widget.currentUserProfile,
-                          currentFitnessUserProfile: state.fitnessUserProfile!,
-                        ),
+                      tabs: const [
+                        Tab(icon: Icon(Icons.search, color: Colors.teal,), text: "User Search"),
+                        Tab(icon: Icon(Icons.saved_search, color: Colors.teal,), text: "Activity Search"),
                       ],
                     ),
-                  )
-              );
-            }
-            else {
-              return DefaultTabController(
-                  length: MAX_TABS - 1,
-                  child: Scaffold(
-                    appBar: AppBar(
-                      iconTheme: const IconThemeData(
-                        color: Colors.teal,
+                  ),
+                  body: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      UserSearchView(currentUserProfile: widget.currentUserProfile),
+                      ActivitySearchView(
+                        currentUserProfile: widget.currentUserProfile,
+                        currentFitnessUserProfile: state.fitnessUserProfile!,
                       ),
-                      toolbarHeight: 75,
-                      title: TabBar(
-                        labelColor: Colors.teal,
-                        controller: _tabController,
-                        tabs: const [
-                          Tab(icon: Icon(Icons.search, color: Colors.teal,), text: "User Search"),
-                        ],
-                      ),
-                    ),
-                    body: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        UserSearchView(currentUserProfile: widget.currentUserProfile),
-                      ],
-                    ),
-                  )
-              );
-            }
+                    ],
+                  ),
+                )
+            );
           }
           else {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.teal,
-              ),
+            return DefaultTabController(
+                length: MAX_TABS - 1,
+                child: Scaffold(
+                  appBar: AppBar(
+                    iconTheme: const IconThemeData(
+                      color: Colors.teal,
+                    ),
+                    toolbarHeight: 75,
+                    title: TabBar(
+                      labelColor: Colors.teal,
+                      tabs: const [
+                        Tab(icon: Icon(Icons.search, color: Colors.teal,), text: "User Search"),
+                      ],
+                    ),
+                  ),
+                  body: TabBarView(
+                    children: [
+                      UserSearchView(currentUserProfile: widget.currentUserProfile),
+                    ],
+                  ),
+                )
             );
           }
     });

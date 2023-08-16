@@ -130,7 +130,11 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                 );
               }
               else {
-                return _dialogContentCard();
+                return Center(
+                  child: SingleChildScrollView(
+                    child: _dialogContentCard(),
+                  ),
+                );
               }
             },
           ),
@@ -194,7 +198,7 @@ class UpgradeToPremiumViewState extends State<UpgradeToPremiumView> {
                     ),
                     WidgetUtils.spacer(5),
                     const SizedBox(
-                      height: 200,
+                      height: 175,
                         child: Markdown(
                           data: ConstantUtils.premiumFeatures,
                           physics: NeverScrollableScrollPhysics(),

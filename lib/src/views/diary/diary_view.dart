@@ -43,6 +43,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 GlobalKey<DiaryViewState> diaryViewStateGlobalKey = GlobalKey();
 
@@ -337,12 +338,36 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
               return _mainBody(state);
             }
             else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return _renderSkeleton();
             }
           },
         ),
+      ),
+    );
+  }
+
+  _renderSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _dateHeader(),
+                WidgetUtils.spacer(2.5),
+                _caloriesHeaderStub(),
+                WidgetUtils.spacer(2.5),
+                _renderStepInfoStub(),
+                WidgetUtils.spacer(5),
+                _diaryPageViewStub(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -467,6 +492,120 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
     Navigator
         .push(context, FoodSearchView.route(widget.currentUserProfile, mealOfDay, currentSelectedDate))
         .then((value) => _diaryBloc.add(FetchDiaryInfo(userId: widget.currentUserProfile.userId, diaryDate: currentSelectedDate)));
+  }
+
+  _caloriesHeaderStub() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "",
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.headlineMedium?.color
+                      ),
+                    ),
+                    WidgetUtils.spacer(2),
+                    const Text("Goal", style: TextStyle(fontSize: 12),)
+                  ],
+                )
+            ),
+            const Expanded(
+                flex: 1,
+                child: Text("-")
+            ),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "",
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red
+                      ),
+                    ),
+                    WidgetUtils.spacer(2),
+                    const Text("Food", style: TextStyle(fontSize: 12),)
+                  ],
+                )
+            ),
+            const Expanded(
+                flex: 1,
+                child: Text("+")
+            ),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "",
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal
+                      ),
+                    ),
+                    WidgetUtils.spacer(2),
+                    const Text("Exercise", style: TextStyle(fontSize: 12),)
+                  ],
+                )
+            ),
+            const Expanded(
+                flex: 1,
+                child: Text("=")
+            ),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "",
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal
+                      )
+                    ),
+                    WidgetUtils.spacer(2),
+                    const Text("Remaining", style: TextStyle(fontSize: 12),)
+                  ],
+                )
+            ),
+          ],
+        ),
+        WidgetUtils.spacer(2.5),
+        Center(
+          child: LinearPercentIndicator(
+            lineHeight: 15.0,
+            barRadius: const Radius.elliptical(5, 10),
+            percent: 0, // between 0-1
+            center: Text(
+              "",
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12
+              ),
+            ),
+            backgroundColor: Colors.grey.shade400,
+            progressColor: Colors.teal,
+          ),
+        )
+      ],
+    );
   }
 
   _caloriesHeader(DiaryDataFetched state) {
@@ -780,6 +919,60 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
     );
   }
 
+  _renderStepInfoStub() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+            flex: 2,
+            child: CircleAvatar(
+              radius: 25,
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                      image: AssetImage("assets/icons/boot_icon.png")
+                  ),
+                ),
+              ),
+            )
+        ),
+        Expanded(
+            flex: 8,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LinearPercentIndicator(
+                  lineHeight: 15.0,
+                  barRadius: const Radius.elliptical(5, 10),
+                  percent: 0,
+                  center: Text(
+                    "",
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12
+                    ),
+                  ),
+                  backgroundColor: Colors.grey.shade400,
+                  progressColor: Colors.teal,
+                ),
+                WidgetUtils.spacer(2.5),
+                Text(
+                  "",
+                  style: const TextStyle(
+                    color: Colors.teal,
+                  ),
+                ),
+                WidgetUtils.spacer(2.5),
+              ],
+            )
+        )
+      ],
+    );
+  }
+
   _renderStepInfo(DiaryDataFetched state) {
     final double stepGoalPercentage;
     final String stepCountString;
@@ -936,6 +1129,36 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
     );
   }
 
+  _diaryPageViewStub() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: listItemIndexToTitleMap.length,
+      itemBuilder: (BuildContext context, int index) {
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 2.5),
+          padding: const EdgeInsets.all(5),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: 125,
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.teal)
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  _renderDiaryEntriesStub(listItemIndexToTitleMap[index]!),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   _diaryPageViews(DiaryDataFetched state) {
     return PageView.builder(
       controller: _pageController,
@@ -1006,6 +1229,36 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
           },
         );
       },
+    );
+  }
+
+  _renderDiaryEntriesStub(String heading) {
+    return ExpansionPanelList(
+      expansionCallback: (index, isExpanded) {},
+      children: [
+        ExpansionPanel(
+          headerBuilder: (BuildContext context, bool isExpanded) {
+            return ListTile(
+              title: Text(
+                heading,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.grey
+                ),
+              ),
+            );
+          },
+          body: Center(
+            child: Container(
+              width: ScreenUtils.getScreenWidth(context),
+              height: 10,
+              color: Colors.white,
+            ),
+          ),
+          isExpanded: _getIsExpandedVariable(heading),
+        )
+      ],
     );
   }
 

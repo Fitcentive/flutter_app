@@ -11,6 +11,7 @@ import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_bloc.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_event.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_app/src/views/user_chat/user_chat_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class ChatHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -182,11 +184,30 @@ class ChatHomeViewState extends State<ChatHomeView> {
             );
           }
           else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return _skeletonLoadingView();
           }
         },
+      ),
+    );
+  }
+
+  _skeletonLoadingView() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _filterSearchBar(),
+                _chatListStubs()
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -256,6 +277,35 @@ class ChatHomeViewState extends State<ChatHomeView> {
     );
   }
 
+  _chatListStubs() {
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: 20,
+        itemBuilder: (context, index) {
+          return ListTile(
+              tileColor: Colors.transparent,
+              title: Container(
+                width: ScreenUtils.getScreenWidth(context),
+                height: 10,
+                color: Colors.white,
+              ),
+              subtitle:  Container(
+                width: 25,
+                height: 10,
+                color: Colors.white,
+              ),
+              leading: _generateChatPicture(
+                  false,
+                  widget.currentUserProfile.userId,
+                  [widget.currentUserProfile.userId],
+                  {
+                    widget.currentUserProfile.userId : widget.currentUserProfile
+                  }),
+          );
+        }
+    );
+  }
+
   _chatList(UserRoomsLoaded state) {
     if (state.filteredRooms.isNotEmpty) {
       return RefreshIndicator(
@@ -305,7 +355,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
                         onTap: () async {
                           _openUserChatView(currentChatRoom, otherUserProfiles);
                         },
-                        child: _generateChatPicture(currentChatRoom, widget.currentUserProfile.userId, otherUserIdsInChatRoom, state.userIdProfileMap),
+                        child: _generateChatPicture(currentChatRoom.isGroupChat, widget.currentUserProfile.userId, otherUserIdsInChatRoom, state.userIdProfileMap),
                       ),
                       onTap: () {
                         _openUserChatView(currentChatRoom, otherUserProfiles);
@@ -337,12 +387,12 @@ class ChatHomeViewState extends State<ChatHomeView> {
   }
 
   _generateChatPicture(
-      ChatRoomWithMostRecentMessage currentChatRoom,
+      bool isGroupChat,
       String currentUserId,
       List<String> otherUserIdsInChatRoom,
       Map<String, PublicUserProfile> userIdProfileMap,
   ) {
-    if (currentChatRoom.isGroupChat) {
+    if (isGroupChat) {
       final otherUserProfilesInThisChat =
         userIdProfileMap.entries.where((element) => otherUserIdsInChatRoom.contains(element.key)).map((e) => e.value).toList();
       // Group chat has minimum 3 people, HARD RESTRICTION!

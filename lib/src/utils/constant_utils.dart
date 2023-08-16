@@ -99,7 +99,6 @@ class ConstantUtils {
   - #### Unlimited meetups per month
   - #### Multi user meetups
   - #### Group chats
-  - #### Support the developer
   """;
 
   static const String passwordRules = """

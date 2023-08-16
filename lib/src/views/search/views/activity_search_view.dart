@@ -4,6 +4,7 @@ import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_exercise/detailed_exercise_view.dart';
 import 'package:flutter_app/src/views/search/bloc/activity_search/activity_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_app/src/views/search/bloc/activity_search/activity_event
 import 'package:flutter_app/src/views/search/bloc/activity_search/activity_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class ActivitySearchView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -60,11 +62,25 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
           return _showExerciseList(state.filteredExerciseInfo);
         }
         else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return _skeletonLoadingView();
         }
       },
+    );
+  }
+
+  _skeletonLoadingView() {
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _exerciseSearchBar(),
+            WidgetUtils.spacer(2.5),
+            _searchResultsStub()
+          ],
+        ),
+      ),
     );
   }
 
@@ -136,6 +152,22 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
     );
   }
 
+  Widget _searchResultsStub() {
+    return SkeletonLoader(
+        period: const Duration(seconds: 2),
+        highlightColor: Colors.teal,
+        direction: SkeletonDirection.ltr,
+        builder: ListView.builder(
+          shrinkWrap: true,
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: 20,
+          itemBuilder: (BuildContext context, int index) {
+            return exerciseResultItemStub();
+          },
+        )
+    );
+  }
+
   Widget _searchResults(List<ExerciseDefinition> items) {
     if (items.isNotEmpty) {
       return Scrollbar(
@@ -155,6 +187,33 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
         ),
       );
     }
+  }
+
+  Widget exerciseResultItemStub() {
+    return ListTile(
+        title: Container(
+          width: ScreenUtils.getScreenWidth(context),
+          height: 10,
+          color: Colors.white,
+        ),
+        subtitle:  Container(
+          width: 25,
+          height: 10,
+          color: Colors.white,
+        ),
+      leading: CircleAvatar(
+        radius: 30,
+        backgroundColor: Colors.transparent,
+        child:  Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 100, 100),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget exerciseResultItem(ExerciseDefinition exerciseDefinition) {
