@@ -16,6 +16,7 @@ import 'package:flutter_app/src/views/progress/bloc/progress_home_state.dart';
 import 'package:flutter_app/src/views/user_fitness_profile/user_fitness_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 GlobalKey<ProgressHomeViewState> progressViewStateGlobalKey = GlobalKey();
 
@@ -101,14 +102,73 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
               );
             }
             else {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.teal,
-                ),
-              );
+              return _renderSkeleton();
             }
           },
         ),
+      ),
+    );
+  }
+
+  _renderSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  WidgetUtils.spacer(5),
+                  _userProfileImageView(),
+                  WidgetUtils.spacer(10),
+                  _renderInsightsStub(),
+                ],
+              ),
+            ),
+          ),
+          WidgetUtils.spacer(5),
+          SkeletonGridLoader(
+            builder: Card(
+              color: Colors.transparent,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                  side: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 1
+                  )
+              ),
+              child: GridTile(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width: 50,
+                      height: 10,
+                      color: Colors.redAccent,
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 70,
+                      height: 10,
+                      color: Colors.red,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            items: 4,
+            itemsPerRow: 2,
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            childAspectRatio: 1,
+          ),
+        ],
       ),
     );
   }
@@ -159,6 +219,42 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
       case 1: return Colors.orange;
       case 2: return Colors.teal;
     }
+  }
+
+  _renderInsightsStub() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const AutoSizeText(
+            "",
+            style: TextStyle(
+                color: Colors.teal,
+                fontWeight: FontWeight.bold
+            ),
+            textAlign: TextAlign.center,
+          ),
+          WidgetUtils.spacer(10),
+          const AutoSizeText(
+            "Loading...",
+            style: TextStyle(
+                color: Colors.teal,
+                fontWeight: FontWeight.bold
+            ),
+            textAlign: TextAlign.center,
+          ),
+          WidgetUtils.spacer(10),
+          const AutoSizeText(
+            "",
+            style: TextStyle(
+                color: Colors.teal,
+                fontWeight: FontWeight.bold
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
   _renderInsights(ProgressLoaded state) {

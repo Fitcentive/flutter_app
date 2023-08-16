@@ -15,6 +15,7 @@ import 'package:flutter_app/src/views/detailed_achievement_view/detailed_achieve
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class AchievementsHomeView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -93,14 +94,133 @@ class AchievementsHomeViewState extends State<AchievementsHomeView> {
               );
             }
             else {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.teal,
-                ),
-              );
+              return _renderSkeleton();
             }
           },
         ),
+      ),
+    );
+  }
+
+  _renderSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Expanded(
+                      flex: 1,
+                      child: Center(
+                        child: CircularPercentIndicator(
+                            radius: 90.0,
+                            lineWidth: 50.0,
+                            percent: 0,
+                            center: const Text(
+                                "",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20.0,
+                                    color: Colors.teal
+                                )
+                            ),
+                            footer: const Padding(
+                              padding:  EdgeInsets.all(10.0),
+                              child: AutoSizeText(
+                                "Milestone progress",
+                                maxLines: 1,
+                                style: TextStyle(
+                                    color: Colors.teal,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold
+                                ),
+                              ),
+                            ),
+                            backgroundColor: Colors.grey.shade300,
+                            progressColor: Colors.teal
+                        ),
+                      )
+                  ),
+                  WidgetUtils.spacer(10),
+                  Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const AutoSizeText(
+                            "",
+                            style:  TextStyle(
+                                color: Colors.teal
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          WidgetUtils.spacer(10),
+                          const AutoSizeText(
+                            "Loading...",
+                            style: TextStyle(
+                                color: Colors.teal
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          WidgetUtils.spacer(10),
+                          const AutoSizeText(
+                            "",
+                            style: TextStyle(
+                                color: Colors.teal
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      )
+                  ),
+                ],
+              ),
+            ),
+          ),
+          WidgetUtils.spacer(5),
+          SkeletonGridLoader(
+            builder: Card(
+              color: Colors.transparent,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                  side: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 1
+                  )
+              ),
+              child: GridTile(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width: 50,
+                      height: 10,
+                      color: Colors.redAccent,
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 70,
+                      height: 10,
+                      color: Colors.red,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            items: 4,
+            itemsPerRow: 2,
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            childAspectRatio: 1,
+          ),
+        ],
       ),
     );
   }

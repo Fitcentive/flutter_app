@@ -94,6 +94,7 @@ dependencies:
   fl_chart: ^0.62.0
   screenshot: ^2.0.0
   image_network: ^2.5.4+1
+  skeleton_loader: ^2.0.0+4
 
 dev_dependencies:
   flutter_test:

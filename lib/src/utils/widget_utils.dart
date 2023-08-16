@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gauges/gauges.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class WidgetUtils {
