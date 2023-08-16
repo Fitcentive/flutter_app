@@ -29,6 +29,7 @@ import 'package:flutter_app/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class CalendarView extends StatefulWidget {
   final PublicUserProfile currentUserProfile;
@@ -160,7 +161,7 @@ class CalendarViewState extends State<CalendarView> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _renderViewSelectButtons(),
+                _renderViewSelectButtons(state),
                 WidgetUtils.spacer(2.5),
                 Expanded(child: _renderCalendarView(state)),
               ],
@@ -240,6 +241,7 @@ class CalendarViewState extends State<CalendarView> {
           ),
         );
       }
+
       else if (selectedCalendarView == "week") {
         return CalendarControllerProvider<Either<Meetup, AllDiaryEntries>>(
             controller: weekCalendarEventController,
@@ -302,6 +304,7 @@ class CalendarViewState extends State<CalendarView> {
             )
         );
       }
+
       else {
         return CalendarControllerProvider<Either<Meetup, AllDiaryEntries>>(
             controller: dayCalendarEventController,
@@ -345,8 +348,37 @@ class CalendarViewState extends State<CalendarView> {
       }
     }
     else {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return CalendarControllerProvider<Either<Meetup, AllDiaryEntries>>(
+        controller: monthCalendarEventController,
+        child: MonthView(
+          width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
+          cellBuilder: (DateTime date, List<CalendarEventData<Either<Meetup, AllDiaryEntries>>> events, bool isToday, bool isInMonth) {
+            return FilledCell(
+              date: date,
+              shouldHighlight: isToday,
+              events: events,
+              highlightColor: Colors.teal,
+              backgroundColor: isInMonth ? ColorConstants.white : ColorConstants.offWhite,
+              dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
+            );
+          },
+          controller: monthCalendarEventController,
+          minMonth: minimumDate,
+          maxMonth: maximumDate,
+          initialMonth: currentSelectedDateTime,
+          cellAspectRatio: .5,
+          startDay: WeekDays.monday, // To change the first day of the week.
+          dateStringBuilder: ((date, {secondaryDate}) => "${date.day}"),
+          headerStringBuilder: ((date, {secondaryDate}) {
+            // Note - this is a hack.
+            // We actually want a callback whenever the selected date is changed
+            // The library doesn't expose that, but this behaves the same way
+            // The `date` parameter here is either current time (initially), or start of the month (after selection)
+            _fetchMeetupDataForSelectedDateMonth(date);
+            return DateFormat("MMM yyyy").format(date).toString();
+          }),
+          headerStyle: calendarHeaderStyle,
+        ),
       );
     }
 
@@ -441,61 +473,124 @@ class CalendarViewState extends State<CalendarView> {
     );
   }
 
-  _renderViewSelectButtons() {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        WidgetUtils.spacer(2.5),
-        Expanded(
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.calendar_view_month),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-              ),
-              onPressed: () {
-                setState(() {
-                  selectedCalendarView = "month";
-                });
-              },
-              label: const Text('Month',
-                  style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-            )
+  _renderViewSelectButtons(CalendarState state) {
+    if (state is CalendarMeetupUserDataFetched) {
+      return Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          WidgetUtils.spacer(2.5),
+          Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.calendar_view_month),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                ),
+                onPressed: () {
+                  setState(() {
+                    selectedCalendarView = "month";
+                  });
+                },
+                label: const Text('Month',
+                    style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+              )
+          ),
+          WidgetUtils.spacer(5),
+          Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.calendar_view_week),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                ),
+                onPressed: () {
+                  setState(() {
+                    selectedCalendarView = "week";
+                  });
+                },
+                label: const Text('Week',
+                    style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+              )
+          ),
+          WidgetUtils.spacer(5),
+          Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.calendar_view_day),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                ),
+                onPressed: () {
+                  setState(() {
+                    selectedCalendarView = "day";
+                  });
+                },
+                label: const Text('Day',
+                    style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+              )
+          ),
+          WidgetUtils.spacer(2.5),
+        ],
+      );
+    }
+    else {
+      return SkeletonLoader(
+        period: const Duration(seconds: 2),
+        highlightColor: Colors.teal,
+        direction: SkeletonDirection.ltr,
+        builder: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            WidgetUtils.spacer(2.5),
+            Expanded(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.calendar_view_month),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      selectedCalendarView = "month";
+                    });
+                  },
+                  label: const Text('Month',
+                      style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                )
+            ),
+            WidgetUtils.spacer(5),
+            Expanded(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.calendar_view_week),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      selectedCalendarView = "week";
+                    });
+                  },
+                  label: const Text('Week',
+                      style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                )
+            ),
+            WidgetUtils.spacer(5),
+            Expanded(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.calendar_view_day),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      selectedCalendarView = "day";
+                    });
+                  },
+                  label: const Text('Day',
+                      style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                )
+            ),
+            WidgetUtils.spacer(2.5),
+          ],
         ),
-        WidgetUtils.spacer(5),
-        Expanded(
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.calendar_view_week),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-              ),
-              onPressed: () {
-                setState(() {
-                  selectedCalendarView = "week";
-                });
-              },
-              label: const Text('Week',
-                  style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-            )
-        ),
-        WidgetUtils.spacer(5),
-        Expanded(
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.calendar_view_day),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-              ),
-              onPressed: () {
-                setState(() {
-                  selectedCalendarView = "day";
-                });
-              },
-              label: const Text('Day',
-                  style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-            )
-        ),
-        WidgetUtils.spacer(2.5),
-      ],
-    );
+      );
+    }
   }
 
   _goToEditMeetupView(
