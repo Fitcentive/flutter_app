@@ -30,6 +30,7 @@ import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_state.dart';
 import 'package:flutter_app/src/views/detailed_meetup/views/meetup_tabs.dart';
 import 'package:flutter_app/src/views/home/home_page.dart';
+import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
 import 'package:flutter_app/src/views/shared_components/participants_list.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/select_from_friends_view.dart';
 import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
@@ -39,6 +40,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 class DetailedMeetupView extends StatefulWidget {
   static const String routeName = "view-meetup";
@@ -431,12 +433,22 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
               );
             }
             else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return _renderLoadingSkeleton();
             }
           },
         ),
+      ),
+    );
+  }
+
+  _renderLoadingSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _renderParticipantsViewStub(),
+          WidgetUtils.spacer(2.5),
+          _detailedMeetupViewStub()
+        ],
       ),
     );
   }
@@ -681,6 +693,23 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     return null;
   }
 
+  _detailedMeetupViewStub() {
+    return SizedBox(
+      height: ScreenUtils.getScreenHeight(context),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: WidgetUtils.skipNulls([
+          WidgetUtils.spacer(2.5),
+          _renderMeetupNameViewStub(),
+          WidgetUtils.spacer(2.5),
+          _renderMeetupDateTimeStub(),
+          WidgetUtils.spacer(2.5),
+          _renderTabsStub(),
+        ]),
+      ),
+    );
+  }
+
   _detailedMeetupView() {
     return Expanded(
       child: SingleChildScrollView(
@@ -702,6 +731,173 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
                 ]),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  _renderTabsStub() {
+    return Expanded(
+      child: DefaultTabController(
+        length: 4,
+        child: Scaffold(
+          floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
+          appBar: AppBar(
+            toolbarHeight: 0,
+            automaticallyImplyLeading: false,
+            bottom: const TabBar(
+              tabs:  [
+                Tab(
+                  icon: Icon(Icons.location_on, color: Colors.teal,),
+                  child: Text(
+                    "Location",
+                    maxLines: 1,
+                    style: TextStyle(
+                        color: Colors.teal,
+                        fontSize: 10
+                    ),
+                  ),
+                ),
+                Tab(
+                  icon: Icon(Icons.event_available, color: Colors.teal),
+                  child: Text(
+                    "Availabilities",
+                    maxLines: 1,
+                    style: TextStyle(
+                        color: Colors.teal,
+                        fontSize: 10
+                    ),
+                  ),
+                ),
+                Tab(
+                  icon: Icon(Icons.fitness_center, color: Colors.teal),
+                  child: Text(
+                    "Activities",
+                    maxLines: 1,
+                    style: TextStyle(
+                        color: Colors.teal,
+                        fontSize: 10
+                    ),
+                  ),
+                ),
+                Tab(
+                  icon: Icon(Icons.history, color: Colors.teal),
+                  child: Text(
+                    "Conversation",
+                    maxLines: 1,
+                    style: TextStyle(
+                        color: Colors.teal,
+                        fontSize: 10
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              _skeletonTab(),
+              _skeletonTab(),
+              _skeletonTab(),
+              _skeletonTab(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _skeletonTab() {
+    return SkeletonLoader(
+      period: const Duration(seconds: 2),
+      highlightColor: Colors.teal,
+      direction: SkeletonDirection.ltr,
+      builder : SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: IntrinsicHeight(
+          child: Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                  side: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 1
+                  )
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: WidgetUtils.skipNulls(
+                        [
+                          Row(
+                            children: [
+                              // Name, date and time
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  children: [
+                                    const Text("Unnamed meetup", textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ) ,),
+                                    WidgetUtils.spacer(5),
+                                    const Text("Time unset", style: TextStyle(fontSize: 16),),
+                                    WidgetUtils.spacer(5),
+                                    const Text("Date unset", style: TextStyle(fontSize: 16),),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                  flex: 2,
+                                  child: Column(
+                                    children: WidgetUtils.skipNulls([
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: 7.5,
+                                            height: 7.5,
+                                            decoration: const BoxDecoration(
+                                              color: Colors.teal,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          WidgetUtils.spacer(5),
+                                          Text("Unknown", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                                        ],
+                                      ),
+                                      WidgetUtils.spacer(5),
+                                    ]) ,
+                                  )
+                              )
+                            ],
+                          ),
+                          WidgetUtils.spacer(10),
+                          const Row(
+                            children: [
+                              // This part is supposed to be locations view
+                              Expanded(
+                                flex: 3,
+                                child: SizedBox(
+                                  height: 200,
+                                ),
+                              ),
+                              // This part is supposed to be participant list
+                              Expanded(
+                                  flex: 2,
+                                  child: SizedBox(
+                                    height: 200,
+                                  )
+                              )
+                            ],
+                          ),
+                          WidgetUtils.spacer(10),
+                        ]
+                    ),
+                  ),
+                ),
+              )
           ),
         ),
       ),
@@ -867,6 +1063,25 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     });
   }
 
+  _renderParticipantsViewStub() {
+    return SkeletonLoader(
+      period: const Duration(seconds: 2),
+      highlightColor: Colors.teal,
+      direction: SkeletonDirection.ltr,
+      builder: Center(
+        child: ParticipantsList(
+          participantUserProfiles: [widget.currentUserProfile, widget.currentUserProfile],
+          onParticipantRemoved: (_) {},
+          onParticipantTapped: (_, a) {},
+          participantDecisions: [],
+          shouldShowAvailabilityIcon: false,
+          shouldTapChangeCircleColour: false,
+          shouldRenderName: false,
+        ),
+      ),
+    );
+  }
+
   _renderParticipantsView() {
     if (selectedMeetupParticipants.isNotEmpty) {
       return ParticipantsList(
@@ -883,10 +1098,10 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
         constraints: const BoxConstraints(
           minHeight: 50,
         ),
-        child: Center(
+        child: const Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Center(
                 child: Text("Add participants to meetup..."),
               )
@@ -951,6 +1166,33 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
     );
   }
 
+  _renderMeetupNameViewStub() {
+    return SkeletonLoader(
+      period: const Duration(seconds: 2),
+      highlightColor: Colors.teal,
+      direction: SkeletonDirection.ltr,
+      builder: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: TextFormField(
+              readOnly: true,
+              textCapitalization: TextCapitalization.words,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+              decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Loading...",
+                  hintStyle: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
+                  filled: false,
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
   _renderMeetupNameView() {
     return Column(
       children: [
@@ -986,6 +1228,46 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
           ),
         )
       ],
+    );
+  }
+
+  _renderMeetupDateTimeStub() {
+    return SkeletonLoader(
+      period: const Duration(seconds: 2),
+      highlightColor: Colors.teal,
+      direction: SkeletonDirection.ltr,
+      builder: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            Expanded(child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              ),
+              onPressed: () {},
+              child: Text(
+                  "",
+                  style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white
+                  )),
+            )),
+            WidgetUtils.spacer(5),
+            Expanded(child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+              ),
+              onPressed: () {},
+              child: Text(
+                  "",
+                  style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white
+                  )),
+            )),
+          ],
+        ),
+      ),
     );
   }
 

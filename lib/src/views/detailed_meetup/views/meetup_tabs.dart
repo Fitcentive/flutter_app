@@ -424,7 +424,7 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
           maxHeight: 400,
         ),
         child: MeetupCommentsListView.withBloc(
-            currentUserId: widget.currentUserProfile.userId,
+            currentUserProfile: widget.currentUserProfile,
             meetupId: widget.currentMeetup.id
         )
     );

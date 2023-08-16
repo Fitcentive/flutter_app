@@ -18,15 +18,16 @@ import 'package:flutter_app/src/views/shared_components/meetup_comments_list/blo
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/bloc/meetup_comments_list_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class MeetupCommentsListView extends StatefulWidget {
-  final String currentUserId;
+  final PublicUserProfile currentUserProfile;
   final String meetupId;
 
-  const MeetupCommentsListView({Key? key, required this.meetupId, required this.currentUserId}): super(key: key);
+  const MeetupCommentsListView({Key? key, required this.meetupId, required this.currentUserProfile}): super(key: key);
 
-  static Widget withBloc({required String meetupId, Key? key, required String currentUserId}) {
+  static Widget withBloc({required String meetupId, Key? key, required PublicUserProfile currentUserProfile}) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<MeetupCommentsListBloc>(
@@ -36,7 +37,7 @@ class MeetupCommentsListView extends StatefulWidget {
               secureStorage: RepositoryProvider.of<FlutterSecureStorage>(context),
             )),
       ],
-      child: MeetupCommentsListView(meetupId: meetupId, key: key, currentUserId: currentUserId),
+      child: MeetupCommentsListView(meetupId: meetupId, key: key, currentUserProfile: currentUserProfile),
     );
   }
 
@@ -76,7 +77,7 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
     _meetupCommentsListBloc.add(
         FetchMeetupCommentsRequested(
             meetupId: widget.meetupId,
-            currentUserId: widget.currentUserId
+            currentUserId: widget.currentUserProfile.userId
         )
     );
   }
@@ -115,11 +116,53 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
           );
         }
         else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return _renderLoadingSkeleton();
         }
       },
+    );
+  }
+
+  _renderLoadingSkeleton() {
+    return SingleChildScrollView(
+      child: SkeletonLoader(
+        period: const Duration(seconds: 2),
+        highlightColor: Colors.teal,
+        direction: SkeletonDirection.ltr,
+        builder: ListView.builder(
+          shrinkWrap: true,
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: 20,
+          itemBuilder: (BuildContext context, int index) {
+            return _stubItem();
+          },
+        ),
+      ),
+    );
+  }
+
+  _stubItem() {
+    return ListTile(
+      title: Container(
+        width: ScreenUtils.getScreenWidth(context),
+        height: 10,
+        color: Colors.white,
+      ),
+      subtitle:  Container(
+        width: 25,
+        height: 10,
+        color: Colors.white,
+      ),
+      leading: CircleAvatar(
+        radius: 30,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 500, 500),
+          ),
+        ),
+      ),
     );
   }
 
