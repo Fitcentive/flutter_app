@@ -181,7 +181,10 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
     }
     else {
       if (DeviceUtils.isAppRunningOnMobileBrowser()) {
-        return WidgetUtils.progressIndicator();
+        return LimitedBox(
+          maxHeight: ScreenUtils.getScreenHeight(context) * 0.7,
+          child: WidgetUtils.progressIndicator(),
+        );
       }
       else {
         return LimitedBox(
