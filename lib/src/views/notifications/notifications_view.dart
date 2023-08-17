@@ -6,9 +6,11 @@ import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/award_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_bloc.dart';
 import 'package:flutter_app/src/views/home/bloc/menu_navigation_event.dart';
@@ -128,7 +130,12 @@ class NotificationsViewState extends State<NotificationsView> {
               );
             }
           } else {
-            return _renderSkeleton();
+            if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+              return WidgetUtils.progressIndicator();
+            }
+            else {
+              return _renderSkeleton();
+            }
           }
         }),
       ),

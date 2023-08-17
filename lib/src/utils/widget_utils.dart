@@ -435,4 +435,6 @@ class WidgetUtils {
     });
 
   }
+
+  static Widget progressIndicator() => const Center(child: CircularProgressIndicator(color: Colors.teal,),);
 }

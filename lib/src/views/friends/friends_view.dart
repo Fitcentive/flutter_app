@@ -3,8 +3,10 @@ import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/friends/bloc/friends_bloc.dart';
 import 'package:flutter_app/src/views/friends/bloc/friends_event.dart';
 import 'package:flutter_app/src/views/friends/bloc/friends_state.dart';
@@ -78,7 +80,12 @@ class FriendsViewState extends State<FriendsView> {
               const Center(child: Text('No friends here... get started by adding one!'))
               : _generateUserResultsList(state);
         } else {
-          return _skeletonLoadingView();
+          if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+            return WidgetUtils.progressIndicator();
+          }
+          else {
+            return _skeletonLoadingView();
+          }
         }
       }),
     );

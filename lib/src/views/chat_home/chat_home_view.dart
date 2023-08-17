@@ -9,10 +9,12 @@ import 'package:flutter_app/src/infrastructure/repos/stream/chat_room_updated_st
 import 'package:flutter_app/src/models/chats/chat_room_with_most_recent_message.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/string_utils.dart';
+import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_bloc.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_event.dart';
 import 'package:flutter_app/src/views/chat_home/bloc/chat_home_state.dart';
@@ -184,7 +186,12 @@ class ChatHomeViewState extends State<ChatHomeView> {
             );
           }
           else {
-            return _skeletonLoadingView();
+            if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+              return WidgetUtils.progressIndicator();
+            }
+            else {
+              return _skeletonLoadingView();
+            }
           }
         },
       ),

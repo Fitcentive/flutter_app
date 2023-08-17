@@ -8,6 +8,7 @@ import 'package:flutter_app/src/models/social/social_post.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repository.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/create_new_post/create_new_post_view.dart';
@@ -284,7 +285,12 @@ class NewsFeedViewState extends State<NewsFeedView> {
         );
       }
     } else {
-      return _renderSkeleton();
+      if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+        return WidgetUtils.progressIndicator();
+      }
+      else {
+        return _renderSkeleton();
+      }
     }
   }
 

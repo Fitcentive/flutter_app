@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -125,7 +126,12 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
               return _mainBody(state);
             }
             else {
-              return skeletonLoadingBody();
+              if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+                return WidgetUtils.progressIndicator();
+              }
+              else {
+                return skeletonLoadingBody();
+              }
             }
           },
         ),
@@ -401,7 +407,8 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
                 widget.currentFitnessUserProfile,
                 exerciseDefinition,
                 exerciseDefinition.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION,
-                widget.selectedDayInQuestion
+                widget.selectedDayInQuestion,
+                2, // We pop twice instead of once to get back to diary home view
             ),
         ).then((value) => shouldHideKeyboardManually = false);
       },

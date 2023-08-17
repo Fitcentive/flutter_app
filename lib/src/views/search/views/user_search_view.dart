@@ -3,6 +3,7 @@ import 'package:flutter_app/src/models/auth/secure_auth_tokens.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/views/search/bloc/user_search/user_search_bloc.dart';
@@ -160,17 +161,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
 
   Widget _userSearchBody() {
     return BlocBuilder<UserSearchBloc, UserSearchState>(
-      builder: (BuildContext context, UserSearchState state) {
-        // if (state is UserSearchStateInitial || state is UserSearchQueryModified) {
-        //   return Expanded(
-        //       child: GestureDetector(
-        //     onTap: () => FocusScope.of(context).unfocus(),
-        //     child: Container(
-        //       decoration: BoxDecoration(border: Border.all(color: Colors.transparent)),
-        //       child: const Center(child: Text('Search for user by name/username')),
-        //     ),
-        //   ));
-        // }
+      builder: (BuildContext context, UserSearchState state) {// }
         if (state is UserSearchResultsError) {
           return Expanded(child: Center(child: Text(state.error)));
         }
@@ -189,7 +180,19 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
               );
         }
         else {
-          return Expanded(child: _skeletonLoadingView());
+          if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+            return Expanded(
+                child: GestureDetector(
+                  onTap: () => FocusScope.of(context).unfocus(),
+                  child: Container(
+                    decoration: BoxDecoration(border: Border.all(color: Colors.transparent)),
+                    child: const Center(child: Text('Search for user by name/username')),
+                  ),
+                ));
+          }
+          else {
+            return Expanded(child: _skeletonLoadingView());
+          }
         }
       },
     );

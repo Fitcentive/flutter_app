@@ -38,6 +38,8 @@ class AddExerciseToDiaryView extends StatefulWidget {
   final bool isCurrentExerciseDefinitionCardio;
   final DateTime selectedDayInQuestion;
 
+  final int popCount;
+
   const AddExerciseToDiaryView({
     Key? key,
     required this.currentUserProfile,
@@ -45,6 +47,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
     required this.exerciseDefinition,
     required this.isCurrentExerciseDefinitionCardio,
     required this.selectedDayInQuestion,
+    required this.popCount,
   }): super(key: key);
 
   static Route route(
@@ -53,6 +56,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
       DateTime selectedDayInQuestion,
+      int popCount,
       ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -63,7 +67,8 @@ class AddExerciseToDiaryView extends StatefulWidget {
             currentFitnessUserProfile,
             exerciseDefinition,
             isCurrentExerciseDefinitionCardio,
-            selectedDayInQuestion
+            selectedDayInQuestion,
+            popCount
         )
     );
   }
@@ -74,6 +79,7 @@ class AddExerciseToDiaryView extends StatefulWidget {
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
       DateTime selectedDayInQuestion,
+      int popCount,
       ) => MultiBlocProvider(
     providers: [
       BlocProvider<AddExerciseToDiaryBloc>(
@@ -90,7 +96,8 @@ class AddExerciseToDiaryView extends StatefulWidget {
       currentFitnessUserProfile: currentFitnessUserProfile,
       exerciseDefinition: exerciseDefinition,
       isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
-      selectedDayInQuestion: selectedDayInQuestion
+      selectedDayInQuestion: selectedDayInQuestion,
+      popCount: popCount,
     ),
   );
 
@@ -144,7 +151,7 @@ class AddExerciseToDiaryViewState extends State<AddExerciseToDiaryView> {
         listener: (context, state) {
           if (state is ExerciseDiaryEntryAdded) {
             var count = 0;
-            Navigator.popUntil(context, (route) => count++ == 3);
+            Navigator.popUntil(context, (route) => count++ == widget.popCount);
           }
         },
         child: BlocBuilder<AddExerciseToDiaryBloc, AddExerciseToDiaryState>(

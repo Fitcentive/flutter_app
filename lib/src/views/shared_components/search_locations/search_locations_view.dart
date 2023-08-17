@@ -544,7 +544,20 @@ class SearchLocationsViewState extends State<SearchLocationsView> with WidgetsBi
       );
     }
     else {
-      return SkeletonLoader(
+      if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+        return const Visibility(
+            visible: false,
+            child: Scaffold(
+                body: Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.teal,
+                    )
+                )
+            )
+        );
+      }
+      else {
+        return SkeletonLoader(
           builder: Center(
             child: CarouselSlider(
                 items: [1, 2, 3].map((e) =>
@@ -616,7 +629,8 @@ class SearchLocationsViewState extends State<SearchLocationsView> with WidgetsBi
                 )
             ),
           ),
-      );
+        );
+      }
     }
   }
 

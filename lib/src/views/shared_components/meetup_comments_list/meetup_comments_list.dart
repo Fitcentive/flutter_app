@@ -6,6 +6,7 @@ import 'package:flutter_app/src/models/meetups/meetup_comment.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
@@ -116,7 +117,12 @@ class MeetupCommentsListViewState extends State<MeetupCommentsListView> {
           );
         }
         else {
-          return _renderLoadingSkeleton();
+          if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+            return WidgetUtils.progressIndicator();
+          }
+          else {
+            return _renderLoadingSkeleton();
+          }
         }
       },
     );

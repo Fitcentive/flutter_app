@@ -8,6 +8,7 @@ import 'package:flutter_app/src/models/payment/protected_credit_card.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
@@ -155,9 +156,14 @@ class ManagePremiumViewState extends State<ManagePremiumView> {
                 );
               }
               else {
-                return Center(
-                  child: _renderLoadingSkeleton(),
-                );
+                if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+                  return WidgetUtils.progressIndicator();
+                }
+                else {
+                  return Center(
+                    child: _renderLoadingSkeleton(),
+                  );
+                }
               }
             },
           ),

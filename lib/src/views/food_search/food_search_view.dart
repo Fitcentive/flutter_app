@@ -12,6 +12,7 @@ import 'package:flutter_app/src/models/fatsecret/food_search_result.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -271,16 +272,12 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
 
   List<Widget> _renderResultsOrProgressIndicator(FoodSearchState state) {
     if (state is FoodSearchStateInitial) {
-      return _skeletonLoadingView();
-      return [
-        const ListTile(
-          title: Text("Total Foods", style: TextStyle(color: Colors.teal)),
-          trailing: Text("0", style: TextStyle(color: Colors.teal)),
-        ),
-        Expanded(
-            child: _searchResults([], null)
-        )
-      ];
+      if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+        return [WidgetUtils.progressIndicator()];
+      }
+      else {
+        return _skeletonLoadingView();
+      }
     }
     else if (state is FoodDataFetched) {
       return [
@@ -318,7 +315,12 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
       }
     }
     else {
-      return _skeletonLoadingView();
+      if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+        return [WidgetUtils.progressIndicator()];
+      }
+      else {
+        return _skeletonLoadingView();
+      }
     }
   }
 

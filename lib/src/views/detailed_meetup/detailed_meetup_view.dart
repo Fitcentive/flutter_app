@@ -20,6 +20,7 @@ import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/color_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
 import 'package:flutter_app/src/utils/datetime_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/misc_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
@@ -433,7 +434,12 @@ class DetailedMeetupViewState extends State<DetailedMeetupView> {
               );
             }
             else {
-              return _renderLoadingSkeleton();
+              if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+                return WidgetUtils.progressIndicator();
+              }
+              else {
+                return _renderLoadingSkeleton();
+              }
             }
           },
         ),

@@ -3,6 +3,7 @@ import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/exercise/exercise_definition.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -62,7 +63,12 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
           return _showExerciseList(state.filteredExerciseInfo);
         }
         else {
-          return _skeletonLoadingView();
+          if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+            return WidgetUtils.progressIndicator();
+          }
+          else {
+            return _skeletonLoadingView();
+          }
         }
       },
     );
@@ -237,7 +243,8 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
                 widget.currentFitnessUserProfile,
                 exerciseDefinition,
                 exerciseDefinition.category.id == ConstantUtils.CARDIO_EXERCISE_CATEGORY_DEFINITION,
-                DateTime.now()
+                DateTime.now(),
+                1, // We want to come back to this screen
             ),
         );
       },

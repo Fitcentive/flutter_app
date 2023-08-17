@@ -338,7 +338,12 @@ class DiaryViewState extends State<DiaryView> with WidgetsBindingObserver {
               return _mainBody(state);
             }
             else {
-              return _renderSkeleton();
+              if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+                return WidgetUtils.progressIndicator();
+              }
+              else {
+                return _renderSkeleton();
+              }
             }
           },
         ),

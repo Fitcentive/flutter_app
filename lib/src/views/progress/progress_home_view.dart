@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/awards/award_categories.dart';
 import 'package:flutter_app/src/models/diary/fitness_user_profile.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/award_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/detailed_progress_view/detailed_progress_view.dart';
@@ -102,7 +103,12 @@ class ProgressHomeViewState extends State<ProgressHomeView> {
               );
             }
             else {
-              return _renderSkeleton();
+              if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+                return WidgetUtils.progressIndicator();
+              }
+              else {
+                return _renderSkeleton();
+              }
             }
           },
         ),

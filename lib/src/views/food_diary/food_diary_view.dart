@@ -13,6 +13,7 @@ import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/keyboard_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
@@ -25,6 +26,7 @@ import 'package:flutter_app/src/views/shared_components/select_from_meetups/sele
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class FoodDiaryView extends StatefulWidget {
@@ -196,11 +198,147 @@ class FoodDiaryViewState extends State<FoodDiaryView> with SingleTickerProviderS
               return _mainBody(state);
             }
             else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+                return WidgetUtils.progressIndicator();
+              }
+              else {
+                return _skeletonLoadingScreen();
+              }
             }
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _skeletonLoadingScreen() {
+    return DefaultTabController(
+        length: MAX_TABS,
+        child: Scaffold(
+          appBar: AppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.save,
+                  color: Colors.teal,
+                ),
+                onPressed: () {},
+              )
+            ],
+            iconTheme: const IconThemeData(
+              color: Colors.teal,
+            ),
+            toolbarHeight: 75,
+            title: Text("Edit ${widget.mealOfDay} Entry", style: const TextStyle(color: Colors.teal)),
+            bottom: TabBar(
+              labelColor: Colors.teal,
+              controller: _tabController,
+              tabs: const [
+                Tab(icon: Icon(Icons.menu_book, color: Colors.teal,), text: "Entry"),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _skeletonTab(),
+            ],
+          ),
+        )
+    );
+  }
+
+  _skeletonTab() {
+    return SkeletonLoader(
+      builder : Center(
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: SizedBox(
+            height: ScreenUtils.getScreenHeight(context) * 0.75,
+            child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                    side: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 1
+                    )
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: WidgetUtils.skipNulls(
+                          [
+                            Row(
+                              children: [
+                                // Name, date and time
+                                Expanded(
+                                  flex: 3,
+                                  child: Column(
+                                    children: [
+                                      const Text("Unnamed meetup", textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ) ,),
+                                      WidgetUtils.spacer(5),
+                                      const Text("Time unset", style: TextStyle(fontSize: 16),),
+                                      WidgetUtils.spacer(5),
+                                      const Text("Date unset", style: TextStyle(fontSize: 16),),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                    flex: 2,
+                                    child: Column(
+                                      children: WidgetUtils.skipNulls([
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 7.5,
+                                              height: 7.5,
+                                              decoration: const BoxDecoration(
+                                                color: Colors.teal,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            WidgetUtils.spacer(5),
+                                            Text("Unknown", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                                          ],
+                                        ),
+                                        WidgetUtils.spacer(5),
+                                      ]) ,
+                                    )
+                                )
+                              ],
+                            ),
+                            WidgetUtils.spacer(10),
+                            const Row(
+                              children: [
+                                // This part is supposed to be locations view
+                                Expanded(
+                                  flex: 3,
+                                  child: SizedBox(
+                                    height: 200,
+                                  ),
+                                ),
+                                // This part is supposed to be participant list
+                                Expanded(
+                                    flex: 2,
+                                    child: SizedBox(
+                                      height: 200,
+                                    )
+                                )
+                              ],
+                            ),
+                            WidgetUtils.spacer(10),
+                          ]
+                      ),
+                    ),
+                  ),
+                )
+            ),
+          ),
         ),
       ),
     );

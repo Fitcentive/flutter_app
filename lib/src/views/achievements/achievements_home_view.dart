@@ -7,6 +7,7 @@ import 'package:flutter_app/src/models/awards/user_milestone.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/models/track/user_tracking_event.dart';
 import 'package:flutter_app/src/utils/award_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/achievements/bloc/achievements_home_bloc.dart';
 import 'package:flutter_app/src/views/achievements/bloc/achievements_home_event.dart';
@@ -94,7 +95,12 @@ class AchievementsHomeViewState extends State<AchievementsHomeView> {
               );
             }
             else {
-              return _renderSkeleton();
+              if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+                return WidgetUtils.progressIndicator();
+              }
+              else {
+                return _renderSkeleton();
+              }
             }
           },
         ),

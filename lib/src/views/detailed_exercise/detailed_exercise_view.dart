@@ -24,13 +24,16 @@ class DetailedExerciseView extends StatefulWidget {
   final bool isCurrentExerciseDefinitionCardio;
   final DateTime selectedDayInQuestion;
 
+  final int popCount;
+
   const DetailedExerciseView({
     Key? key,
     required this.currentUserProfile,
     required this.currentFitnessUserProfile,
     required this.exerciseDefinition,
     required this.isCurrentExerciseDefinitionCardio,
-    required this.selectedDayInQuestion
+    required this.selectedDayInQuestion,
+    required this.popCount
   }): super(key: key);
 
   static Route route(
@@ -38,7 +41,8 @@ class DetailedExerciseView extends StatefulWidget {
       FitnessUserProfile currentFitnessUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
-      DateTime selectedDayInQuestion
+      DateTime selectedDayInQuestion,
+      int popCount,
   ) {
     return MaterialPageRoute<void>(
         settings: const RouteSettings(
@@ -49,7 +53,8 @@ class DetailedExerciseView extends StatefulWidget {
             currentFitnessUserProfile,
             exerciseDefinition,
             isCurrentExerciseDefinitionCardio,
-            selectedDayInQuestion
+            selectedDayInQuestion,
+            popCount
         )
     );
   }
@@ -59,7 +64,8 @@ class DetailedExerciseView extends StatefulWidget {
       FitnessUserProfile currentFitnessUserProfile,
       ExerciseDefinition exerciseDefinition,
       bool isCurrentExerciseDefinitionCardio,
-      DateTime selectedDayInQuestion
+      DateTime selectedDayInQuestion,
+      int popCount,
   ) => MultiBlocProvider(
     providers: [
       BlocProvider<DetailedExerciseBloc>(
@@ -75,6 +81,7 @@ class DetailedExerciseView extends StatefulWidget {
         exerciseDefinition: exerciseDefinition,
         isCurrentExerciseDefinitionCardio: isCurrentExerciseDefinitionCardio,
         selectedDayInQuestion: selectedDayInQuestion,
+        popCount: popCount
     ),
   );
 
@@ -190,7 +197,8 @@ class DetailedExerciseViewState extends State<DetailedExerciseView> with SingleT
                   widget.currentFitnessUserProfile,
                   widget.exerciseDefinition,
                   widget.isCurrentExerciseDefinitionCardio,
-                  widget.selectedDayInQuestion
+                  widget.selectedDayInQuestion,
+                  widget.popCount + 1,
               ),
           );
         },

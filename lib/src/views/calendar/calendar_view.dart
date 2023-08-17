@@ -13,6 +13,7 @@ import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/models/meetups/meetup_participant.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/calendar/bloc/calendar_bloc.dart';
@@ -531,63 +532,69 @@ class CalendarViewState extends State<CalendarView> {
       );
     }
     else {
-      return SkeletonLoader(
-        highlightColor: Colors.teal,
-        builder: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            WidgetUtils.spacer(2.5),
-            Expanded(
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.calendar_view_month),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      selectedCalendarView = "month";
-                    });
-                  },
-                  label: const Text('Month',
-                      style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-                )
-            ),
-            WidgetUtils.spacer(5),
-            Expanded(
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.calendar_view_week),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      selectedCalendarView = "week";
-                    });
-                  },
-                  label: const Text('Week',
-                      style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-                )
-            ),
-            WidgetUtils.spacer(5),
-            Expanded(
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.calendar_view_day),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      selectedCalendarView = "day";
-                    });
-                  },
-                  label: const Text('Day',
-                      style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
-                )
-            ),
-            WidgetUtils.spacer(2.5),
-          ],
-        ),
-      );
+      if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+        return WidgetUtils.progressIndicator();
+      }
+      else {
+        return SkeletonLoader(
+          highlightColor: Colors.teal,
+          builder: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              WidgetUtils.spacer(2.5),
+              Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.calendar_view_month),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        selectedCalendarView = "month";
+                      });
+                    },
+                    label: const Text('Month',
+                        style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                  )
+              ),
+              WidgetUtils.spacer(5),
+              Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.calendar_view_week),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        selectedCalendarView = "week";
+                      });
+                    },
+                    label: const Text('Week',
+                        style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                  )
+              ),
+              WidgetUtils.spacer(5),
+              Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.calendar_view_day),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        selectedCalendarView = "day";
+                      });
+                    },
+                    label: const Text('Day',
+                        style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w200)),
+                  )
+              ),
+              WidgetUtils.spacer(2.5),
+            ],
+          ),
+        );
+
+      }
     }
   }
 

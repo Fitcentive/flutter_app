@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_app/src/models/meetups/meetup_location.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
 import 'package:flutter/material.dart';
@@ -179,10 +180,15 @@ class MeetupHomeViewState extends State<MeetupHomeView> {
       }
     }
     else {
-      return LimitedBox(
-        maxHeight: ScreenUtils.getScreenHeight(context) * 0.7,
-        child: _renderLoadingSkeleton(),
-      );
+      if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+        return WidgetUtils.progressIndicator();
+      }
+      else {
+        return LimitedBox(
+          maxHeight: ScreenUtils.getScreenHeight(context) * 0.7,
+          child: _renderLoadingSkeleton(),
+        );
+      }
     }
   }
 

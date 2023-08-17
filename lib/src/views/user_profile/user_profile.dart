@@ -9,6 +9,7 @@ import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/utils/ad_utils.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
 import 'package:flutter_app/src/utils/snackbar_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
@@ -150,7 +151,12 @@ class UserProfileViewState extends State<UserProfileView> {
             isRequestingMoreData = false;
             return _buildUserProfilePage(state);
           } else {
-            return _renderLoadingSkeleton();
+            if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+              return WidgetUtils.progressIndicator();
+            }
+            else {
+              return _renderLoadingSkeleton();
+            }
           }
         }),
       ),
