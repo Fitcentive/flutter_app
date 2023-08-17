@@ -211,13 +211,17 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
   }
 
   _showDiscoveredUserListAndButtons(DiscoverUserDataFetched state) {
+    Widget? slidingPanel;
     return CustomSlidingUpPanel(
       height: ScreenUtils.getScreenHeight(context),
       width: min(ScreenUtils.getScreenWidth(context), ConstantUtils.WEB_APP_MAX_WIDTH),
       controller: _panelController,
       minHeight: 0,
       maxHeight: ScreenUtils.getScreenHeight(context) * 0.7,
-      panel: _generateSlidingPanel(state),
+      panelBuilder: (ScrollController sc) {
+        slidingPanel = slidingPanel ?? _generateSlidingPanel(state, sc);
+        return slidingPanel!;
+      },
       body: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -346,15 +350,27 @@ class DiscoverHomeViewState extends State<DiscoverHomeView> {
     );
   }
 
-  _generateSlidingPanel(DiscoverUserDataFetched state) {
+  _generateSlidingPanel(DiscoverUserDataFetched state, ScrollController sc) {
     final userProfile = state.discoveredUserProfiles.firstWhere((element) => element.userId == selectedUserId);
-    return DiscoveredUserView.withBloc(
-        currentUserProfile: widget.currentUserProfile,
-        otherUserId: userProfile.userId,
-        fitnessPreferences: state.fitnessPreferences,
-        personalPreferences: state.personalPreferences,
-        gymPreferences: state.gymPreferences,
-        key: Key(userProfile.userId + DateTime.now().toString())
+    return SingleChildScrollView(
+      controller: sc,
+      child: SizedBox(
+        height: 700,
+        child: Column(
+          children: [
+            Expanded(
+              child: DiscoveredUserView.withBloc(
+                  currentUserProfile: widget.currentUserProfile,
+                  otherUserId: userProfile.userId,
+                  fitnessPreferences: state.fitnessPreferences,
+                  personalPreferences: state.personalPreferences,
+                  gymPreferences: state.gymPreferences,
+                  key: Key(userProfile.userId + DateTime.now().toString())
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

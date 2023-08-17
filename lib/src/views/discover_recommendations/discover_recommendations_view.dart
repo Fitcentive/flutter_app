@@ -21,6 +21,7 @@ import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 
 class DiscoverRecommendationsView extends StatefulWidget {
@@ -122,16 +123,18 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
                   width: 75,
                   height: 75,
                   child: FittedBox(
-                    child: FloatingActionButton(
-                        heroTag: "rejectButton",
-                        onPressed: () {
-                          final currentState = _discoverRecommendationsBloc.state;
-                          if (currentState is DiscoverRecommendationsReady) {
-                            _moveToNextItemAndRemoveCurrentItem(currentState);
-                          }
-                        },
-                        backgroundColor: Colors.redAccent,
-                        child: const Icon(Icons.close, color: Colors.white)
+                    child: PointerInterceptor(
+                      child: FloatingActionButton(
+                          heroTag: "rejectButton",
+                          onPressed: () {
+                            final currentState = _discoverRecommendationsBloc.state;
+                            if (currentState is DiscoverRecommendationsReady) {
+                              _moveToNextItemAndRemoveCurrentItem(currentState);
+                            }
+                          },
+                          backgroundColor: Colors.redAccent,
+                          child: const Icon(Icons.close, color: Colors.white)
+                      ),
                     ),
                   ),
                 ),
@@ -140,22 +143,24 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
                   width: 75,
                   height: 75,
                   child: FittedBox(
-                    child: FloatingActionButton(
-                        heroTag: "connectButton",
-                        onPressed: () {
-                          final currentState = _discoverRecommendationsBloc.state;
-                          if (currentState is DiscoverRecommendationsReady) {
-                            _discoverRecommendationsBloc.add(
-                                UpsertNewlyDiscoveredUser(
-                                    currentUserId: widget.currentUserProfile.userId,
-                                    newUserId: currentState.recommendations[currentSelectedRecommendationIndex].user.userId
-                                )
-                            );
-                            _moveToNextItemAndRemoveCurrentItem(currentState);
-                          }
-                        },
-                        backgroundColor: Colors.teal,
-                        child: const Icon(Icons.check, color: Colors.white)
+                    child: PointerInterceptor(
+                      child: FloatingActionButton(
+                          heroTag: "connectButton",
+                          onPressed: () {
+                            final currentState = _discoverRecommendationsBloc.state;
+                            if (currentState is DiscoverRecommendationsReady) {
+                              _discoverRecommendationsBloc.add(
+                                  UpsertNewlyDiscoveredUser(
+                                      currentUserId: widget.currentUserProfile.userId,
+                                      newUserId: currentState.recommendations[currentSelectedRecommendationIndex].user.userId
+                                  )
+                              );
+                              _moveToNextItemAndRemoveCurrentItem(currentState);
+                            }
+                          },
+                          backgroundColor: Colors.teal,
+                          child: const Icon(Icons.check, color: Colors.white)
+                      ),
                     ),
                   ),
                 )
@@ -299,11 +304,13 @@ class DiscoverRecommendationsViewState extends State<DiscoverRecommendationsView
     return Center(
       child: Padding(
         padding: const EdgeInsets.only(top: 30),
-        child: SkeletonLoader(
-          period: const Duration(seconds: 2),
-          highlightColor: Colors.teal,
-          direction: SkeletonDirection.ltr,
-          builder: _carouselSliderStub(),
+        child: SingleChildScrollView(
+          child: SkeletonLoader(
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.teal,
+            direction: SkeletonDirection.ltr,
+            builder: _carouselSliderStub(),
+          ),
         ),
       ),
     );
