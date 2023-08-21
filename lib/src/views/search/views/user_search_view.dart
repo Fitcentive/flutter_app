@@ -95,7 +95,7 @@ class UserSearchViewState extends State<UserSearchView> with AutomaticKeepAliveC
                     }
                   },
                   autocorrect: false,
-                  onTap: () => _suggestionsController.toggle(),
+                  // onTap: () => _suggestionsController.toggle(),
                   onChanged: (text) {
                     shouldShow = true;
                   },

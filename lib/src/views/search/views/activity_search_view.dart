@@ -114,7 +114,7 @@ class ActivitySearchViewState extends State<ActivitySearchView> with AutomaticKe
           textFieldConfiguration: TextFieldConfiguration(
               onSubmitted: (value) {},
               autocorrect: false,
-              onTap: () => _suggestionsController.toggle(),
+              // onTap: () => _suggestionsController.toggle(),
               onChanged: (text) {},
               autofocus: true,
               controller: _searchTextController,
