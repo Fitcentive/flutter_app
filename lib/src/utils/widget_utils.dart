@@ -12,7 +12,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gauges/gauges.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class WidgetUtils {
@@ -25,9 +24,9 @@ class WidgetUtils {
   static Widget viewUnderDismissibleListTile() {
     return Container(
       color: Colors.redAccent,
-      child: Row(
+      child: const Row(
         mainAxisSize: MainAxisSize.max,
-        children: const [
+        children: [
           Expanded(
             flex: 5,
               child: Center(
@@ -46,15 +45,6 @@ class WidgetUtils {
               child: Icon(Icons.remove_circle, color: Colors.white,)
           ),
         ],
-      ),
-    );
-    return Container(
-      color: Colors.teal,
-      child: const Text(
-        "Swipe left to delete",
-        style: TextStyle(
-          color: Colors.white
-        ),
       ),
     );
   }
@@ -176,25 +166,26 @@ class WidgetUtils {
         }
       }
     }
-    else {
-      final authState = context.read<AuthenticationBloc>().state;
-      if (authState is AuthSuccessUserUpdateState) {
-        if (authState.authenticatedUser.user.isPremiumEnabled) {
-          return null;
-        }
-        else {
-          return customAdWidget.render(context, maxHeight);
-        }
-      }
-      else if (authState is AuthSuccessState) {
-        if (authState.authenticatedUser.user.isPremiumEnabled) {
-          return null;
-        }
-        else {
-          return customAdWidget.render(context, maxHeight);
-        }
-      }
-    }
+    // Disabling web app ads as we did not get AdSense approval, and overall seems like a PITA
+    // else {
+    //   final authState = context.read<AuthenticationBloc>().state;
+    //   if (authState is AuthSuccessUserUpdateState) {
+    //     if (authState.authenticatedUser.user.isPremiumEnabled) {
+    //       return null;
+    //     }
+    //     else {
+    //       return customAdWidget.render(context, maxHeight);
+    //     }
+    //   }
+    //   else if (authState is AuthSuccessState) {
+    //     if (authState.authenticatedUser.user.isPremiumEnabled) {
+    //       return null;
+    //     }
+    //     else {
+    //       return customAdWidget.render(context, maxHeight);
+    //     }
+    //   }
+    // }
     return null;
   }
 
@@ -219,25 +210,26 @@ class WidgetUtils {
         }
       }
     }
-    else {
-      final authState = context.read<AuthenticationBloc>().state;
-      if (authState is AuthSuccessUserUpdateState) {
-        if (authState.authenticatedUser.user.isPremiumEnabled) {
-          return null;
-        }
-        else {
-          return customAdWidget.render(context, maxHeight);
-        }
-      }
-      else if (authState is AuthSuccessState) {
-        if (authState.authenticatedUser.user.isPremiumEnabled) {
-          return null;
-        }
-        else {
-          return customAdWidget.render(context, maxHeight);
-        }
-      }
-    }
+    // Disabling web app ads as we did not get AdSense approval, and overall seems like a PITA
+    // else {
+    //   final authState = context.read<AuthenticationBloc>().state;
+    //   if (authState is AuthSuccessUserUpdateState) {
+    //     if (authState.authenticatedUser.user.isPremiumEnabled) {
+    //       return null;
+    //     }
+    //     else {
+    //       return customAdWidget.render(context, maxHeight);
+    //     }
+    //   }
+    //   else if (authState is AuthSuccessState) {
+    //     if (authState.authenticatedUser.user.isPremiumEnabled) {
+    //       return null;
+    //     }
+    //     else {
+    //       return customAdWidget.render(context, maxHeight);
+    //     }
+    //   }
+    // }
     return null;
   }
 
