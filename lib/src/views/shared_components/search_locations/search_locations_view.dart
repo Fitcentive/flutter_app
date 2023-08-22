@@ -437,7 +437,7 @@ class SearchLocationsViewState extends State<SearchLocationsView> with WidgetsBi
                     _initiateSearchBasedOnText();
                   },
                   autocorrect: false,
-                  onTap: () => _suggestionsController.toggle(),
+                  // onTap: () => _suggestionsController.toggle(),
                   onChanged: (text) {},
                   enabled: isPremiumEnabled,
                   autofocus: true,

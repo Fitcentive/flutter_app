@@ -3,7 +3,9 @@ import 'package:flutter_app/src/infrastructure/repos/rest/social_media_repositor
 import 'package:flutter_app/src/infrastructure/repos/rest/user_repository.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
 import 'package:flutter_app/src/utils/constant_utils.dart';
+import 'package:flutter_app/src/utils/device_utils.dart';
 import 'package:flutter_app/src/utils/image_utils.dart';
+import 'package:flutter_app/src/utils/screen_utils.dart';
 import 'package:flutter_app/src/utils/widget_utils.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/bloc/select_from_friends_bloc.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_friends/bloc/select_from_friends_event.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_app/src/views/user_profile/user_profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 typedef UpdateSelectedUserIdCallback = void Function(PublicUserProfile userProfile);
 
@@ -206,13 +209,90 @@ class SelectFromUsersViewState extends State<SelectFromUsersView> {
       }
     }
     else {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: CircularProgressIndicator(),
-        ),
-      );
+      if (DeviceUtils.isAppRunningOnMobileBrowser()) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+      else {
+        return _skeletonLoadingView();
+      }
     }
+  }
+
+  _skeletonLoadingView() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SkeletonLoader(
+            builder: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _renderStubList()
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _renderStubList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      controller: _scrollController,
+      itemCount: 20,
+      itemBuilder: (BuildContext context, int index) {
+        return _userSelectSearchResultItemStub();
+      },
+    );
+  }
+
+  _userSelectSearchResultItemStub() {
+    return ListTile(
+      title: Container(
+        width: ScreenUtils.getScreenWidth(context),
+        height: 10,
+        color: Colors.white,
+      ),
+      leading: Transform.scale(
+        scale: 1.25,
+        child: Checkbox(
+          checkColor: Colors.white,
+          fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+            final c = Theme.of(context).primaryColor;
+            if (states.contains(MaterialState.disabled)) {
+              return c.withOpacity(.32);
+            }
+            return c;
+          }),
+          value: false,
+          shape: const CircleBorder(),
+          onChanged: (bool? value) {},
+        ),
+      ),
+      subtitle:  Container(
+        width: 25,
+        height: 10,
+        color: Colors.white,
+      ),
+      trailing: CircleAvatar(
+        radius: 30,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: ImageUtils.getUserProfileImage(widget.currentUserProfile, 500, 500),
+          ),
+        ),
+      ),
+      onTap: () {},
+    );
   }
 
   _userSelectSearchResultItem(PublicUserProfile userProfile) {
@@ -278,8 +358,16 @@ class SelectFromUsersViewState extends State<SelectFromUsersView> {
           textFieldConfiguration: TextFieldConfiguration(
               onSubmitted: (value) {},
               autocorrect: false,
-              onTap: () => _suggestionsController.toggle(),
-              onChanged: (text) {},
+              // onTap: () => _suggestionsController.toggle(),
+              onChanged: (text) {
+                if (text.trim().isEmpty) {
+                  _selectFromFriendsBloc.add(ReFetchFriendsRequested(
+                    userId: widget.currentUserProfile.userId,
+                    limit: ConstantUtils.DEFAULT_LIMIT,
+                    offset: ConstantUtils.DEFAULT_OFFSET,
+                  ));
+                }
+              },
               autofocus: true,
               controller: _searchTextController,
               style: const TextStyle(fontSize: 15),

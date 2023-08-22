@@ -349,7 +349,7 @@ class FoodSearchViewState extends State<FoodSearchView> with SingleTickerProvide
               autocorrect: false,
               onTap: () {
                   shouldHideKeyboardManually = false;
-                  _suggestionsController.toggle();
+                  // _suggestionsController.toggle();
                 },
               onChanged: (text) {
                 shouldHideKeyboardManually = false;

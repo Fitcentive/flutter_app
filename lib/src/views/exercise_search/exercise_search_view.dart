@@ -287,7 +287,7 @@ class ExerciseSearchViewState extends State<ExerciseSearchView> with SingleTicke
               onSubmitted: (value) {},
               autocorrect: false,
               onTap: () {
-                _suggestionsController.toggle();
+                // _suggestionsController.toggle();
                 shouldHideKeyboardManually = false;
               },
               onChanged: (text) {

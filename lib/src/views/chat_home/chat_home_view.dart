@@ -226,7 +226,7 @@ class ChatHomeViewState extends State<ChatHomeView> {
               onSubmitted: (value) {},
               autocorrect: false,
               onTap: () {
-                _suggestionsController.toggle();
+                // _suggestionsController.toggle();
                 shouldHideKeyboardManually = false;
               },
               onChanged: (text) {
