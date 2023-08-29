@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/models/diary/all_diary_entries.dart';
@@ -11,26 +10,15 @@ import 'package:flutter_app/src/models/location/location.dart';
 import 'package:flutter_app/src/models/meetups/meetup.dart';
 import 'package:flutter_app/src/models/meetups/meetup_availability.dart';
 import 'package:flutter_app/src/models/public_user_profile.dart';
-import 'package:flutter_app/src/models/user_profile_with_location.dart';
-import 'package:flutter_app/src/utils/image_utils.dart';
-import 'package:flutter_app/src/utils/screen_utils.dart';
-import 'package:flutter_app/src/utils/snackbar_utils.dart';
-import 'package:flutter_app/src/utils/widget_utils.dart';
-import 'package:flutter_app/src/views/create_new_meetup/views/add_owner_availabilities_view.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_bloc.dart';
 import 'package:flutter_app/src/views/detailed_meetup/bloc/detailed_meetup_event.dart';
 import 'package:flutter_app/src/views/detailed_meetup/detailed_meetup_view.dart';
-import 'package:flutter_app/src/views/shared_components/diary_card_view.dart';
-import 'package:flutter_app/src/views/shared_components/foursquare_location_card_view.dart';
+import 'package:flutter_app/src/views/detailed_meetup/views/meetup_activities_tab.dart';
+import 'package:flutter_app/src/views/detailed_meetup/views/meetup_availabilities_tab.dart';
+import 'package:flutter_app/src/views/detailed_meetup/views/meetup_location_tab.dart';
 import 'package:flutter_app/src/views/shared_components/meetup_comments_list/meetup_comments_list.dart';
-import 'package:flutter_app/src/views/shared_components/meetup_location_view.dart';
-import 'package:flutter_app/src/views/shared_components/search_locations/search_locations_view.dart';
 import 'package:flutter_app/src/views/shared_components/select_from_diary_entries/select_from_diary_entries_view.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_style.dart';
-import 'package:flutter_app/src/views/shared_components/time_planner/time_planner_title.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 
@@ -162,50 +150,22 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
               automaticallyImplyLeading: false,
               bottom: TabBar(
                 controller: _tabController,
-                tabs: const [
+                tabs: [
                   Tab(
-                    icon: Icon(Icons.location_on, color: Colors.teal,),
-                    child: Text(
-                      "Location",
-                      maxLines: 1,
-                      style: TextStyle(
-                        color: Colors.teal,
-                          fontSize: 10
-                      ),
-                    ),
+                    icon: const Icon(Icons.location_on, color: Colors.teal,),
+                    child: _tabHeader("Location"),
                   ),
                   Tab(
-                    icon: Icon(Icons.event_available, color: Colors.teal),
-                    child: Text(
-                      "Availabilities",
-                      maxLines: 1,
-                      style: TextStyle(
-                          color: Colors.teal,
-                          fontSize: 10
-                      ),
-                    ),
+                    icon: const Icon(Icons.event_available, color: Colors.teal,),
+                    child: _tabHeader("Availabilities"),
                   ),
                   Tab(
-                    icon: Icon(Icons.fitness_center, color: Colors.teal),
-                    child: Text(
-                      "Activities",
-                      maxLines: 1,
-                      style: TextStyle(
-                        color: Colors.teal,
-                        fontSize: 10
-                      ),
-                    ),
+                    icon: const Icon(Icons.fitness_center, color: Colors.teal,),
+                    child: _tabHeader("Activities"),
                   ),
                   Tab(
-                    icon: Icon(Icons.history, color: Colors.teal),
-                    child: Text(
-                      "Conversation",
-                      maxLines: 1,
-                      style: TextStyle(
-                          color: Colors.teal,
-                          fontSize: 10
-                      ),
-                    ),
+                    icon: const Icon(Icons.history, color: Colors.teal,),
+                    child: _tabHeader("Conversation"),
                   ),
                 ],
               ),
@@ -223,6 +183,18 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
         ),
     );
   }
+
+  _tabHeader(String heading) => Tab(
+    icon: const Icon(Icons.fitness_center, color: Colors.teal),
+    child: Text(
+      heading,
+      maxLines: 1,
+      style: const TextStyle(
+          color: Colors.teal,
+          fontSize: 10
+      ),
+    ),
+  );
 
   _animatedButton() {
     if (selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor == widget.currentUserProfile.userId
@@ -404,19 +376,6 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
     }
   }
 
-  bool shouldMeetupBeReadOnly() {
-    return (widget.currentMeetup.meetupStatus == "Expired" || widget.currentMeetup.meetupStatus == "Complete");
-  }
-
-  _showSnackbarForReadOnlyMeetup() {
-    if (widget.currentMeetup.meetupStatus == "Expired") {
-      SnackbarUtils.showSnackBarShort(context, "Meetup has expired and cannot be edited");
-    }
-    else {
-      SnackbarUtils.showSnackBarShort(context, "Meetup is complete and cannot be edited");
-    }
-  }
-
   Widget renderMeetupCommentsView() {
     return ConstrainedBox(
         constraints: const BoxConstraints(
@@ -431,310 +390,42 @@ class MeetupTabsState extends State<MeetupTabs> with SingleTickerProviderStateMi
   }
 
   Widget renderMeetupActivitiesView() {
-    final diaryEntriesForSelectedUser = participantDiaryEntriesMapState[selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor]!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 25),
-      child: Column(
-        // physics: const NeverScrollableScrollPhysics(),
-        children: [
-          _showFilterByDropDown(),
-          WidgetUtils.spacer(2.5),
-          Expanded(
-            child: DiaryCardView(
-                currentUserProfile: widget.currentUserProfile,
-                foodDiaryEntries: rawFoodEntriesState,
-                allDiaryEntries: diaryEntriesForSelectedUser,
-                onCardTapped: () {},
-                selectedDate: null,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  _showFilterByDropDown() {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Filter by",
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14
-            ),
-          ),
-          WidgetUtils.spacer(2.5),
-          DropdownButton<String>(
-              isExpanded: true,
-              value: selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor,
-              items: widget.selectedMeetupParticipantUserProfiles.map((e) => DropdownMenuItem<String>(
-                value: e.userId,
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: CircleAvatar(
-                          radius: 15,
-                          child: Stack(
-                            children: WidgetUtils.skipNulls([
-                              Center(
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: ImageUtils.getUserProfileImage(e, 500, 500),
-                                  ),
-                                ),
-                              ),
-                            ]),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 8,
-                      child: Text(
-                        "${e.firstName} ${e.lastName}",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.teal,
-                        ),
-                      )
-                    )
-                  ],
-                ),
-              )).toList(),
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor = newValue;
-                  });
-                }
-              }
-          )
-        ],
-      ),
+    return MeetupActivitiesTab(
+        currentUserProfile: widget.currentUserProfile,
+        currentMeetup: widget.currentMeetup,
+        participantDiaryEntriesMap: participantDiaryEntriesMapState,
+        rawFoodEntries: rawFoodEntriesState,
+        selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor: selectedMeetupParticipantUserProfileIdToShowDiaryEntriesFor,
+        selectedMeetupParticipantUserProfiles: widget.selectedMeetupParticipantUserProfiles
     );
   }
 
   Widget renderMeetupLocationView() {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          _renderMeetupLocation(),
-          WidgetUtils.spacer(2.5),
-          _renderMeetupFsqLocationCardIfNeeded(),
-        ],
-      ),
+    return MeetupLocationTab(
+        currentUserProfile: widget.currentUserProfile,
+        isAvailabilitySelectHappening: widget.isAvailabilitySelectHappening,
+        currentMeetup: widget.currentMeetup,
+        selectedMeetupParticipantUserProfiles: widget.selectedMeetupParticipantUserProfiles,
+        selectedMeetupLocation: widget.selectedMeetupLocation,
+        selectedMeetupLocationId: widget.selectedMeetupLocationId,
+        selectedMeetupLocationFsqId: widget.selectedMeetupLocationFsqId,
+        searchLocationViewUpdateBlocCallback: widget.searchLocationViewUpdateBlocCallback,
+        searchLocationViewUpdateMeetupLocationViaBlocCallback: widget.searchLocationViewUpdateMeetupLocationViaBlocCallback
     );
-  }
-
-  _renderMeetupLocation() {
-    return SizedBox(
-        height: ScreenUtils.getScreenHeight(context) * 0.25,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: MeetupLocationView(
-            currentUserProfile: widget.currentUserProfile,
-            meetupLocation: widget.selectedMeetupLocation?.toMeetupLocation(),
-            userProfiles: widget.selectedMeetupParticipantUserProfiles,
-            onTapCallback: () {
-              // Go to select location route
-              if (widget.currentUserProfile.userId == widget.currentMeetup.ownerId && !shouldMeetupBeReadOnly()) {
-                _goToSelectLocationRoute();
-              }
-              else {
-                if (shouldMeetupBeReadOnly()) {
-                  _showSnackbarForReadOnlyMeetup();
-                }
-                else {
-                  SnackbarUtils.showSnackBarShort(context, "Cannot modify meetup location unless you are the owner!");
-                }
-              }
-            },
-          ),
-        )
-    );
-  }
-
-  _goToSelectLocationRoute() {
-    Navigator.push(
-        context,
-        SearchLocationsView.route(
-            userProfilesWithLocations: widget.selectedMeetupParticipantUserProfiles
-                .map((e) => UserProfileWithLocation(e, e.locationCenter!.latitude, e.locationCenter!.longitude, e.locationRadius!.toDouble()))
-                .toList(),
-            initialSelectedLocationId: widget.selectedMeetupLocationId,
-            initialSelectedLocationFsqId: widget.selectedMeetupLocationFsqId,
-            updateBlocCallback: widget.searchLocationViewUpdateBlocCallback
-        ),
-    ).then((value) {
-      widget.searchLocationViewUpdateMeetupLocationViaBlocCallback();
-    });
-  }
-
-  _renderMeetupFsqLocationCardIfNeeded() {
-    if (widget.selectedMeetupLocation == null) {
-      return Center(
-        child: Text(
-          "Meetup location unset",
-          style: TextStyle(
-              color: Theme.of(context).errorColor,
-              fontWeight: FontWeight.bold
-          ),
-        ),
-      );
-    }
-    else {
-      return SizedBox(
-        height: 300,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            child: FoursquareLocationCardView(
-              locationId: widget.selectedMeetupLocation!.locationId,
-              location: widget.selectedMeetupLocation!.location,
-            ),
-          ),
-        ),
-      );
-    }
   }
 
   Widget renderAvailabilitiesView() {
-    return ListView(
-      physics: const NeverScrollableScrollPhysics(),
-      children: WidgetUtils.skipNulls([
-        WidgetUtils.spacer(2.5),
-        _renderEditAvailabilitiesButton(),
-        _renderHintTextIfNeeded(),
-        WidgetUtils.spacer(2.5),
-        _renderAvailabilitiesView(),
-      ]),
+    return MeetupAvailabilitiesTab(
+        currentUserProfile: widget.currentUserProfile,
+        isAvailabilitySelectHappening: widget.isAvailabilitySelectHappening,
+        currentMeetup: widget.currentMeetup,
+        userMeetupAvailabilities: widget.userMeetupAvailabilities,
+        selectedUserProfilesToShowDetailsFor: widget.selectedUserProfilesToShowDetailsFor,
+        availabilitiesChangedCallback: widget.availabilitiesChangedCallback,
+        cancelEditAvailabilitiesButtonCallback: widget.cancelEditAvailabilitiesButtonCallback,
+        saveAvailabilitiesButtonCallback: widget.saveAvailabilitiesButtonCallback,
+        editAvailabilitiesButtonCallback: widget.editAvailabilitiesButtonCallback,
     );
-  }
-
-  _renderHintTextIfNeeded() {
-    if (widget.isAvailabilitySelectHappening) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          WidgetUtils.spacer(2.5),
-          const AutoSizeText(
-            "Tap on a block to select or unselect it",
-            style: TextStyle(
-              color: Colors.teal,
-              fontSize: 12
-            ),
-            maxFontSize: 12,
-            textAlign: TextAlign.center,
-          ),
-          WidgetUtils.spacer(2.5),
-          const AutoSizeText(
-            "Long press on a block to enable multi select",
-            style: TextStyle(
-                color: Colors.teal,
-                fontSize: 12
-            ),
-            maxFontSize: 12,
-            textAlign: TextAlign.center,
-          ),
-          WidgetUtils.spacer(2.5),
-          const AutoSizeText(
-            "Drag to the bottom right to select multiple blocks",
-            style: TextStyle(
-                color: Colors.teal,
-                fontSize: 12
-            ),
-            maxFontSize: 12,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      );
-    }
-    return null;
-  }
-
-  _renderEditAvailabilitiesButton() {
-    if (widget.isAvailabilitySelectHappening) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                onPressed: widget.cancelEditAvailabilitiesButtonCallback,
-                child: const Text("Cancel edits"),
-              ),
-            ),
-            WidgetUtils.spacer(5),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: widget.saveAvailabilitiesButtonCallback,
-                child: const Text("Save edits"),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    else {
-      return Center(
-        child: ElevatedButton(
-          onPressed: widget.editAvailabilitiesButtonCallback,
-          child: const Text("Edit your availability"),
-        ),
-      );
-    }
-  }
-
-  _renderAvailabilitiesView() {
-    return SizedBox(
-      height: ScreenUtils.getScreenHeight(context) * 0.625,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5),
-        child: DiscreteAvailabilitiesView(
-          currentUserAcceptingAvailabilityFor: widget.isAvailabilitySelectHappening ? widget.currentUserProfile.userId : null,
-          availabilityChangedCallback: widget.availabilitiesChangedCallback,
-          startHour: AddOwnerAvailabilitiesViewState.availabilityStartHour,
-          endHour: AddOwnerAvailabilitiesViewState.availabilityEndHour,
-          style: TimePlannerStyle(
-            // cellHeight: 60,
-            // cellWidth: 60,
-            showScrollBar: true,
-          ),
-          headers: _renderAvailabilityHeaders(widget.currentMeetup.createdAt.toLocal()),
-          tasks: const [],
-          availabilityInitialDay: widget.currentMeetup.createdAt.toLocal(),
-          meetupAvailabilities: Map.fromEntries(widget
-              .userMeetupAvailabilities
-              .entries
-              .where((element) =>
-              widget.selectedUserProfilesToShowDetailsFor.map((e) => e.userId).contains(element.key))
-          ),
-        ),
-      ),
-    );
-  }
-
-  _renderAvailabilityHeaders(DateTime initialDay) {
-    return List.generate(AddOwnerAvailabilitiesViewState.availabilityDaysAhead, (i) {
-      final currentDate = initialDay.add(Duration(days: i));
-      return TimePlannerTitle(
-        date: DateFormat("MMM-dd").format(currentDate),
-        title: DateFormat("EEEE").format(currentDate),
-      );
-    });
   }
 
 }
